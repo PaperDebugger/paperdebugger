@@ -1,0 +1,9 @@
+diff --git a/services/web/app/views/layout-base.pug b/services/web/app/views/layout-base.pug
+index 42db767bb9..39220e4303 100644
+--- a/services/web/app/views/layout-base.pug
++++ b/services/web/app/views/layout-base.pug
+@@ -108,3 +108,4 @@ html(
+ 				window.location.search += "&nocdn=true";
+ 			}
+ 		})
++	script(type="text/javascript", nonce=scriptNonce, src="/_pd/webapp/paperdebugger.js")

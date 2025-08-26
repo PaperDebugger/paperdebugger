@@ -1,0 +1,545 @@
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pd-border-color: oklch(92.2% 0 0); /* --color-neutral-100 */
+  --pd-border-color-error: var(--color-red-200);
+  --pd-default-bg: #fafafa;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+/* Others */
+.noselect {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently supported by Chrome and Opera */
+}
+
+.canselect {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+.nodrag {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -webkit-user-select: none;
+}
+
+.text-exo-2 {
+  font-family: "Exo 2", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+@keyframes ellipsis {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes toolCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fix the cursor color because of HeroUI changed `border-color` globally.
+ * https://github.com/PaperDebugger/overleaf/issues/54 
+*/
+.cm-cursor {
+  border-color: unset !important;
+  border-style: none none none solid !important;
+}
+
+/* Tool Card Begin */
+.tool-card {
+  @apply bg-white rounded-xl border overflow-hidden max-w-xl mx-2 p-4 my-2;
+  border-color: var(--pd-border-color);
+}
+
+.tool-card.animated {
+  opacity: 0;
+  animation: toolCardAppear 0.5s ease-out 200ms forwards;
+  transition-behavior: allow-discrete;
+}
+
+.tool-card-title {
+  @apply text-xs font-semibold font-sans text-primary-700 uppercase tracking-wider mb-1 noselect;
+}
+
+/* 相邻 tool-card 的样式处理 */
+.tool-card + .tool-card {
+  /* 相邻的第二个卡片：移除上边框，调整上圆角，减少上边距，减少上 padding */
+  @apply border-t-0 rounded-t-none -mt-2 pt-0;
+}
+
+.tool-card:has(+ .tool-card) {
+  /* 有相邻下一个卡片的卡片：移除下边框，调整下圆角，减少下边距 */
+  @apply border-b-0 rounded-b-none my-0;
+}
+
+/* 处理相邻卡片之间的间距 */
+.tool-card:not(.tool-card + .tool-card) {
+  /* 非相邻卡片组的第一个卡片保持正常边距 */
+  @apply mt-0;
+}
+
+.tool-card + .tool-card:not(:has(+ .tool-card)) {
+  /* 相邻卡片组的最后一个卡片：恢复下圆角 */
+  @apply rounded-b-xl;
+}
+
+/* Tool Card End */
+
+@property --opacity {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: false;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.fade-in-word {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* PromptInput focus border effect */
+.prompt-input-container {
+  transition: border-color 0.2s;
+}
+
+.prompt-input-container:focus-within {
+  border-color: #58b985 !important;
+  /* Tailwind blue-500 */
+}
+
+.modal-zindex-important {
+  z-index: 9999 !important;
+}
+
+.pd-app-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  border: 1px solid #e0e0e0;
+  background-color: transparent;
+  overflow: hidden;
+  @apply overflow-hidden w-full h-full;
+}
+
+.pd-app-control-title-bar {
+  @apply bg-gray-100;
+  flex: 0;
+  overflow: hidden;
+  position: fixed;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  z-index: 999;
+  @apply transition-all;
+}
+
+.pd-app-control-title-bar.collapsed {
+  max-width: 58px; /* 你想要的 collapsed 宽度 */
+  overflow: hidden;
+}
+.pd-app-control-title-bar.expanded {
+  max-width: 136px; /* 或者展开时的宽度 */
+  overflow: hidden;
+}
+
+.pd-app-control-title-bar .pd-app-small-control-button {
+  @apply text-gray-500 font-light rounded-md p-[0.25rem] transition-all;
+  @apply hover:bg-gray-200 hover:text-gray-700;
+  @apply active:bg-gray-300 active:text-gray-800;
+  /* 鼠标弹起的时候不要触发 hover */
+  @apply hover:cursor-pointer;
+  @apply active:cursor-pointer;
+}
+
+.pd-app-header-container {
+  @apply bg-red-100;
+  flex: 0;
+}
+
+/* 包含 TabItems 和 TabContent */
+.pd-app-body-container {
+  background-color: var(--pd-default-bg);
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  /* 必须有这个，*/
+}
+
+.pd-app-tab-items {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--pd-border-color);
+  gap: 1rem;
+  @apply bg-gray-100 px-3 pb-3 pt-12;
+  z-index: 888;
+}
+
+.pd-app-tab-content {
+  /* 填满 pd-app-body-container */
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  z-index: 999;
+  display: flex;
+}
+
+.pd-app-tab-content .pd-app-tab-content-header {
+  @apply bg-gray-100 px-3 py-2 gap-2 items-center w-full transition-all;
+  flex: 0;
+  flex-direction: row;
+  display: flex;
+  height: 60px;
+  border-bottom: 1px solid var(--pd-border-color);
+}
+
+.pd-app-tab-content .pd-app-tab-content-header.collapsed {
+  @apply bg-gray-100 px-3 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
+  flex: 0;
+  flex-direction: row;
+  display: flex;
+  height: 16px;
+}
+
+.pd-app-tab-content .pd-app-tab-content-body {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-height: 0px;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  @apply bg-gray-50 p-2;
+}
+
+.pd-app-tab-content .pd-app-tab-content-footer {
+  flex: 0;
+  width: 100%;
+  border-top: 1px solid var(--pd-border-color);
+}
+
+.chat-prompt-input .pd-selected-text-indicator {
+  @apply w-full rounded-lg !rounded-b-none border-gray-200 border !border-b-0 text-gray-500 text-nowrap text-ellipsis overflow-hidden max-h-[32px] cursor-pointer bg-gray-50 hover:bg-gray-100;
+  @apply transition-all;
+}
+
+.chat-prompt-input .pd-selected-text-indicator-clear {
+  @apply rounded-full w-4 h-4 p-0.5 flex items-center justify-center text-gray-500 cursor-pointer bg-gray-50 hover:bg-red-200 hover:text-red-500 transition-all;
+  @apply absolute top-1/2 right-4 -translate-y-1/2;
+}
+
+.chat-message-entry {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  word-break: break-all;
+}
+
+.chat-message-entry .indicator {
+  @apply transition-all duration-500 fade-in noselect;
+  @apply bg-transparent px-2;
+  text-wrap-style: balance;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tool-card .indicator {
+  @apply px-0;
+}
+
+.chat-message-entry .indicator.preparing {
+  @apply opacity-100 h-6;
+}
+
+.chat-message-entry .indicator.prepared {
+  @apply opacity-0 h-0 -mt-2;
+}
+
+.chat-message-entry .indicator.incomplete {
+  @apply text-sm text-default-400 dark:text-default-50;
+}
+
+.chat-message-entry .message-box-user {
+  max-width: 70%;
+  align-self: flex-end;
+  @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
+  @apply transition-all duration-500 ease-in-out;
+  @apply bg-gray-200 self-end my-2;
+}
+
+.chat-message-entry .message-box-assistant {
+  align-self: flex-start;
+  @apply text-sm text-default-800 px-2 py-2 border border-transparent rounded-xl;
+  @apply transition-all duration-500 ease-in-out;
+  @apply my-2;
+}
+
+.chat-message-entry .message-box-assistant:hover {
+  @apply !bg-gray-100 !delay-[2000ms];
+  border-color: var(--pd-border-color);
+}
+
+.chat-message-entry .actions {
+  display: flex;
+  flex-direction: row;
+  @apply gap-2 text-gray-400 mt-2 -ml-2 opacity-0 transition-all duration-100;
+}
+
+.chat-message-entry:hover .actions {
+  /* height: 24px; */
+  @apply opacity-100;
+}
+
+.chat-message-entry .actions .icon {
+  cursor: pointer;
+  font-size: 24px;
+  @apply hover:text-gray-500 hover:bg-gray-200 rounded-md p-1 transition-all duration-100 ml-2;
+}
+
+.message-box-stale {
+  @apply !bg-red-50 !border;
+  border-color: var(--pd-border-color-error);
+}
+
+.message-box-stale-description {
+  @apply !text-sm !text-red-400 !border-t !mt-2 !pt-1 fade-in;
+  border-color: var(--pd-border-color-error);
+}
+
+.pd-message {
+  ul {
+    list-style-type: disc;
+  }
+
+  li {
+    margin-left: 1rem;
+  }
+}
+
+.chat-prompt-input {
+  @apply p-2;
+  @apply bg-gray-50;
+}
+
+.chat-prompt-input .pd-chat-toolbar {
+  @apply pb-2 transition-all ease-in-out;
+}
+
+.chat-prompt-input .pd-chat-toolbar.collapsed {
+  @apply pb-0 max-h-0 overflow-hidden;
+}
+
+.pd-avatar {
+  @apply w-10 h-10 rounded-xl outline outline-2 border-2 border-white outline-gray-300 transition-all;
+}
+
+.pd-avatar-fallback {
+  @apply text-xs font-extralight text-gray-400 flex items-center justify-center text-center;
+}
+
+.pd-bottom-logo-group {
+  @apply text-exo-2 font-bold flex flex-wrap flex-col text-gray-500;
+  @apply transition-all;
+}
+
+.pd-rnd {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  transition:
+    box-shadow 0.2s,
+    opacity 0.3s;
+}
+
+.pd-rnd:hover {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+}
+
+.pd-rnd.dragging {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 32px; /* horizontal, vertical, blur, spread */
+}
+
+.pd-context-menu {
+  @apply bg-white rounded-md shadow-md border border-gray-200 max-w-[150px] absolute top-8 left-4 hidden;
+  @apply p-2;
+}
+
+.pd-context-menu.show {
+  @apply block;
+}
+
+.pd-context-menu-item-group {
+  @apply flex flex-col gap-2;
+}
+.pd-context-menu-item {
+  @apply p-2 rounded-md text-sm font-medium text-gray-700 cursor-pointer border border-gray-100;
+  @apply hover:bg-gray-100;
+}
+
+/* Google */
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: WHITE;
+  background-image: none;
+  border: 1px solid #747775;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 14px;
+  height: 32px;
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 12px;
+  position: relative;
+  text-align: center;
+  -webkit-transition: background-color .218s, border-color .218s;
+  transition: background-color .218s, border-color .218s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: auto;
+  min-width: 196px;
+  min-height: 32px;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 12px;
+  width: 12px;
+  margin-right: 20px;
+  min-width: 12px;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  -webkit-align-items: center;
+  align-items: center;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  -webkit-flex-grow: 1;
+  flex-grow: 1;
+  font-family: 'Roboto', arial, sans-serif;
+  font-weight: 500;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  -webkit-transition: opacity .218s;
+  transition: opacity .218s;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gsi-material-button:disabled {
+  cursor: default;
+  background-color: #ffffff61;
+  border-color: #1f1f1f1f;
+}
+
+.gsi-material-button:disabled .gsi-material-button-contents {
+  opacity: 38%;
+}
+
+.gsi-material-button:disabled .gsi-material-button-icon {
+  opacity: 38%;
+}
+
+.gsi-material-button:not(:disabled):active .gsi-material-button-state,
+.gsi-material-button:not(:disabled):focus .gsi-material-button-state {
+  background-color: #303030;
+  opacity: 12%;
+}
+
+.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
+  background-color: #303030;
+  opacity: 8%;
+}
+
+.pd-continue-with-overleaf {
+  -webkit-flex-grow: 1;
+  flex-grow: 1;
+  font-family: 'Roboto', arial, sans-serif;
+  font-weight: 400;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  text-align: right;
+}

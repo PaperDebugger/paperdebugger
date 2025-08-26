@@ -1,0 +1,6 @@
+namespace: paperdebugger-dev
+
+mongo:
+  in_cluster: true
+redis:
+  in_cluster: true

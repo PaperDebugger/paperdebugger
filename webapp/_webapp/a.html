@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <meta name="appleid-signin-client-id" content="com.paperdebugger.auth.client">
+        <meta name="appleid-signin-redirect-uri" content="https://app.paperdebugger.com/oauth2">
+        <meta name="appleid-signin-response-type" content="code">
+        <meta name="appleid-signin-scope" content="name">
+        <meta name="appleid-signin-use-popup" content="true">
+    </head>
+    <body>
+        <div id="appleid-signin" data-color="black" data-border="true" data-type="sign in"></div>
+        <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+    </body>
+</html>
+
+<!--
+
+https://appleid.apple.com/auth/authorize?client_id=com.paperdebugger.app.auth.client&redirect_uri=https://app.paperdebugger.com/oauth2&response_type=code id_token&response_mode=form_post
+
+https://appleid.apple.com/auth/authorize?client_id=com.paperdebugger.app.auth.client&redirect_uri=https%3A%2F%2Fapp.paperdebugger.com%2Foauth2%2F&response_type=code%20id_token&response_mode=form_post&scope=name%20email
+-->

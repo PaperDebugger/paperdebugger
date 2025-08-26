@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "[AUTO-GENERATED]",
+  "short_name": "PaperDbg",
+  "description": "[AUTO-GENERATED]",
+  "version": "[AUTO-GENERATED]",
+  "version_name": "[AUTO-GENERATED]",
+  "author": "paperdebugger@gmail.com",
+  "icons": {
+    "128": "images/logo-1024.png",
+    "48": "images/logo-1024.png"
+  },
+  "host_permissions": ["*://*.overleaf.com/"],
+  "permissions": ["cookies", "storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "js": ["paperdebugger.js"],
+      "matches": ["https://www.overleaf.com/project/*"],
+      "world": "MAIN"
+    },
+    {
+      "js": ["intermediate.js"],
+      "matches": ["https://www.overleaf.com/project/*"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["https://www.overleaf.com/*"]
+    }
+  ],
+  "key": "[AUTO-GENERATED]"
+}

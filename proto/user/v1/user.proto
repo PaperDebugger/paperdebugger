@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/user/v1;userv1";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self"};
+  }
+
+  rpc ListPrompts(ListPromptsRequest) returns (ListPromptsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/prompts"};
+  }
+
+  rpc CreatePrompt(CreatePromptRequest) returns (CreatePromptResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/users/@self/prompts"
+      body: "*"
+    };
+  }
+
+  rpc UpdatePrompt(UpdatePromptRequest) returns (UpdatePromptResponse) {
+    option (google.api.http) = {
+      put: "/_pd/api/v1/users/@self/prompts/{prompt_id}"
+      body: "*"
+    };
+  }
+
+  rpc GetUserInstructions(GetUserInstructionsRequest) returns (GetUserInstructionsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/instructions"};
+  }
+
+  rpc UpsertUserInstructions(UpsertUserInstructionsRequest) returns (UpsertUserInstructionsResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/users/@self/instructions"
+      body: "*"
+    };
+  }
+
+  rpc DeletePrompt(DeletePromptRequest) returns (DeletePromptResponse) {
+    option (google.api.http) = {delete: "/_pd/api/v1/users/@self/prompts/{prompt_id}"};
+  }
+
+  rpc GetSettings(GetSettingsRequest) returns (GetSettingsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/settings"};
+  }
+
+  rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse) {
+    option (google.api.http) = {
+      put: "/_pd/api/v1/users/@self/settings"
+      body: "*"
+    };
+  }
+
+  rpc ResetSettings(ResetSettingsRequest) returns (ResetSettingsResponse) {
+    option (google.api.http) = {post: "/_pd/api/v1/users/@self/settings/reset"};
+  }
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string picture = 4;
+}
+
+message GetUserRequest {}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message Prompt {
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  string title = 4;
+  string content = 5;
+  bool is_user_prompt = 6;
+}
+
+message ListPromptsRequest {}
+
+message ListPromptsResponse {
+  repeated Prompt prompts = 1;
+}
+
+message CreatePromptRequest {
+  string title = 1;
+  string content = 2;
+}
+
+message CreatePromptResponse {
+  Prompt prompt = 1;
+}
+
+message UpdatePromptRequest {
+  string prompt_id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message UpdatePromptResponse {
+  Prompt prompt = 1;
+}
+
+message DeletePromptRequest {
+  string prompt_id = 1;
+}
+
+message DeletePromptResponse {}
+
+message Settings {
+  bool show_shortcuts_after_selection = 1;
+  bool full_width_paper_debugger_button = 2;
+  bool enable_completion = 3;
+  bool full_document_rag = 4;
+  bool showed_onboarding = 5;
+}
+
+message GetSettingsRequest {}
+
+message GetSettingsResponse {
+  Settings settings = 1;
+}
+
+message UpdateSettingsRequest {
+  Settings settings = 1;
+}
+
+message UpdateSettingsResponse {
+  Settings settings = 1;
+}
+
+message ResetSettingsRequest {}
+
+message ResetSettingsResponse {
+  Settings settings = 1;
+}
+
+message GetUserInstructionsRequest {}
+
+message GetUserInstructionsResponse {
+  string instructions = 1;
+}
+
+message UpsertUserInstructionsRequest {
+  string instructions = 1;
+}
+
+message UpsertUserInstructionsResponse {
+  string instructions = 1;
+}

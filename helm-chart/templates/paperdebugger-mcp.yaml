@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperdebugger-mcp-server
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: paperdebugger-mcp-server
+  template:
+    metadata:
+      labels:
+        app: paperdebugger-mcp-server
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: paperdebugger-mcp-server
+          image: {{ .Values.paperdebuggerMcpServer.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: paperdebugger-mcp-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperdebugger-mcp-server
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: paperdebugger-mcp-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+    - name: http-alt
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paperdebugger-mcp-server
+  namespace: {{ .Values.namespace }}
+data:
+  MCP_BASIC_KEY: "{{ .Values.mcp_basic_key }}"
+  MCP_PAPERSCORE_KEY: "{{ .Values.mcp_paperscore_key }}"

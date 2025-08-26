@@ -1,0 +1,6 @@
+namespace: paperdebugger-stg
+
+mongo:
+  in_cluster: false
+redis:
+  in_cluster: false

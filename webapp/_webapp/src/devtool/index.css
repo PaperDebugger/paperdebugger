@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-bg: rgb(255, 210, 210);
+  --toolbar-bg: rgb(215, 215, 255);
+  --toolbar-hover: rgb(196, 255, 196);
+  --input-bg: rgb(255, 255, 255);
+  --border-color: rgb(200, 200, 200);
+}
+
+.paperdebugger-dev-tools {
+  background-color: var(--primary-bg);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.paperdebugger-dev-tools .toolbar-item {
+  background-color: var(--toolbar-bg);
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.paperdebugger-dev-tools .toolbar-item:hover {
+  background-color: var(--toolbar-hover);
+}
+
+.paperdebugger-dev-tools .input-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.paperdebugger-dev-tools .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.paperdebugger-dev-tools .input-group label {
+  font-weight: 500;
+}
+
+.paperdebugger-dev-tools .input-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease;
+}
+
+.paperdebugger-dev-tools .input-group input:focus {
+  outline: none;
+  border-color: var(--toolbar-bg);
+}
+
+.review-tooltip-menu-button {
+  @apply px-2 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600;
+}

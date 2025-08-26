@@ -1,0 +1,23 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package_prefix
+      module: buf.build/grpc-ecosystem/grpc-gateway
+  override:
+    - file_option: go_package_prefix
+      value: paperdebugger/pkg/gen/api/
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: pkg/gen/api
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go
+    out: pkg/gen/api
+    opt: paths=source_relative
+  - remote: buf.build/grpc-ecosystem/gateway
+    out: pkg/gen/api
+    opt: paths=source_relative
+inputs:
+  - directory: proto

@@ -1,0 +1,110 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build-chrome-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Build
+        run: |
+          export PD_API_ENDPOINT=https://app.paperdebugger.com
+          export BETA_BUILD=false
+          cd webapp/_webapp
+          npm install
+          npm run build
+      - name: 👉 Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-prd
+          path: paperdebugger/webapp/_webapp/dist
+
+      - name: Install zip
+        run: |
+          sudo apt-get update && sudo apt-get install -y zip
+      - name: Zip extension files
+        run: |
+          zip -r dist.zip paperdebugger/webapp/_webapp/dist/*
+      - name: Upload to Chrome Web Store (upload only)
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: 'upload'  # one of: upload, publish, testers
+          client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
+          extension_id: 'dfkedikhakpapbfcnbpmfhpklndgiaog'
+          zip_file: 'dist.zip'
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      IMAGE_TAG: ${{ steps.output.outputs.IMAGE_TAG }}
+      PAPERDEBUGGER_IMAGE: ${{ steps.output.outputs.PAPERDEBUGGER_IMAGE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push docker image
+        run: |
+          make all
+      - id: output
+        name: Output image tag
+        run: |
+          export IMAGE_TAG=${BRANCH_NAME}-${MONOREPO_REVISION}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Clone deploy repo
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
+      - name: Generate kubernetes manifests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_PRD }}
+          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_PRD }}
+          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_PRD }}
+          MONGO_URI: ${{ secrets.MONGO_URI_PRD }}
+        run: |
+          export PAPERDEBUGGER_IMAGE=${{ needs.build-and-push.outputs.PAPERDEBUGGER_IMAGE }}
+          mkdir -p ../deploy/prd
+          ./hack/prd.sh > ../deploy/prd/paperdebugger.yaml
+      - name: Push changes to deploy repo
+        run: |
+          export IMAGE_TAG=${{ needs.build-and-push.outputs.IMAGE_TAG }}
+          cd ../deploy
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add prd/paperdebugger.yaml
+          git diff --staged --quiet || git commit -m "chore: update paperdebugger prd, revision ${IMAGE_TAG}"
+          git push
