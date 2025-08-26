@@ -19,18 +19,35 @@ make build
 PD_MONGO_URI="mongodb://localhost:27017" ./dist/pd.exe
 ```
 
-## Web 构建
+
+## 从克隆开始
+
+### 自动
+```bash
+make all
+```
+
+### 手动
+
+#### 0. 安装环境
+
+```bash
+make deps
+```
+
+#### 1. Web 构建
 
 ```bash
 cd webapp/_webapp
 npm install
 
 npm run build:local:chrome # 构建本地版本（链接至本地后端）
+# or
 npm run build:prd:chrome # 构建生产环境版本（连接至生产环境服务器）
 ```
 
-## 从克隆开始
+#### 2. 后端 构建
 
 ```bash
-make all
+make build
 ```
