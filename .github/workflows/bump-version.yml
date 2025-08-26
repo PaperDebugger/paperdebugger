@@ -3,7 +3,7 @@ name: Bump Version
 on:
   push:
     branches:
-      - pd-main
+      - main
 
 jobs:
   bump-version:
