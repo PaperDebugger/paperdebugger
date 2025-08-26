@@ -1,4 +1,4 @@
-name: Build
+name: Build Beta Chrome Extension
 
 on:
   workflow_run:
@@ -26,6 +26,7 @@ jobs:
           cd webapp/_webapp
           npm install
           npm run build:stg:chrome
+
       - name: 👉 Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -60,71 +61,3 @@ jobs:
           extension_id: 'gjkgbnnlfophcfffoinfgdnhjnfankbn'
           zip_file: 'dist.zip'
         continue-on-error: true
-
-  build-and-push:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      IMAGE_TAG: ${{ steps.output.outputs.IMAGE_TAG }}
-      PAPERDEBUGGER_IMAGE: ${{ steps.output.outputs.PAPERDEBUGGER_IMAGE }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 获取完整历史
-
-      - name: Log in to the container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push docker image
-        run: |
-          make all
-      - id: output
-        name: Output image tag
-        run: |
-          tag=$(git describe --tags --match "v*" --abbrev=0)
-          echo "Found tag: $tag"
-          export VERSION=${tag#v}
-          export MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)
-          export BRANCH_NAME=${{ github.ref_name }}
-          export IMAGE_TAG=${BRANCH_NAME}-${MONOREPO_REVISION}
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
-          echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
-
-  deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Clone deploy repo
-        run: |
-          git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
-      - name: Generate kubernetes manifests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_STG }}
-          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_STG }}
-          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_STG }}
-          MONGO_URI: ${{ secrets.MONGO_URI_STG }}
-        run: |
-          export PAPERDEBUGGER_IMAGE=${{ needs.build-and-push.outputs.PAPERDEBUGGER_IMAGE }}
-          mkdir -p ../deploy/stg
-          ./hack/stg.sh > ../deploy/stg/paperdebugger.yaml
-      - name: Push changes to deploy repo
-        run: |
-          export IMAGE_TAG=${{ needs.build-and-push.outputs.IMAGE_TAG }}
-          cd ../deploy
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add stg/paperdebugger.yaml
-          git diff --staged --quiet || git commit -m "chore: update paperdebugger stg, revision ${IMAGE_TAG}"
-          git push
