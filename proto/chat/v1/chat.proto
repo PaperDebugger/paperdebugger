@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "google/api/annotations.proto";
-import "shared/v1/shared.proto";
 
 option go_package = "paperdebugger/pkg/gen/api/chat/v1;chatv1";
 
@@ -203,7 +202,7 @@ message StreamError {
 // 2. User message
 
 enum ConversationType {
-  CONVERSATION_TYPE_DEFAULT = 0;
+  CONVERSATION_TYPE_UNSPECIFIED = 0;
   CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the inapp_history and openai_history are synced.
   // CONVERSATION_TYPE_NO_SYSTEM_MESSAGE_INJECTION = 2;
   // CONVERSATION_TYPE_NO_USER_MESSAGE_INJECTION = 3;

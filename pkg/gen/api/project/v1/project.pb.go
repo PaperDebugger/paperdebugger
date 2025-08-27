@@ -887,7 +887,7 @@ type PaperScoreCommentEntry struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Section string                 `protobuf:"bytes,1,opt,name=section,proto3" json:"section,omitempty"`
 	// Note: Do not use anchor_text here, the key in backend is “anchorText”.
-	AnchorText    string `protobuf:"bytes,2,opt,name=anchorText,proto3" json:"anchorText,omitempty"`
+	AnchorText    string `protobuf:"bytes,2,opt,name=anchorText,proto3" json:"anchorText,omitempty"` // do not trust the linter
 	Weakness      string `protobuf:"bytes,3,opt,name=weakness,proto3" json:"weakness,omitempty"`
 	Importance    string `protobuf:"bytes,4,opt,name=importance,proto3" json:"importance,omitempty"`
 	unknownFields protoimpl.UnknownFields

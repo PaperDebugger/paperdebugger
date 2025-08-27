@@ -423,6 +423,8 @@ export type PaperScoreCommentEntry = Message<"project.v1.PaperScoreCommentEntry"
   /**
    * Note: Do not use anchor_text here, the key in backend is “anchorText”.
    *
+   * do not trust the linter
+   *
    * @generated from field: string anchorText = 2;
    */
   anchorText: string;

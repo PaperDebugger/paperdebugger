@@ -10,7 +10,6 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "paperdebugger/pkg/gen/api/shared/v1"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -87,19 +86,19 @@ func (LanguageModel) EnumDescriptor() ([]byte, []int) {
 type ConversationType int32
 
 const (
-	ConversationType_CONVERSATION_TYPE_DEFAULT ConversationType = 0
-	ConversationType_CONVERSATION_TYPE_DEBUG   ConversationType = 1 // does not contain any customized messages, the inapp_history and openai_history are synced.
+	ConversationType_CONVERSATION_TYPE_UNSPECIFIED ConversationType = 0
+	ConversationType_CONVERSATION_TYPE_DEBUG       ConversationType = 1 // does not contain any customized messages, the inapp_history and openai_history are synced.
 )
 
 // Enum value maps for ConversationType.
 var (
 	ConversationType_name = map[int32]string{
-		0: "CONVERSATION_TYPE_DEFAULT",
+		0: "CONVERSATION_TYPE_UNSPECIFIED",
 		1: "CONVERSATION_TYPE_DEBUG",
 	}
 	ConversationType_value = map[string]int32{
-		"CONVERSATION_TYPE_DEFAULT": 0,
-		"CONVERSATION_TYPE_DEBUG":   1,
+		"CONVERSATION_TYPE_UNSPECIFIED": 0,
+		"CONVERSATION_TYPE_DEBUG":       1,
 	}
 )
 
@@ -961,7 +960,7 @@ func (x *CreateConversationMessageRequest) GetConversationType() ConversationTyp
 	if x != nil && x.ConversationType != nil {
 		return *x.ConversationType
 	}
-	return ConversationType_CONVERSATION_TYPE_DEFAULT
+	return ConversationType_CONVERSATION_TYPE_UNSPECIFIED
 }
 
 type CreateConversationMessageResponse struct {
@@ -1627,7 +1626,7 @@ func (x *CreateConversationMessageStreamRequest) GetConversationType() Conversat
 	if x != nil && x.ConversationType != nil {
 		return *x.ConversationType
 	}
-	return ConversationType_CONVERSATION_TYPE_DEFAULT
+	return ConversationType_CONVERSATION_TYPE_UNSPECIFIED
 }
 
 // Response for streaming a message within an existing conversation
@@ -1804,7 +1803,7 @@ var File_chat_v1_chat_proto protoreflect.FileDescriptor
 
 const file_chat_v1_chat_proto_rawDesc = "" +
 	"\n" +
-	"\x12chat/v1/chat.proto\x12\achat.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x16shared/v1/shared.proto\"k\n" +
+	"\x12chat/v1/chat.proto\x12\achat.v1\x1a\x1cgoogle/api/annotations.proto\"k\n" +
 	"\x13MessageTypeToolCall\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04args\x18\x02 \x01(\tR\x04args\x12\x16\n" +
@@ -1921,9 +1920,9 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\x1bLANGUAGE_MODEL_OPENAI_GPT41\x10\x04\x12\x1e\n" +
 	"\x1aLANGUAGE_MODEL_OPENAI_GPT5\x10\a\x12#\n" +
 	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_MINI\x10\b\x12#\n" +
-	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_NANO\x10\t*N\n" +
-	"\x10ConversationType\x12\x1d\n" +
-	"\x19CONVERSATION_TYPE_DEFAULT\x10\x00\x12\x1b\n" +
+	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_NANO\x10\t*R\n" +
+	"\x10ConversationType\x12!\n" +
+	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xcd\a\n" +
 	"\vChatService\x12\x83\x01\n" +
 	"\x11ListConversations\x12!.chat.v1.ListConversationsRequest\x1a\".chat.v1.ListConversationsResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/_pd/api/v1/chats/conversations\x12\x8f\x01\n" +

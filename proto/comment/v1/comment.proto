@@ -3,7 +3,6 @@ syntax = "proto3";
 package comment.v1;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 
 option go_package = "paperdebugger/pkg/gen/api/comment/v1;commentv1";
 
