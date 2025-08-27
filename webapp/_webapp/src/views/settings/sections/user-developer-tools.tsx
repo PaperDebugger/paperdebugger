@@ -14,7 +14,7 @@ export const UserDeveloperTools = () => {
 
       <SettingItemSelect
         label="Conversation Mode"
-        description="Affets the message sent to AI"
+        description="Affects the message sent to AI"
         selected={conversationMode}
         options={{
           "debug": "Debug",
