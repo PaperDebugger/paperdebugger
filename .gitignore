@@ -36,6 +36,7 @@ go.work.sum
 # IDE
 .vscode/*
 !/.vscode/launch.json
+!/.vscode/settings.json
 .idea
 
 # output
