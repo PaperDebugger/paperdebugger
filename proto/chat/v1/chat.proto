@@ -1,0 +1,234 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/chat/v1;chatv1";
+
+service ChatService {
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/chats/conversations"};
+  }
+  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/chats/conversations/{conversation_id}"};
+  }
+  rpc CreateConversationMessage(CreateConversationMessageRequest) returns (CreateConversationMessageResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/chats/conversations/messages"
+      body: "*"
+    };
+  }
+  rpc CreateConversationMessageStream(CreateConversationMessageStreamRequest) returns (stream CreateConversationMessageStreamResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/chats/conversations/messages/stream"
+      body: "*"
+    };
+  }
+  rpc UpdateConversation(UpdateConversationRequest) returns (UpdateConversationResponse) {
+    option (google.api.http) = {
+      patch: "/_pd/api/v1/chats/conversations/{conversation_id}"
+      body: "*"
+    };
+  }
+  rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse) {
+    option (google.api.http) = {delete: "/_pd/api/v1/chats/conversations/{conversation_id}"};
+  }
+}
+
+enum LanguageModel {
+  LANGUAGE_MODEL_UNSPECIFIED = 0;
+  LANGUAGE_MODEL_OPENAI_GPT4O = 1;
+  LANGUAGE_MODEL_OPENAI_GPT41_MINI = 2;
+  LANGUAGE_MODEL_OPENAI_GPT41 = 4;
+  LANGUAGE_MODEL_OPENAI_GPT5 = 7;
+  LANGUAGE_MODEL_OPENAI_GPT5_MINI = 8;
+  LANGUAGE_MODEL_OPENAI_GPT5_NANO = 9;
+}
+
+message MessageTypeToolCall {
+  string name = 1;
+  string args = 2; // Json string
+  string result = 3; // Json string
+  string error = 4; // Json string
+}
+
+message MessageTypeToolCallPrepareArguments {
+  string name = 1;
+  string args = 2; // Json string
+}
+
+message MessageTypeSystem {
+  string content = 1;
+}
+
+message MessageTypeAssistant {
+  string content = 1;
+}
+
+message MessageTypeUser {
+  string content = 1;
+  optional string selected_text = 2;
+}
+
+message MessageTypeUnknown {
+  string description = 1;
+}
+
+message MessagePayload {
+  oneof message_type {
+    MessageTypeSystem system = 1;
+    MessageTypeUser user = 2;
+    MessageTypeAssistant assistant = 3;
+    MessageTypeToolCallPrepareArguments tool_call_prepare_arguments = 4;
+    MessageTypeToolCall tool_call = 5;
+    MessageTypeUnknown unknown = 6;
+  }
+}
+
+message Message {
+  string message_id = 1;
+  MessagePayload payload = 3;
+}
+
+message Conversation {
+  string id = 1;
+  string title = 3;
+  LanguageModel language_model = 2;
+  // If list conversations, then messages length is 0.
+  repeated Message messages = 4;
+}
+
+message ListConversationsRequest {
+  optional string project_id = 1;
+}
+
+message ListConversationsResponse {
+  // In this response, the length of conversations[i].messages should be 0.
+  repeated Conversation conversations = 1;
+}
+
+message GetConversationRequest {
+  string conversation_id = 1;
+}
+
+message GetConversationResponse {
+  Conversation conversation = 1;
+}
+
+message CreateConversationMessageRequest {
+  string project_id = 1;
+  // If conversation_id is not provided,
+  // a new conversation will be created and the id will be returned.
+  optional string conversation_id = 2;
+  LanguageModel language_model = 3;
+
+  string user_message = 4;
+  optional string user_selected_text = 5;
+  optional ConversationType conversation_type = 6;
+}
+
+message CreateConversationMessageResponse {
+  Conversation conversation = 1;
+}
+
+message UpdateConversationRequest {
+  string conversation_id = 1;
+  string title = 2;
+}
+
+message UpdateConversationResponse {
+  Conversation conversation = 1;
+}
+
+message DeleteConversationRequest {
+  string conversation_id = 1;
+}
+
+message DeleteConversationResponse {
+  // explicitly empty
+}
+
+// ============================== Streaming Messages
+
+// Information sent once at the beginning of a new conversation stream
+message StreamInitialization {
+  string conversation_id = 1;
+  LanguageModel language_model = 5;
+}
+
+// Designed as StreamPartBegin and StreamPartEnd to
+// handle the case where assistant and tool are called at the same time.
+//
+// User: Please answer me "Ok I will do that", then call "get_weather"
+// Assistant: Ok I will do that + Tool: get_weather
+message StreamPartBegin {
+  string message_id = 1;
+  MessagePayload payload = 3;
+}
+
+// Note: After the StreamPartBegin of tool_call, there can be no MessageChunk,
+//       and the StreamPartEnd can be directly called when the result is ready.
+message MessageChunk {
+  string message_id = 1; // The id of the message that this chunk belongs to
+  string delta = 2; // The small piece of text
+}
+
+message IncompleteIndicator {
+  string reason = 1;
+  string response_id = 2;
+}
+
+message StreamPartEnd {
+  string message_id = 1;
+  MessagePayload payload = 3;
+}
+
+// Sent when the current AI response is fully streamed
+message StreamFinalization {
+  string conversation_id = 1;
+  // Do not return the full Conversation here.
+  // If the user wants, they can call the GetConversation API themselves.
+  // Note: Do not call GetConversation when receiving streamFinalization,
+  //       it should be called after the entire API call is finished.
+}
+
+message StreamError {
+  string error_message = 1;
+}
+
+// Currently, we inject two types of messages:
+// 1. System message
+// 2. User message
+
+enum ConversationType {
+  CONVERSATION_TYPE_UNSPECIFIED = 0;
+  CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the inapp_history and openai_history are synced.
+  // CONVERSATION_TYPE_NO_SYSTEM_MESSAGE_INJECTION = 2;
+  // CONVERSATION_TYPE_NO_USER_MESSAGE_INJECTION = 3;
+}
+
+// This message should be the same as CreateConversationMessageRequest
+// Note: If conversation_id is provided,
+//       the conversation will be created and returned.
+message CreateConversationMessageStreamRequest {
+  string project_id = 1;
+  optional string conversation_id = 2;
+  LanguageModel language_model = 3;
+  string user_message = 4;
+  optional string user_selected_text = 5;
+  optional ConversationType conversation_type = 6;
+}
+
+// Response for streaming a message within an existing conversation
+message CreateConversationMessageStreamResponse {
+  oneof response_payload {
+    StreamInitialization stream_initialization = 1;
+    StreamPartBegin stream_part_begin = 2;
+    MessageChunk message_chunk = 3;
+    IncompleteIndicator incomplete_indicator = 4;
+    StreamPartEnd stream_part_end = 5;
+    StreamFinalization stream_finalization = 6;
+    StreamError stream_error = 7;
+  }
+}

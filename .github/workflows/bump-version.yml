@@ -1,0 +1,56 @@
+name: Bump Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史
+
+      - name: Find nearest version tag
+        id: get_tag
+        run: |
+          tag=$(git describe --tags --match "v*" --abbrev=0)
+
+          echo "Found tag: $tag"
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          tag="${{ steps.get_tag.outputs.tag }}"
+          # Remove v prefix
+          version="${tag#v}"
+
+          # Use awk or bash logic to increment the last digit
+          IFS='.' read -r -a parts <<< "$version"
+          last_index=$((${#parts[@]} - 1))
+          parts[$last_index]=$((parts[$last_index] + 1))
+
+          # Reassemble
+          new_version="${parts[0]}"
+          for i in $(seq 1 $last_index); do
+            new_version="${new_version}.${parts[$i]}"
+          done
+
+          new_tag="v${new_version}"
+          echo "Bumped tag: $new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+      - name: Create and push new tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.bump.outputs.new_tag }}"
+          git push origin "${{ steps.bump.outputs.new_tag }}"
+
+# TODO: use peter-evans/workflow-dispatch@v1 to dispatch build workflow, passing the new version so that the build workflow can use it without re-clone the whole repo

@@ -1,0 +1,4 @@
+namespace: paperdebugger
+
+mongo:
+  in_cluster: false

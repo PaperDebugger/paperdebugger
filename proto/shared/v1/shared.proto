@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package shared.v1;
+
+option go_package = "paperdebugger/pkg/gen/api/shared/v1;sharedv1";
+
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  // Starts from 1000 to avoid conflict with grpc error codes
+  ERROR_CODE_UNKNOWN = 1000;
+  ERROR_CODE_INTERNAL = 1001;
+  ERROR_CODE_BAD_REQUEST = 1002;
+  ERROR_CODE_INVALID_LLM_RESPONSE = 1003;
+  ERROR_CODE_RECORD_NOT_FOUND = 1004;
+  ERROR_CODE_INVALID_CREDENTIAL = 1005;
+  ERROR_CODE_INVALID_TOKEN = 1006;
+  ERROR_CODE_INVALID_ACTOR = 1007;
+  ERROR_CODE_PERMISSION_DENIED = 1008;
+  ERROR_CODE_INVALID_USER = 1009;
+  ERROR_CODE_PROJECT_OUT_OF_DATE = 1010;
+}
+
+message Error {
+  ErrorCode code = 2;
+  string message = 3;
+}

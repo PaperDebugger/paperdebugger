@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store-connect</string>
+
+    <key>destination</key>
+    <string>upload</string>
+
+    <key>teamID</key>
+    <string>P9772KLZBG</string>
+
+    <!-- Specify the signing style -->
+    <key>signingStyle</key>
+    <string>manual</string>
+
+    <!-- Specify the provisioning profile -->
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>dev.junyi.PaperDebugger</key>
+        <string>c4346c51-c5ef-41ae-b185-bac222dd8ce3</string>
+    </dict>
+
+    <!-- Specify the signing certificate (distribution certificate) -->
+    <key>signingCertificate</key>
+    <string>15518316BA3699286DAEDA6DF0D5CC65F3AFD812</string>
+
+    <!-- Specify the installer certificate using its UUID -->
+    <key>installerSigningCertificate</key>
+    <string>1B17DFEE5BC732B85BD546275A799D1862FAD2BD</string>
+</dict>
+</plist>

@@ -1,0 +1,59 @@
+# === Xcode ===
+build/
+DerivedData/
+*.xcworkspace
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.xcsettings
+
+# === SwiftPM ===
+/.build/
+/Packages/
+/.swiftpm/xcode/package.xcworkspace
+
+# === Cocoapods ===
+Pods/
+Podfile.lock
+Podfile~
+
+# === Carthage ===
+Carthage/
+Cartfile.resolved
+
+# === Fastlane ===
+fastlane/report.xml
+fastlane/screenshots
+fastlane/test_output
+fastlane/*.log
+
+# === Archives & Debug ===
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+
+# === Playgrounds ===
+timeline.xctimeline
+playground.xcworkspace
+
+# === Swift Package Manager artifacts ===
+.swiftpm/
+.build/
+
+# === User-specific files ===
+*.orig
+*.DS_Store
+*.swp
+*.lock
+*.env
+
+# === Xcode Server ===
+sourceControl.plist
+*.xccheckout
+
+# === Other ===
+*.log
+*.tmp

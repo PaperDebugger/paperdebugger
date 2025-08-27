@@ -1,0 +1,233 @@
+* {
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* Colors */
+  --primary-blue: #007aff;
+  --success-green: #34c759;
+  --error-red: #ff3b30;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: #c7c7cc;
+  --background-primary: #ffffff;
+  --background-secondary: #f5f5f7;
+  --border-color: #e5e5e7;
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  /* Dark mode colors */
+  --dark-text-primary: #f5f5f7;
+  --dark-text-secondary: #a1a1a6;
+  --dark-text-tertiary: #48484a;
+  --dark-background-primary: #1c1c1e;
+  --dark-background-secondary: #2c2c2e;
+  --dark-border-color: #38383a;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: var(--dark-text-primary);
+    --text-secondary: var(--dark-text-secondary);
+    --text-tertiary: var(--dark-text-tertiary);
+    --background-primary: var(--dark-background-primary);
+    --background-secondary: var(--dark-background-secondary);
+    --border-color: var(--dark-border-color);
+  }
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--background-primary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 300px;
+  padding: var(--spacing-2xl);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.app-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.app-title {
+  font-family:
+    "Exo 2",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.app-title .paper {
+  font-weight: 400;
+}
+
+.app-title .debugger {
+  font-weight: 700;
+}
+
+.app-title .status-text {
+  display: block;
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.indicator.state-on {
+  color: var(--success-green);
+  font-weight: 600;
+}
+
+.indicator.state-off {
+  color: var(--error-red);
+  font-weight: 600;
+}
+
+.indicator.state-unknown {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Description */
+.description {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.description p {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 14px;
+}
+
+.description p:last-child {
+  margin-bottom: 0;
+}
+
+.button-container {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Buttons */
+.btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  min-width: 120px;
+}
+
+.btn-primary {
+  background: var(--primary-blue);
+  color: white;
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+  background: #0056cc;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.overleaf-link {
+  color: var(--primary-blue);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.overleaf-link:hover {
+  text-decoration: underline;
+}
+
+/* Hide non-macOS and non-iOS elements */
+body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
+  display: none;
+}
+
+body.platform-ios .platform-mac {
+  display: none;
+}
+
+body.platform-mac .platform-ios {
+  display: none;
+}
+
+body:not(.state-on, .state-off) :is(.state-on, .state-off) {
+  display: none;
+}
+
+body.state-on :is(.state-off, .state-unknown) {
+  display: none;
+}
+
+body.state-off :is(.state-on, .state-unknown) {
+  display: none;
+}

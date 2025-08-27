@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package comment.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/comment/v1;commentv1";
+
+service CommentService {
+  rpc CommentsAccepted(CommentsAcceptedRequest) returns (CommentsAcceptedResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/comments/accepted"
+      body: "*"
+    };
+  }
+}
+
+message CommentsAcceptedRequest {
+  string project_id = 1;
+  string conversation_id = 2;
+  string message_id = 3;
+  repeated string comment_ids = 4; // 被 accept 的 comment id 列表
+}
+
+message CommentsAcceptedResponse {
+  // leave it empty
+}

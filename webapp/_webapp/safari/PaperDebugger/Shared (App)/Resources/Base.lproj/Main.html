@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+    <!-- Exo2 Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="../Style.css" />
+    <script src="../Script.js" defer></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 class="app-title">
+          <div class="app-icon">
+            <img src="../Icon.png" width="64" height="64" alt="PaperDebugger Icon" style="margin-right: 1rem" />
+            <span class="paper">Paper</span><span class="debugger">Debugger</span>
+          </div>
+          <span class="status-text"
+            >is
+            <span class="indicator state-on">enabled ✓</span>
+            <span class="indicator state-off">disabled ✗</span>
+            <span class="indicator platform-mac state-unknown">unconfigured</span>
+            <span class="indicator platform-ios state-unknown">installed</span>
+          </span>
+        </h1>
+      </div>
+
+      <div class="description state-on">
+        <p style="font-size: 16px; margin-bottom: 1rem">
+          You can go to
+          <a class="overleaf-link" href="https://www.overleaf.com/project" target="_blank">overleaf.com</a> and start
+          writing your paper.
+        </p>
+      </div>
+
+      <div class="description platform-mac state-off">
+        <p>You can turn it on in <b>Safari Preferences</b> → <b>Extensions</b>.</p>
+      </div>
+
+      <div class="description platform-mac state-unknown">
+        <p>You can turn it on in <b>Safari Preferences</b> → <b>Extensions</b>.</p>
+      </div>
+
+      <div class="description platform-ios state-unknown">
+        <p>One more step: turn it on in Settings → Apps → Safari → Extensions.</p>
+      </div>
+
+      <div class="button-container state-off">
+        <button class="btn btn-primary open-preferences-1">Open Safari Settings</button>
+        <button class="btn btn-secondary quit-1">Close</button>
+      </div>
+      <div class="button-container state-on">
+        <button class="btn btn-secondary open-preferences-2">Open Safari Settings</button>
+        <button class="btn btn-primary quit-2">Close</button>
+      </div>
+      <div class="button-container platform-ios">
+        <button class="btn btn-primary open-preferences-3">Open Settings → Apps</button>
+        <button class="btn btn-secondary quit-3">Close</button>
+      </div>
+    </div>
+  </body>
+</html>

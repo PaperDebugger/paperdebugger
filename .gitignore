@@ -1,0 +1,52 @@
+# docker image build
+.dockerignore
+node_modules
+
+# user defined files
+.env
+docker-compose.override.yml
+node_modules
+.DS_Store
+
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
+__debug*
+node_modules
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDE
+.vscode/*
+!/.vscode/launch.json
+!/.vscode/settings.json
+.idea
+
+# output
+dist/
+data/
+tmp/
+
+overleaf.kubeconfig
+!.dockerignore
+
+# coverage report
+coverage.out
+coverage.html

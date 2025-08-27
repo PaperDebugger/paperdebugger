@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package project.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/project/v1;projectv1";
+
+service ProjectService {
+  rpc UpsertProject(UpsertProjectRequest) returns (UpsertProjectResponse) {
+    option (google.api.http) = {
+      put: "/_pd/api/v1/projects/{project_id}"
+      body: "*"
+    };
+  }
+  rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/projects/{project_id}"};
+  }
+  rpc RunProjectPaperScore(RunProjectPaperScoreRequest) returns (RunProjectPaperScoreResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/projects/{project_id}/paper-score"
+      body: "*"
+    };
+  }
+  rpc RunProjectPaperScoreComment(RunProjectPaperScoreCommentRequest) returns (RunProjectPaperScoreCommentResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/projects/{project_id}/paper-score-comment"
+      body: "*"
+    };
+  }
+  rpc RunProjectOverleafComment(RunProjectOverleafCommentRequest) returns (RunProjectOverleafCommentResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/projects/{project_id}/overleaf-comment"
+      body: "*"
+    };
+  }
+  rpc GetProjectInstructions(GetProjectInstructionsRequest) returns (GetProjectInstructionsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/projects/{project_id}/instructions"};
+  }
+  rpc UpsertProjectInstructions(UpsertProjectInstructionsRequest) returns (UpsertProjectInstructionsResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/projects/{project_id}/instructions"
+      body: "*"
+    };
+  }
+}
+
+message Project {
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  string name = 4;
+  string root_doc_id = 5;
+  repeated ProjectDoc docs = 6;
+}
+
+message ProjectDoc {
+  string id = 1;
+  int32 version = 2;
+  string filepath = 3;
+  repeated string lines = 4;
+}
+
+message UpsertProjectRequest {
+  string project_id = 1;
+  string name = 2;
+  string root_doc_id = 3;
+  repeated ProjectDoc docs = 4;
+}
+
+message UpsertProjectResponse {
+  Project project = 1;
+}
+
+message GetProjectRequest {
+  string project_id = 1;
+}
+
+message GetProjectResponse {
+  Project project = 1;
+}
+
+// Paper score
+message RunProjectPaperScoreRequest {
+  string project_id = 1;
+  string conversation_id = 2;
+}
+
+message RunProjectPaperScoreResponse {
+  string project_id = 1;
+  PaperScoreResult paper_score = 2;
+}
+
+// Paper score comment
+message RunProjectPaperScoreCommentRequest {
+  string project_id = 1;
+  string conversation_id = 2;
+}
+
+message RunProjectPaperScoreCommentResponse {
+  string project_id = 1;
+  repeated PaperScoreCommentResult comments = 2;
+}
+
+// Overleaf comment
+message RunProjectOverleafCommentRequest {
+  string project_id = 1;
+  string section = 2;
+  string anchor_text = 3;
+  string comment = 4;
+  string importance = 5;
+}
+
+message RunProjectOverleafCommentResponse {
+  string project_id = 1;
+  repeated OverleafComment comments = 2;
+}
+
+message OverleafComment {
+  string comment_id = 1;
+  string project_id = 2;
+  string doc_id = 3;
+  int32 doc_version = 4;
+  string doc_sha1 = 5;
+  int32 quote_position = 6;
+  // PaperScoreCommentResult filed:
+  string quote_text = 7;
+  string comment = 8;
+  string importance = 9;
+  string doc_path = 10;
+  string section = 11;
+}
+
+message PaperScoreCommentResult {
+  repeated PaperScoreCommentEntry results = 1;
+}
+
+message PaperScoreCommentEntry {
+  string section = 1;
+  // Note: Do not use anchor_text here, the key in backend is “anchorText”.
+  string anchorText = 2; // do not trust the linter
+  string weakness = 3;
+  string importance = 4;
+}
+
+message PaperScoreResult {
+  float score = 1;
+  float percentile = 2;
+  map<string, int32> details = 3;
+  map<string, SuggestionList> suggestions = 4;
+}
+
+message SuggestionList {
+  repeated string suggestions = 1;
+}
+
+// Instructions
+message GetProjectInstructionsRequest {
+  string project_id = 1;
+}
+
+message GetProjectInstructionsResponse {
+  string project_id = 1;
+  string instructions = 2;
+}
+
+message UpsertProjectInstructionsRequest {
+  string project_id = 1;
+  string instructions = 2;
+}
+
+message UpsertProjectInstructionsResponse {
+  string project_id = 1;
+  string instructions = 2;
+}
