@@ -23,6 +23,10 @@ PaperDebugger never modifies your project, it only reads and provides suggestion
 - **Comment System**: Automatically generate comments and insert into your project
 - **Prompt Library**: Custom prompt templates for different use cases
 
+
+https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
+
+
 ## Prerequisites
 
 ### System Requirements
