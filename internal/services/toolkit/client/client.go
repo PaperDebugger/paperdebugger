@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -40,6 +41,19 @@ func NewAIClient(
 	oaiClient := openai.NewClient(
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
+	logger.Info("[AI Client] checking if openai client works")
+	// check if oaiClient works
+	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage("Say 'openai client works'"),
+		},
+		Model: openai.ChatModelGPT4o,
+	})
+	if err != nil {
+		logger.Fatalf("[AI Client] openai client does not work: %v", err)
+		return nil
+	}
+	logger.Info("[AI Client] openai client works", "response", chatCompletion.Choices[0].Message.Content)
 
 	toolPaperScore := tools.NewPaperScoreTool(db, projectService)
 	toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
