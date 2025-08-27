@@ -6,7 +6,7 @@ metadata:
     namespace: {{ .Values.namespace }}
 type: Opaque
 data:
-    token: {{ .Values.cloudflare_tunnel_token | b64enc | quote }}
+    token: {{ .Values.cloudflare_tunnel_token | quote }}
 ---
 apiVersion: apps/v1
 kind: Deployment

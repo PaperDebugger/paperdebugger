@@ -95,6 +95,8 @@ jobs:
           MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_PRD }}
           MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_PRD }}
           MONGO_URI: ${{ secrets.MONGO_URI_PRD }}
+          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_PRD }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_PRD }}
         run: |
           export PAPERDEBUGGER_IMAGE=${{ needs.build-and-push.outputs.PAPERDEBUGGER_IMAGE }}
           mkdir -p ../deploy/prd
