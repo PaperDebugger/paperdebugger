@@ -1,6 +1,8 @@
 ![branding](docs/imgs/branding.png)
 
-PaperDebugger is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers. This document provides comprehensive setup and deployment instructions for the backend service.
+PaperDebugger is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers.
+
+[**Install from Chrome Web Store**](https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog) or [**Download Building Artifacts v2.9.8**](https://github.com/PaperDebugger/paperdebugger/actions/runs/17276722242/artifacts/3866902136)
 
 ## Overview
 The PaperDebugger backend is built with:
