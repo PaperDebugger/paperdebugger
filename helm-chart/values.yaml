@@ -1,6 +1,8 @@
 namespace: paperdebugger-dev
 openai_api_key: sk-dummy-OPENAI_API_KEY
 jwt_signing_key: paperdebugger
+ghcr_docker_config: dummy-ghcr-docker-config
+cloudflare_tunnel_token: dummy-cloudflare-tunnel-token
 
 paperdebugger:
   image: ghcr.io/paperdebugger/sharelatex-paperdebugger:latest
