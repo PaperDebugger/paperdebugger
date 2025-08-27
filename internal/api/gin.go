@@ -1,14 +1,11 @@
 package api
 
 import (
-	"net/http"
-	"strings"
 	"time"
 
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/logger"
-	"paperdebugger/webapp"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -38,9 +35,6 @@ func NewGinServer(cfg *cfg.Cfg, oauthHandler *auth.OAuthHandler) *GinServer {
 	oauthRouter.GET("/callback", oauthHandler.OAuthCallback)
 	oauthRouter.GET("/status", oauthHandler.OAuthStatus)
 
-	webappRouter := ginServer.Group("/_pd/webapp")
-	webappRouter.Any("/*path", ginServer.ginWebapp())
-
 	return ginServer
 }
 
@@ -56,22 +50,5 @@ func (s *GinServer) ginLogMiddleware() gin.HandlerFunc {
 		uri := c.Request.RequestURI
 
 		logger.GetLogger().Infof("%5s %5d %13v - %s", method, code, duration, uri)
-	}
-}
-
-func (s *GinServer) ginWebapp() gin.HandlerFunc {
-	webappFs := webapp.GetWebappFS()
-	webappFileServer := http.FileServer(http.FS(webappFs))
-
-	return func(c *gin.Context) {
-		fp := strings.TrimPrefix(c.Request.URL.Path, "/_pd/webapp")
-		fp = strings.TrimPrefix(fp, "/")
-		req := c.Request.Clone(c.Request.Context())
-		req.URL.Path = strings.TrimPrefix(c.Request.URL.Path, "/_pd/webapp")
-		_, err := webappFs.Open(fp)
-		if err != nil {
-			req.URL.Path = "/"
-		}
-		webappFileServer.ServeHTTP(c.Writer, req)
 	}
 }

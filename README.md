@@ -1,5 +1,19 @@
 # PaperDebugger
 
+## Clone and Deploy (locally)
+
+**Prequisite:**
+- `brew install bufbuild/buf/buf`
+
+```bash
+git clone https://github.com/PaperDebugger/paperdebugger.git
+cd paperdebugger
+
+make build
+
+```
+
+
 ## Step 1 k9s
 
 open k9s, then expose the mongo db port at 27017
