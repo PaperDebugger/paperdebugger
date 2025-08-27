@@ -1,10 +1,11 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { SettingItemSelect } from "../setting-item-select";
 import { useSettingStore } from "../../../stores/setting-store";
+import { SettingItemInput } from "../setting-item-input";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
-
+  const { endpoint, setEndpoint, resetEndpoint } = useSettingStore();
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>
@@ -21,6 +22,19 @@ export const UserDeveloperTools = () => {
         }}
         onSelectChange={(selected) => {
           setConversationMode(selected as "debug" | "normal")
+        }}
+      />
+
+      <SettingItemInput
+        label="Backend Endpoint"
+        description="You need to refresh the page to apply the changes"
+        value={endpoint}
+        onChange={(value) => {
+          setEndpoint(value)
+        }}
+        showResetButton={true}
+        onReset={() => {
+          resetEndpoint();
         }}
       />
 

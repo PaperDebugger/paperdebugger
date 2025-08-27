@@ -32,6 +32,10 @@ export interface SettingStore {
 
   hideAvatar: boolean;
   setHideAvatar: (enable: boolean) => void;
+
+  endpoint: string;
+  setEndpoint: (endpoint: string) => void;
+  resetEndpoint: () => void;
 }
 
 const defaultSettings: PlainMessage<Settings> = {
@@ -156,5 +160,15 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
   setHideAvatar: (enable: boolean) => {
     localStorage.setItem("pd.ui.hideAvatar", enable.toString());
     set({ hideAvatar: enable });
+  },
+
+  endpoint: localStorage.getItem("pd.devtool.endpoint") || `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`,
+  setEndpoint: (endpoint: string) => {
+    localStorage.setItem("pd.devtool.endpoint", endpoint);
+    set({ endpoint });
+  },
+  resetEndpoint: () => {
+    localStorage.removeItem("pd.devtool.endpoint");
+    set({endpoint: localStorage.getItem("pd.devtool.endpoint") || `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`});
   },
 }));

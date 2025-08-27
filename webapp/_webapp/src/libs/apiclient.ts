@@ -8,8 +8,7 @@ import {
   ErrorSchema,
 } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
-
-const BASE_URL = `${process.env.PD_API_ENDPOINT || ""}/_pd/api/v1`;
+import { useSettingStore } from "../stores/setting-store";
 
 export type RequestOptions = {
   ignoreErrorToast?: boolean;
@@ -221,6 +220,7 @@ class ApiClient {
   }
 }
 
-const apiclient = new ApiClient(BASE_URL);
+const endpoint = useSettingStore.getState().endpoint;
+const apiclient = new ApiClient(endpoint);
 
 export default apiclient;
