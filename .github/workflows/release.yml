@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: paperdebugger-chrome-extension-prd
-          path: paperdebugger/webapp/_webapp/dist
+          path: webapp/_webapp/dist
 
       - name: Install zip
         run: |
