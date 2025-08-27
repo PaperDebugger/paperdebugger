@@ -10,6 +10,8 @@ MCP_BASIC_KEY=${MCP_BASIC_KEY:-sk-dummy-MCP_BASIC_KEY}
 MCP_PAPERSCORE_KEY=${MCP_PAPERSCORE_KEY:-sk-dummy-MCP_PAPERSCORE_KEY}
 PAPERDEBUGGER_IMAGE=${PAPERDEBUGGER_IMAGE:-ghcr.io/paperdebugger/sharelatex-paperdebugger:latest}
 MONGO_URI=${MONGO_URI:-}
+GHCR_DOCKER_CONFIG=${GHCR_DOCKER_CONFIG:-'{"auths":{"ghcr.io":{"username":"dummy-user","password":"dummy-token"}}}'}
+CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-dummy-cloudflare-tunnel-token}
 
 helm template $ROOT_DIR/helm-chart \
     --create-namespace \
@@ -19,4 +21,6 @@ helm template $ROOT_DIR/helm-chart \
     --set mcp_basic_key=$MCP_BASIC_KEY \
     --set mcp_paperscore_key=$MCP_PAPERSCORE_KEY \
     --set paperdebugger.image=$PAPERDEBUGGER_IMAGE \
-    --set mongo.uri=$MONGO_URI
+    --set mongo.uri=$MONGO_URI \
+    --set-string ghcr_docker_config="$GHCR_DOCKER_CONFIG" \
+    --set cloudflare_tunnel_token="$CLOUDFLARE_TUNNEL_TOKEN"

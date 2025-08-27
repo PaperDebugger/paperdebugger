@@ -3,6 +3,7 @@ export const REDIRECT_URI = `${process.env.PD_API_ENDPOINT || ""}/oauth2`;
 export function googleAuthUrl(state: string) {
   const url = new URL("https://accounts.google.com/o/oauth2/auth");
 
+  // Note: This is a public OAuth Client ID, safe to include in frontend code
   const CLIENT_ID = "259796927285-cdkkp6i69elf660ei3strgj0qrftu6ud.apps.googleusercontent.com";
   const SCOPES = ["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"];
 
@@ -36,6 +37,7 @@ export function appleAuthUrl(state: string) {
   url.searchParams.set("nonce", Math.random().toString(36).substring(2, 15)); // 推荐加 nonce
   url.searchParams.set("scope", "name email");
   url.searchParams.set("response_mode", "form_post"); // 或 "form_post"
+  // Note: This is a public Apple OAuth Client ID, safe to include in frontend code
   url.searchParams.set("client_id", "dev.junyi.PaperDebugger.si");
   url.searchParams.set("response_type", "code id_token");
   return url.toString();
