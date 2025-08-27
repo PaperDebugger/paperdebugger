@@ -76,7 +76,7 @@ export function useSendMessageStream() {
         languageModel: currentConversation.languageModel,
         userMessage: message,
         userSelectedText: selectedText,
-        conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.DEFAULT,
+        conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
       };
 
       resetStreamingMessage(); // ensure no stale message in the streaming messages

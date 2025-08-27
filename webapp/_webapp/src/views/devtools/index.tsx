@@ -122,17 +122,15 @@ export const DevTools = () => {
     };
     setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, messageEntry] });
     withDelay(() => {
-      const newParts = useStreamingMessageStore
-        .getState()
-        .streamingMessage.parts.map((part) =>
-          part.messageId === messageEntry.messageId
-            ? {
-                ...part,
-                user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v1.MessageTypeUser" },
-                status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              }
-            : part,
-        ) as MessageEntry[];
+      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+        part.messageId === messageEntry.messageId
+          ? {
+              ...part,
+              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v1.MessageTypeUser" },
+              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+            }
+          : part,
+      ) as MessageEntry[];
       setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
     });
   };
@@ -148,21 +146,19 @@ export const DevTools = () => {
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore
-        .getState()
-        .streamingMessage.parts.map((part) =>
-          part.messageId === messageEntry.messageId
-            ? {
-                ...part,
-                status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-                toolCallPrepareArguments: {
-                  name: "paper_score",
-                  args: JSON.stringify({ paper_id: "123" }),
-                  $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
-                },
-              }
-            : part,
-        ) as MessageEntry[];
+      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+        part.messageId === messageEntry.messageId
+          ? {
+              ...part,
+              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+              toolCallPrepareArguments: {
+                name: "paper_score",
+                args: JSON.stringify({ paper_id: "123" }),
+                $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
+              },
+            }
+          : part,
+      ) as MessageEntry[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
@@ -211,21 +207,19 @@ export const DevTools = () => {
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore
-        .getState()
-        .streamingMessage.parts.map((part) =>
-          part.messageId === messageEntry.messageId
-            ? {
-                ...part,
-                status: MessageEntryStatus.FINALIZED,
-                assistant: {
-                  ...part.assistant,
-                  content: "Assistant Response Finalized " + randomText(),
-                  $typeName: "chat.v1.MessageTypeAssistant",
-                },
-              }
-            : part,
-        ) as MessageEntry[];
+      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+        part.messageId === messageEntry.messageId
+          ? {
+              ...part,
+              status: MessageEntryStatus.FINALIZED,
+              assistant: {
+                ...part.assistant,
+                content: "Assistant Response Finalized " + randomText(),
+                $typeName: "chat.v1.MessageTypeAssistant",
+              },
+            }
+          : part,
+      ) as MessageEntry[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
