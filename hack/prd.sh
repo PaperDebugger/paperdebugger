@@ -17,10 +17,10 @@ helm template $ROOT_DIR/helm-chart \
     --create-namespace \
     --values $ROOT_DIR/helm-chart/values.yaml \
     --values $ROOT_DIR/hack/values-prd.yaml \
-    --set openai_api_key=$OPENAI_API_KEY \
-    --set mcp_basic_key=$MCP_BASIC_KEY \
-    --set mcp_paperscore_key=$MCP_PAPERSCORE_KEY \
-    --set paperdebugger.image=$PAPERDEBUGGER_IMAGE \
-    --set mongo.uri=$MONGO_URI \
+    --set-string openai_api_key="$OPENAI_API_KEY" \
+    --set-string mcp_basic_key="$MCP_BASIC_KEY" \
+    --set-string mcp_paperscore_key="$MCP_PAPERSCORE_KEY" \
+    --set-string paperdebugger.image="$PAPERDEBUGGER_IMAGE" \
+    --set-string mongo.uri="$MONGO_URI" \
     --set-string ghcr_docker_config="$GHCR_DOCKER_CONFIG" \
-    --set cloudflare_tunnel_token="$CLOUDFLARE_TUNNEL_TOKEN"
+    --set-string cloudflare_tunnel_token="$CLOUDFLARE_TUNNEL_TOKEN"
