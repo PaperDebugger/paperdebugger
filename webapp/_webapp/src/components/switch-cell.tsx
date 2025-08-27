@@ -14,10 +14,7 @@ const CustomSwitch = extendVariants(Switch, {
   variants: {
     color: {
       foreground: {
-        wrapper: [
-          "group-data-[selected=true]:bg-foreground",
-          "group-data-[selected=true]:text-background",
-        ],
+        wrapper: ["group-data-[selected=true]:bg-foreground", "group-data-[selected=true]:text-background"],
       },
     },
   },
@@ -44,21 +41,13 @@ const SwitchCell = React.forwardRef<HTMLInputElement, SwitchCellProps>(
           classNames?.base,
         ),
       }}
-      thumbIcon={
-        isLoading ? (
-          <Spinner style={{ zoom: 0.5 }} color="default" variant="gradient" />
-        ) : undefined
-      }
+      thumbIcon={isLoading ? <Spinner style={{ zoom: 0.5 }} color="default" variant="gradient" /> : undefined}
       {...props}
     >
       <input ref={ref} type="checkbox" className="hidden" />
       <div className="flex flex-col">
         <p className={cn("text-medium", classNames?.label)}>{label}</p>
-        <p
-          className={cn("text-small text-default-500", classNames?.description)}
-        >
-          {description}
-        </p>
+        <p className={cn("text-small text-default-500", classNames?.description)}>{description}</p>
       </div>
     </CustomSwitch>
   ),

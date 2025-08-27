@@ -6,16 +6,8 @@ import { OnboardingGuide } from "./components/onboarding-guide";
 import { ToolbarButton } from "./components/toolbar-button";
 import "./index.css";
 import googleAnalytics from "./libs/google-analytics";
-import {
-  generateSHA1Hash,
-  onElementAdded,
-  onElementAppeared,
-} from "./libs/helpers";
-import {
-  OverleafCodeMirror,
-  completion,
-  createSuggestionExtension,
-} from "./libs/inline-suggestion";
+import { generateSHA1Hash, onElementAdded, onElementAppeared } from "./libs/helpers";
+import { OverleafCodeMirror, completion, createSuggestionExtension } from "./libs/inline-suggestion";
 import { logInfo } from "./libs/logger";
 import { Providers } from "./providers";
 import { useAuthStore } from "./stores/auth-store";
@@ -29,10 +21,17 @@ import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
 
-
 export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();
-  const { lastSelectedText, lastSelectionRange, setLastSelectedText, setLastSelectionRange, setSelectedText, setSelectionRange, clearOverleafSelection } = useSelectionStore();
+  const {
+    lastSelectedText,
+    lastSelectionRange,
+    setLastSelectedText,
+    setLastSelectionRange,
+    setSelectedText,
+    setSelectionRange,
+    clearOverleafSelection,
+  } = useSelectionStore();
   const [menuElement, setMenuElement] = useState<Element | null>(null);
   const { isOpen, setIsOpen } = useConversationUiStore();
   const { showTool: showDevTool } = useDevtoolStore();
@@ -47,7 +46,7 @@ export const Main = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (disableLineWrap) { 
+    if (disableLineWrap) {
       onElementAppeared(".cm-lineWrapping", (editor) => {
         editor.classList.remove("cm-lineWrapping");
         console.log("disable line wrap");
@@ -80,7 +79,6 @@ export const Main = () => {
   }, [setLastSelectedText, setLastSelectionRange]);
 
   // Add effect to close context menu when clicking outside
-  
 
   const selectAndOpenPaperDebugger = useCallback(() => {
     setActiveTab("chat");
@@ -116,9 +114,14 @@ export const Main = () => {
     });
   }, []);
 
-  const anchorElement = document.querySelector(".toolbar-left") || document.querySelector(".ide-redesign-toolbar-menu-bar");
+  const anchorElement =
+    document.querySelector(".toolbar-left") || document.querySelector(".ide-redesign-toolbar-menu-bar");
   if (!anchorElement) {
-    return <div className="text-sm text-red-500 font-bold">PaperDebugger cannot find the anchor element. Please check if the page correctly loaded.</div>;
+    return (
+      <div className="text-sm text-red-500 font-bold">
+        PaperDebugger cannot find the anchor element. Please check if the page correctly loaded.
+      </div>
+    );
   }
 
   const buttonPortal = createPortal(<TopMenuButton />, anchorElement);
@@ -128,16 +131,16 @@ export const Main = () => {
       {menuElement &&
         settings?.showShortcutsAfterSelection &&
         createPortal(
-          <ToolbarButton onClick={() => {
-            selectAndOpenPaperDebugger();
-            useConversationUiStore.getState().inputRef.current?.focus();
-          }}>
+          <ToolbarButton
+            onClick={() => {
+              selectAndOpenPaperDebugger();
+              useConversationUiStore.getState().inputRef.current?.focus();
+            }}
+          >
             <div className="flex flex-row items-center gap-0">
-            <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
+              <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
               <p>Add to Chat</p>
-              <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">
-                ⌘ + K
-              </p>
+              <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
             </div>
           </ToolbarButton>,
           menuElement,
@@ -152,40 +155,37 @@ export const Main = () => {
 };
 
 if (!import.meta.env.DEV) {
-  onElementAppeared(
-    ".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar",
-    () => {
-      logInfo("initializing");
-      if (document.getElementById("paper-debugger-root")) {
-        logInfo("already initialized");
-        return;
-      }
-      const div = document.createElement("div");
-      div.id = "paper-debugger-root";
-      document.body.appendChild(div);
+  onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {
+    logInfo("initializing");
+    if (document.getElementById("paper-debugger-root")) {
+      logInfo("already initialized");
+      return;
+    }
+    const div = document.createElement("div");
+    div.id = "paper-debugger-root";
+    document.body.appendChild(div);
 
-      const root = createRoot(div);
-      root.render(
-        import.meta.env.DEV ? (
-          <StrictMode>
-            <Providers>
-              <Main />
-            </Providers>
-          </StrictMode>
-        ) : (
+    const root = createRoot(div);
+    root.render(
+      import.meta.env.DEV ? (
+        <StrictMode>
           <Providers>
             <Main />
           </Providers>
-        ),
-      );
-      googleAnalytics.firePageViewEvent(
-        "unknown",
-        "anonymous-" + generateSHA1Hash(document.title),
-        document.location.href,
-      );
-      logInfo("initialized");
-    },
-  );
+        </StrictMode>
+      ) : (
+        <Providers>
+          <Main />
+        </Providers>
+      ),
+    );
+    googleAnalytics.firePageViewEvent(
+      "unknown",
+      "anonymous-" + generateSHA1Hash(document.title),
+      document.location.href,
+    );
+    logInfo("initialized");
+  });
 }
 
 window.addEventListener("UNSTABLE_editor:extensions", (event: Event) => {

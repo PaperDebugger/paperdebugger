@@ -10,11 +10,7 @@ type PaperScoreCardProps = {
   animated: boolean;
 };
 
-export const PaperScoreCard = ({
-  message,
-  preparing,
-  animated,
-}: PaperScoreCardProps) => {
+export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardProps) => {
   try {
     if (preparing) {
       return (
@@ -28,9 +24,7 @@ export const PaperScoreCard = ({
       return (
         <div className="tool-card">
           <h3 className="tool-card-title">Paper Score</h3>
-          <div className="!text-xs !text-primary-600">
-            No paper score result.
-          </div>
+          <div className="!text-xs !text-primary-600">No paper score result.</div>
         </div>
       );
     }
@@ -40,9 +34,7 @@ export const PaperScoreCard = ({
       return (
         <div className="tool-card">
           <h3 className="tool-card-title">Paper Score</h3>
-          <div className="!text-xs !text-primary-600">
-            Failed to parse paper score. {message}
-          </div>
+          <div className="!text-xs !text-primary-600">Failed to parse paper score. {message}</div>
         </div>
       );
     }
@@ -55,14 +47,11 @@ export const PaperScoreCard = ({
         <div>
           <h3 className="tool-card-title">Current Paper Score</h3>
           <div className="flex !items-baseline !gap-2">
-            <span className="!text-4xl !font-bold !text-primary-900">
-              {currentScore}
-            </span><span className="!text-lg !text-primary-700">points</span>
+            <span className="!text-4xl !font-bold !text-primary-900">{currentScore}</span>
+            <span className="!text-lg !text-primary-700">points</span>
           </div>
           <div className="flex !items-baseline !gap-2">
-            <span className="!text-sm !text-primary-700">
-            {currentPercentile}% percentile
-            </span>
+            <span className="!text-sm !text-primary-700">{currentPercentile}% percentile</span>
           </div>
         </div>
       </div>
@@ -72,9 +61,7 @@ export const PaperScoreCard = ({
     return (
       <div className="tool-card">
         <h3 className="tool-card-title">Paper Score</h3>
-        <div className="!text-xs !text-primary-600">
-          Error occurred while parsing paper score.
-        </div>
+        <div className="!text-xs !text-primary-600">Error occurred while parsing paper score.</div>
       </div>
     );
   }

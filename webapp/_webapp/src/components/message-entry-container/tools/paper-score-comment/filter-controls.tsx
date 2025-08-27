@@ -25,7 +25,8 @@ export const FilterControls = ({
 }: FilterControlsProps) => {
   const filteredCount = comments.filter((comment) => {
     const matchesImportance = !filterImportance || comment.importance === filterImportance;
-    const matchesSearch = !searchTerm ||
+    const matchesSearch =
+      !searchTerm ||
       comment.comment.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (comment.quoteText && comment.quoteText.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesImportance && matchesSearch;
@@ -35,11 +36,11 @@ export const FilterControls = ({
 
   return (
     <div>
-      <div className="!flex !items-center !justify-between !mb-1 !px-2 cursor-pointer" onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}>
-        <button
-          
-          className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-800 hover:!text-gray-600 !transition-colors truncate"
-        >
+      <div
+        className="!flex !items-center !justify-between !mb-1 !px-2 cursor-pointer"
+        onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
+      >
+        <button className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-800 hover:!text-gray-600 !transition-colors truncate">
           <Icon
             icon={isSuggestionsExpanded ? "tabler:chevron-down" : "tabler:chevron-right"}
             className="!w-4 !h-4 !transition-transform"
@@ -50,8 +51,7 @@ export const FilterControls = ({
           <div className="!text-xs !text-gray-500 overflow-hidden truncate">
             {filteredCount === comments.length
               ? `Total ${comments.length} suggestions`
-              : `Showing ${filteredCount}/${comments.length} suggestions`
-            }
+              : `Showing ${filteredCount}/${comments.length} suggestions`}
           </div>
           {hasActiveFilters && (
             <button
@@ -79,7 +79,7 @@ export const FilterControls = ({
                   "!px-2 !py-1 !text-xs !rounded !border !transition-colors",
                   filterImportance === importance
                     ? "!bg-primary-100 !text-primary-800 !border-primary-300"
-                    : "!bg-gray-100 !text-gray-600 !border-gray-300 hover:!bg-gray-200"
+                    : "!bg-gray-100 !text-gray-600 !border-gray-300 hover:!bg-gray-200",
                 )}
               >
                 {importance}
@@ -97,4 +97,4 @@ export const FilterControls = ({
       )}
     </div>
   );
-}; 
+};

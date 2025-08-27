@@ -13,21 +13,21 @@ export function Avatar({ name, src, className }: AvatarProps) {
 
   useEffect(() => {
     if (src) {
-      fetchImage(src).then((base64) => {
-        setImageBase64(base64);
-        setImgError(false);
-      }).catch(() => {
-        setImgError(true);
-      });
+      fetchImage(src)
+        .then((base64) => {
+          setImageBase64(base64);
+          setImgError(false);
+        })
+        .catch(() => {
+          setImgError(true);
+        });
     } else {
       setImageBase64("");
     }
   }, [src]);
 
   if (!imageBase64 || imgError) {
-    return (
-      <span className={className + " pd-avatar-fallback"}>{name}</span>
-    );
+    return <span className={className + " pd-avatar-fallback"}>{name}</span>;
   }
 
   return (

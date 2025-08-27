@@ -40,10 +40,10 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
       const childRect = child.getBoundingClientRect();
       if (childRect.top < parentRect.top) {
         // 元素在上方不可见
-        parent.scrollTop -= (parentRect.top - childRect.top);
+        parent.scrollTop -= parentRect.top - childRect.top;
       } else if (childRect.bottom > parentRect.bottom) {
         // 元素在下方不可见
-        parent.scrollTop += (childRect.bottom - parentRect.bottom);
+        parent.scrollTop += childRect.bottom - parentRect.bottom;
       }
     };
 
@@ -91,26 +91,20 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
       ref={scrollContainerRef}
       className={cn(
         "transition-all duration-100",
-        items && items.length > 0
-          ? "rounded-lg border border-gray-200 overflow-y-auto"
-          : "max-h-[0px]",
-        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px] mb-1" : "p-2 max-h-[200px]"
+        items && items.length > 0 ? "rounded-lg border border-gray-200 overflow-y-auto" : "max-h-[0px]",
+        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px] mb-1" : "p-2 max-h-[200px]",
       )}
     >
       {items?.map((item, idx) => (
-        <div 
+        <div
           key={item.description}
           className={cn(
             "prompt-selection-item w-full flex flex-col rounded-lg cursor-pointer",
             idx === selectedIdx && "bg-gray-100",
-            heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2"
+            heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
           )}
           onClick={() => {
-            googleAnalytics.fireEvent(
-              user?.id,
-              `select_${normalizeName(item.title)}`,
-              {},
-            );
+            googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
             onSelect?.(item);
           }}
           onMouseEnter={() => {
@@ -119,7 +113,9 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
             }
           }}
         >
-          <div className={cn("font-semibold", heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs")}>{item.title}</div>
+          <div className={cn("font-semibold", heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs")}>
+            {item.title}
+          </div>
           <div
             className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
             style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}

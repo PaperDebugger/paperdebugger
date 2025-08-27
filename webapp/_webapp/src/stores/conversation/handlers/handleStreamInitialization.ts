@@ -4,10 +4,7 @@ import { MessageEntryStatus } from "../types";
 import { logWarn } from "../../../libs/logger";
 import { flushStreamingMessageToConversation } from "./converter";
 
-export function handleStreamInitialization(
-  streamInit: StreamInitialization,
-  refetchConversationList: () => void
-) {
+export function handleStreamInitialization(streamInit: StreamInitialization, refetchConversationList: () => void) {
   useStreamingMessageStore.setState((prev) => ({
     ...prev,
     streamingMessage: {

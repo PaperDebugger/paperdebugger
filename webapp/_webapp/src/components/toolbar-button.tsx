@@ -6,10 +6,7 @@ type ToolbarButtonProps = {
   onClick?: () => void;
 };
 
-export const ToolbarButton = ({
-  children,
-  onClick,
-}: ToolbarButtonProps) => {
+export const ToolbarButton = ({ children, onClick }: ToolbarButtonProps) => {
   const { user } = useAuthStore();
   return (
     <button

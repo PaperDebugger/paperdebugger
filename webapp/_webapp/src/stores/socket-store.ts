@@ -12,10 +12,7 @@ import {
 } from "../libs/overleaf-socket";
 import { generateId } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import {
-  UpsertProjectRequest,
-  ProjectDoc,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
+import { UpsertProjectRequest, ProjectDoc } from "../pkg/gen/apiclient/project/v1/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";
@@ -45,15 +42,9 @@ export interface SocketStore {
     overleafAuth: OverleafAuthentication,
     csrfToken: string,
   ) => Promise<Map<string, OverleafVersionedDoc>>;
-  connectSocket: (
-    projectId: string,
-    overleafAuth: OverleafAuthentication,
-    csrfToken: string,
-  ) => Promise<void>;
+  connectSocket: (projectId: string, overleafAuth: OverleafAuthentication, csrfToken: string) => Promise<void>;
   disconnectSocket: () => void;
-  createSnapshot: (
-    onProgress?: (progress: number) => void,
-  ) => Promise<Map<string, OverleafVersionedDoc>>;
+  createSnapshot: (onProgress?: (progress: number) => void) => Promise<Map<string, OverleafVersionedDoc>>;
   addComment: (
     projectId: string,
     docId: string,
@@ -66,32 +57,18 @@ export interface SocketStore {
   ) => Promise<string>;
 
   // Internal API - Document Management
-  _updateDocById: (
-    docId: string,
-    options: { newPath?: string; newVersion?: number; newLines?: string[] },
-  ) => void;
+  _updateDocById: (docId: string, options: { newPath?: string; newVersion?: number; newLines?: string[] }) => void;
   _overleafJoinDoc: (docId: string) => Promise<void>;
   _overleafLeaveDoc: (docId: string) => Promise<void>;
-  _applyOtUpdate: (
-    docId: string,
-    hash: string,
-    op: unknown,
-    version: number,
-  ) => Promise<object>;
+  _applyOtUpdate: (docId: string, hash: string, op: unknown, version: number) => Promise<object>;
 
   // Internal API - WebSocket Communication
   _sendRequest: (message: OverleafSocketRequest) => Promise<object>;
-  _overleafUpdatePosition: (
-    docId: string | null,
-    position: number | undefined,
-  ) => void;
+  _overleafUpdatePosition: (docId: string | null, position: number | undefined) => void;
   _overleafMessageHandler: (event: MessageEvent) => void;
   _overleafJsonMessageHandler: (data: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   _responseReceivedWithData: (data: string) => void;
-  _responseReceivedWithoutData: (
-    seq: number,
-    data: OverleafSocketResponse,
-  ) => void;
+  _responseReceivedWithoutData: (seq: number, data: OverleafSocketResponse) => void;
 }
 
 export const useSocketStore = create<SocketStore>((set, get) => ({
@@ -180,11 +157,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   /**
    * Connect to Overleaf WebSocket and fetch project content
    */
-  connectSocket: async (
-    projectId: string,
-    overleafAuth: OverleafAuthentication,
-    csrfToken: string,
-  ) => {
+  connectSocket: async (projectId: string, overleafAuth: OverleafAuthentication, csrfToken: string) => {
     if (!overleafAuth.cookieOverleafSession2) {
       throw new Error("Invalid Overleaf session cookie");
     }
@@ -297,12 +270,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
     // Then apply OT update to document
     const { _applyOtUpdate } = get();
-    await _applyOtUpdate(
-      docId,
-      docSHA1,
-      [{ c: quoteText, p: quotePosition, t: threadId }],
-      docVersion,
-    );
+    await _applyOtUpdate(docId, docSHA1, [{ c: quoteText, p: quotePosition, t: threadId }], docVersion);
 
     await _overleafLeaveDoc(docId);
     return threadId;
@@ -348,12 +316,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   /**
    * Apply an operational transformation update to a document
    */
-  _applyOtUpdate: async (
-    docId: string,
-    hash: string,
-    op: unknown,
-    version: number,
-  ) => {
+  _applyOtUpdate: async (docId: string, hash: string, op: unknown, version: number) => {
     const { _sendRequest } = get();
     return _sendRequest({
       name: "applyOtUpdate",
@@ -368,8 +331,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   _sendRequest: async (message: OverleafSocketRequest) => {
     const { socketRef } = get();
     if (!socketRef) throw new Error("Socket not found or not ready");
-    if (socketRef.readyState !== WebSocket.OPEN)
-      throw new Error("Socket is not open");
+    if (socketRef.readyState !== WebSocket.OPEN) throw new Error("Socket is not open");
 
     return new Promise((resolve, reject) => {
       const { socketMessageSeq, socketRequestResponse } = get();
@@ -393,10 +355,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   /**
    * Update position in the current document
    */
-  _overleafUpdatePosition: (
-    docId: string | null,
-    position: number | undefined,
-  ) => {
+  _overleafUpdatePosition: (docId: string | null, position: number | undefined) => {
     const { _sendRequest } = get();
     return _sendRequest({
       name: "clientTracking.updatePosition",
@@ -505,8 +464,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     // Handle joinDoc response specifically
     const { socketRequestResponse } = get();
     if (socketRequestResponse.get(seq)?.request.name === "joinDoc") {
-      const docId =
-        (socketRequestResponse.get(seq)?.request.args[0] as string) || "";
+      const docId = (socketRequestResponse.get(seq)?.request.args[0] as string) || "";
       const nullArg = contentData[0]; // Should be null per Overleaf API. Check `overleaf/services/real-time/app/js/WebsocketController.js:354`
 
       if (nullArg !== null) {

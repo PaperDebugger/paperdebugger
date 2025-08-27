@@ -1,9 +1,5 @@
 import { Button, Input, Textarea } from "@heroui/react";
-import {
-  useCreatePromptMutation,
-  useDeletePromptMutation,
-  useUpdatePromptMutation,
-} from "../../query";
+import { useCreatePromptMutation, useDeletePromptMutation, useUpdatePromptMutation } from "../../query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Prompt } from "../../pkg/gen/apiclient/user/v1/user_pb";
 import { Modal } from "../../components/modal";
@@ -17,13 +13,7 @@ type PromptModalProps = {
   onClose?: () => void;
 };
 
-export const PromptModal = ({
-  mode,
-  prompt,
-  isOpen,
-  onOpenChange,
-  onClose,
-}: PromptModalProps) => {
+export const PromptModal = ({ mode, prompt, isOpen, onOpenChange, onClose }: PromptModalProps) => {
   const { loadPrompts } = usePromptLibraryStore();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -74,15 +64,7 @@ export const PromptModal = ({
     await loadPrompts();
     setIsSubmitting(false);
     onClose?.();
-  }, [
-    updatePrompt,
-    onClose,
-    prompt?.id,
-    title,
-    content,
-    loadPrompts,
-    setIsSubmitting,
-  ]);
+  }, [updatePrompt, onClose, prompt?.id, title, content, loadPrompts, setIsSubmitting]);
 
   const handleDelete = useCallback(async () => {
     setIsSubmitting(true);
@@ -135,13 +117,7 @@ export const PromptModal = ({
             </Button>
           )}
           {mode == "delete" && (
-            <Button
-              size="sm"
-              color="danger"
-              isLoading={isSubmitting}
-              isDisabled={isSubmitting}
-              onPress={handleDelete}
-            >
+            <Button size="sm" color="danger" isLoading={isSubmitting} isDisabled={isSubmitting} onPress={handleDelete}>
               Delete
             </Button>
           )}

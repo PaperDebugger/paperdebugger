@@ -26,10 +26,7 @@ export type Handler<A, T> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type HandlerAny = Handler<any, any>;
 
-export const getCookiesHandler: Handler<
-  void,
-  { session?: string; gclb?: string }
-> = {
+export const getCookiesHandler: Handler<void, { session?: string; gclb?: string }> = {
   name: HANDLER_NAMES.GET_COOKIES,
   handler: async (_, sendResponse) => {
     const cookies = await getAllCookies("overleaf_session2", "https://www.overleaf.com");
@@ -84,25 +81,22 @@ export const fetchImageHandler: Handler<string, string> = {
 // @ts-expect-error: browser may not be defined in all environments
 const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 
-browserAPI.runtime?.onMessage?.addListener((request: { action: string; args: unknown }, _: unknown, sendResponse: (response: unknown) => void) => {
-  const handlers = [
-    getCookiesHandler,
-    getUrlHandler,
-    getOrCreateSessionIdHandler,
-    fetchImageHandler,
-  ];
+browserAPI.runtime?.onMessage?.addListener(
+  (request: { action: string; args: unknown }, _: unknown, sendResponse: (response: unknown) => void) => {
+    const handlers = [getCookiesHandler, getUrlHandler, getOrCreateSessionIdHandler, fetchImageHandler];
 
-  const handler = handlers.find((h) => h.name === request.action) as HandlerAny;
-  if (!handler) {
-    return true;
-  }
-
-  (async () => {
-    try {
-      await handler.handler?.(request.args, sendResponse);
-    } catch (e) {
-      sendResponse({ error: e });
+    const handler = handlers.find((h) => h.name === request.action) as HandlerAny;
+    if (!handler) {
+      return true;
     }
-  })();
-  return true;
-});
+
+    (async () => {
+      try {
+        await handler.handler?.(request.args, sendResponse);
+      } catch (e) {
+        sendResponse({ error: e });
+      }
+    })();
+    return true;
+  },
+);

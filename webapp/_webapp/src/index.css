@@ -446,7 +446,7 @@ body {
   box-sizing: border-box;
   color: #1f1f1f;
   cursor: pointer;
-  font-family: 'Roboto', arial, sans-serif;
+  font-family: "Roboto", arial, sans-serif;
   font-size: 14px;
   height: 32px;
   letter-spacing: 0.25px;
@@ -455,8 +455,12 @@ body {
   padding: 0 12px;
   position: relative;
   text-align: center;
-  -webkit-transition: background-color .218s, border-color .218s;
-  transition: background-color .218s, border-color .218s;
+  -webkit-transition:
+    background-color 0.218s,
+    border-color 0.218s;
+  transition:
+    background-color 0.218s,
+    border-color 0.218s;
   vertical-align: middle;
   white-space: nowrap;
   width: auto;
@@ -488,7 +492,7 @@ body {
 .gsi-material-button .gsi-material-button-contents {
   -webkit-flex-grow: 1;
   flex-grow: 1;
-  font-family: 'Roboto', arial, sans-serif;
+  font-family: "Roboto", arial, sans-serif;
   font-weight: 500;
   font-size: 13.5px;
   overflow: hidden;
@@ -497,8 +501,8 @@ body {
 }
 
 .gsi-material-button .gsi-material-button-state {
-  -webkit-transition: opacity .218s;
-  transition: opacity .218s;
+  -webkit-transition: opacity 0.218s;
+  transition: opacity 0.218s;
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -535,7 +539,7 @@ body {
 .pd-continue-with-overleaf {
   -webkit-flex-grow: 1;
   flex-grow: 1;
-  font-family: 'Roboto', arial, sans-serif;
+  font-family: "Roboto", arial, sans-serif;
   font-weight: 400;
   font-size: 13.5px;
   overflow: hidden;

@@ -6,51 +6,54 @@ import { flushSync } from "react-dom";
 import { useConversationStore } from "../conversation-store";
 
 export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Message | undefined => {
-    if (messageEntry.assistant) {
-      return fromJson(MessageSchema, {
-        messageId: messageEntry.messageId,
-        payload: {
-          assistant: {
-            content: messageEntry.assistant.content,
-          },
+  if (messageEntry.assistant) {
+    return fromJson(MessageSchema, {
+      messageId: messageEntry.messageId,
+      payload: {
+        assistant: {
+          content: messageEntry.assistant.content,
         },
-      });
-    } else if (messageEntry.toolCall) {
-      return fromJson(MessageSchema, {
-        messageId: messageEntry.messageId,
-        payload: {
-          toolCall: {
-            name: messageEntry.toolCall.name,
-            args: messageEntry.toolCall.args,
-            result: messageEntry.toolCall.result,
-            error: messageEntry.toolCall.error,
-          },
+      },
+    });
+  } else if (messageEntry.toolCall) {
+    return fromJson(MessageSchema, {
+      messageId: messageEntry.messageId,
+      payload: {
+        toolCall: {
+          name: messageEntry.toolCall.name,
+          args: messageEntry.toolCall.args,
+          result: messageEntry.toolCall.result,
+          error: messageEntry.toolCall.error,
         },
-      });
-    } else if (messageEntry.user) {
-      return fromJson(MessageSchema, {
-        messageId: messageEntry.messageId,
-        payload: {
-          user: {
-            content: messageEntry.user.content,
-            selectedText: messageEntry.user.selectedText ?? "",
-          },
+      },
+    });
+  } else if (messageEntry.user) {
+    return fromJson(MessageSchema, {
+      messageId: messageEntry.messageId,
+      payload: {
+        user: {
+          content: messageEntry.user.content,
+          selectedText: messageEntry.user.selectedText ?? "",
         },
-      });
-    }
-    return undefined;
-}
+      },
+    });
+  }
+  return undefined;
+};
 
 export const flushStreamingMessageToConversation = (conversationId?: string, languageModel?: LanguageModel) => {
-  const flushMessages = useStreamingMessageStore.getState().streamingMessage.parts.map((part) => {
-    if (part.status === MessageEntryStatus.FINALIZED) {
-      return convertMessageEntryToMessage(part);
-    } else {
-      return null;
-    }
-  }).filter((part) => {
-    return part !== null && part !== undefined;
-  }) as Message[];
+  const flushMessages = useStreamingMessageStore
+    .getState()
+    .streamingMessage.parts.map((part) => {
+      if (part.status === MessageEntryStatus.FINALIZED) {
+        return convertMessageEntryToMessage(part);
+      } else {
+        return null;
+      }
+    })
+    .filter((part) => {
+      return part !== null && part !== undefined;
+    }) as Message[];
 
   flushSync(() => {
     useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
@@ -63,4 +66,4 @@ export const flushStreamingMessageToConversation = (conversationId?: string, lan
 
   useStreamingMessageStore.getState().resetStreamingMessage();
   // Do not reset incomplete indicator here, it will be reset in useSendMessageStream
-}
+};

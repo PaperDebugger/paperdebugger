@@ -12,20 +12,12 @@ export function useTrackableDisclosure({ name }: UseTrackableDisclosureProps) {
 
   const onOpen = () => {
     disclosure.onOpen();
-    googleAnalytics.fireEvent(
-      user?.id,
-      `disclosure_open_${normalizeName(name)}`,
-      {},
-    );
+    googleAnalytics.fireEvent(user?.id, `disclosure_open_${normalizeName(name)}`, {});
   };
 
   const onClose = () => {
     disclosure.onClose();
-    googleAnalytics.fireEvent(
-      user?.id,
-      `disclosure_close_${normalizeName(name)}`,
-      {},
-    );
+    googleAnalytics.fireEvent(user?.id, `disclosure_close_${normalizeName(name)}`, {});
   };
 
   return {

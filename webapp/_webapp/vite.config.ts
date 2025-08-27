@@ -55,10 +55,7 @@ function generateManifestPlugin(): Plugin {
     },
     closeBundle() {
       const manifest = getManifest();
-      fs.writeFileSync(
-        path.join(outDir, "manifest.json"),
-        JSON.stringify(manifest, null, 2),
-      );
+      fs.writeFileSync(path.join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2));
     },
   };
 }

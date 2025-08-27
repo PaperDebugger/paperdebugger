@@ -23,7 +23,7 @@ export const AddCommentsButton = ({
   comments,
   overleafSession,
   gclb,
-  setIsSuggestionsExpanded
+  setIsSuggestionsExpanded,
 }: AddCommentsButtonProps) => {
   const { connectSocket, disconnectSocket, addComment } = useSocketStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +40,14 @@ export const AddCommentsButton = ({
         throw new Error("CSRF token not found");
       }
 
-      await connectSocket(projectId, {
-        cookieOverleafSession2: overleafSession,
-        cookieGCLB: gclb,
-      }, csrfToken);
+      await connectSocket(
+        projectId,
+        {
+          cookieOverleafSession2: overleafSession,
+          cookieGCLB: gclb,
+        },
+        csrfToken,
+      );
 
       for (let i = 0; i < comments.length; i++) {
         const comment = comments[i];
@@ -63,12 +67,14 @@ export const AddCommentsButton = ({
       setErrorMessage("");
       addClickedOverleafComment(projectId, messageId);
       setIsSuggestionsExpanded(false);
-      acceptComments(fromJson(CommentsAcceptedRequestSchema, {
-        projectId: projectId,
-        conversationId: currentConversation.id,
-        messageId: messageId,
-        commentIds: comments.map(comment => comment.commentId || "").filter(id => id.length > 0),
-      }));
+      acceptComments(
+        fromJson(CommentsAcceptedRequestSchema, {
+          projectId: projectId,
+          conversationId: currentConversation.id,
+          messageId: messageId,
+          commentIds: comments.map((comment) => comment.commentId || "").filter((id) => id.length > 0),
+        }),
+      );
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unknown error");
     } finally {
@@ -100,7 +106,9 @@ export const AddCommentsButton = ({
             Added to Overleaf
           </span>
         ) : !hasValidCookies ? (
-          <span className="text-nowrap text-ellipsis overflow-hidden">Can't add comments because cookies are not set</span>
+          <span className="text-nowrap text-ellipsis overflow-hidden">
+            Can't add comments because cookies are not set
+          </span>
         ) : errorMessage.length > 0 ? (
           <span className="text-nowrap text-ellipsis overflow-hidden">Failed</span>
         ) : (
@@ -118,4 +126,4 @@ export const AddCommentsButton = ({
       {/* TODO: report user selected comments to server */}
     </>
   );
-}; 
+};

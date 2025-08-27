@@ -155,17 +155,14 @@ async function opGetAllThreads(
   csrfToken: string,
   projectId: string,
 ): Promise<Map<string, OverleafThread>> {
-  const res = await fetch(
-    `https://www.overleaf.com/project/${projectId}/threads`,
-    {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Csrf-Token": csrfToken,
-        Cookie: `overleaf_session2=${auth.cookieOverleafSession2}; GCLB=${auth.cookieGCLB}`,
-      },
+  const res = await fetch(`https://www.overleaf.com/project/${projectId}/threads`, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Csrf-Token": csrfToken,
+      Cookie: `overleaf_session2=${auth.cookieOverleafSession2}; GCLB=${auth.cookieGCLB}`,
     },
-  );
+  });
 
   if (res.status !== 200) {
     throw new Error(`HTTP error when fetching threads: ${res.status}`);
@@ -228,28 +225,21 @@ export async function wsConnect(
   // if (import.meta.env.DEV) {
   //   throw new Error("Development mode is not supported for wsConnect");
   // }
-  const baseUrl = import.meta.env.DEV
-    ? "http://localhost:3000"
-    : "https://www.overleaf.com";
-  const res = await fetch(
-    `${baseUrl}/socket.io/1/?projectId=${projectId}&t=${Date.now()}`,
-    {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Csrf-Token": csrfToken,
-        Cookie: `overleaf_session2=${overleafAuth.cookieOverleafSession2}; GCLB=${overleafAuth.cookieGCLB}`,
-      },
+  const baseUrl = import.meta.env.DEV ? "http://localhost:3000" : "https://www.overleaf.com";
+  const res = await fetch(`${baseUrl}/socket.io/1/?projectId=${projectId}&t=${Date.now()}`, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Csrf-Token": csrfToken,
+      Cookie: `overleaf_session2=${overleafAuth.cookieOverleafSession2}; GCLB=${overleafAuth.cookieGCLB}`,
     },
-  );
+  });
 
   if (res.status !== 200) {
     throw new Error(`HTTP error when connecting ws: ${res.status}`);
   }
 
-  const wsUrl = import.meta.env.DEV
-    ? "ws://localhost:3000"
-    : "wss://www.overleaf.com";
+  const wsUrl = import.meta.env.DEV ? "ws://localhost:3000" : "wss://www.overleaf.com";
   const data = await res.text();
   const sessionId = data.split(":")[0];
 
@@ -257,7 +247,5 @@ export async function wsConnect(
   document.cookie = `overleaf_session2=${overleafAuth.cookieOverleafSession2}; path=/; domain=${import.meta.env.DEV ? "localhost" : "www.overleaf.com"}`;
   document.cookie = `GCLB=${overleafAuth.cookieGCLB}; path=/; domain=${import.meta.env.DEV ? "localhost" : "www.overleaf.com"}`;
 
-  return new WebSocket(
-    `${wsUrl}/socket.io/1/websocket/${sessionId}?projectId=${projectId}`,
-  );
+  return new WebSocket(`${wsUrl}/socket.io/1/websocket/${sessionId}?projectId=${projectId}`);
 }

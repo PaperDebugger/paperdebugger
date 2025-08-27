@@ -3,10 +3,7 @@ import { fromJson, JsonValue } from "@bufbuild/protobuf";
 import { RefreshTokenResponseSchema } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";
-import {
-  ErrorCode,
-  ErrorSchema,
-} from "../pkg/gen/apiclient/shared/v1/shared_pb";
+import { ErrorCode, ErrorSchema } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
 import { useSettingStore } from "../stores/setting-store";
 
@@ -30,24 +27,17 @@ class ApiClient {
     this.onTokenRefreshedEventEmitter = new EventEmitter();
   }
 
-  addListener(
-    event: "tokenRefreshed",
-    listener: (args: { token: string; refreshToken: string }) => void,
-  ): void {
+  addListener(event: "tokenRefreshed", listener: (args: { token: string; refreshToken: string }) => void): void {
     this.onTokenRefreshedEventEmitter.addListener(event, listener);
   }
 
-  removeListener(
-    event: "tokenRefreshed",
-    listener: (args: { token: string; refreshToken: string }) => void,
-  ): void {
+  removeListener(event: "tokenRefreshed", listener: (args: { token: string; refreshToken: string }) => void): void {
     this.onTokenRefreshedEventEmitter.removeListener(event, listener);
   }
 
   setTokens(token: string, refreshToken: string): void {
     this.refreshToken = refreshToken;
-    this.axiosInstance.defaults.headers.common["Authorization"] =
-      `Bearer ${token}`;
+    this.axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
 
   clearTokens(): void {
@@ -82,9 +72,7 @@ class ApiClient {
     });
   }
 
-  private async requestWithRefresh(
-    config: AxiosRequestConfig,
-  ): Promise<JsonValue> {
+  private async requestWithRefresh(config: AxiosRequestConfig): Promise<JsonValue> {
     try {
       const response = await this.axiosInstance(config);
       return response.data;
@@ -98,10 +86,7 @@ class ApiClient {
     }
   }
 
-  private async requestWithErrorToast(
-    config: AxiosRequestConfig,
-    options?: RequestOptions,
-  ): Promise<JsonValue> {
+  private async requestWithErrorToast(config: AxiosRequestConfig, options?: RequestOptions): Promise<JsonValue> {
     try {
       return await this.requestWithRefresh(config);
     } catch (error) {
@@ -109,14 +94,8 @@ class ApiClient {
         const errorData = error.response?.data;
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
-          const message = errorPayload.message.replace(
-            /^rpc error: code = Code\(\d+\) desc = /,
-            "",
-          );
-          errorToast(
-            message,
-            `Request Failed: ${ErrorCode[errorPayload.code]}`,
-          );
+          const message = errorPayload.message.replace(/^rpc error: code = Code\(\d+\) desc = /, "");
+          errorToast(message, `Request Failed: ${ErrorCode[errorPayload.code]}`);
         }
         throw errorPayload;
       }
@@ -124,11 +103,7 @@ class ApiClient {
     }
   }
 
-  async get(
-    url: string,
-    params?: object,
-    options?: RequestOptions,
-  ): Promise<JsonValue> {
+  async get(url: string, params?: object, options?: RequestOptions): Promise<JsonValue> {
     return this.requestWithErrorToast(
       {
         method: "GET",
@@ -139,11 +114,7 @@ class ApiClient {
     );
   }
 
-  async post(
-    url: string,
-    data?: object,
-    options?: RequestOptions,
-  ): Promise<JsonValue> {
+  async post(url: string, data?: object, options?: RequestOptions): Promise<JsonValue> {
     return this.requestWithErrorToast(
       {
         method: "POST",
@@ -154,11 +125,7 @@ class ApiClient {
     );
   }
 
-  async put(
-    url: string,
-    data?: object,
-    options?: RequestOptions,
-  ): Promise<JsonValue> {
+  async put(url: string, data?: object, options?: RequestOptions): Promise<JsonValue> {
     return this.requestWithErrorToast(
       {
         method: "PUT",
@@ -169,11 +136,7 @@ class ApiClient {
     );
   }
 
-  async patch(
-    url: string,
-    data?: object,
-    options?: RequestOptions,
-  ): Promise<JsonValue> {
+  async patch(url: string, data?: object, options?: RequestOptions): Promise<JsonValue> {
     return this.requestWithErrorToast(
       {
         method: "PATCH",

@@ -22,8 +22,7 @@ export function handleStreamPartBegin(
     const newMessageEntry: MessageEntry = {
       messageId: partBegin.messageId,
       status: MessageEntryStatus.PREPARING,
-      toolCallPrepareArguments:
-        partBegin.payload?.messageType.value,
+      toolCallPrepareArguments: partBegin.payload?.messageType.value,
     };
     updateStreamingMessage((prev) => ({
       parts: [...prev.parts, newMessageEntry],
@@ -43,7 +42,7 @@ export function handleStreamPartBegin(
     // not possible
   } else if (role === "user") {
     // not possible
-  } else if (role === "unknown"){
+  } else if (role === "unknown") {
     // not possible
   } else {
     if (role !== undefined) {

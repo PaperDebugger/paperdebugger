@@ -17,11 +17,11 @@ export const UserDeveloperTools = () => {
         description="Affects the message sent to AI"
         selected={conversationMode}
         options={{
-          "debug": "Debug",
-          "normal": "Normal",
+          debug: "Debug",
+          normal: "Normal",
         }}
         onSelectChange={(selected) => {
-          setConversationMode(selected as "debug" | "normal")
+          setConversationMode(selected as "debug" | "normal");
         }}
       />
 
@@ -30,7 +30,7 @@ export const UserDeveloperTools = () => {
         description="You need to refresh the page to apply the changes"
         value={endpoint}
         onChange={(value) => {
-          setEndpoint(value)
+          setEndpoint(value);
         }}
         showResetButton={true}
         onReset={() => {
@@ -38,7 +38,9 @@ export const UserDeveloperTools = () => {
         }}
       />
 
-      <div className="text-gray-500 text-xs ps-2">* developer settings stored locally, will be reset when you clear your browser data</div>
+      <div className="text-gray-500 text-xs ps-2">
+        * developer settings stored locally, will be reset when you clear your browser data
+      </div>
     </SettingsSectionContainer>
   );
 };

@@ -2,9 +2,7 @@ import { logError } from "../../../libs/logger";
 import { useStreamingMessageStore } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
 
-export function handleError(
-  error?: Error,
-) {
+export function handleError(error?: Error) {
   useStreamingMessageStore.getState().updateStreamingMessage((prev) => {
     const newParts = prev.parts.map((part: MessageEntry) => {
       return {

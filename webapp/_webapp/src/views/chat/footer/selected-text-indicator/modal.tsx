@@ -9,11 +9,7 @@ type SelectedTextModalProps = {
   onClose?: () => void;
 };
 
-export const SelectedTextModal = ({
-  isOpen,
-  onOpenChange,
-  onClose,
-}: SelectedTextModalProps) => {
+export const SelectedTextModal = ({ isOpen, onOpenChange, onClose }: SelectedTextModalProps) => {
   const selectedText = useSelectionStore((s) => s.selectedText);
   const clear = useSelectionStore((s) => s.clear);
 

@@ -9,16 +9,26 @@ export async function handleStreamError(
   userId: string,
   currentPrompt: string,
   currentSelectedText: string,
-  sync: (userId: string, projectId: string, overleafAuth: OverleafAuthentication, csrfToken: string) => Promise<Map<string, OverleafVersionedDoc>>,
+  sync: (
+    userId: string,
+    projectId: string,
+    overleafAuth: OverleafAuthentication,
+    csrfToken: string,
+  ) => Promise<Map<string, OverleafVersionedDoc>>,
   sendMessageStream: (message: string, selectedText: string) => Promise<void>,
 ) {
   try {
     const { session, gclb } = await getCookies();
     if (streamError.errorMessage.includes("project is out of date")) {
-      await sync(userId, getProjectId(), {
-        cookieOverleafSession2: session,
-        cookieGCLB: gclb,
-      }, "unused");
+      await sync(
+        userId,
+        getProjectId(),
+        {
+          cookieOverleafSession2: session,
+          cookieGCLB: gclb,
+        },
+        "unused",
+      );
       // Retry sending the message after sync
       await sendMessageStream(currentPrompt, currentSelectedText);
     } else {

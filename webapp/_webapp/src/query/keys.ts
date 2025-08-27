@@ -29,6 +29,6 @@ export const queryKeys = createQueryKeyStore({
       projectId,
       conversationId,
       ...commentIds,
-    ]
-  }
+    ],
+  },
 });

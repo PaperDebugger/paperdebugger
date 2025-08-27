@@ -21,8 +21,7 @@ export const STYLES = {
     indicator: "!w-full",
   },
   messageBox: {
-    base: cn(
-    ),
+    base: cn(),
     assistant: "px-3 pt-3 pb-1 my-2 !border !border-transparent",
     user: "px-3 py-2 bg-gray-100 self-end my-2",
     indicator: "px-3",
@@ -40,79 +39,59 @@ interface MessageCardProps {
   animated?: boolean;
 }
 
-
-export const MessageCard = memo(
-  ({
-    messageEntry,
-    prevAttachment,
-    animated,
-  }: MessageCardProps) => {
-
-    if (messageEntry.toolCall !== undefined) {
-      return (
-        <div className="chat-message-entry">
-          <Tools
+export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: MessageCardProps) => {
+  if (messageEntry.toolCall !== undefined) {
+    return (
+      <div className="chat-message-entry">
+        <Tools
           messageId={messageEntry.messageId}
-          functionName={
-            messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"
-          }
-          message={
-            messageEntry.toolCall?.result
-          }
+          functionName={messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"}
+          message={messageEntry.toolCall?.result}
           error={messageEntry.toolCall?.error}
           preparing={messageEntry.status === MessageEntryStatus.PREPARING}
           animated={animated ?? false}
         />
-        </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    const returnComponent = () => {
-      if (messageEntry.assistant !== undefined) {
-        return (
-          <AssistantMessageContainer
-            message={messageEntry.assistant?.content}
-            messageId={messageEntry.messageId}
-            animated={animated ?? false}
-            prevAttachment={prevAttachment ?? ""}
-            stale={messageEntry.status === MessageEntryStatus.STALE}
-            preparing={messageEntry.status === MessageEntryStatus.PREPARING}
-          />
-        );
-      }
-
-      if (messageEntry.toolCallPrepareArguments !== undefined) {
-        return (
-          <ToolCallPrepareMessageContainer
-            stale={messageEntry.status === MessageEntryStatus.STALE}
-            preparing={messageEntry.status === MessageEntryStatus.PREPARING}
-          />
-        );
-      }
-
-      if (messageEntry.user !== undefined) {
-        return (
-          <UserMessageContainer
-            content={messageEntry.user?.content ?? ""}
-            attachment={messageEntry.user?.selectedText ?? ""}
-            stale={messageEntry.status === MessageEntryStatus.STALE}
-          />
-        );
-      }
-
+  const returnComponent = () => {
+    if (messageEntry.assistant !== undefined) {
       return (
-        <UnknownEntryMessageContainer
-          message={`Error: Unknown message: ${JSON.stringify(messageEntry)}`}
+        <AssistantMessageContainer
+          message={messageEntry.assistant?.content}
+          messageId={messageEntry.messageId}
+          animated={animated ?? false}
+          prevAttachment={prevAttachment ?? ""}
+          stale={messageEntry.status === MessageEntryStatus.STALE}
+          preparing={messageEntry.status === MessageEntryStatus.PREPARING}
         />
       );
     }
 
-    return (
-      <>
-        {returnComponent()}
-      </>
-    );
-  },
-);
+    if (messageEntry.toolCallPrepareArguments !== undefined) {
+      return (
+        <ToolCallPrepareMessageContainer
+          stale={messageEntry.status === MessageEntryStatus.STALE}
+          preparing={messageEntry.status === MessageEntryStatus.PREPARING}
+        />
+      );
+    }
+
+    if (messageEntry.user !== undefined) {
+      return (
+        <UserMessageContainer
+          content={messageEntry.user?.content ?? ""}
+          attachment={messageEntry.user?.selectedText ?? ""}
+          stale={messageEntry.status === MessageEntryStatus.STALE}
+        />
+      );
+    }
+
+    return <UnknownEntryMessageContainer message={`Error: Unknown message: ${JSON.stringify(messageEntry)}`} />;
+  };
+
+  return <>{returnComponent()}</>;
+});
 
 MessageCard.displayName = "MessageCard";

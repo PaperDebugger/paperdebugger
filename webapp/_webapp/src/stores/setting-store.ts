@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { getSettings, resetSettings, updateSettings } from "../query/api";
-import {
-  Settings,
-  UpdateSettingsRequest,
-} from "../pkg/gen/apiclient/user/v1/user_pb";
+import { Settings, UpdateSettingsRequest } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 
@@ -13,9 +10,7 @@ export interface SettingStore {
   isUpdating: Record<keyof Settings, boolean>;
   error: string | null;
   loadSettings: () => Promise<void>;
-  updateSettings: (
-    newSettings: Partial<PlainMessage<Settings>>,
-  ) => Promise<void>;
+  updateSettings: (newSettings: Partial<PlainMessage<Settings>>) => Promise<void>;
   resetSettings: () => Promise<void>;
 
   enableUserDeveloperTools: boolean; // 不是真的 developer tool
@@ -99,8 +94,7 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
       }
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to update settings",
+        error: error instanceof Error ? error.message : "Failed to update settings",
       });
       logError("Failed to update settings", error);
     }
@@ -126,8 +120,7 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
     } catch (error) {
       set({
         isLoading: false,
-        error:
-          error instanceof Error ? error.message : "Failed to reset settings",
+        error: error instanceof Error ? error.message : "Failed to reset settings",
       });
     }
   },
@@ -138,7 +131,7 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
     set({ enableUserDeveloperTools: enable });
   },
 
-  conversationMode: localStorage.getItem("pd.devtool.conversationMode") as "debug" | "normal" || "normal",
+  conversationMode: (localStorage.getItem("pd.devtool.conversationMode") as "debug" | "normal") || "normal",
   setConversationMode: (mode: "debug" | "normal") => {
     localStorage.setItem("pd.devtool.conversationMode", mode);
     set({ conversationMode: mode });
@@ -162,13 +155,19 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
     set({ hideAvatar: enable });
   },
 
-  endpoint: localStorage.getItem("pd.devtool.endpoint") || `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`,
+  endpoint:
+    localStorage.getItem("pd.devtool.endpoint") ||
+    `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`,
   setEndpoint: (endpoint: string) => {
     localStorage.setItem("pd.devtool.endpoint", endpoint);
     set({ endpoint });
   },
   resetEndpoint: () => {
     localStorage.removeItem("pd.devtool.endpoint");
-    set({endpoint: localStorage.getItem("pd.devtool.endpoint") || `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`});
+    set({
+      endpoint:
+        localStorage.getItem("pd.devtool.endpoint") ||
+        `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`,
+    });
   },
 }));

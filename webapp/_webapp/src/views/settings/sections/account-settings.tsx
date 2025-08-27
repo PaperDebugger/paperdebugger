@@ -25,9 +25,7 @@ export const AccountSettings = () => {
       <CellWrapper>
         <div className="flex flex-col">
           <div className="text-sm">View onboarding guide</div>
-          <div className="text-xs text-default-500">
-            Learn how to use PaperDebugger effectively
-          </div>
+          <div className="text-xs text-default-500">Learn how to use PaperDebugger effectively</div>
         </div>
         <Button
           size="sm"
@@ -43,45 +41,35 @@ export const AccountSettings = () => {
       <CellWrapper>
         <div className="flex flex-col flex-1">
           <div className="text-sm">Status</div>
-          <div className="text-xs text-default-500">
-            The current status of the app
-          </div>
+          <div className="text-xs text-default-500">The current status of the app</div>
         </div>
         <div className="flex flex-col gap-0 text-xs text-default-500">
           <div className="flex flex-row gap-2 items-center">
-            <div className={cn(
-              "rounded-full w-2 h-2",
-              user ? "bg-primary-500" : "bg-red-500",
-            )}></div>User
+            <div className={cn("rounded-full w-2 h-2", user ? "bg-primary-500" : "bg-red-500")}></div>User
           </div>
           <div className="flex flex-row gap-2 items-center">
-            <div className={cn(
-              "rounded-full w-2 h-2",
-              overleafSession && overleafSession.length > 0 ? "bg-primary-500" : "bg-red-500",
-            )}></div>Session
+            <div
+              className={cn(
+                "rounded-full w-2 h-2",
+                overleafSession && overleafSession.length > 0 ? "bg-primary-500" : "bg-red-500",
+              )}
+            ></div>
+            Session
           </div>
           <div className="flex flex-row gap-2 items-center">
-            <div className={cn(
-              "rounded-full w-2 h-2",
-              gclb && gclb.length > 0 ? "bg-primary-500" : "bg-red-500",
-            )}></div>GCLB
+            <div
+              className={cn("rounded-full w-2 h-2", gclb && gclb.length > 0 ? "bg-primary-500" : "bg-red-500")}
+            ></div>
+            GCLB
           </div>
         </div>
       </CellWrapper>
       <CellWrapper>
         <div className="flex flex-col">
           <div className="text-sm">Log out</div>
-          <div className="text-xs text-default-500">
-            Log out of your account and clear all your data
-          </div>
+          <div className="text-xs text-default-500">Log out of your account and clear all your data</div>
         </div>
-        <Button
-          size="sm"
-          color="danger"
-          radius="full"
-          variant="flat"
-          onPress={logout}
-        >
+        <Button size="sm" color="danger" radius="full" variant="flat" onPress={logout}>
           Log out
         </Button>
       </CellWrapper>

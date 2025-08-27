@@ -8,7 +8,6 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 
 // Helper functions
 const preprocessMessage = (message: string): string | undefined => {
-
   const regex = /<PaperDebugger>([\s\S]*?)<\/PaperDebugger>/g;
   return message.replace(regex, (_, content) => {
     const processedContent = content.replace(/\n/g, "§NEWLINE§");
@@ -31,10 +30,7 @@ export const AssistantMessageContainer = ({
   stale: boolean;
   preparing: boolean;
 }) => {
-  const processedMessage = useMemo(
-    () => preprocessMessage(message),
-    [message],
-  );
+  const processedMessage = useMemo(() => preprocessMessage(message), [message]);
   const { user } = useAuthStore();
   const projectId = getProjectId();
   const [copySuccess, setCopySuccess] = useState(false);
@@ -52,25 +48,22 @@ export const AssistantMessageContainer = ({
       }, 2000);
     }
   }, [user?.id, projectId, processedMessage, messageId]);
-  const staleComponent = stale && (
-    <div className="message-box-stale-description">
-      This message is stale.
-    </div>
-  )
-  const writingIndicator = (
-    stale ? null : <Icon icon="tabler:pencil" className={
-      cn(
+  const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
+  const writingIndicator = stale ? null : (
+    <Icon
+      icon="tabler:pencil"
+      className={cn(
         "!w-4 !h-4 !text-[14px] !text-gray-400  !animate-bounce",
         "!transition-all !duration-300 !ease-in-out",
         "!inline-block !align-middle !ml-1",
         preparing && "!opacity-100",
-        !preparing && "!opacity-0 !hidden"
-      )} />
-  )
+        !preparing && "!opacity-0 !hidden",
+      )}
+    />
+  );
   return (
     <div className="chat-message-entry noselect">
       <div className={cn("message-box-assistant rnd-cancel")}>
-
         {/* Message content */}
         <div className="canselect">
           <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>

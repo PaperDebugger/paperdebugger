@@ -1,10 +1,4 @@
-import {
-  DescMessage,
-  fromJson,
-  JsonValue,
-  JsonWriteOptions,
-  toJson,
-} from "@bufbuild/protobuf";
+import { DescMessage, fromJson, JsonValue, JsonWriteOptions, toJson } from "@bufbuild/protobuf";
 import { logError } from "../libs/logger";
 import { useDevtoolStore } from "../stores/devtool-store";
 

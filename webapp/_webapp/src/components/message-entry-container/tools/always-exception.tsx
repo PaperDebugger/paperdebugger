@@ -12,11 +12,7 @@ const CardBody = ({ children }: { children: React.ReactNode }) => {
   return <div className="tool-card">{children}</div>;
 };
 
-export const AlwaysExceptionCard = ({
-  message,
-  preparing,
-  animated,
-}: AlwaysExceptionCardProps) => {
+export const AlwaysExceptionCard = ({ message, preparing, animated }: AlwaysExceptionCardProps) => {
   if (preparing) {
     return (
       <div className={cn("tool-card", { animated: animated })}>
@@ -28,9 +24,7 @@ export const AlwaysExceptionCard = ({
   try {
     return (
       <CardBody>
-        <div className="text-xs text-primary-600">
-          {message}
-        </div>
+        <div className="text-xs text-primary-600">{message}</div>
       </CardBody>
     );
   } catch (error) {

@@ -1,4 +1,9 @@
-import { MessageTypeAssistant, MessageTypeToolCall, MessageTypeToolCallPrepareArguments, StreamPartEnd } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import {
+  MessageTypeAssistant,
+  MessageTypeToolCall,
+  MessageTypeToolCallPrepareArguments,
+  StreamPartEnd,
+} from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { StreamingMessage } from "../../streaming-message-store";
 import { logError } from "../../../libs/logger";
 import { MessageEntryStatus } from "../types";
@@ -7,7 +12,6 @@ export function handleStreamPartEnd(
   partEnd: StreamPartEnd,
   updateStreamingMessage: (updater: (prev: StreamingMessage) => StreamingMessage) => void,
 ) {
-
   const role = partEnd.payload?.messageType.case;
   switch (role) {
     case "assistant": {
@@ -35,8 +39,7 @@ export function handleStreamPartEnd(
       updateStreamingMessage((prev) => {
         const newParts = prev.parts.map((part) => {
           if (part.messageId === partEnd.messageId) {
-            const toolCallPrepareArguments = partEnd.payload?.messageType
-              .value as MessageTypeToolCallPrepareArguments;
+            const toolCallPrepareArguments = partEnd.payload?.messageType.value as MessageTypeToolCallPrepareArguments;
             return {
               ...part,
               status: MessageEntryStatus.FINALIZED,
@@ -56,8 +59,7 @@ export function handleStreamPartEnd(
     case "toolCall": {
       updateStreamingMessage((prev) => {
         const newParts = prev.parts.map((part) => {
-          const toolCall = partEnd.payload?.messageType
-            .value as MessageTypeToolCall;
+          const toolCall = partEnd.payload?.messageType.value as MessageTypeToolCall;
           if (part.messageId === partEnd.messageId) {
             return {
               ...part,
@@ -75,9 +77,15 @@ export function handleStreamPartEnd(
       });
       break;
     }
-    case "system": { break; }
-    case "unknown": { break; }
-    case "user": { break; }
+    case "system": {
+      break;
+    }
+    case "unknown": {
+      break;
+    }
+    case "user": {
+      break;
+    }
     default: {
       if (role !== undefined) {
         const _typeCheck: never = role;

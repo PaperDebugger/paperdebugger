@@ -1,10 +1,6 @@
 import { EditorView } from "@codemirror/view";
 
-
-export async function onElementAppeared(
-  selector: string,
-  callback: (element: Element) => void,
-) {
+export async function onElementAppeared(selector: string, callback: (element: Element) => void) {
   const element = document.querySelector(selector);
   if (element) {
     return callback(element);
@@ -24,10 +20,7 @@ export async function onElementAppeared(
   });
 }
 
-export function onElementAdded(
-  selector: string,
-  callback: (element: Element) => void,
-) {
+export function onElementAdded(selector: string, callback: (element: Element) => void) {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -98,16 +91,14 @@ export function generateId() {
 // Convert a byte array to big-endian 32-bit words
 function bytesToWords(bytes: Uint8Array): number[] {
   const words: number[] = [];
-  for (let i = 0, b = 0; i < bytes.length; i++, b += 8)
-    words[b >>> 5] |= bytes[i] << (24 - (b % 32));
+  for (let i = 0, b = 0; i < bytes.length; i++, b += 8) words[b >>> 5] |= bytes[i] << (24 - (b % 32));
   return words;
 }
 
 // Convert big-endian 32-bit words to a byte array
 function wordsToBytes(words: number[]) {
   const bytes = [];
-  for (let b = 0; b < words.length * 32; b += 8)
-    bytes.push((words[b >>> 5] >>> (24 - (b % 32))) & 0xff);
+  for (let b = 0; b < words.length * 32; b += 8) bytes.push((words[b >>> 5] >>> (24 - (b % 32))) & 0xff);
   return bytes;
 }
 
@@ -221,7 +212,7 @@ export function hasClickedOverleafComment(projectId: string, messageId: string):
 // 经典 debounce，适合事件回调
 export function debounce(fn: (...args: unknown[]) => void, wait: number) {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  return function(this: unknown, ...args: unknown[]) {
+  return function (this: unknown, ...args: unknown[]) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       fn.apply(this, args);

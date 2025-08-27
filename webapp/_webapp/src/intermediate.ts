@@ -21,10 +21,7 @@ export type MakeFunctionOpts = {
   wait?: boolean;
 };
 
-function makeFunction<A, T>(
-  handlerName: string,
-  opts?: MakeFunctionOpts,
-): (args: A) => Promise<T> {
+function makeFunction<A, T>(handlerName: string, opts?: MakeFunctionOpts): (args: A) => Promise<T> {
   const reqEvtName = `paperdebugger:req:${handlerName}`;
   const resEvtName = `paperdebugger:res:${handlerName}`;
   const errEvtName = `paperdebugger:err:${handlerName}`;
@@ -35,7 +32,7 @@ function makeFunction<A, T>(
     const customEvt = evt as CustomEvent;
     const { seq, req } = customEvt.detail;
     if (!seq) return;
-    if (!(browserAPI?.runtime?.id)) return;
+    if (!browserAPI?.runtime?.id) return;
     browserAPI?.runtime
       .sendMessage({
         action: handlerName,
@@ -49,24 +46,18 @@ function makeFunction<A, T>(
             }),
           );
         } else {
-          window.dispatchEvent(
-            new CustomEvent(`${resEvtName}/${seq}`, { detail: { seq, res } }),
-          );
+          window.dispatchEvent(new CustomEvent(`${resEvtName}/${seq}`, { detail: { seq, res } }));
         }
       })
       .catch((err: { error?: string }) => {
-        window.dispatchEvent(
-          new CustomEvent(`${errEvtName}/${seq}`, { detail: { seq, err } }),
-        );
+        window.dispatchEvent(new CustomEvent(`${errEvtName}/${seq}`, { detail: { seq, err } }));
       });
   };
   window.addEventListener(reqEvtName, eventHandler);
 
   const fn = (args: A): Promise<T> => {
     const seq = uuidv4();
-    window.dispatchEvent(
-      new CustomEvent(reqEvtName, { detail: { seq, req: args } }),
-    );
+    window.dispatchEvent(new CustomEvent(reqEvtName, { detail: { seq, req: args } }));
     return new Promise((resolve, reject) => {
       function resListener(evt: Event): void {
         const customEvt = evt as CustomEvent;
@@ -97,7 +88,7 @@ function makeFunction<A, T>(
   return fn;
 }
 
-let getCookies: (() => Promise<{ session: string; gclb: string }>);
+let getCookies: () => Promise<{ session: string; gclb: string }>;
 if (import.meta.env.DEV) {
   getCookies = async () => {
     return {

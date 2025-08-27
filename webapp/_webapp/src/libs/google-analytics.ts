@@ -21,11 +21,7 @@ class Analytics {
   }
 
   // Fires an event with optional params. Event names must only include letters and underscores.
-  async fireEvent(
-    clientId: string | undefined,
-    name: string,
-    params: AnalyticsParams = {},
-  ) {
+  async fireEvent(clientId: string | undefined, name: string, params: AnalyticsParams = {}) {
     if (import.meta.env.DEV) {
       return;
     }
@@ -44,9 +40,7 @@ class Analytics {
 
     try {
       await fetch(
-        `${
-          this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT
-        }?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+        `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -59,25 +53,22 @@ class Analytics {
             ],
           }),
         },
-      ).catch((_) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      ).catch((_) => {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
         // logInfo("Google Analytics request failed with an exception", e);
       });
 
       if (!this.debug) {
         return;
       }
-    } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       // logInfo("Google Analytics request failed with an exception", e);
     }
   }
 
   // Fire a page view event.
-  async firePageViewEvent(
-    clientId: string,
-    pageTitle: string,
-    pageLocation: string,
-    additionalParams = {},
-  ) {
+  async firePageViewEvent(clientId: string, pageTitle: string, pageLocation: string, additionalParams = {}) {
     return this.fireEvent(clientId, "page_view", {
       page_title: pageTitle,
       page_location: pageLocation,

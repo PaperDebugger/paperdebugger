@@ -21,18 +21,18 @@ export const useDevtoolStore = create<DevtoolStore>((set) => ({
   showTool: JSON.parse(localStorage.getItem(localStorageKey.showTool) || "false"),
   setShowTool: (showTool: boolean) => {
     localStorage.setItem(localStorageKey.showTool, JSON.stringify(showTool));
-    set({ showTool })
+    set({ showTool });
   },
 
   slowStreamingMode: JSON.parse(localStorage.getItem(localStorageKey.slowStreamingMode) || "false"),
   setSlowStreamingMode: (slowStreamingMode: boolean) => {
     localStorage.setItem(localStorageKey.slowStreamingMode, JSON.stringify(slowStreamingMode));
-    set({ slowStreamingMode })
+    set({ slowStreamingMode });
   },
 
   alwaysSyncProject: JSON.parse(localStorage.getItem(localStorageKey.alwaysSyncProject) || "false"),
   setAlwaysSyncProject: (alwaysSyncProject: boolean) => {
     localStorage.setItem(localStorageKey.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
-    set({ alwaysSyncProject })
+    set({ alwaysSyncProject });
   },
 }));
