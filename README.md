@@ -9,8 +9,13 @@
 git clone https://github.com/PaperDebugger/paperdebugger.git
 cd paperdebugger
 
-make build
+make deps  # install dependencies and libraries
+make build # build the backend
+# the binary is located in ./dist/pd.exe
 
+cd webapp/_webapp
+npm run build:prd:chrome
+# the extension is located in wbeapp/_webapp/dist/*
 ```
 
 
