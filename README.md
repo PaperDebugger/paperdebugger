@@ -116,8 +116,6 @@ zip -r paperdebugger-extension.zip *
 
 If you're using PaperDebugger with Overleaf.com, ensure your backend service uses HTTPS. Chrome blocks HTTP requests from HTTPS websites for security reasons.
 
-![Custom Endpoint Configuration](./docs/imgs/custom_endpoint.png)
-
 To configure a custom endpoint:
 1. Open the PaperDebugger extension
 2. Go to Settings, click version number 5 times to enabled "Developer Tools"
