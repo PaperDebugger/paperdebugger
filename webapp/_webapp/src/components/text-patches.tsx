@@ -47,9 +47,7 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
   let processedChildren = children;
   if (Array.isArray(processedChildren)) {
     processedChildren = processedChildren.map((child) => {
-      return typeof child === "string"
-        ? child.replace(/§NEWLINE§/g, "\n").trim()
-        : child;
+      return typeof child === "string" ? child.replace(/§NEWLINE§/g, "\n").trim() : child;
     });
   }
 
@@ -64,12 +62,10 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
       const { value, added, removed } = part;
       let nodeStyles;
       if (added) {
-        nodeStyles =
-          "text-xs bg-green-200 text-green-800 px-[3px] py-px rounded-md";
+        nodeStyles = "text-xs bg-green-200 text-green-800 px-[3px] py-px rounded-md";
         cntAdded++;
       } else if (removed) {
-        nodeStyles =
-          "text-xs bg-red-200 text-red-800 px-[3px] py-px rounded-md";
+        nodeStyles = "text-xs bg-red-200 text-red-800 px-[3px] py-px rounded-md";
         cntRemoved++;
       } else {
         nodeStyles = "text-xs text-gray-800";
@@ -95,7 +91,11 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
       <pre className="w-full p-2 rounded-md bg-gray-200 text-sm whitespace-pre-wrap" id="text-patches-diff-display">
         {showDiff ? mappedNodes : processedChildren}
       </pre>
-      <pre ref={preRef} className="w-full p-2 rounded-md bg-gray-200 text-sm whitespace-pre-wrap hidden" id="text-patches-pre-raw">
+      <pre
+        ref={preRef}
+        className="w-full p-2 rounded-md bg-gray-200 text-sm whitespace-pre-wrap hidden"
+        id="text-patches-pre-raw"
+      >
         {processedChildren}
       </pre>
       <div className="flex flex-row gap-2 justify-end">
@@ -106,14 +106,10 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
             variant={showDiff ? "solid" : "light"}
             radius="full"
             onPress={() => {
-              googleAnalytics.fireEvent(
-                user?.id,
-                "textpatch_click_diff_button",
-                {
-                  projectId: getProjectId(),
-                  patchLength: preRef.current?.innerText.length ?? 0,
-                },
-              );
+              googleAnalytics.fireEvent(user?.id, "textpatch_click_diff_button", {
+                projectId: getProjectId(),
+                patchLength: preRef.current?.innerText.length ?? 0,
+              });
               setShowDiff(!showDiff);
             }}
           >
@@ -146,14 +142,10 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
             opacity: selectionRange ? 1 : 0.5,
           }}
           onPress={() => {
-            googleAnalytics.fireEvent(
-              user?.id,
-              "textpatch_click_insert_button",
-              {
-                projectId: getProjectId(),
-                patchLength: preRef.current?.innerText.length ?? 0,
-              },
-            );
+            googleAnalytics.fireEvent(user?.id, "textpatch_click_insert_button", {
+              projectId: getProjectId(),
+              patchLength: preRef.current?.innerText.length ?? 0,
+            });
             applyText();
           }}
         >

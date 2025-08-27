@@ -14,64 +14,20 @@ type ToolsProps = {
   animated: boolean;
 };
 
-export default function Tools({
-  messageId,
-  functionName,
-  message,
-  error,
-  preparing,
-  animated,
-}: ToolsProps) {
+export default function Tools({ messageId, functionName, message, error, preparing, animated }: ToolsProps) {
   if (error && error !== "") {
-    return (
-      <ErrorToolCard
-        functionName={functionName}
-        errorMessage={error}
-        animated={animated}
-      />
-    );
+    return <ErrorToolCard functionName={functionName} errorMessage={error} animated={animated} />;
   }
 
   if (functionName === "paper_score") {
-    return (
-      <PaperScoreCard
-        message={message}
-        preparing={preparing}
-        animated={animated}
-      />
-    );
+    return <PaperScoreCard message={message} preparing={preparing} animated={animated} />;
   } else if (functionName === "paper_score_comment") {
-    return (
-      <PaperScoreCommentCard
-        messageId={messageId}
-        message={message}
-        preparing={preparing}
-        animated={animated}
-      />
-    );
+    return <PaperScoreCommentCard messageId={messageId} message={message} preparing={preparing} animated={animated} />;
   } else if (functionName === "greeting") {
-    return (
-      <GreetingCard
-        message={message}
-        preparing={preparing}
-        animated={animated}
-      />
-    );
+    return <GreetingCard message={message} preparing={preparing} animated={animated} />;
   } else if (functionName === "always_exception") {
-    return (
-      <AlwaysExceptionCard
-        message={message}
-        preparing={preparing}
-        animated={animated}
-      />
-    );
+    return <AlwaysExceptionCard message={message} preparing={preparing} animated={animated} />;
   }
 
-  return (
-    <UnknownToolCard
-      functionName={functionName}
-      message={message}
-      animated={animated}
-    />
-  );
+  return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
 }

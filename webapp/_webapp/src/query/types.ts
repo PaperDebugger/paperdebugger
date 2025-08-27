@@ -12,8 +12,6 @@ export type UseMutationOptionsOverride<MutationResponse> = Omit<
 
 export type PlainMessage<T> = T extends object
   ? {
-      [K in keyof T as K extends "$typeName" | "$unknown"
-        ? never
-        : K]: PlainMessage<T[K]>;
+      [K in keyof T as K extends "$typeName" | "$unknown" ? never : K]: PlainMessage<T[K]>;
     }
   : T;

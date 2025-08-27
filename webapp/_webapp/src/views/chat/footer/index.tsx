@@ -31,8 +31,8 @@ const blinkAnimation = `@keyframes blink {
 }`;
 
 // Add style tag to head
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.innerHTML = blinkAnimation;
   document.head.appendChild(style);
 }
@@ -55,11 +55,11 @@ export function PromptInput() {
   const selectedText = useSelectionStore((s) => s.selectedText);
   const { sendMessageStream } = useSendMessageStream();
   const { minimalistMode } = useSettingStore();
-  
+
   const handleModelSelect = useCallback(() => {
     setShowModelSelection(false);
   }, []);
-  
+
   const submit = useCallback(async () => {
     googleAnalytics.fireEvent(user?.id, "Send Chat Message", {
       promptLength: prompt.length,
@@ -94,38 +94,45 @@ export function PromptInput() {
       {prompts.length > 0 && <PromptSelection prompts={prompts} />}
       {actions.length > 0 && <ActionSelection actions={actions} />}
       {showModelSelection && <ModelSelection onSelectModel={handleModelSelect} />}
-      
+
       <div className={cn("pd-chat-toolbar noselect", heightCollapseRequired || minimalistMode ? "collapsed" : "")}>
-        {prompts.length == 0 && actions.length == 0 && !showModelSelection && (<ChatActions onShowModelSelection={() => setShowModelSelection(true)} />)}
+        {prompts.length == 0 && actions.length == 0 && !showModelSelection && (
+          <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
+        )}
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
         <div className="border border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
           <textarea
-            onMouseDown={e => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             id="pd-chat-prompt-input"
             ref={inputRef}
-            className={
-              cn(
-                "flex-grow border-none resize-none noselect focus:outline-none rnd-cancel",
-                heightCollapseRequired || minimalistMode ? "w-[calc(100%-1rem)]" : "w-full"
-              )
-            }
-            style={{ fontSize: heightCollapseRequired || minimalistMode ? "12px" : "14px", transition: "font-size 0.2s ease-in-out" }}
+            className={cn(
+              "flex-grow border-none resize-none noselect focus:outline-none rnd-cancel",
+              heightCollapseRequired || minimalistMode ? "w-[calc(100%-1rem)]" : "w-full",
+            )}
+            style={{
+              fontSize: heightCollapseRequired || minimalistMode ? "12px" : "14px",
+              transition: "font-size 0.2s ease-in-out",
+            }}
             rows={heightCollapseRequired || minimalistMode ? 1 : 3}
             placeholder={
-              heightCollapseRequired || minimalistMode ? "Your prompts here..." : "Enter to send, Shift + Enter to wrap, / to search prompts, : to use actions"
+              heightCollapseRequired || minimalistMode
+                ? "Your prompts here..."
+                : "Enter to send, Shift + Enter to wrap, / to search prompts, : to use actions"
             }
             value={prompt}
-            onChange={(e) => { setPrompt(e.target.value) }}
+            onChange={(e) => {
+              setPrompt(e.target.value);
+            }}
             onKeyDown={handleKeyDown}
           />
-          <div className={
-            cn(
+          <div
+            className={cn(
               "absolute flex flex-row gap-2 transition-all",
-              heightCollapseRequired || minimalistMode ? "bottom-0 right-0" : "bottom-3 right-3"
-            )
-          }>
+              heightCollapseRequired || minimalistMode ? "bottom-0 right-0" : "bottom-3 right-3",
+            )}
+          >
             <Button
               isLoading={isStreaming}
               isIconOnly
@@ -133,9 +140,7 @@ export function PromptInput() {
               isDisabled={!prompt || isStreaming}
               radius="full"
               size="sm"
-              className={cn(
-                heightCollapseRequired || minimalistMode ? "scale-[0.7]" : ""
-              )}
+              className={cn(heightCollapseRequired || minimalistMode ? "scale-[0.7]" : "")}
               type="submit"
               variant="solid"
               onPress={submit}

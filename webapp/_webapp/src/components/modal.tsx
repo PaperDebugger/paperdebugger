@@ -1,10 +1,4 @@
-import {
-  Modal as HeroModal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/react";
+import { Modal as HeroModal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 
 import { ModalProps as HeroModalProps } from "@heroui/react";
 import { memo, useMemo } from "react";
@@ -26,17 +20,7 @@ const defaultClassNames = {
 };
 
 export const Modal = memo(
-  ({
-    children,
-    isOpen,
-    onOpenChange,
-    header,
-    footer,
-    content,
-    size = "md",
-    classNames,
-    ...props
-  }: ModalProps) => {
+  ({ children, isOpen, onOpenChange, header, footer, content, size = "md", classNames, ...props }: ModalProps) => {
     const mergedClassNames = useMemo(
       () => ({
         ...defaultClassNames,

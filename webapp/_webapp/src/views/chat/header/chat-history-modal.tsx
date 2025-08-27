@@ -15,13 +15,14 @@ import { useConversationUiStore } from "../../../stores/conversation/conversatio
 import { useAuthStore } from "../../../stores/auth-store";
 
 export const ChatHistoryModal = () => {
-  const {
-    currentConversation,
-    setCurrentConversation,
-  } = useConversationStore();
+  const { currentConversation, setCurrentConversation } = useConversationStore();
   const { inputRef: promptInputRef } = useConversationUiStore();
   const { showChatHistory, setShowChatHistory } = useConversationUiStore();
-  const { data: conversations, isFetching: isFetchingConversations, refetch: refetchConversationList } = useListConversationsQuery(getProjectId());
+  const {
+    data: conversations,
+    isFetching: isFetchingConversations,
+    refetch: refetchConversationList,
+  } = useListConversationsQuery(getProjectId());
 
   // State
   const { user } = useAuthStore();
@@ -120,9 +121,8 @@ export const ChatHistoryModal = () => {
   };
 
   // Filter conversations
-  const filteredHistory = conversations?.conversations.filter((chat) =>
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  ) || [];
+  const filteredHistory =
+    conversations?.conversations.filter((chat) => chat.title.toLowerCase().includes(searchQuery.toLowerCase())) || [];
 
   // Render functions
   const renderChatItem = (chat: Conversation) => (
@@ -205,26 +205,14 @@ export const ChatHistoryModal = () => {
               labelPlacement="outside"
               placeholder={isFetchingConversations ? "Loading..." : "Search..."}
               onValueChange={setSearchQuery}
-              startContent={
-                <Icon
-                  className="text-default-500 [&>g]:stroke-[2px]"
-                  icon="tabler:search"
-                  width={18}
-                />
-              }
+              startContent={<Icon className="text-default-500 [&>g]:stroke-[2px]" icon="tabler:search" width={18} />}
             />
           </div>
 
           {filteredHistory.length === 0 ? (
-            <div className="text-gray-400 text-sm self-center pb-4 pt-3">
-              No chat history found
-            </div>
+            <div className="text-gray-400 text-sm self-center pb-4 pt-3">No chat history found</div>
           ) : (
-            <Listbox
-              aria-label="Chat history"
-              variant="flat"
-              classNames={{ list: "max-h-[300px] overflow-y-auto" }}
-            >
+            <Listbox aria-label="Chat history" variant="flat" classNames={{ list: "max-h-[300px] overflow-y-auto" }}>
               <ListboxSection
                 aria-label="Chat History Section"
                 key="history-section"
@@ -278,8 +266,9 @@ const ActionButtons = ({
   onDelete,
 }: ActionButtonsProps) => (
   <div
-    className={`flex gap-1 flex-row transition-opacity duration-150 ${hoveredItemId === chatId ? "opacity-100" : "opacity-0 hidden"
-      }`}
+    className={`flex gap-1 flex-row transition-opacity duration-150 ${
+      hoveredItemId === chatId ? "opacity-100" : "opacity-0 hidden"
+    }`}
   >
     {isCurrent && <span className="self-center">(current)</span>}
     <Tooltip content="Edit Title" placement="bottom" className="noselect" delay={500}>

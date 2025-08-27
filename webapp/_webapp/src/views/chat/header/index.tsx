@@ -8,21 +8,22 @@ import { useConversationUiStore } from "../../../stores/conversation/conversatio
 import { Message } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { ChatHistoryModal } from "./chat-history-modal";
 
-
 export const NewConversation = () => {
-  flushSync(()=>{ // force UI refresh.
+  flushSync(() => {
+    // force UI refresh.
     useStreamingMessageStore.getState().resetStreamingMessage();
     useConversationStore.getState().setIsStreaming(false);
     useConversationStore.getState().startFromScratch();
     useConversationUiStore.getState().inputRef?.current?.focus();
   });
-}
+};
 
 export const ShowHistory = () => {
-  flushSync(()=>{ // force UI refresh.
+  flushSync(() => {
+    // force UI refresh.
     useConversationUiStore.getState().setShowChatHistory(true);
   });
-}
+};
 
 export const ChatHeader = () => {
   const { currentConversation } = useConversationStore();
@@ -57,7 +58,7 @@ export const ChatHeader = () => {
             tooltip="Chat History"
             disableAnimation
           />
-          {showChatHistory && <ChatHistoryModal/>}
+          {showChatHistory && <ChatHistoryModal />}
         </>
       }
     />

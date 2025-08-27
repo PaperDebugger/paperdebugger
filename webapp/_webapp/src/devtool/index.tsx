@@ -8,7 +8,7 @@ devTool.render(<App />);
 
 const paperDebugger = createRoot(document.getElementById("root-paper-debugger")!);
 paperDebugger.render(
-    <Providers>
-        <Main />
-    </Providers>
+  <Providers>
+    <Main />
+  </Providers>,
 );

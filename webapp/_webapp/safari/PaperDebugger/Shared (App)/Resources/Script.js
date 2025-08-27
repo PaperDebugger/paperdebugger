@@ -1,25 +1,25 @@
 function show(platform, enabled, useSettingsInsteadOfPreferences) {
-    document.body.classList.add(`platform-${platform}`);
+  document.body.classList.add(`platform-${platform}`);
 
-    if (useSettingsInsteadOfPreferences) {
-        document.body.classList.add("use-settings");
-    }
+  if (useSettingsInsteadOfPreferences) {
+    document.body.classList.add("use-settings");
+  }
 
-    if (typeof enabled === "boolean") {
-        document.body.classList.toggle(`state-on`, enabled);
-        document.body.classList.toggle(`state-off`, !enabled);
-    } else {
-        document.body.classList.remove(`state-on`);
-        document.body.classList.remove(`state-off`);
-    }
+  if (typeof enabled === "boolean") {
+    document.body.classList.toggle(`state-on`, enabled);
+    document.body.classList.toggle(`state-off`, !enabled);
+  } else {
+    document.body.classList.remove(`state-on`);
+    document.body.classList.remove(`state-off`);
+  }
 }
 
 function openPreferences() {
-    webkit.messageHandlers.controller.postMessage("open-preferences");
+  webkit.messageHandlers.controller.postMessage("open-preferences");
 }
 
 function quit() {
-    webkit.messageHandlers.controller.postMessage("quit");
+  webkit.messageHandlers.controller.postMessage("quit");
 }
 
 document.querySelector("button.open-preferences-1").addEventListener("click", openPreferences);

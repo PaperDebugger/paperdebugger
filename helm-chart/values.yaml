@@ -12,7 +12,3 @@ mongo:
   in_cluster: true
   uri: "" # if in_cluster is false, use the external mongo instead
   image: mongo:latest
-
-redis:
-  in_cluster: true
-  image: redis:latest

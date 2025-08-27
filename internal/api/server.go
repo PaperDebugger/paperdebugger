@@ -100,7 +100,7 @@ func (s *Server) Run(addr string) {
 		return
 	}
 
-	s.logger.Infof("http server listening on %s", addr)
+	s.logger.Infof("[PAPERDEBUGGER] http server listening on %s", addr)
 	s.ginServer.Any("/_pd/api/*path", func(c *gin.Context) { mux.ServeHTTP(c.Writer, c.Request) })
 	err = s.ginServer.Run(addr)
 	if err != nil {

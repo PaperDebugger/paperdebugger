@@ -20,12 +20,16 @@ type DB struct {
 }
 
 func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
+	TIMEOUT := 10 * time.Second
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().
 		ApplyURI(cfg.MongoURI).
 		SetServerAPIOptions(serverAPI).
-		SetTimeout(10 * time.Second) // use SetTimeout instead of SetConnectTimeout
+		SetTimeout(TIMEOUT) // use SetTimeout instead of SetConnectTimeout
 		// Because the timeout will happen on the client.Database.RunCommand
+
+	logger.Infof("[MONGO] URI:     %v", cfg.MongoURI)
+	logger.Infof("[MONGO] Timeout: %v", TIMEOUT)
 
 	client, err := mongo.Connect(opts) // the mongo.Connect will return immediately.
 	if err != nil {
@@ -38,6 +42,6 @@ func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
 		return nil, err
 	}
 
-	logger.Info("db initialized")
+	logger.Info("[MONGO] initialized")
 	return &DB{Client: client, cfg: cfg, logger: logger}, nil
 }

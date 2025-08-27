@@ -7,6 +7,7 @@
 package internal
 
 import (
+	"github.com/google/wire"
 	"paperdebugger/internal/api"
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/api/chat"
@@ -18,8 +19,6 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/client"
-
-	"github.com/google/wire"
 )
 
 // Injectors from wire.go:

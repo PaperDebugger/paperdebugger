@@ -45,56 +45,48 @@ export const ChatButton = ({
   const { heightCollapseRequired } = useConversationUiStore();
   const { minimalistMode } = useSettingStore();
 
-  const content = (<div
-    style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "32px" }}
-    className={cn(
-      className,
-      "rounded-full w-fit flex items-center cursor-pointer overflow-hidden",
-      heightCollapseRequired || minimalistMode ? "px-0.5" : "px-2",
-      noBorder ? "" : "border",
-      disableAnimation ? "" : "transition-all duration-500",
-      showText ? "max-w-full" : "max-w-[42px]",
-      isHovered
-        ? variant === "danger"
-          ? "bg-danger-50"
-          : "bg-gray-100"
-        : "",
-      disabled ? "opacity-50" : "",
-      variant === "danger" ? "text-danger" : "text-gray-500",
-      variant === "danger" ? "border-danger-200" : "border-gray-200",
-    )}
-    onClick={() => {
-      if (disabled) return;
-      googleAnalytics.fireEvent(
-        user?.id,
-        "click_chat_button_" + normalizeName(text ?? alt ?? icon),
-        {},
-      );
-      onClick?.();
-    }}
-    onMouseEnter={() => !disabled && setIsHovered(true)}
-    onMouseLeave={() => !disabled && setIsHovered(false)}
-    onMouseDown={onMouseDown}
-  >
-    <div className="flex items-center">
-      <div className={cn("flex items-center justify-center")}>
-        <Icon icon={icon} fontSize={heightCollapseRequired || minimalistMode ? 12 : 16} />
-      </div>
-      {text && (
-        <span
-          className={cn(
-            "!text-xs !text-nowrap !overflow-hidden",
-            disableAnimation ? "" : "!transition-all !duration-500",
-            showText
-              ? "!max-w-[300px] !ms-[4px] !opacity-100"
-              : "!max-w-0 !ms-[0px] !opacity-0",
-          )}
-        >
-          {text}
-        </span>
+  const content = (
+    <div
+      style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "32px" }}
+      className={cn(
+        className,
+        "rounded-full w-fit flex items-center cursor-pointer overflow-hidden",
+        heightCollapseRequired || minimalistMode ? "px-0.5" : "px-2",
+        noBorder ? "" : "border",
+        disableAnimation ? "" : "transition-all duration-500",
+        showText ? "max-w-full" : "max-w-[42px]",
+        isHovered ? (variant === "danger" ? "bg-danger-50" : "bg-gray-100") : "",
+        disabled ? "opacity-50" : "",
+        variant === "danger" ? "text-danger" : "text-gray-500",
+        variant === "danger" ? "border-danger-200" : "border-gray-200",
       )}
+      onClick={() => {
+        if (disabled) return;
+        googleAnalytics.fireEvent(user?.id, "click_chat_button_" + normalizeName(text ?? alt ?? icon), {});
+        onClick?.();
+      }}
+      onMouseEnter={() => !disabled && setIsHovered(true)}
+      onMouseLeave={() => !disabled && setIsHovered(false)}
+      onMouseDown={onMouseDown}
+    >
+      <div className="flex items-center">
+        <div className={cn("flex items-center justify-center")}>
+          <Icon icon={icon} fontSize={heightCollapseRequired || minimalistMode ? 12 : 16} />
+        </div>
+        {text && (
+          <span
+            className={cn(
+              "!text-xs !text-nowrap !overflow-hidden",
+              disableAnimation ? "" : "!transition-all !duration-500",
+              showText ? "!max-w-[300px] !ms-[4px] !opacity-100" : "!max-w-0 !ms-[0px] !opacity-0",
+            )}
+          >
+            {text}
+          </span>
+        )}
+      </div>
     </div>
-  </div>)
+  );
   return (
     <div className="rnd-cancel">
       {tooltip ? (

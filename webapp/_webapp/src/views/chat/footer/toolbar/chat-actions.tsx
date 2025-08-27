@@ -13,7 +13,7 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
   return (
     <div className="flex flex-row gap-2 noselect">
       <ChatButton
-        onMouseDown={e => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         icon="tabler:notebook"
         text="Prompts"
         alwaysShowText
@@ -26,7 +26,7 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
       />
 
       <ChatButton
-        onMouseDown={e => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         icon="tabler:sparkles"
         text="Actions"
         alwaysShowText
@@ -47,7 +47,6 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
         alwaysShowText
         onClick={onShowModelSelection}
       />
-      
     </div>
   );
 }

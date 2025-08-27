@@ -22,18 +22,20 @@ export const SettingItemSelect = ({
       <p className="text-sm">{label}</p>
       <p className="text-xs text-gray-500">{description}</p>
     </div>
-    <Select size="sm" className={className} selectedKeys={[selected]} variant="flat" fullWidth={false} aria-label={label}
+    <Select
+      size="sm"
+      className={className}
+      selectedKeys={[selected]}
+      variant="flat"
+      fullWidth={false}
+      aria-label={label}
       onSelectionChange={(e) => {
-        onSelectChange(e.currentKey ?? "")
+        onSelectChange(e.currentKey ?? "");
       }}
     >
-      {
-        Object.entries(options).map(([key, value]) => (
-          <SelectItem key={key}>
-            {value}
-          </SelectItem>
-        ))
-      }
+      {Object.entries(options).map(([key, value]) => (
+        <SelectItem key={key}>{value}</SelectItem>
+      ))}
     </Select>
   </div>
 );

@@ -153,12 +153,7 @@ export function inlineSuggestionDecoration(
   const pos = view.state.selection.main.head;
   const widgets = [];
   const w = overleafCm.Decoration.widget({
-    widget: new InlineSuggestionWidget(
-      suggestionText,
-      configState,
-      suggestionState,
-      suggestionAcceptanceEffect,
-    ),
+    widget: new InlineSuggestionWidget(suggestionText, configState, suggestionState, suggestionAcceptanceEffect),
     side: 1,
   });
   widgets.push(w.range(pos));
@@ -262,12 +257,7 @@ class InlineSuggestionWidget extends WidgetType {
   }
 }
 
-export function insertCompletionText(
-  state: EditorState,
-  text: string,
-  from: number,
-  to: number,
-): TransactionSpec {
+export function insertCompletionText(state: EditorState, text: string, from: number, to: number): TransactionSpec {
   return {
     ...state.changeByRange((range) => {
       if (range == state.selection.main)
@@ -276,12 +266,7 @@ export function insertCompletionText(
           range: EditorSelection.cursor(from + text.length),
         };
       const len = to - from;
-      if (
-        !range.empty ||
-        (len &&
-          state.sliceDoc(range.from - len, range.from) !=
-            state.sliceDoc(from, to))
-      )
+      if (!range.empty || (len && state.sliceDoc(range.from - len, range.from) != state.sliceDoc(from, to)))
         return { range };
       return {
         changes: { from: range.from - len, to: range.from, insert: text },
@@ -327,8 +312,7 @@ export function createExtensionKeymapBinding(
         run: (view: EditorView) => {
           try {
             logDebug("TAB");
-            const suggestionText =
-              view.state.field<SuggestionState>(suggestionState)?.suggestion;
+            const suggestionText = view.state.field<SuggestionState>(suggestionState)?.suggestion;
 
             // If there is no suggestion, do nothing and let the default keymap handle it
             if (!suggestionText) {
@@ -480,9 +464,7 @@ export function createSuggestionFetchPlugin(
             return;
           }
 
-          const isAutocompleted = update.transactions.some((t) =>
-            t.isUserEvent("input.complete"),
-          );
+          const isAutocompleted = update.transactions.some((t) => t.isUserEvent("input.complete"));
           if (isAutocompleted) {
             return;
           }
@@ -568,10 +550,7 @@ export function createRenderInlineSuggestionPlugin(
   );
 }
 
-export function createSuggestionExtension(
-  overleafCm: OverleafCodeMirror,
-  config: SuggestionConfig,
-): Extension[] {
+export function createSuggestionExtension(overleafCm: OverleafCodeMirror, config: SuggestionConfig): Extension[] {
   // CodeMirror's StateEffect basically equals to PostMessage.
   const suggestionFetchedEffect: StateEffectType<SuggestionFetchState> =
     overleafCm.StateEffect.define<SuggestionFetchState>();
@@ -580,18 +559,10 @@ export function createSuggestionExtension(
 
   config.completion = debouncePromise(config.completion, config.debounce);
 
-  const suggestionState = createSuggestionState(
-    overleafCm,
-    suggestionFetchedEffect,
-    suggestionAcceptanceEffect,
-  );
+  const suggestionState = createSuggestionState(overleafCm, suggestionFetchedEffect, suggestionAcceptanceEffect);
   const pluginConfigState = createSuggestionConfig(overleafCm, config);
 
-  const suggestionFetchPlugin = createSuggestionFetchPlugin(
-    overleafCm,
-    suggestionFetchedEffect,
-    pluginConfigState,
-  );
+  const suggestionFetchPlugin = createSuggestionFetchPlugin(overleafCm, suggestionFetchedEffect, pluginConfigState);
   const suggestionRenderingPlugin = createRenderInlineSuggestionPlugin(
     overleafCm,
     suggestionAcceptanceEffect,
@@ -599,17 +570,7 @@ export function createSuggestionExtension(
     pluginConfigState,
   );
 
-  const keymapBindingExtension = createExtensionKeymapBinding(
-    overleafCm,
-    suggestionAcceptanceEffect,
-    suggestionState,
-  );
+  const keymapBindingExtension = createExtensionKeymapBinding(overleafCm, suggestionAcceptanceEffect, suggestionState);
 
-  return [
-    suggestionState,
-    pluginConfigState,
-    suggestionFetchPlugin,
-    suggestionRenderingPlugin,
-    keymapBindingExtension,
-  ];
+  return [suggestionState, pluginConfigState, suggestionFetchPlugin, suggestionRenderingPlugin, keymapBindingExtension];
 }

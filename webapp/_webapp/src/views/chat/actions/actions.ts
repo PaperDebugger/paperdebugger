@@ -3,7 +3,6 @@ import { useConversationUiStore } from "../../../stores/conversation/conversatio
 import { useSendMessageStream } from "../../../hooks/useSendMessageStream";
 import { NewConversation, ShowHistory } from "../header";
 
-
 export type Action = {
   name: string;
   description: string;
@@ -23,7 +22,7 @@ export const useActions = ({ enabled, filter }: useActionsProps) => {
       {
         name: ":new",
         description: "New conversation",
-        action: ()=>{
+        action: () => {
           setPrompt("");
           NewConversation();
         },
@@ -31,7 +30,7 @@ export const useActions = ({ enabled, filter }: useActionsProps) => {
       {
         name: ":his",
         description: "View conversation history",
-        action: ()=>{
+        action: () => {
           setPrompt("");
           ShowHistory();
         },

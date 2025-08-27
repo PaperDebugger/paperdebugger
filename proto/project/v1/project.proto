@@ -139,7 +139,7 @@ message PaperScoreCommentResult {
 message PaperScoreCommentEntry {
   string section = 1;
   // Note: Do not use anchor_text here, the key in backend is “anchorText”.
-  string anchorText = 2;
+  string anchorText = 2; // do not trust the linter
   string weakness = 3;
   string importance = 4;
 }

@@ -20,13 +20,12 @@ export function Prompts() {
         <SettingsSectionContainer>
           <div className="flex flex-row gap-2">
             <SettingsSectionTitle>Prompt Library</SettingsSectionTitle>
-            <Tooltip
-              content="Create New Prompt"
-              placement="bottom"
-              size="sm"
-              delay={500}
-            >
-             <Icon icon="tabler:plus" className="w-4 h-4 text-gray-500 cursor-pointer hover:bg-gray-300 rounded-full transition-all duration-300" onClick={onCreateOpen} />
+            <Tooltip content="Create New Prompt" placement="bottom" size="sm" delay={500}>
+              <Icon
+                icon="tabler:plus"
+                className="w-4 h-4 text-gray-500 cursor-pointer hover:bg-gray-300 rounded-full transition-all duration-300"
+                onClick={onCreateOpen}
+              />
             </Tooltip>
           </div>
           <PromptLibraryTable onDelete={onDeleteOpen} onUpdate={onUpdateOpen} onView={onViewOpen} />

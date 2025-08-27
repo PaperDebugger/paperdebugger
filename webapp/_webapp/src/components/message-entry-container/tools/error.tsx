@@ -6,11 +6,7 @@ type ErrorToolCardProps = {
   animated: boolean;
 };
 
-export const ErrorToolCard = ({
-  functionName,
-  errorMessage,
-  animated,
-}: ErrorToolCardProps) => {
+export const ErrorToolCard = ({ functionName, errorMessage, animated }: ErrorToolCardProps) => {
   return (
     <div className={cn("tool-card !border-red-500 noselect", { animated: animated })}>
       <h3 className="text-xs font-semibold font-sans text-red-700 uppercase tracking-wider mb-1">

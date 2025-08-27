@@ -67,7 +67,9 @@ function WelcomeContent() {
       <div>Access PaperDebugger in below two ways.</div>
       <div className="space-y-2">
         <AccessMethodItem
-          icon={<Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle text-primary-600" />}
+          icon={
+            <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle text-primary-600" />
+          }
           title="Top Left Button"
           description="Click the PaperDebugger icon in the top left of Overleaf."
         />
@@ -76,8 +78,8 @@ function WelcomeContent() {
           title="Keyboard shortcut"
           description={
             <>
-              Press <KeyboardShortcut>⌘ + L</KeyboardShortcut> (Mac) or{" "}
-              <KeyboardShortcut>Ctrl + L</KeyboardShortcut> (Windows/Linux)
+              Press <KeyboardShortcut>⌘ + L</KeyboardShortcut> (Mac) or <KeyboardShortcut>Ctrl + L</KeyboardShortcut>{" "}
+              (Windows/Linux)
             </>
           }
         />
@@ -113,20 +115,18 @@ function CompleteContent() {
 }
 
 // Reusable Components
-function AccessMethodItem({ 
-  icon, 
-  title, 
-  description 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  description: React.ReactNode; 
+function AccessMethodItem({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: React.ReactNode;
 }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center justify-center w-[64px] bg-primary-100 py-2 rounded-md">
-        {icon}
-      </div>
+      <div className="flex items-center justify-center w-[64px] bg-primary-100 py-2 rounded-md">{icon}</div>
       <div>
         <p className="font-medium mb-1">{title}</p>
         <p className="text-xs text-gray-500">{description}</p>
@@ -148,13 +148,13 @@ function OnboardingHeader({ title, description }: OnboardingHeaderProps) {
   );
 }
 
-function OnboardingFooter({ 
-  currentStep, 
-  totalSteps, 
-  isCompleting, 
-  onSkip, 
-  onPrevious, 
-  onNext 
+function OnboardingFooter({
+  currentStep,
+  totalSteps,
+  isCompleting,
+  onSkip,
+  onPrevious,
+  onNext,
 }: OnboardingFooterProps) {
   const isLastStep = currentStep === totalSteps - 1;
   const isFirstStep = currentStep === 0;
@@ -162,17 +162,11 @@ function OnboardingFooter({
   return (
     <div className="flex flex-row items-center w-full">
       <div className="flex flex-row w-1/3">
-        <Button
-          size="sm"
-          variant="light"
-          color="default"
-          onPress={onSkip}
-          isDisabled={isCompleting}
-        >
+        <Button size="sm" variant="light" color="default" onPress={onSkip} isDisabled={isCompleting}>
           {isCompleting ? <Spinner size="sm" /> : "Skip"}
         </Button>
       </div>
-      
+
       <div className="flex flex-row justify-center gap-2 w-1/3">
         {Array.from({ length: totalSteps }, (_, index) => (
           <div
@@ -183,44 +177,21 @@ function OnboardingFooter({
           />
         ))}
       </div>
-      
+
       <div className="flex flex-row gap-2 justify-end w-1/3">
-        <Button
-          size="sm"
-          variant="light"
-          color="default"
-          onPress={onPrevious}
-          isDisabled={isFirstStep || isCompleting}
-        >
+        <Button size="sm" variant="light" color="default" onPress={onPrevious} isDisabled={isFirstStep || isCompleting}>
           Previous
         </Button>
 
-        <Button
-          size="sm"
-          color="primary"
-          onPress={onNext}
-          isDisabled={isCompleting}
-        >
-          {isCompleting ? (
-            <Spinner size="sm" />
-          ) : isLastStep ? (
-            "Done"
-          ) : (
-            "Next"
-          )}
+        <Button size="sm" color="primary" onPress={onNext} isDisabled={isCompleting}>
+          {isCompleting ? <Spinner size="sm" /> : isLastStep ? "Done" : "Next"}
         </Button>
       </div>
     </div>
   );
 }
 
-function OnboardingStep({ 
-  step, 
-  imageUrl, 
-  imageError, 
-  onImageClick, 
-  onImageError 
-}: OnboardingStepProps) {
+function OnboardingStep({ step, imageUrl, imageError, onImageClick, onImageError }: OnboardingStepProps) {
   const showImage = step.imagePath && imageUrl && !imageError;
 
   return (
@@ -241,13 +212,13 @@ function OnboardingStep({
   );
 }
 
-function ImageModal({ 
-  isOpen, 
-  onClose, 
-  imageUrl, 
-  imageError, 
-  title, 
-  onImageError 
+function ImageModal({
+  isOpen,
+  onClose,
+  imageUrl,
+  imageError,
+  title,
+  onImageError,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -278,16 +249,19 @@ function useOnboardingNavigation(totalSteps: number) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const goToNext = useCallback(() => {
-    setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
   }, [totalSteps]);
 
   const goToPrevious = useCallback(() => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   }, []);
 
-  const goToStep = useCallback((step: number) => {
-    setCurrentStep(Math.max(0, Math.min(step, totalSteps - 1)));
-  }, [totalSteps]);
+  const goToStep = useCallback(
+    (step: number) => {
+      setCurrentStep(Math.max(0, Math.min(step, totalSteps - 1)));
+    },
+    [totalSteps],
+  );
 
   return {
     currentStep,
@@ -306,7 +280,9 @@ function useOnboardingImage(step: OnboardingStep) {
   useEffect(() => {
     if (step.imagePath) {
       setImageError(false);
-      getUrl(step.imagePath).then(setImageUrl).catch(() => setImageError(true));
+      getUrl(step.imagePath)
+        .then(setImageUrl)
+        .catch(() => setImageError(true));
     } else {
       setImageUrl(undefined);
       setImageError(false);
@@ -320,7 +296,7 @@ function useOnboardingKeyboardHandlers(
   isOpen: boolean,
   onNext: () => void,
   onPrevious: () => void,
-  onComplete: () => void
+  onComplete: () => void,
 ) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -336,7 +312,7 @@ function useOnboardingKeyboardHandlers(
           break;
       }
     },
-    [onNext, onPrevious, onComplete]
+    [onNext, onPrevious, onComplete],
   );
 
   useEffect(() => {
@@ -390,12 +366,7 @@ export const OnboardingGuide = () => {
     setIsImageModalOpen(false);
   }, []);
 
-  useOnboardingKeyboardHandlers(
-    !(settings?.showedOnboarding ?? true),
-    handleNext,
-    handlePrevious,
-    handleComplete
-  );
+  useOnboardingKeyboardHandlers(!(settings?.showedOnboarding ?? true), handleNext, handlePrevious, handleComplete);
 
   const isOpen = !(settings?.showedOnboarding ?? true);
 
@@ -408,12 +379,7 @@ export const OnboardingGuide = () => {
         className="noselect"
         onOpenChange={(open) => !open && handleComplete()}
         size="xl"
-        header={
-          <OnboardingHeader
-            title={currentStepData.title}
-            description={currentStepData.description}
-          />
-        }
+        header={<OnboardingHeader title={currentStepData.title} description={currentStepData.description} />}
         footer={
           <OnboardingFooter
             currentStep={navigation.currentStep}

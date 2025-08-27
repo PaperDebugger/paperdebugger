@@ -13,9 +13,7 @@ export const BetaFeatureSettings = () => {
         description="Predicts your next edit"
         isLoading={isUpdating.enableCompletion}
         selected={settings?.enableCompletion ?? false}
-        onSelectChange={(selected) =>
-          updateSettings({ enableCompletion: selected })
-        }
+        onSelectChange={(selected) => updateSettings({ enableCompletion: selected })}
       />
       <SettingItem
         hidden
@@ -23,9 +21,7 @@ export const BetaFeatureSettings = () => {
         description="Enable full document RAG"
         isLoading={isUpdating.fullDocumentRag}
         selected={settings?.fullDocumentRag ?? false}
-        onSelectChange={(selected) =>
-          updateSettings({ fullDocumentRag: selected })
-        }
+        onSelectChange={(selected) => updateSettings({ fullDocumentRag: selected })}
       />
     </SettingsSectionContainer>
   );

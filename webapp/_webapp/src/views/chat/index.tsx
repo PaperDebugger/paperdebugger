@@ -18,7 +18,7 @@ export const Chat = () => {
 
   return (
     <div className="pd-app-tab-content" id="pd-chat-container">
-      <ChatHeader/>
+      <ChatHeader />
       <ChatBody conversation={currentConversation} />
       <PromptInput />
     </div>

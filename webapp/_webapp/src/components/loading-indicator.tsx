@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 // Types
 // ============================================================================
 
-type Phase = 'green' | 'orange' | 'red';
+type Phase = "green" | "orange" | "red";
 
 interface LoadingIndicatorProps {
   text?: string;
@@ -35,13 +35,13 @@ const STYLES = {
 
 const PHASE_STYLES = {
   green: {
-    background: 'linear-gradient(90deg, #35aa6b 0%, #7cc89f 100%)',
+    background: "linear-gradient(90deg, #35aa6b 0%, #7cc89f 100%)",
   },
   orange: {
-    background: 'linear-gradient(90deg, #f97316 0%, #fb923c 100%)',
+    background: "linear-gradient(90deg, #f97316 0%, #fb923c 100%)",
   },
   red: {
-    background: 'linear-gradient(90deg, #ef4444 0%, #f87171 100%)',
+    background: "linear-gradient(90deg, #ef4444 0%, #f87171 100%)",
   },
 } as const;
 
@@ -49,14 +49,10 @@ const PHASE_STYLES = {
 // Component
 // ============================================================================
 
-export const LoadingIndicator = ({
-  text = "Thinking",
-  estimatedSeconds = 0,
-  errorMessage,
-}: LoadingIndicatorProps) => {
+export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, errorMessage }: LoadingIndicatorProps) => {
   // State
   const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<Phase>('green');
+  const [phase, setPhase] = useState<Phase>("green");
   const [isTimeout, setIsTimeout] = useState(false);
 
   // Handle progress animation
@@ -87,13 +83,13 @@ export const LoadingIndicator = ({
 
       // Handle phase transitions
       if (currentProgress >= 100) {
-        if (phase === 'green') {
-          setPhase('orange');
+        if (phase === "green") {
+          setPhase("orange");
           currentProgress = 0;
-        } else if (phase === 'orange') {
-          setPhase('red');
+        } else if (phase === "orange") {
+          setPhase("red");
           currentProgress = 0;
-        } else if (phase === 'red') {
+        } else if (phase === "red") {
           setIsTimeout(true);
           return;
         }
@@ -118,8 +114,8 @@ export const LoadingIndicator = ({
   // Get status message based on phase
   const getStatusMessage = () => {
     if (isTimeout) return "Request timed out";
-    if (phase === 'orange') return "Taking longer than expected";
-    if (phase === 'red') return "Last try";
+    if (phase === "orange") return "Taking longer than expected";
+    if (phase === "red") return "Last try";
     if (errorMessage && errorMessage.length > 0) return errorMessage;
     return text;
   };
@@ -128,12 +124,10 @@ export const LoadingIndicator = ({
     <div className="indicator">
       {/* Status Text */}
       <div
-        className={`flex space-x-1 text-sm ${(!isTimeout && !errorMessage) ? 'loading-shimmer' : ''}`}
-        style={(!isTimeout && !errorMessage) ? STYLES.loading.animation : undefined}
+        className={`flex space-x-1 text-sm ${!isTimeout && !errorMessage ? "loading-shimmer" : ""}`}
+        style={!isTimeout && !errorMessage ? STYLES.loading.animation : undefined}
       >
-        <span className={(isTimeout || errorMessage) ? 'text-rose-400' : ''}>
-          {getStatusMessage()}
-        </span>
+        <span className={isTimeout || errorMessage ? "text-rose-400" : ""}>{getStatusMessage()}</span>
       </div>
 
       {/* Progress Bar */}
@@ -144,7 +138,7 @@ export const LoadingIndicator = ({
             style={{
               width: `${progress}%`,
               ...PHASE_STYLES[phase],
-              transition: 'width 1s ease-out',
+              transition: "width 1s ease-out",
             }}
           />
         </div>

@@ -3,13 +3,7 @@ import SwitchCell from "../../components/switch-cell";
 type SettingItemProps = {
   label: string;
   description: string;
-  color?:
-    | "default"
-    | "primary"
-    | "secondary"
-    | "success"
-    | "warning"
-    | "danger";
+  color?: "default" | "primary" | "secondary" | "success" | "warning" | "danger";
   isLoading?: boolean;
   isDisabled?: boolean;
   hidden?: boolean;

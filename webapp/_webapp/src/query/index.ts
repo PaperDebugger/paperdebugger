@@ -52,10 +52,7 @@ import { useAuthStore } from "../stores/auth-store";
 //   });
 // };
 
-export const useGetProjectQuery = (
-  projectId: string,
-  opts?: UseQueryOptionsOverride<GetProjectResponse>,
-) => {
+export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {
   return useQuery({
     queryKey: queryKeys.projects.getProject(projectId).queryKey,
     queryFn: () => getProject({ projectId }),
@@ -63,9 +60,7 @@ export const useGetProjectQuery = (
   });
 };
 
-export const useListPromptsQuery = (
-  opts?: UseQueryOptionsOverride<ListPromptsResponse>,
-) => {
+export const useListPromptsQuery = (opts?: UseQueryOptionsOverride<ListPromptsResponse>) => {
   return useQuery({
     queryKey: queryKeys.prompts.listPrompts().queryKey,
     queryFn: listPrompts,
@@ -73,27 +68,21 @@ export const useListPromptsQuery = (
   });
 };
 
-export const useCreatePromptMutation = (
-  opts?: UseMutationOptionsOverride<CreatePromptResponse>,
-) => {
+export const useCreatePromptMutation = (opts?: UseMutationOptionsOverride<CreatePromptResponse>) => {
   return useMutation({
     mutationFn: createPrompt,
     ...opts,
   });
 };
 
-export const useUpdatePromptMutation = (
-  opts?: UseMutationOptionsOverride<UpdatePromptResponse>,
-) => {
+export const useUpdatePromptMutation = (opts?: UseMutationOptionsOverride<UpdatePromptResponse>) => {
   return useMutation({
     mutationFn: updatePrompt,
     ...opts,
   });
 };
 
-export const useDeletePromptMutation = (
-  opts?: UseMutationOptionsOverride<DeletePromptResponse>,
-) => {
+export const useDeletePromptMutation = (opts?: UseMutationOptionsOverride<DeletePromptResponse>) => {
   return useMutation({
     mutationFn: deletePrompt,
     ...opts,
@@ -114,18 +103,14 @@ export const useListConversationsQuery = (
   });
 };
 
-export const useDeleteConversationMutation = (
-  opts?: UseMutationOptionsOverride<DeleteConversationResponse>,
-) => {
+export const useDeleteConversationMutation = (opts?: UseMutationOptionsOverride<DeleteConversationResponse>) => {
   return useMutation({
     mutationFn: deleteConversation,
     ...opts,
   });
 };
 
-export const useRunProjectPaperScoreMutation = (
-  opts?: UseMutationOptionsOverride<RunProjectPaperScoreResponse>,
-) => {
+export const useRunProjectPaperScoreMutation = (opts?: UseMutationOptionsOverride<RunProjectPaperScoreResponse>) => {
   return useMutation({
     mutationFn: runProjectPaperScore,
     ...opts,
@@ -152,9 +137,7 @@ export const useCreateConversationMessageMutation = (
   });
 };
 
-export const useUpdateConversationMutation = (
-  opts?: UseMutationOptionsOverride<UpdateConversationResponse>,
-) => {
+export const useUpdateConversationMutation = (opts?: UseMutationOptionsOverride<UpdateConversationResponse>) => {
   return useMutation({
     mutationFn: updateConversation,
     ...opts,
@@ -162,9 +145,7 @@ export const useUpdateConversationMutation = (
 };
 
 // User Instructions
-export const useGetUserInstructionsQuery = (
-  opts?: UseQueryOptionsOverride<GetUserInstructionsResponse>,
-) => {
+export const useGetUserInstructionsQuery = (opts?: UseQueryOptionsOverride<GetUserInstructionsResponse>) => {
   const { user } = useAuthStore();
   return useQuery({
     queryKey: queryKeys.users.getUserInstructions().queryKey,

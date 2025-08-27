@@ -17,12 +17,7 @@ const CardBody = ({ children }: { children: React.ReactNode }) => {
   return <div className="tool-card noselect">{children}</div>;
 };
 
-export const PaperScoreCommentCard = ({
-  messageId,
-  message,
-  preparing,
-  animated,
-}: PaperScoreCommentCardProps) => {
+export const PaperScoreCommentCard = ({ messageId, message, preparing, animated }: PaperScoreCommentCardProps) => {
   const projectId = getProjectId();
   const [overleafSession, setOverleafSession] = useState("");
   const [gclb, setGclb] = useState("");
@@ -49,10 +44,13 @@ export const PaperScoreCommentCard = ({
         });
 
         if (comments.length > 0) {
-          const allCommentIds = comments.map(comment => comment.commentId || `${comment.docPath}:${comment.quotePosition}`);
+          const allCommentIds = comments.map(
+            (comment) => comment.commentId || `${comment.docPath}:${comment.quotePosition}`,
+          );
           setSelectedComments(new Set(allCommentIds));
         }
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
         // Ignore parsing errors here, they'll be handled in the render
       }
     }
@@ -70,9 +68,7 @@ export const PaperScoreCommentCard = ({
     return (
       <div className="tool-card">
         <h3 className="tool-card-title">Paper Score Comment</h3>
-        <div className="text-xs text-primary-600">
-          No paper score comment result.
-        </div>
+        <div className="text-xs text-primary-600">No paper score comment result.</div>
       </div>
     );
   }
@@ -88,16 +84,14 @@ export const PaperScoreCommentCard = ({
         <CardBody>
           <div className="!text-gray-500">
             <Icon icon="tabler:file-like" className="!w-12 !h-12 !mx-auto !mb-2" />
-            <p className="!text-sm !text-gray-600 !text-center">
-              No comments left for this paper.
-            </p>
+            <p className="!text-sm !text-gray-600 !text-center">No comments left for this paper.</p>
           </div>
         </CardBody>
       );
     }
 
     const handleCommentToggle = (commentId: string) => {
-      setSelectedComments(prev => {
+      setSelectedComments((prev) => {
         const newSet = new Set(prev);
         if (newSet.has(commentId)) {
           newSet.delete(commentId);
@@ -109,7 +103,9 @@ export const PaperScoreCommentCard = ({
     };
 
     const handleSelectAll = () => {
-      const allCommentIds = comments.map(comment => comment.commentId || `${comment.docPath}:${comment.quotePosition}`);
+      const allCommentIds = comments.map(
+        (comment) => comment.commentId || `${comment.docPath}:${comment.quotePosition}`,
+      );
       setSelectedComments(new Set(allCommentIds));
     };
 
@@ -117,18 +113,20 @@ export const PaperScoreCommentCard = ({
       setSelectedComments(new Set());
     };
 
-    const selectedCommentsList = comments.filter(comment =>
-      selectedComments.has(comment.commentId || `${comment.docPath}:${comment.quotePosition}`)
+    const selectedCommentsList = comments.filter((comment) =>
+      selectedComments.has(comment.commentId || `${comment.docPath}:${comment.quotePosition}`),
     );
 
     return (
       <CardBody>
         <StatsSummary comments={comments} />
 
-        <div className={cn(
-          "border rounded-lg pt-1 transition-all duration-300 noselect",
-          isSuggestionsExpanded ? "h-[27.45rem] overflow-y-auto" : "h-[2rem] overflow-hidden"
-        )}>
+        <div
+          className={cn(
+            "border rounded-lg pt-1 transition-all duration-300 noselect",
+            isSuggestionsExpanded ? "h-[27.45rem] overflow-y-auto" : "h-[2rem] overflow-hidden",
+          )}
+        >
           <FilterControls
             comments={comments}
             filterImportance={filterImportance}
@@ -139,7 +137,6 @@ export const PaperScoreCommentCard = ({
             setIsSuggestionsExpanded={setIsSuggestionsExpanded}
             showFilters={showFilters}
           />
-
 
           <CommentsList
             comments={comments}
@@ -154,7 +151,6 @@ export const PaperScoreCommentCard = ({
             showFilters={showFilters}
             setShowFilters={setShowFilters}
           />
-
         </div>
 
         <AddCommentsButton

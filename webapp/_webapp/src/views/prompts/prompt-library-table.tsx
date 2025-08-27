@@ -11,7 +11,6 @@ type PromptLibraryTableProps = {
   onView: (prompt: Prompt) => void;
 };
 
-
 export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibraryTableProps) {
   const { isLoading, prompts } = usePromptLibraryStore();
   const [filter, setFilter] = useState("");
@@ -52,13 +51,12 @@ export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibrary
             className={cn(
               "w-full flex flex-row gap-2 items-center px-4 py-2 noselect",
               "border-l-1 border-r-1 border-gray-200",
-              "first:border-t-1 last:border-b-1 first:rounded-t-md last:rounded-b-md border-t")}
+              "first:border-t-1 last:border-b-1 first:rounded-t-md last:rounded-b-md border-t",
+            )}
           >
             <div className="flex-grow flex flex-col gap-1 min-w-0">
               <div className="text-xs font-medium truncate">{prompt.title}</div>
-              <div className="text-xs text-gray-500 truncate">
-                {prompt.content}
-              </div>
+              <div className="text-xs text-gray-500 truncate">{prompt.content}</div>
             </div>
             <div className="flex flex-row gap-1">
               <ChatButton
@@ -68,9 +66,7 @@ export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibrary
                 noBorder
                 disableAnimation
                 onClick={() =>
-                  prompt.isUserPrompt
-                    ? onUpdate(duplicatePrompt(prompt))
-                    : onView(duplicatePrompt(prompt))
+                  prompt.isUserPrompt ? onUpdate(duplicatePrompt(prompt)) : onView(duplicatePrompt(prompt))
                 }
               />
               {prompt.isUserPrompt && (

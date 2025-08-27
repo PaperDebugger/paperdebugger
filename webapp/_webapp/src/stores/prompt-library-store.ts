@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { Prompt } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { listPrompts } from "../query/api";
 
-
 type PromptLibraryStore = {
   prompts: Prompt[];
   setPrompts: (prompts: Prompt[]) => void;
@@ -26,6 +25,6 @@ export const usePromptLibraryStore = create<PromptLibraryStore>((set, get) => ({
 
   searchPrompts: (query: string) => {
     const prompts = get().prompts;
-    return prompts.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
+    return prompts.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()));
   },
 }));

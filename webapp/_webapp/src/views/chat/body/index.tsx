@@ -20,11 +20,11 @@ enum ReloadStatus {
 }
 
 export const ChatBody = ({ conversation }: ChatBodyProps) => {
-  const { setCurrentConversation } = useConversationStore()
+  const { setCurrentConversation } = useConversationStore();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const expanderRef = useRef<HTMLDivElement>(null);
-  const streamingMessage = useStreamingMessageStore(s => s.streamingMessage);
+  const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
   const visibleMessages = filterVisibleMessages(conversation);
   const [reloadSuccess, setReloadSuccess] = useState(ReloadStatus.Default);
 
@@ -41,7 +41,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     const expanderViewOffset =
       (expanderRef.current?.getBoundingClientRect().top ?? 0) -
       (chatContainerRef.current?.getBoundingClientRect().y ?? 0);
-    
+
     let expanderHeight: number;
     if (expanderViewOffset < 0) {
       expanderHeight = 0; // expander 的 positoin 是 absolute，和 stream markdown 独立渲染。当 stream markdown 渲染的时候，expander 可能会因为用户滚动滑到 chatContainer 上面，导致 expander.y < 0。这个时候我们就不需要 expander 了
@@ -51,7 +51,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
 
     if (expanderRef.current) {
       const lastUserMsgHeight = lastUserMsgRef.current?.clientHeight ?? 0;
-      expanderRef.current.style.height = (chatContainerHeight - lastUserMsgHeight - 8) + "px";
+      expanderRef.current.style.height = chatContainerHeight - lastUserMsgHeight - 8 + "px";
     }
 
     if (lastUserMsgRef.current && chatContainerRef.current) {
@@ -59,7 +59,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
       const target = lastUserMsgRef.current;
       container.scrollTo({
         top: target.offsetTop,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     } else {
       if (expanderRef.current) {
@@ -75,27 +75,41 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const finalizedMessageCards = visibleMessages.map((message, index) => (
     <div
       key={index}
-      ref={index === visibleMessages.length - 1 && message.payload?.messageType.case === "user" ? lastUserMsgRef : undefined}
+      ref={
+        index === visibleMessages.length - 1 && message.payload?.messageType.case === "user"
+          ? lastUserMsgRef
+          : undefined
+      }
     >
       <MessageCard
         animated={false}
         messageEntry={messageToMessageEntry(message)}
-        prevAttachment={
-          getPrevUserMessage(visibleMessages, index)?.selectedText
-        }
+        prevAttachment={getPrevUserMessage(visibleMessages, index)?.selectedText}
       />
     </div>
   ));
 
   const streamingMessageCards = streamingMessage.parts.map((entry) => (
-    <MessageCard
-      key={`streaming-${entry.messageId}`}
-      animated={true}
-      messageEntry={entry}
-    />
+    <MessageCard key={`streaming-${entry.messageId}`} animated={true} messageEntry={entry} />
   ));
 
-  const expander = <div style={{ height: "0px", backgroundColor: "transparent", position: "absolute", top: 0, left: 0, right: 0, zIndex: 0, pointerEvents: "none" }} aria-hidden="true" id="expander" ref={expanderRef} />;
+  const expander = (
+    <div
+      style={{
+        height: "0px",
+        backgroundColor: "transparent",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+      aria-hidden="true"
+      id="expander"
+      ref={expanderRef}
+    />
+  );
 
   return (
     <div className="pd-app-tab-content-body" id="pd-chat-item-container" ref={chatContainerRef}>
@@ -113,8 +127,8 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
         {isDebugMode && (
           <div className="text-xs text-gray-300 z-1 noselect">
             <span>* Debug mode is enabled, </span>
-            <span 
-              className={`${reloadSuccess ? 'text-emerald-300' : 'text-gray-300'} underline cursor-pointer rnd-cancel`}
+            <span
+              className={`${reloadSuccess ? "text-emerald-300" : "text-gray-300"} underline cursor-pointer rnd-cancel`}
               onClick={async () => {
                 try {
                   const response = await getConversation({ conversationId: conversation?.id ?? "" });

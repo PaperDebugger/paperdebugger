@@ -38,6 +38,6 @@ export const Settings = () => {
         {enableUserDeveloperTools && <UserDeveloperTools />}
         {import.meta.env.DEV && <RealDeveloperTools />}
       </div>
-    </div >
+    </div>
   );
 };

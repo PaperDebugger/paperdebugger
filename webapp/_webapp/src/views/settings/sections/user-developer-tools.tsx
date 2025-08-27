@@ -1,10 +1,11 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { SettingItemSelect } from "../setting-item-select";
 import { useSettingStore } from "../../../stores/setting-store";
+import { SettingItemInput } from "../setting-item-input";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
-
+  const { endpoint, setEndpoint, resetEndpoint } = useSettingStore();
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>
@@ -13,18 +14,33 @@ export const UserDeveloperTools = () => {
 
       <SettingItemSelect
         label="Conversation Mode"
-        description="Affets the message sent to AI"
+        description="Affects the message sent to AI"
         selected={conversationMode}
         options={{
-          "debug": "Debug",
-          "normal": "Normal",
+          debug: "Debug",
+          normal: "Normal",
         }}
         onSelectChange={(selected) => {
-          setConversationMode(selected as "debug" | "normal")
+          setConversationMode(selected as "debug" | "normal");
         }}
       />
 
-      <div className="text-gray-500 text-xs ps-2">* developer settings stored locally, will be reset when you clear your browser data</div>
+      <SettingItemInput
+        label="Backend Endpoint"
+        description="You need to refresh the page to apply the changes"
+        value={endpoint}
+        onChange={(value) => {
+          setEndpoint(value);
+        }}
+        showResetButton={true}
+        onReset={() => {
+          resetEndpoint();
+        }}
+      />
+
+      <div className="text-gray-500 text-xs ps-2">
+        * developer settings stored locally, will be reset when you clear your browser data
+      </div>
     </SettingsSectionContainer>
   );
 };

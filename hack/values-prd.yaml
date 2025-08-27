@@ -2,5 +2,3 @@ namespace: paperdebugger
 
 mongo:
   in_cluster: false
-redis:
-  in_cluster: false

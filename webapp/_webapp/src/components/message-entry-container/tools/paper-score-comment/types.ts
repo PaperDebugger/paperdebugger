@@ -1,6 +1,6 @@
 export type PaperScoreCommentCardProps = {
-    messageId: string;
-    message: string;
-    preparing: boolean;
-    animated: boolean;
-}; 
+  messageId: string;
+  message: string;
+  preparing: boolean;
+  animated: boolean;
+};
