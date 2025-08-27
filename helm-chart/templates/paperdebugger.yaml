@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperdebugger
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: paperdebugger
+  template:
+    metadata:
+      labels:
+        app: paperdebugger
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      {{ if .Values.mongo.in_cluster }}
+      initContainers:
+        - name: init-mongodb
+          image: mongo:latest
+          command:
+            [
+              "mongosh",
+              "mongodb://mongo:27017",
+              "--eval",
+              'db.isMaster().primary || rs.initiate({_id: "in-cluster", members: [{_id: 0, host: "mongo:27017"}]})',
+            ]
+      {{ end }}
+      containers:
+        - name: paperdebugger
+          image: {{ .Values.paperdebugger.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6060
+          envFrom:
+            - configMapRef:
+                name: paperdebugger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperdebugger
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: paperdebugger
+  ports:
+    - name: http
+      port: 80
+      targetPort: 6060
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paperdebugger
+  namespace: {{ .Values.namespace }}
+data:
+  OPENAI_API_KEY: "{{ .Values.openai_api_key }}"
+  JWT_SIGNING_KEY: "{{ .Values.jwt_signing_key }}"
+  {{ if not .Values.mongo.in_cluster }}
+  PD_MONGO_URI: "{{ .Values.mongo.uri }}"
+  {{ end }}

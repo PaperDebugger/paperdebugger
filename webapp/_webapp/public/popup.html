@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaperDebugger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600&display=swap" rel="stylesheet" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        padding: 1rem;
+        padding-left: 1.5rem;
+        min-width: 280px;
+        max-width: 340px;
+        min-height: 220px;
+        background: #fafafa;
+        color: #222;
+        font-family:
+          "Exo 2",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+        border: 1px solid #ececec;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+      }
+      .title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-align: left;
+        font-family: "Exo 2", sans-serif;
+      }
+      .subtitle {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-align: left;
+        font-family: "Exo 2", sans-serif;
+      }
+      .steps {
+        margin: 0.5rem 0 0 0;
+        padding: 0 0rem;
+        flex: 1;
+      }
+      .step {
+        font-size: 0.9rem;
+        font-weight: 400;
+        margin-bottom: 0.7rem;
+        line-height: 1.5;
+        border-left: 3px solid #e0e0e0;
+        padding-left: 0.7em;
+        background: none;
+        border-radius: 0;
+      }
+      .step strong {
+        color: #3b82f6;
+        font-weight: 600;
+        margin-right: 0.3em;
+      }
+      .footer {
+        font-size: 0.75rem;
+        text-align: right;
+        font-weight: 100;
+        color: #888;
+        padding: 0.7rem 1.2rem 1.1rem 0;
+        border-top: 1px solid #ececec;
+        background: none;
+        border-radius: 0;
+        letter-spacing: 0.01em;
+      }
+      .highlight {
+        color: #3b82f6;
+        font-weight: 600;
+      }
+      .noselect {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      .nodrag {
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        -webkit-user-select: none;
+      }
+    </style>
+  </head>
+  <body oncontextmenu="return false" class="nodrag">
+    <div oncontextmenu="return false" class="title noselect">PaperDebugger</div>
+    <div class="subtitle noselect">How to use</div>
+    <div class="steps noselect">
+      <div class="step">
+        <strong>1.</strong>In
+        <a class="highlight nodrag" href="https://overleaf.com/project" target="_blank">overleaf.com</a>, open any of
+        your projects.
+      </div>
+      <div class="step"><strong>2.</strong>PaperDebugger is in the <b>top left</b> of the project page.</div>
+    </div>
+    <div class="footer noselect">Happy writing!</div>
+  </body>
+</html>

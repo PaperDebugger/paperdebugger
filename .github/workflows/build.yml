@@ -1,0 +1,63 @@
+name: Build Beta Chrome Extension
+
+on:
+  workflow_run:
+    workflows:
+      - 'Bump Version'
+    types:
+      - completed
+jobs:
+  build-chrome-extension:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Build
+        run: |
+          cd webapp/_webapp
+          npm install
+          npm run build:stg:chrome
+
+      - name: 👉 Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-stg
+          path: webapp/_webapp/dist
+
+  push-to-chrome-web-store:
+    runs-on: ubuntu-latest
+    needs: build-chrome-extension
+    steps:
+      - name: Install zip
+        run: |
+          sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-stg
+          path: dist
+
+      - name: Zip extension files
+        run: |
+          zip -r dist.zip dist/*
+
+      - name: Upload to Chrome Web Store (upload only)
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: 'upload'  # one of: upload, publish, testers
+          client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
+          extension_id: 'gjkgbnnlfophcfffoinfgdnhjnfankbn'
+          zip_file: 'dist.zip'
+        continue-on-error: true

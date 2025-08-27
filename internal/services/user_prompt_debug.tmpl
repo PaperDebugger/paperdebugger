@@ -1,0 +1,10 @@
+{{ .UserInput }}
+{{- if gt (len .SelectedText) 0 }}
+---
+
+# selected_text
+
+```
+{{ .SelectedText }}
+```
+{{- end }}

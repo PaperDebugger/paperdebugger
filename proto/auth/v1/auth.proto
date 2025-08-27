@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/auth/v1;authv1";
+
+service AuthService {
+  rpc LoginByGoogle(LoginByGoogleRequest) returns (LoginByGoogleResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/auth/login/google"
+      body: "*"
+    };
+  }
+  rpc LoginByOverleaf(LoginByOverleafRequest) returns (LoginByOverleafResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/auth/login/overleaf"
+      body: "*"
+    };
+  }
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/auth/refresh"
+      body: "*"
+    };
+  }
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/auth/logout"
+      body: "*"
+    };
+  }
+}
+
+message LoginByGoogleRequest {
+  string google_token = 1;
+}
+
+message LoginByGoogleResponse {
+  string token = 1;
+  string refresh_token = 2;
+}
+
+message LoginByOverleafRequest {
+  string overleaf_token = 1; // overleaf_session2
+}
+
+message LoginByOverleafResponse {
+  string token = 1;
+  string refresh_token = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}

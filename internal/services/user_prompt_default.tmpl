@@ -1,0 +1,12 @@
+{{- if gt (len .SelectedText) 0 }}
+Here is the selected text:
+```
+{{ .SelectedText }}
+```
+
+If user requests to revise the selected text, wrap the revised text in triple backticks.
+Otherwise, just answer the question.
+---
+# Instruction
+{{- end }}
+{{ .UserInput }}

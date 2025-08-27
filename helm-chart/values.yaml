@@ -1,0 +1,14 @@
+namespace: paperdebugger-dev
+openai_api_key: sk-dummy-OPENAI_API_KEY
+jwt_signing_key: paperdebugger
+
+paperdebugger:
+  image: ghcr.io/paperdebugger/sharelatex-paperdebugger:latest
+
+paperdebuggerMcpServer:
+  image: ghcr.io/paperdebugger/paperdebugger-mcp-server:main-14409c5
+
+mongo:
+  in_cluster: true
+  uri: "" # if in_cluster is false, use the external mongo instead
+  image: mongo:latest
