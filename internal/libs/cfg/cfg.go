@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -33,9 +32,5 @@ func mongoURI() string {
 		return val
 	}
 
-	port := os.Getenv("MONGO_SERVICE_PORT_MONGO")
-	if port == "" {
-		return ""
-	}
-	return fmt.Sprintf("mongodb://mongo:%s", port)
+	return "mongodb://localhost:27017"
 }

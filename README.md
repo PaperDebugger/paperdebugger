@@ -1,10 +1,11 @@
 # PaperDebugger
 
-## Clone and Deploy (locally)
+## Clone and Build (locally)
 
 **Prequisite:**
 - `brew install bufbuild/buf/buf`
 
+**Clone and Build**
 ```bash
 git clone https://github.com/PaperDebugger/paperdebugger.git
 cd paperdebugger
@@ -18,6 +19,17 @@ npm run build:prd:chrome
 # the extension is located in wbeapp/_webapp/dist/*
 ```
 
+**Run mongodb**
+
+```bash
+docker run -d --name mongodb -p 27017:27017 mongo:latest
+```
+
+**Run backend**
+
+```bash
+./dist/pd.exe
+```
 
 ## Step 1 k9s
 

@@ -16,8 +16,7 @@ func initializeAppOnly() *api.Server {
 	log := logger.GetLogger()
 	app, err := internal.InitializeApp()
 	if err != nil {
-		log.Fatalf("Failed to initialize app: %v", err)
+		log.Fatalf("[PAPERDEBUGGER] failed to initialize app: %v", err)
 	}
-	log.Info("paperdebugger server starting on port 6060")
 	return app
 }
