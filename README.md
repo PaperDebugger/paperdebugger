@@ -4,10 +4,16 @@ PaperDebugger is an AI-powered academic writing assistant that helps researchers
 
 [**Install from Chrome Web Store**](https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog) or [**Download Building Artifacts v2.9.8**](https://github.com/PaperDebugger/paperdebugger/actions/runs/17276722242/artifacts/3866902136)
 
+<div align="center">
+  <img src="docs/imgs/preview2.png" width="46%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/preview3.png" width="46%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/preview1.png" width="100%" style="margin: 0 1.5%; border-radius: 0.5rem;"/>
+</div>
+
 ## Overview
 The PaperDebugger backend is built with:
 
-<img src="docs/imgs/stacks.png" style="height: 200px;" />
+<img src="docs/imgs/stacks.png" style="max-height: 200px;" />
 
 - **Language**:  Go 1.24+
 - **Framework**:  Gin (HTTP) + gRPC (API)
@@ -24,7 +30,6 @@ PaperDebugger never modifies your project, it only reads and provides suggestion
 - **Instant Insert**: One-click, insert AI response to your project
 - **Comment System**: Automatically generate comments and insert into your project
 - **Prompt Library**: Custom prompt templates for different use cases
-
 
 https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 
