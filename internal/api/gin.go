@@ -21,7 +21,7 @@ func NewGinServer(cfg *cfg.Cfg, oauthHandler *auth.OAuthHandler) *GinServer {
 	ginServer := &GinServer{Engine: gin.New(), cfg: cfg}
 	ginServer.Use(ginServer.ginLogMiddleware(), gin.Recovery())
 	ginServer.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://overleaf.com", "https://www.overleaf.com", "http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowOrigins:     []string{"https://overleaf.com", "https://*.overleaf.com", "https://*.paperdebugger.com", "http://localhost:3000", "http://127.0.0.1:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"*"},
