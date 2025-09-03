@@ -1,17 +1,17 @@
 ![branding](docs/imgs/branding.png)
 
 <div align="center">
-<img src="https://img.shields.io/chrome-web-store/users/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Users" alt="Chrome Web Store Users"/>
-<img src="https://img.shields.io/chrome-web-store/v/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Chrome%20Web%20Store&logo=google-chrome&logoColor=white" alt="Chrome Web Store Version"/>
-<img src="https://img.shields.io/github/v/release/PaperDebugger/paperdebugger?label=Latest%20Release" alt="GitHub Release"/>
-<img src="https://img.shields.io/github/actions/workflow/status/PaperDebugger/paperdebugger/build.yml?branch=main" alt="Build Status"/>
-<img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/>
+<a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/users/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Users" alt="Chrome Web Store Users"/></a>
+<a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/v/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Chrome%20Web%20Store&logo=google-chrome&logoColor=white" alt="Chrome Web Store Version"/></a>
+<a href="https://github.com/PaperDebugger/paperdebugger/releases" target="_blank"><img src="https://img.shields.io/github/v/release/PaperDebugger/paperdebugger?label=Latest%20Release" alt="GitHub Release"/></a>
+<a href="https://github.com/PaperDebugger/paperdebugger/actions/workflows/release.yml" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/PaperDebugger/paperdebugger/build.yml?branch=main" alt="Build Status"/></a>
+<a href="https://github.com/PaperDebugger/PaperDebugger?tab=AGPL-3.0-1-ov-file"><img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/></a>
 </div>
 
 **PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers with intelligent suggestions and seamless Overleaf integration.
 
 <div align="center">
-    <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog"><strong>🚀 Install from Chrome Web Store</strong></a> • <a href="https://github.com/PaperDebugger/paperdebugger/releases/latest"><strong>📦 Download Latest Release</strong></a>
+    <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><strong>🚀 Install from Chrome Web Store</strong></a> • <a href="https://github.com/PaperDebugger/paperdebugger/releases/latest" target="_blank"><strong>📦 Download Latest Release</strong></a>
 </div>
 
 <div align="center">

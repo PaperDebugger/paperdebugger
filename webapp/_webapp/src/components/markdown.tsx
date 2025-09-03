@@ -82,7 +82,7 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
         },
         code: {
           component: ({ children, ...props }: ComponentProps) => (
-            <code {...props} className="text-xs">
+            <code {...props} className="text-xs break-all">
               {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
             </code>
           ),
