@@ -9,7 +9,7 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	"paperdebugger/internal/services/toolkit/registry"
-	"paperdebugger/internal/services/toolkit/tools"
+	"paperdebugger/internal/services/toolkit/tools/xtragpt"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
@@ -42,15 +42,24 @@ func NewAIClient(
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
 	CheckOpenAIWorks(oaiClient, logger)
-
-	toolPaperScore := tools.NewPaperScoreTool(db, projectService)
-	toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
+	toolSearchPapers := xtragpt.NewSearchPapersTool(db, projectService)
+	// toolPaperScore := tools.NewPaperScoreTool(db, projectService)
+	// toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
 
 	toolRegistry := registry.NewToolRegistry()
-	toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
-	toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
-	toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
-	toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
+
+	// toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
+	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
+	// toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
+	// toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
+
+	// toolRegistry.Register("export_papers")
+	// toolRegistry.Register("get_conference_papers")
+	// toolRegistry.Register("get_user_papers")
+	toolRegistry.Register("search_papers", toolSearchPapers.Description, toolSearchPapers.Call)
+	// toolRegistry.Register("search_user")
+	// toolRegistry.Register("identify_improvements")
+	// toolRegistry.Register("suggest_improvement")
 
 	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
 
