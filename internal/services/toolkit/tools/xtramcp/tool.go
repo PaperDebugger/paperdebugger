@@ -115,9 +115,7 @@ func (t *DynamicTool) Call(ctx context.Context, toolCallId string, args json.Raw
 
 // executeTool makes the MCP request (generic for any tool)
 func (t *DynamicTool) executeTool(args map[string]interface{}) (string, error) {
-	// Use the stored session ID - no need to re-initialize!
-	fmt.Printf("Using existing sessionId for %s: %s\n", t.Name, t.sessionID)
-	
+
 	request := MCPRequest{
 		JSONRPC: "2.0",
 		Method:  "tools/call",
@@ -157,7 +155,6 @@ func (t *DynamicTool) executeTool(args map[string]interface{}) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to read response: %w", err)
 	}
-	fmt.Printf("Response body for %s: %s\n", t.Name, string(body))
 	
 	// Parse response (assuming stream format)
 	lines := strings.Split(string(body), "\n")
