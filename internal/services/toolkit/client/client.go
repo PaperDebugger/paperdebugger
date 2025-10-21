@@ -9,7 +9,7 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	"paperdebugger/internal/services/toolkit/registry"
-	"paperdebugger/internal/services/toolkit/tools/xtragpt"
+	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
@@ -42,7 +42,6 @@ func NewAIClient(
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
 	CheckOpenAIWorks(oaiClient, logger)
-	toolSearchPapers := xtragpt.NewSearchPapersTool(db, projectService)
 	// toolPaperScore := tools.NewPaperScoreTool(db, projectService)
 	// toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
 
@@ -53,16 +52,17 @@ func NewAIClient(
 	// toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
 	// toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
 
-	// toolRegistry.Register("export_papers")
-	// toolRegistry.Register("get_conference_papers")
-	// toolRegistry.Register("get_user_papers")
-	toolRegistry.Register("search_relevant_papers", toolSearchPapers.Description, toolSearchPapers.Call)
-	// toolRegistry.Register("search_user")
-	// toolRegistry.Register("identify_improvements")
-	// toolRegistry.Register("suggest_improvement")
+	// Load tools dynamically from backend (TODO: Make URL configurable / Xtramcp url)
+	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "http://localhost:8080/mcp")
+	err := xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+	if err != nil {
+		logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
+		// Fallback to static tools or return error based on your preference
+	} else {
+		logger.Info("[AI Client] Successfully loaded XtraMCP tools")
+	}
 
 	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
-
 	client := &AIClient{
 		openaiClient:    &oaiClient,
 		toolCallHandler: toolCallHandler,
