@@ -54,12 +54,22 @@ func NewAIClient(
 
 	// Load tools dynamically from backend (TODO: Make URL configurable / Xtramcp url)
 	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "http://localhost:8080/mcp")
-	err := xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+	
+	// initialize MCP session first and log session ID
+	sessionID, err := xtraMCPLoader.InitializeMCP()
 	if err != nil {
-		logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
-		// Fallback to static tools or return error based on your preference
+		logger.Errorf("[AI Client] Failed to initialize XtraMCP session: %v", err)
+		// TODO: Fallback to static tools or exit?
 	} else {
-		logger.Info("[AI Client] Successfully loaded XtraMCP tools")
+		logger.Info("[AI Client] XtraMCP session initialized", "sessionID", sessionID)
+		
+		// dynamically load all tools from XtraMCP backend
+		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+		if err != nil {
+			logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
+		} else {
+			logger.Info("[AI Client] Successfully loaded XtraMCP tools")
+		}
 	}
 
 	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
