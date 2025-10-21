@@ -56,7 +56,7 @@ func NewAIClient(
 	// toolRegistry.Register("export_papers")
 	// toolRegistry.Register("get_conference_papers")
 	// toolRegistry.Register("get_user_papers")
-	toolRegistry.Register("search_papers", toolSearchPapers.Description, toolSearchPapers.Call)
+	toolRegistry.Register("search_relevant_papers", toolSearchPapers.Description, toolSearchPapers.Call)
 	// toolRegistry.Register("search_user")
 	// toolRegistry.Register("identify_improvements")
 	// toolRegistry.Register("suggest_improvement")

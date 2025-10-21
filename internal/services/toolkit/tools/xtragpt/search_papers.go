@@ -33,11 +33,6 @@ type MCPParams struct {
 	Arguments map[string]interface{} `json:"arguments"`
 }
 
-// Venue represents a conference venue with year
-type Venue struct {
-	Venue string `json:"venue"`
-	Year  string `json:"year"`
-}
 type SearchPapersTool struct {
 	Description      responses.ToolUnionParam
 	toolCallRecordDB *toolCallRecordDB.ToolCallRecordDB
@@ -47,37 +42,39 @@ type SearchPapersTool struct {
 	client           *http.Client
 }
 
-var schema map[string]any
-
-var SearchPapersToolDescription = responses.ToolUnionParam{
-	OfFunction: &responses.FunctionToolParam{
-		Name:        "search_papers",
-		Description: param.NewOpt("Search for papers by keywords within specific conference venues, with various matching modes."),
-		Parameters:  openai.FunctionParameters(schema),
-	},
-}
-
 func NewSearchPapersTool(db *db.DB, projectService *services.ProjectService) *SearchPapersTool {
-	json.Unmarshal([]byte(`{"properties":{"query":{"description":"Keywords / topics or content to search for (e.g., 'time series token merging', 'neural networks').","title":"Query","type":"string"},"venues":{"description":"List of conference venues and years to search in. Each entry must be a dict with 'venue' (e.g., 'ICLR.cc', 'NeurIPS.cc', 'ICML.cc'; users may omit '.cc') and 'year' (e.g., '2024', '2025').","items":{"additionalProperties":{"type":"string"},"type":"object"},"minItems":1,"title":"Venues","type":"array"},"search_fields":{"default":["title","abstract"],"description":"Fields to search within each paper. Options: 'title', 'abstract', 'authors'.","items":{"enum":["title","abstract","authors"],"type":"string"},"title":"Search Fields","type":"array"},"match_mode":{"default":"majority","description":"Match mode:\n- any: At least one keyword must match\n- all: All keywords must match\n- exact: Match the entire phrase exactly\n- majority: Match majority of keywords (>50%)\n- threshold: Match percentage of terms based on 'match_threshold'.","enum":["any","all","exact","majority","threshold"],"title":"Match Mode","type":"string"},"match_threshold":{"default":0.5,"description":"Minimum fraction (0.0-1.0) of search terms that must match when using 'threshold' mode. Example: 0.5 = 50% of terms must match.","maximum":1,"minimum":0,"title":"Match Threshold","type":"number"},"limit":{"default":10,"description":"Maximum number of results to return (1-16).","maximum":16,"minimum":1,"title":"Limit","type":"integer"},"min_score":{"default":0.6,"description":"Minimum match score (0.0-1.0). Lower values allow looser matches; higher values enforce stricter matches.","maximum":1,"minimum":0,"title":"Min Score","type":"number"}},"required":["query","venues"],"title":"search_papers_toolArguments","type":"object"}`), &schema)
+	// Create and populate schema
+	var schema map[string]any
+	json.Unmarshal([]byte(`{"properties":{"query":{"description":"Keywords, topics, content, or a chunk of text to search for.","examples":["time series token merging","neural networks","...when trained on first-order Markov chains, transformers with two or more layers consistently develop an induction head mechanism to estimate the in-context bigram conditional distribution"],"title":"Query","type":"string"},"top_k":{"description":"Number of top relevant or similar papers to return.","title":"Top K","type":"integer"},"date_min":{"description":"Minimum publication date (YYYY-MM-DD) to filter papers.","examples":["2023-01-01","2022-06-25"],"title":"Date Min","type":"string"},"date_max":{"description":"Maximum publication date (YYYY-MM-DD) to filter papers.","examples":["2024-12-31","2023-06-25"],"title":"Date Max","type":"string"},"countries":{"anyOf":[{"items":{"type":"string"},"type":"array"},{"type":"null"}],"description":"List of country codes in ISO ALPHA-3 format to filter papers by author affiliations.","examples":[["USA","CHN","SGP","GBR","DEU","KOR","JPN"]],"title":"Countries"},"min_similarity":{"description":"Minimum similarity score (0.0-1.0) for returned papers. Higher values yield more relevant results but fewer papers.","examples":[0.3,0.5,0.7,0.9],"title":"Min Similarity","type":"number"}},"required":["query","top_k","countries","min_similarity"],"title":"search_papers_toolArguments","type":"object"}`), &schema)
+	
+	// Create tool description with populated schema
+	description := responses.ToolUnionParam{
+		OfFunction: &responses.FunctionToolParam{
+			Name:        "search_relevant_papers",
+			Description: param.NewOpt("Search for similar or relevant papers by keywords against the local database of academic papers. This tool uses semantic search with vector embeddings to find the most relevant results. It is the default and recommended tool for paper searches."),
+			Parameters:  openai.FunctionParameters(schema),
+		},
+	}
+	
 	toolCallRecordDB := toolCallRecordDB.NewToolCallRecordDB(db)
 	return &SearchPapersTool{
-		Description:      SearchPapersToolDescription,
+		Description:      description,
 		toolCallRecordDB: toolCallRecordDB,
 		projectService:   projectService,
 		coolDownTime:     5 * time.Minute,
-		baseURL:          "http://xtragpt-mcp-server:8080/paper-score",
+		// baseURL:          "http://xtragpt-mcp-server:8080/mcp",
+		baseURL:          "http://localhost:8080/mcp", // For local development
 		client:           &http.Client{},
 	}
 }
 
 type SearchPapersToolArgs struct {
-	Limit          int      `json:"limit"`
-	MatchMode      string   `json:"matchMode"`
-	MatchThreshold float64  `json:"matchThreshold"`
-	MinScore       float64  `json:"minScore"`
-	Query          string   `json:"query"`
-	Venues         []Venue  `json:"venues"`
-	SearchFields   []string `json:"searchFields"`
+	Query         string    `json:"query"`
+	TopK          int       `json:"top_k"`
+	DateMin       *string   `json:"date_min,omitempty"`
+	DateMax       *string   `json:"date_max,omitempty"`
+	Countries     []string  `json:"countries"`
+	MinSimilarity float64   `json:"min_similarity"`
 }
 
 func (t *SearchPapersTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
@@ -89,19 +86,18 @@ func (t *SearchPapersTool) Call(ctx context.Context, toolCallId string, args jso
 
 	// Create function call record
 	record, err := t.toolCallRecordDB.Create(ctx, toolCallId, *t.Description.GetName(), map[string]any{
-		"limit":          argsMap.Limit,
-		"matchMode":      argsMap.MatchMode,
-		"matchThreshold": argsMap.MatchThreshold,
-		"minScore":       argsMap.MinScore,
 		"query":          argsMap.Query,
-		"venues":         argsMap.Venues,
-		"searchFields":   argsMap.SearchFields,
+		"top_k":          argsMap.TopK,
+		"date_min":       argsMap.DateMin,
+		"date_max":       argsMap.DateMax,
+		"countries":      argsMap.Countries,
+		"min_similarity": argsMap.MinSimilarity,
 	})
 	if err != nil {
 		return "", "", err
 	}
 
-	respStr, err := t.SearchPaper(argsMap.Limit, argsMap.MatchMode, argsMap.MatchThreshold, argsMap.MinScore, argsMap.Query, argsMap.Venues, argsMap.SearchFields)
+	respStr, err := t.SearchPaper(argsMap.Query, argsMap.TopK, argsMap.DateMin, argsMap.DateMax, argsMap.Countries, argsMap.MinSimilarity)
 	if err != nil {
 		err = fmt.Errorf("failed to search paper: %v", err)
 		t.toolCallRecordDB.OnError(ctx, record, err)
@@ -119,7 +115,7 @@ func (t *SearchPapersTool) Call(ctx context.Context, toolCallId string, args jso
 	return respStr, "", nil
 }
 
-func (t *SearchPapersTool) SearchPaper(limit int, matchMode string, matchThreshold float64, minScore float64, query string, venues []Venue, searchFields []string) (string, error) {
+func (t *SearchPapersTool) SearchPaper(query string, topK int, dateMin *string, dateMax *string, countries []string, minSimilarity float64) (string, error) {
 	sessionId, err := MCPInitialize(t.baseURL)
 	if err != nil {
 		fmt.Printf("Error initializing MCP: %v\n", err)
@@ -135,15 +131,14 @@ func (t *SearchPapersTool) SearchPaper(limit int, matchMode string, matchThresho
 		Method:  "tools/call",
 		ID:      2,
 		Params: MCPParams{
-			Name: "search_papers",
+			Name: "search_relevant_papers",
 			Arguments: map[string]interface{}{
-				"limit":           limit,
-				"match_mode":      matchMode,
-				"match_threshold": matchThreshold,
-				"min_score":       minScore,
-				"query":           query,
-				"search_fields":   searchFields,
-				"venues":          venues,
+				"query":          query,
+				"top_k":          topK,
+				"date_min":       dateMin,
+				"date_max":       dateMax,
+				"countries":      countries,
+				"min_similarity": minSimilarity,
 			},
 		},
 	}
@@ -155,7 +150,7 @@ func (t *SearchPapersTool) SearchPaper(limit int, matchMode string, matchThresho
 	}
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", "http://localhost:8080/mcp", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", t.baseURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -166,8 +161,7 @@ func (t *SearchPapersTool) SearchPaper(limit int, matchMode string, matchThresho
 	req.Header.Set("mcp-session-id", sessionId)
 
 	// Make the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := t.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to make request: %w", err)
 	}
