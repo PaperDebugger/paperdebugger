@@ -9,7 +9,7 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	"paperdebugger/internal/services/toolkit/registry"
-	"paperdebugger/internal/services/toolkit/tools"
+	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
@@ -42,18 +42,37 @@ func NewAIClient(
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
 	CheckOpenAIWorks(oaiClient, logger)
-
-	toolPaperScore := tools.NewPaperScoreTool(db, projectService)
-	toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
+	// toolPaperScore := tools.NewPaperScoreTool(db, projectService)
+	// toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
 
 	toolRegistry := registry.NewToolRegistry()
-	toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
-	toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
-	toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
-	toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
+
+	// toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
+	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
+	// toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
+	// toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
+
+	// Load tools dynamically from backend (TODO: Make URL configurable / Xtramcp url)
+	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "http://localhost:8080/mcp")
+	
+	// initialize MCP session first and log session ID
+	sessionID, err := xtraMCPLoader.InitializeMCP()
+	if err != nil {
+		logger.Errorf("[AI Client] Failed to initialize XtraMCP session: %v", err)
+		// TODO: Fallback to static tools or exit?
+	} else {
+		logger.Info("[AI Client] XtraMCP session initialized", "sessionID", sessionID)
+		
+		// dynamically load all tools from XtraMCP backend
+		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+		if err != nil {
+			logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
+		} else {
+			logger.Info("[AI Client] Successfully loaded XtraMCP tools")
+		}
+	}
 
 	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
-
 	client := &AIClient{
 		openaiClient:    &oaiClient,
 		toolCallHandler: toolCallHandler,
