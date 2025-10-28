@@ -106,7 +106,7 @@ body {
 }
 
 .tool-card-title.tool-card-jsonrpc {
-  @apply font-medium text-gray-500 ;
+  @apply font-medium text-gray-500;
 }
 
 
