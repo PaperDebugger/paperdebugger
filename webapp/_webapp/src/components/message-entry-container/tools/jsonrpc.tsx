@@ -34,7 +34,6 @@ export const JsonRpc = ({ functionName, jsonRpcResult, preparing, animated }: Js
       <div className="flex items-center justify-between cursor-pointer" onClick={toggleCollapse}>
         <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
         <button
-          onClick={toggleCollapse}
           className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
           aria-label={isCollapsed ? "Expand" : "Collapse"}
         >

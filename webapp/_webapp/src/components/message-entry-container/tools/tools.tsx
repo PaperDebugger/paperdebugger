@@ -33,11 +33,7 @@ export default function Tools({ messageId, functionName, message, error, prepari
   if (error && error !== "") {
     return <ErrorToolCard functionName={functionName} errorMessage={error} animated={animated} />;
   }
-console.log("message: ", message);
-console.log("functionName: ", functionName);
-console.log("error: ", error);
-console.log("preparing: ", preparing);
-console.log("animated: ", animated);
+
   const jsonRpcResult = parseJsonRpcResult(message);
 
   if (functionName === "paper_score") {
