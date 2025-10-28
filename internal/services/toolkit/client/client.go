@@ -49,8 +49,6 @@ func NewAIClient(
 
 	// toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
 	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
-	// toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
-	// toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
 
 	// Load tools dynamically from backen
 	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "https://paperdebugger-xtra-mcp-server/mcp")
