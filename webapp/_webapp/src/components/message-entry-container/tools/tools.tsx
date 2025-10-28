@@ -4,6 +4,8 @@ import { UnknownToolCard } from "./unknown";
 import { GreetingCard } from "./greeting";
 import { ErrorToolCard } from "./error";
 import { AlwaysExceptionCard } from "./always-exception";
+import { JsonRpc } from "./jsonrpc";
+import { parseJsonRpcResult, UNKNOWN_JSONRPC_RESULT } from "./utils/common";
 
 type ToolsProps = {
   messageId: string;
@@ -14,10 +16,30 @@ type ToolsProps = {
   animated: boolean;
 };
 
+// define a const string list.
+const XTRA_MCP_TOOL_NAMES = [
+  "enhance_academic_writing",
+  "search_relevant_papers",
+  "search_user",
+  "identify_improvements",
+  "get_user_papers",
+  "deep_research",
+  "get_conference_papers",
+  "search_papers_on_openreview",
+  "search_papers",
+];
+
 export default function Tools({ messageId, functionName, message, error, preparing, animated }: ToolsProps) {
   if (error && error !== "") {
     return <ErrorToolCard functionName={functionName} errorMessage={error} animated={animated} />;
   }
+console.log("message: ", message);
+console.log("functionName: ", functionName);
+console.log("error: ", error);
+console.log("preparing: ", preparing);
+console.log("animated: ", animated);
+  const jsonRpcResult = parseJsonRpcResult(message);
+  console.log("jsonRpcResult: ", jsonRpcResult);
 
   if (functionName === "paper_score") {
     return <PaperScoreCard message={message} preparing={preparing} animated={animated} />;
@@ -27,7 +49,14 @@ export default function Tools({ messageId, functionName, message, error, prepari
     return <GreetingCard message={message} preparing={preparing} animated={animated} />;
   } else if (functionName === "always_exception") {
     return <AlwaysExceptionCard message={message} preparing={preparing} animated={animated} />;
+  } else if (XTRA_MCP_TOOL_NAMES.includes(functionName)) {
+    return <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult || UNKNOWN_JSONRPC_RESULT} preparing={preparing} animated={animated} />;
   }
 
-  return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
+  // fallback to unknown tool card if the json rpc result is not defined
+  if (jsonRpcResult) {
+    return <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult} preparing={preparing} animated={animated} />;
+  } else {
+    return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
+  }
 }
