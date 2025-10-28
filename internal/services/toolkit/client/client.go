@@ -52,9 +52,9 @@ func NewAIClient(
 	// toolRegistry.Register("paper_score", toolPaperScore.Description, toolPaperScore.Call)
 	// toolRegistry.Register("paper_score_comment", toolPaperScoreComment.Description, toolPaperScoreComment.Call)
 
-	// Load tools dynamically from backend (TODO: Make URL configurable / Xtramcp url)
-	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "http://localhost:8080/mcp")
-	
+	// Load tools dynamically from backen
+	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "https://paperdebugger-xtra-mcp-server/mcp")
+
 	// initialize MCP session first and log session ID
 	sessionID, err := xtraMCPLoader.InitializeMCP()
 	if err != nil {
@@ -62,7 +62,7 @@ func NewAIClient(
 		// TODO: Fallback to static tools or exit?
 	} else {
 		logger.Info("[AI Client] XtraMCP session initialized", "sessionID", sessionID)
-		
+
 		// dynamically load all tools from XtraMCP backend
 		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
 		if err != nil {
