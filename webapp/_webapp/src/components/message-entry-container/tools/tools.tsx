@@ -39,7 +39,6 @@ console.log("error: ", error);
 console.log("preparing: ", preparing);
 console.log("animated: ", animated);
   const jsonRpcResult = parseJsonRpcResult(message);
-  console.log("jsonRpcResult: ", jsonRpcResult);
 
   if (functionName === "paper_score") {
     return <PaperScoreCard message={message} preparing={preparing} animated={animated} />;

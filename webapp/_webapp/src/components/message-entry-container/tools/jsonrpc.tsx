@@ -58,7 +58,7 @@ export const JsonRpc = ({ functionName, jsonRpcResult, preparing, animated }: Js
         {jsonRpcResult.result && (
           <div className="text-xs">
             <MarkdownComponent animated={animated}>
-            {jsonRpcResult.result.content?.map((content) => content.text).join("\\n") || ""}
+            {jsonRpcResult.result.content?.map((content) => content.text).join("\n") || ""}
           </MarkdownComponent>
             </div>
         )}
