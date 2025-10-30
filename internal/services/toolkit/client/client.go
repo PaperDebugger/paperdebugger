@@ -51,7 +51,7 @@ func NewAIClient(
 	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
 
 	// Load tools dynamically from backend
-	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "https://paperdebugger-xtra-mcp-server.com/mcp")
+	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, "http://paperdebugger-xtra-mcp-server.com/mcp")
 
 	// initialize MCP session first and log session ID
 	sessionID, err := xtraMCPLoader.InitializeMCP()
