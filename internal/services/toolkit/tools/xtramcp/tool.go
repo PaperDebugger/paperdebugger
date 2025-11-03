@@ -10,13 +10,11 @@ import (
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/services"
 	toolCallRecordDB "paperdebugger/internal/services/toolkit/db"
-	"strings"
 	"time"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/packages/param"
 	"github.com/openai/openai-go/v2/responses"
-	"github.com/samber/lo"
 )
 
 // ToolSchema represents the schema from your backend
@@ -155,16 +153,11 @@ func (t *DynamicTool) executeTool(args map[string]interface{}) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to read response: %w", err)
 	}
-	
-	// Parse response (assuming stream format)
-	lines := strings.Split(string(body), "\n")
-	lines = lo.Filter(lines, func(line string, _ int) bool {
-		return strings.HasPrefix(line, "data:")
-	})
-	if len(lines) == 0 {
-		return "", fmt.Errorf("no data line found")
+
+	extractedJSON, err := parseSSEResponse(body)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SSE response: %w", err)
 	}
-	line := lines[0]
-	line = strings.TrimPrefix(line, "data: ")
-	return line, nil
+
+	return extractedJSON, nil
 }

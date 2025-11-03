@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
@@ -55,10 +54,10 @@ func (loader *XtraMCPLoader) LoadToolsFromBackend(toolRegistry *registry.ToolReg
 	// Register each tool dynamically, passing the session ID
 	for _, toolSchema := range toolSchemas {
 		dynamicTool := NewDynamicTool(loader.db, loader.projectService, toolSchema, loader.baseURL, loader.sessionID)
-		
+
 		// Register the tool with the registry
 		toolRegistry.Register(toolSchema.Name, dynamicTool.Description, dynamicTool.Call)
-		
+
 		fmt.Printf("Registered dynamic tool: %s\n", toolSchema.Name)
 	}
 
@@ -196,18 +195,9 @@ func (loader *XtraMCPLoader) fetchAvailableTools() ([]ToolSchema, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Parse SSE format - extract JSON from "data: " lines
-	lines := strings.Split(string(bodyBytes), "\n")
-	var extractedJSON string
-	for _, line := range lines {
-		if strings.HasPrefix(line, "data: ") {
-			extractedJSON = strings.TrimPrefix(line, "data: ")
-			break
-		}
-	}
-
-	if extractedJSON == "" {
-		return nil, fmt.Errorf("no data line found in SSE response")
+	extractedJSON, err := parseSSEResponse(bodyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse SSE response: %w", err)
 	}
 
 	// Parse the extracted JSON
