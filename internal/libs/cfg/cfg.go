@@ -10,7 +10,8 @@ type Cfg struct {
 	OpenAIAPIKey  string
 	JwtSigningKey string
 
-	MongoURI string
+	MongoURI   string
+	XtraMCPURI string
 }
 
 var cfg *Cfg
@@ -21,9 +22,18 @@ func GetCfg() *Cfg {
 		OpenAIAPIKey:  os.Getenv("OPENAI_API_KEY"),
 		JwtSigningKey: os.Getenv("JWT_SIGNING_KEY"),
 		MongoURI:      mongoURI(),
+		XtraMCPURI:    xtraMCPURI(),
 	}
 
 	return cfg
+}
+
+func xtraMCPURI() string {
+	val := os.Getenv("XTRAMCP_URI")
+	if val != "" {
+		return val
+	}
+	return "http://paperdebugger-xtra-mcp-server.com/mcp"
 }
 
 func mongoURI() string {
