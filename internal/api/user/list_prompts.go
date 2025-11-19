@@ -5,10 +5,11 @@ import (
 	"sort"
 	"time"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var defaultPrompts = []*userv1.Prompt{
@@ -16,40 +17,32 @@ var defaultPrompts = []*userv1.Prompt{
 		Id:           "1",
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Improve Academic Writing Style",
-		Content:      "Please help me improve the academic writing style of this text. Focus on making it more formal, precise, and scholarly while maintaining clarity.",
+		Title:        "Enhance Academic Writing (Powered by XtraGPT)",
+		Content:      "Suggest context-aware academic paper writing enhancements for selected text.",
 		IsUserPrompt: false,
 	},
 	{
 		Id:           "2",
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Strengthen Arguments",
-		Content:      "Analyze the arguments in this text and suggest ways to strengthen them. Consider logical flow, evidence support, and potential counterarguments that should be addressed.",
+		Title:        "Review (Powered by XtraMCP)",
+		Content:      "Review my paper and identify issues",
 		IsUserPrompt: false,
 	},
 	{
 		Id:           "3",
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Academic Citations",
-		Content:      "Review my citations and references. Suggest relevant academic sources that could strengthen my argument and identify any areas where additional citations are needed.",
+		Title:        "Find Relevant Papers (Powered by XtraMCP)",
+		Content:      "Find me relevant papers to read",
 		IsUserPrompt: false,
 	},
 	{
 		Id:           "4",
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Literature Review Help",
-		Content:      "Help me improve this literature review section. Suggest ways to better synthesize the research, identify key themes, and highlight gaps in the literature.",
-		IsUserPrompt: false,
-	},
-	{
-		Id:           "5",
-		CreatedAt:    timestamppb.New(time.Time{}),
-		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Research Methods",
-		Content:      "Review my research methodology section. Suggest improvements for research design, data collection methods, and analysis approach to enhance academic rigor.",
+		Title:        "Deep Research (Powered by XtraMCP)",
+		Content:      "Do deep research and compare my papers against others",
 		IsUserPrompt: false,
 	},
 }
