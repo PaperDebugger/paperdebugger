@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperdebugger-xtramcp-server
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: paperdebugger-xtramcp-server
+  template:
+    metadata:
+      labels:
+        app: paperdebugger-xtramcp-server
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: paperdebugger-xtramcp-server
+          image: {{ .Values.paperdebuggerXtraMcpServer.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: paperdebugger-xtramcp-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperdebugger-xtramcp-server
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: paperdebugger-xtramcp-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: http-alt
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paperdebugger-xtramcp-server
+  namespace: {{ .Values.namespace }}
+data:
+  OPENAI_API_KEY: "{{ .Values.xtragpt_openai_api_key }}"
+  OPENREVIEW_BASE_URL: "{{ .Values.xtragpt_openreview_base_url }}"
+  OPENREVIEW_USERNAME: "{{ .Values.xtragpt_openreview_username }}"
+  OPENREVIEW_PASSWORD: "{{ .Values.xtragpt_openreview_password }}"
