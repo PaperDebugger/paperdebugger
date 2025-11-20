@@ -92,7 +92,7 @@ body {
 }
 
 .tool-card.narrow {
-  @apply px-2 py-0 my-1 bg-transparent;
+  @apply px-2 py-1 my-1 bg-transparent;
 }
 
 .tool-card.animated {

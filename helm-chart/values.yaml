@@ -10,6 +10,9 @@ paperdebugger:
 paperdebuggerMcpServer:
   image: ghcr.io/paperdebugger/paperdebugger-mcp-server:main-14409c5
 
+paperdebuggerXtraMcpServer:
+  image: ghcr.io/paperdebugger/paperdebugger-xtramcp-server:main-14409c5
+
 mongo:
   in_cluster: true
   uri: "" # if in_cluster is false, use the external mongo instead

@@ -52,13 +52,13 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
             </span>
           ),
         },
-        p: {
-          component: ({ children, ...props }: ComponentProps) => (
-            <div {...props} className="mb-2 original-p">
-              <AnimatedText animated={animated}>{children}</AnimatedText>
-            </div>
-          ),
-        },
+        // p: {
+        //   component: ({ children, ...props }: ComponentProps) => (
+        //     <div {...props} className="mb-2 original-p">
+        //       <AnimatedText animated={animated}>{children}</AnimatedText>
+        //     </div>
+        //   ),
+        // },
         h1: {
           component: ({ children, ...props }: ComponentProps) => (
             <div {...props} className="text-lg font-bold mt-2">

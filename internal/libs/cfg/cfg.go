@@ -33,7 +33,7 @@ func xtraMCPURI() string {
 	if val != "" {
 		return val
 	}
-	return "http://paperdebugger-xtra-mcp-server.com/mcp"
+	return "http://paperdebugger-xtramcp-server:8080/mcp"
 }
 
 func mongoURI() string {
