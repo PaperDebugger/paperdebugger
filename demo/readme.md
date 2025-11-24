@@ -21,12 +21,26 @@ https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 <details>
 <summary>Connect PaperDebugger to Model Context Protocol servers</summary>
 
-- Paper Scoring Agents: https://github.com/PaperDebugger/paperdebugger-mcp
-- XtraMCP: https://github.com/4ndrelim/academic-paper-mcp-server
+### Paper Scoring
 
-Prebuilt Docker images are published at https://github.com/orgs/PaperDebugger/packages for quick deployment.
+https://github.com/PaperDebugger/paperdebugger-mcp
+
+Paper Scoring is a Multi-Agent Tool
+
+- **Prebuilt Docker image:** https://github.com/orgs/PaperDebugger/packages/container/package/paperdebugger-mcp-server
+- **Prompt template:** https://github.com/PaperDebugger/paperdebugger-mcp/tree/main/src/templates
+- **Agent Flow:** https://github.com/PaperDebugger/paperdebugger-mcp/blob/main/src/agents/paper-score.ts#L23
+
+### XtraMCP
+
+https://github.com/4ndrelim/academic-paper-mcp-server
+
+- **Prebuilt Docker image:** https://github.com/orgs/PaperDebugger/packages/container/package/xtragpt-mcp-server
+- **Prompt template:** [./xtramcp/readme.md](./xtramcp/readme.md) (Please inspect the docker image to find the prompt templates in detail.)
 
 </details>
+
+
 
 ## Kubernetes
 
