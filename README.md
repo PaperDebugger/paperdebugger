@@ -1,6 +1,6 @@
 ![branding](docs/imgs/branding.png)
 
-Explore the demo paper’s supporting assets in the [/demo](/demo/) folder.
+**Explore the demo paper’s supporting assets in the [/demo](/demo/) folder.**
 
 <div align="center">
 <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/users/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Users" alt="Chrome Web Store Users"/></a>
