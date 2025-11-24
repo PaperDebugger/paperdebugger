@@ -1,5 +1,7 @@
 ![branding](docs/imgs/branding.png)
 
+Explore the demo paper’s supporting assets in the [/demo](/demo/) folder.
+
 <div align="center">
 <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/users/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Users" alt="Chrome Web Store Users"/></a>
 <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/v/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Chrome%20Web%20Store&logo=google-chrome&logoColor=white" alt="Chrome Web Store Version"/></a>
@@ -22,15 +24,25 @@
 
 ## 📋 Table of Contents
 
+- [📋 Table of Contents](#-table-of-contents)
 - [✨ Features](#-features)
 - [🎯 Quick Start](#-quick-start)
   - [For Users](#for-users)
   - [Custom Endpoint Configuration](#custom-endpoint-configuration)
+- [🏗️ Architecture Overview](#️-architecture-overview)
 - [🛠️ Development Setup](#️-development-setup)
   - [Prerequisites](#prerequisites)
+    - [System Requirements](#system-requirements)
+    - [Development Tools](#development-tools)
+    - [Quick Installation (macOS/Linux with Homebrew)](#quick-installation-macoslinux-with-homebrew)
   - [Backend Build](#backend-build)
+    - [1. Clone the Repository](#1-clone-the-repository)
+    - [2. Start MongoDB](#2-start-mongodb)
+    - [3. Environment Configuration](#3-environment-configuration)
+    - [4. Build and Run](#4-build-and-run)
   - [Frontend Extension Build](#frontend-extension-build)
-- [🏗️ Architecture Overview](#️-architecture-overview)
+    - [Chrome Extension Development](#chrome-extension-development)
+    - [Installing the Development Extension](#installing-the-development-extension)
 
 ## ✨ Features
 
