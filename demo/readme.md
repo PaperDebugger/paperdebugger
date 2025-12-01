@@ -1,6 +1,6 @@
 # PaperDebugger Demo Resources
 
-- Full Demo Video: https://drive.google.com/file/d/1g-YLlTfXdSvUA1C79lzFqlk9C8BNmuJD/view?usp=sharing
+- 🎬 Full Demo Video: https://drive.google.com/file/d/1g-YLlTfXdSvUA1C79lzFqlk9C8BNmuJD/view?usp=sharing
 
 - Latest product updates: https://www.paperdebugger.com/
 - Privacy overview: https://www.paperdebugger.com/privacy/
