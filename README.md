@@ -192,3 +192,15 @@ zip -r paperdebugger-extension.zip *
 3. Click "Load unpacked" and select the `webapp/_webapp/dist` directory
    - Or drag the `paperdebugger-extension.zip` file into the extensions page
 
+## Citation
+```
+@misc{hou2025paperdebugger,
+      title={PaperDebugger: A Plugin-Based Multi-Agent System for In-Editor Academic Writing, Review, and Editing}, 
+      author={Junyi Hou and Andre Lin Huikai and Nuo Chen and Yiwei Gong and Bingsheng He},
+      year={2025},
+      eprint={2512.02589},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2512.02589}, 
+}
+```
