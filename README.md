@@ -185,6 +185,8 @@ The server will start on `http://localhost:6060`.
   <img src="docs/imgs/run.png" alt="Backend Server Running" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 </div>
 
+**NOTE**: `"ERROR [AI Client] Failed to initialize XtraMCP session"` <br> is expected if you're hosting locally without XtraMCP or an equivalent MCP orechestration backend.
+
 ### Frontend Extension Build
 
 #### Chrome Extension Development
