@@ -1,154 +1,179 @@
-# XtraMCP Server - Orchestration Prompts
+# XtraMCP Server – Orchestration Prompts
 
-This directory contains MCP prompts that orchestrate complex workflows by guiding the AI on how to use multiple tools together effectively.
+XtraMCP is a **custom MCP-based orchestration server** that powers PaperDebugger’s higher-level workflows:
 
-## Available Prompts
+- 🧑‍🔬 **Researcher** – find and position your work within the literature  
+- 🧑‍⚖️ **Reviewer** – critique drafts like a top-tier ML reviewer  
+- ✍️ **Enhancer** – perform fine-grained, context-aware rewrites  
+- 🧾 **Conference Formatter** (WIP) – adapt drafts to conference templates (NeurIPS, ICLR, AAAI, etc.)
 
-### 1. `analyze_paper_find_similar`
-**Purpose**: Analyze existing research papers (PDF/LaTeX) and find similar work in the academic literature.
+This document describes the core tools exposed by XtraMCP and how they combine into these workflows.
 
-**Use Cases**:
-- Finding papers similar to your own research
-- Identifying related work for a paper you're writing
-- Comparing your approach with existing methods in the literature
-- Building a collection of papers related to a specific source paper
+> **Note:** XtraMCP is currently **closed-source** while the API and deployment story stabilize.  
+> PaperDebugger runs fully without it; connecting XtraMCP unlocks the advanced research/review pipelines described here.
 
-**Arguments**:
-- `paper_path` (required): Path to PDF or LaTeX file to analyze
-- `analysis_focus` (optional): Focus area - 'methodology', 'application domain', 'theoretical contributions', or 'all' (default: 'all')
-- `comparison_type` (optional): Type of comparison - 'similar_methods', 'related_problems', 'same_domain', 'theoretical_connections' (default: 'related_problems')
-- `venues` (optional): Conference venues to search (default: ICLR.cc, NeurIPS.cc, ICML.cc)
-- `years` (optional): Years to search (default: last 3 years)
-- `max_papers` (optional): Maximum papers to find (default: 12)
+---
 
-**Example Usage**:
-```
-paper_path: "./papers/my_research_paper.pdf"
-analysis_focus: "methodology"
-comparison_type: "similar_methods"
-max_papers: 15
-```
+## Tool Overview
 
-### 2. `literature_review`
-**Purpose**: Conduct comprehensive and systematic literature reviews with topic-based discovery.
+| Tool Name                  | Role       | Purpose                                                         | Primary Data Source         |
+|---------------------------|-----------|-----------------------------------------------------------------|-----------------------------|
+| `search_relevant_papers`  | Researcher | Fast semantic search over recent CS papers in a local vector DB, enhanced with semantic re-ranker module | Local vector database       |
+| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers |
+| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv          |
+| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft                  |
+| `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT        |
+| `get_user_papers`| Misc | Fetch all papers, alongside description, published (OpenReview) by a specific user identified by email | User's email address
 
-**Use Cases**:
-- Systematic literature reviews for research proposals
-- Comprehensive coverage of a research area
-- Finding papers on a specific topic or research question
-- Multi-faceted topic exploration with related areas
-- Building reference collections for academic writing
+---
 
-**Arguments**:
-- `main_topic` (required): Main research topic, research question, or paper description to investigate
-- `source_context` (optional): Context from existing work, abstracts, or specific research focus to guide keyword extraction
-- `related_topics` (optional): Comma-separated list of related topics, subtopics, or alternative terms to explore
-- `research_scope` (optional): 'focused' (10 papers, specific), 'standard' (15 papers, balanced), 'comprehensive' (25 papers, broad coverage) (default: 'standard')
-- `venues` (optional): Conference venues to search (default: ICLR.cc, NeurIPS.cc, ICML.cc)
-- `time_range` (optional): 'recent' (2 years), 'standard' (3 years), 'comprehensive' (5 years) (default: 'standard')
+## 1. `search_relevant_papers`
 
-**Example Usage**:
-```
-main_topic: "multimodal machine learning for medical imaging"
-related_topics: "vision-language models, medical AI, cross-modal attention"
-research_scope: "comprehensive"
-time_range: "comprehensive"
-```
+**Purpose:**  
+Search for similar or relevant papers by keywords or extracted concepts against a **local database of academic papers**.<br>This tool uses semantic search with vector embeddings to find the most relevant results, enhanced with a re-ranker module to better capture nuance. It is fast and the default and recommended tool for paper searches.
 
-## Key Differences
+**How it works:**
 
-| Aspect | `analyze_paper_find_similar` | `literature_review` |
-|--------|------------------------------|---------------------|
-| **Input** | Existing paper file (PDF/LaTeX) | Research topic/question |
-| **Approach** | Paper content analysis → keyword extraction | Topic analysis → keyword strategy |
-| **Focus** | Finding work similar to specific paper | Comprehensive topic coverage |
-| **Output** | Papers similar to source paper | Systematic literature collection |
-| **Tools Used** | `search_papers_on_openreview` → `export_papers` | `search_papers_on_openreview` → `export_papers` |
-| **Export Dir** | `./papers/openreview_exports/similar_papers/` | `./papers/openreview_exports/literature_review/` |
-| **Search Strategy** | High precision (min_score 0.8) | Balanced coverage (min_score 0.75) |
-| **Loop Prevention** | Allowed to run more than once but avoid loops, proceed with results | Allowed to run more than once but avoid loops, proceed with results |
+- Recent CS papers (last few years) are **vectorized** into a local index.
+- Queries (from your topic or draft) are embedded and matched via **similarity search**.
+- Results are reranked by an **LLM-based reranker** for better semantic alignment.
 
-## Workflow Overview
+**Typical usage:**
 
-Both prompts follow a structured approach:
+- “Find the 10 most relevant papers to this draft.”  
+- “Search for relevant works on diffusion models for imbalanced medical imaging.”
 
-### `analyze_paper_find_similar` Workflow:
-1. **Source Paper Analysis**: Extract content from PDF/LaTeX file
-2. **Keyword Extraction**: Identify key concepts based on analysis focus
-3. **Strategic Search**: Use `search_papers_on_openreview` tool with extracted keywords
-4. **Export Collection**: Use `export_papers` tool for organized download
-5. **Similarity Report**: Analyze how found papers relate to source
+---
 
-### `literature_review` Workflow:
-1. **Topic Analysis**: Extract effective search terms from research topic
-2. **Keyword Strategy**: Develop comprehensive search approach
-3. **Systematic Search**: Use `search_papers_on_openreview` tool with strategic keywords
-4. **Export Organization**: Use `export_papers` tool with systematic naming
-5. **Research Synthesis**: Provide structured literature analysis
+## 2. `deep_research`
 
-## Default Configuration
+**Purpose:**  
+Given a **research topic or draft paper**, perform multi-step literature exploration and synthesis. Summarize their findings, and provide insights on similarities and differences to assist in the research process.
 
-The prompts use these optimized defaults:
+**How it works:**
 
-| Parameter | `analyze_paper_find_similar` | `literature_review` |
-|-----------|------------------------------|---------------------|
-| **Venues** | ICLR.cc, NeurIPS.cc, ICML.cc | ICLR.cc, NeurIPS.cc, ICML.cc |
-| **Search Fields** | title, abstract | title, abstract |
-| **Match Mode** | threshold | threshold |
-| **Match Threshold** | 0.6 | 0.5 |
-| **Min Score** | 0.8 (high precision) | 0.75 (balanced) |
-| **Max Papers** | 12 | 10-25 (scope dependent) |
-| **Years** | Last 3 years | 2-5 years (time_range dependent) |
-| **Search Strategy** | Allowed to run more than once but avoid loops | ONE Allowed to run more than once but avoid loops |
+1. Uses `search_relevant_papers` (and optionally `online_search_papers`) to retrieve candidate works.
+2. Summarizes key ideas, methods, and results from retrieved papers.
+3. Performs **chain-of-thought style analysis** to:
+   - highlight similarities/differences vs your draft,
+   - surface missing baselines or evaluation settings,
+   - suggest how to position your contribution.
 
-## Output Structure
+**Typical usage:**
 
-Each workflow creates:
+- “deep_research to compare my draft to recent work on retrieval-augmented generation.”  
+- “For this topic, deep_research 5-10 relevant papers and explain where the open gaps are.”
 
-- **JSON Files**: Structured metadata about found papers
-- **PDF Downloads**: Full paper downloads for offline reading  
-- **Organized Exports**: Papers saved to specific subdirectories
-- **Analysis Reports**: Key findings and research insights
+---
 
-### File Organization:
-```
-papers/openreview_exports/
-├── similar_papers/           # analyze_paper_find_similar outputs
-│   └── [source_paper]_similar_[comparison_type].json
-└── literature_review/        # literature_review outputs
-    └── [topic]_review_[scope].json
-```
+## 3. `online_search_papers`
 
-## Integration with Tools
+**Purpose:**  
+Expand beyond the local DB to search **online academic corpora** (OpenReview + arXiv). This tool is ideal for discovering recent or broader papers beyond those available in the local database.  
 
-These prompts orchestrate the following MCP tools in a two-step workflow:
+**How it works:**
 
-1. **`search_papers_on_openreview`**: Find relevant papers based on keywords and venues, returning paper IDs
-2. **`export_papers`**: Download PDFs and create organized JSON collections using the paper IDs from search results
+- Called when local search is **too sparse** (new topic) or you explicitly want the **latest** work.
+- Queries both **OpenReview** and **arXiv** for up-to-date results.
+- Results can then be fed into `deep_research` for synthesis.
 
-The prompts provide precise instructions on:
-- Sequential tool execution (search first, then export)
-- Paper ID extraction from search results
-- Tool parameter configuration
-- Error handling and validation
-- Output organization and naming
+**Typical usage:**
 
-## Tips for Effective Use
+- “My topic is very new. Look online for the latest preprints from OpenReview/arXiv.”  
 
-### For `analyze_paper_find_similar`:
-1. **File Access**: Ensure the paper path is accessible and readable
-2. **Analysis Focus**: Choose specific focus for more targeted results
-3. **Comparison Type**: Select based on what aspect of similarity you want
-4. **File Formats**: Works with both PDF and LaTeX source files
+---
 
-### For `literature_review`:
-1. **Topic Clarity**: Use precise, technical terminology in your main topic
-2. **Scope Selection**: Match scope to your research needs (focused/standard/comprehensive)
-3. **Related Topics**: Include synonyms and alternative terms for broader coverage
-4. **Context Utilization**: Provide source context to guide keyword extraction
+## 4. `review_paper`
 
-### General Best Practices:
-1. **Venue Selection**: Add domain-specific venues for specialized topics
-2. **Time Range**: Adjust based on field evolution and research currency
-3. **Quality Thresholds**: Higher min_score for more precise results
-4. **Export Organization**: Use descriptive names for easy file management
+**Purpose:**  
+Analyze and review a draft against the standards of **top-tier ML conferences** (ICLR, ICML, NeurIPS). Identifies improvements and issues in structure, completeness, clarity, and argumentation, then provides prioritized, actionable suggestions.
+
+**How it works:**
+
+- **Pass A – Deterministic checks (fast, high-precision)**  
+  - Required sections present (e.g., Abstract, Method, Experiments, Limitations/Broader Impact).  
+  - Abstract contains problem, approach, core results, significance.  
+  - Acronyms defined at first use; “TODO”, “FIXME”, “Figure ??” flags.  
+  - Figures/tables referenced; equation references consistent; citation style uniform.  
+  - Reproducibility signals: code/data availability, hyperparameters, seeds, compute, eval protocol.
+
+- **Pass B – Section-aware LLM critiques**  
+  - Run per section with **venue-aware rubrics** (NeurIPS/ICML/ICLR style).  
+  - Suggest *minimal, targeted edits* (what to add/remove/clarify).  
+  - Focus on clarity, completeness, and logical flow.
+
+- **Pass C – Cross-checks (claims vs evidence)**  
+  - Are “state-of-the-art” claims backed by numbers + baselines?  
+  - Are method components properly ablated?  
+  - Are there red flags for data leakage, HPO on test sets, or missing uncertainty reporting?
+
+- **Prioritization**  
+  - Each issue is scored by severity (blocker/major/minor), impact, and confidence.  
+  - Duplicates are merged and **top-N issues** are surfaced as “quick fixes” vs “substantial rewrites”.
+
+**Typical usage:**
+
+- “review_paper this draft like a NeurIPS reviewer and give me the top 10 issues to fix.”  
+- “review_paper on method clarity and experimental rigor.”
+
+---
+
+## 5. `enhance_academic_writing`
+
+**Purpose:**  
+Suggest **context-aware academic writing enhancements** for selected text.
+
+**How it works:**
+
+- Powered by **XtraGPT models** tuned for academic style and LaTeX-heavy text.
+- Uses surrounding context (section, paper intent, venue) to:
+  - improve clarity and flow,
+  - reduce redundancy and filler,
+  - keep technical content intact,
+  - align tone with ML/AI papers.
+
+**Typical usage:**
+
+- "enhance_academic_writing this paragraph to be clearer and more concise, preserving all technical details.”  
+- "enhance_academic_writing the abstract to be suitable for NeurIPS.”
+
+## 6. `get_user_papers`
+
+**Purpose:**  
+Retrieve **all papers authored by a given user** (OpenReview), identified by email.  
+Useful for quickly assembling a researcher’s publication list or grounding context for comparison/positioning.
+
+**How it works:**
+- Queries the paper database for matching author email(s).
+- Returns structured metadata: title, authors, venue, year, abstract, and identifiers.
+- Often used as a preprocessing step before `deep_research`.
+
+**Typical usage:**
+- “get_user_papers for <author-email> in summary mode.”  
+- “Retrieve all publications by this researcher and then compare my draft using deep_research.”
+
+## 7. Conference Formatter (WIP)
+
+Upcoming workflows will:
+
+- map your draft onto specific **conference templates** (NeurIPS, ICLR, AAAI, etc.),
+- adjust sectioning, citation style, and boilerplate requirements,
+- highlight formatting and policy mismatches (e.g., ethics, broader impact sections).
+
+---
+
+## Putting It Together: Example Orchestrated Flows
+
+- **Researcher Flow**  
+  1. Use `search_relevant_papers` on your draft or topic.  
+  2. If results are thin or stale, fall back to `online_search_papers`.  
+  3. Call `deep_research` to synthesize and position your work.
+
+- **Reviewer Flow**  
+  1. Run `review_paper` on the full draft.  
+  2. For high-impact issues, call `enhance_academic_writing` on the relevant spans.  
+
+- **Enhancer Flow**  
+  1. Select a paragraph or section in Overleaf.  
+  2. Call `enhance_academic_writing` with your preferences (e.g., “more formal”, “shorter”). 
+  3. Use edit-diff tool to effect changes. 

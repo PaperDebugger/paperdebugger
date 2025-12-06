@@ -10,7 +10,9 @@
 <a href="https://github.com/PaperDebugger/PaperDebugger?tab=AGPL-3.0-1-ov-file"><img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/></a>
 </div>
 
-**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers with intelligent suggestions and seamless Overleaf integration.
+**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers with intelligent suggestions and seamless Overleaf integration. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
+This enables multi-step reasoning, reviewer-style critique, and structured revision passes beyond standard chat-based assistance.
+
 
 <div align="center">
     <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><strong>🚀 Install from Chrome Web Store</strong></a> • <a href="https://github.com/PaperDebugger/paperdebugger/releases/latest" target="_blank"><strong>📦 Download Latest Release</strong></a>
@@ -39,7 +41,8 @@
     - [1. Clone the Repository](#1-clone-the-repository)
     - [2. Start MongoDB](#2-start-mongodb)
     - [3. Environment Configuration](#3-environment-configuration)
-    - [4. Build and Run](#4-build-and-run)
+    - [4. Custom MCP Backend Orchestration](#4-custom-mcp-backend-orchestration)
+    - [5. Build and Run](#4-build-and-run)
   - [Frontend Extension Build](#frontend-extension-build)
     - [Chrome Extension Development](#chrome-extension-development)
     - [Installing the Development Extension](#installing-the-development-extension)
@@ -53,6 +56,7 @@ PaperDebugger never modifies your project, it only reads and provides suggestion
 - **💬 Comment System**: Automatically generate and insert comments into your project
 - **📚 Prompt Library**: Custom prompt templates for different use cases
 - **🔒 Privacy First**: Your content stays secure - we only read, never modify
+- **🧠 Multi-Agent Orchestration** – [XtraMCP](https://github.com/4ndrelim/academic-paper-mcp-server) support for literature-grounded research, AI-Conference review, and domain-specific revision
 
 https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 
@@ -154,7 +158,19 @@ cp .env.example .env
 # Edit the .env file based on your configuration
 ```
 
-#### 4. Build and Run
+#### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
+Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is currently closed-source while under active development. <br>
+You can run PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.
+
+Connecting to XtraMCP unlocks:
+- research-mode agents,  
+- structured reviewer-style critique,  
+- domain-specific revisions tailored to academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models
+
+We plan to **open-source XtraMCP** once the API stabilizes for community use.
+
+
+#### 5. Build and Run
 ```bash
 # Build the backend
 make build
