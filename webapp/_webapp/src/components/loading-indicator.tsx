@@ -77,7 +77,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
 
       // Calculate progress with natural fluctuation
       const baseIncrement = (deltaTime / (estimatedSeconds * 1000)) * 100;
-      const fluctuation = (Math.random() - 0.5) * 5;
+      const fluctuation = (Math.random() - 0.5) * 4;
       const increment = Math.max(0, baseIncrement + fluctuation);
       currentProgress = Math.max(currentProgress, currentProgress + increment);
 
@@ -113,9 +113,9 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
 
   // Get status message based on phase
   const getStatusMessage = () => {
-    if (isTimeout) return "Request timed out";
-    if (phase === "orange") return "Taking longer than expected";
-    if (phase === "red") return "Last try";
+    if (isTimeout) return "Sorry — this request took too long to complete. We're working on improving reliability. You can try waiting a bit longer or refreshing the page. Thanks for your patience.";
+    if (phase === "orange") return "Synthesizing...";
+    if (phase === "red") return "Just a moment...";
     if (errorMessage && errorMessage.length > 0) return errorMessage;
     return text;
   };
