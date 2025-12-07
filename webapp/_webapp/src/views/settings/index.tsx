@@ -6,7 +6,6 @@ import { SettingsHeader } from "./settings-header";
 import { UserDeveloperTools } from "./sections/user-developer-tools";
 import { AccountSettings } from "./sections/account-settings";
 import { UISettings } from "./sections/ui-settings";
-import { BetaFeatureSettings } from "./sections/beta-feature-settings";
 import { RealDeveloperTools } from "./sections/real-developer-tools";
 import { SettingsFooter } from "./sections/footer";
 
