@@ -29,8 +29,9 @@ export type HandlerAny = Handler<any, any>;
 export const getCookiesHandler: Handler<void, { session?: string; gclb?: string }> = {
   name: HANDLER_NAMES.GET_COOKIES,
   handler: async (_, sendResponse) => {
-    const cookies = await getAllCookies("overleaf_session2", "https://www.overleaf.com");
-    const gclb = await getAllCookies("GCLB", "https://www.overleaf.com");
+    const currentDomain = window.location.hostname;
+    const cookies = await getAllCookies("overleaf_session2", "https://" + currentDomain);
+    const gclb = await getAllCookies("GCLB", "https://" + currentDomain);
     sendResponse({ session: cookies[0]?.value, gclb: gclb[0]?.value });
   },
 };

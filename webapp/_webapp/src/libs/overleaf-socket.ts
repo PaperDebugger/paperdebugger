@@ -155,7 +155,8 @@ async function opGetAllThreads(
   csrfToken: string,
   projectId: string,
 ): Promise<Map<string, OverleafThread>> {
-  const res = await fetch(`https://www.overleaf.com/project/${projectId}/threads`, {
+  const currentDomain = window.location.hostname;
+  const res = await fetch(`https://${currentDomain}/project/${projectId}/threads`, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -192,7 +193,8 @@ export async function postCommentToThread(
   projectId: string,
   headers: HeadersInit,
 ): Promise<void> {
-  const threadUrl = `https://www.overleaf.com/project/${projectId}/thread/${threadId}/messages`;
+  const currentDomain = window.location.hostname;
+  const threadUrl = `https://${currentDomain}/project/${projectId}/thread/${threadId}/messages`;
   // console.log("Posting comment to thread:", threadUrl, comment);
 
   if (!comment || comment.length === 0) {
@@ -225,7 +227,8 @@ export async function wsConnect(
   // if (import.meta.env.DEV) {
   //   throw new Error("Development mode is not supported for wsConnect");
   // }
-  const baseUrl = import.meta.env.DEV ? "http://localhost:3000" : "https://www.overleaf.com";
+  const currentDomain = window.location.hostname;
+  const baseUrl = import.meta.env.DEV ? "http://localhost:3000" : "https://" + currentDomain;
   const res = await fetch(`${baseUrl}/socket.io/1/?projectId=${projectId}&t=${Date.now()}`, {
     headers: {
       Accept: "application/json",
@@ -239,13 +242,13 @@ export async function wsConnect(
     throw new Error(`HTTP error when connecting ws: ${res.status}`);
   }
 
-  const wsUrl = import.meta.env.DEV ? "ws://localhost:3000" : "wss://www.overleaf.com";
+  const wsUrl = import.meta.env.DEV ? "ws://localhost:3000" : "wss://" + currentDomain;
   const data = await res.text();
   const sessionId = data.split(":")[0];
-
+  
   // Set cookies for WebSocket connection
-  document.cookie = `overleaf_session2=${overleafAuth.cookieOverleafSession2}; path=/; domain=${import.meta.env.DEV ? "localhost" : "www.overleaf.com"}`;
-  document.cookie = `GCLB=${overleafAuth.cookieGCLB}; path=/; domain=${import.meta.env.DEV ? "localhost" : "www.overleaf.com"}`;
+  document.cookie = `overleaf_session2=${overleafAuth.cookieOverleafSession2}; path=/; domain=${import.meta.env.DEV ? "localhost" : currentDomain}`;
+  document.cookie = `GCLB=${overleafAuth.cookieGCLB}; path=/; domain=${import.meta.env.DEV ? "localhost" : currentDomain}`;
 
   return new WebSocket(`${wsUrl}/socket.io/1/websocket/${sessionId}?projectId=${projectId}`);
 }
