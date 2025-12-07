@@ -29,7 +29,7 @@ export default function LoginWithOverleaf({
       setLoginLoadingMessage("Please wait while we log you in...");
       setIsLoginLoading(true);
 
-      const { session } = await getCookies();
+      const { session } = await getCookies(window.location.hostname);
       const resp = await loginByOverleaf({ overleafToken: session });
 
       setToken(resp.token);

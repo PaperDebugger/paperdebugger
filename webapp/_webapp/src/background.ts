@@ -26,12 +26,11 @@ export type Handler<A, T> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type HandlerAny = Handler<any, any>;
 
-export const getCookiesHandler: Handler<void, { session?: string; gclb?: string }> = {
+export const getCookiesHandler: Handler<string, { session?: string; gclb?: string }> = {
   name: HANDLER_NAMES.GET_COOKIES,
-  handler: async (_, sendResponse) => {
-    const currentDomain = window.location.hostname;
-    const cookies = await getAllCookies("overleaf_session2", "https://" + currentDomain);
-    const gclb = await getAllCookies("GCLB", "https://" + currentDomain);
+  handler: async (domain: string, sendResponse) => {
+    const cookies = await getAllCookies("overleaf_session2", "https://" + domain);
+    const gclb = await getAllCookies("GCLB", "https://" + domain);
     sendResponse({ session: cookies[0]?.value, gclb: gclb[0]?.value });
   },
 };

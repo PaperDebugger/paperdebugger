@@ -97,7 +97,7 @@ export function useSendMessageStream() {
       }));
 
       if (import.meta.env.DEV && alwaysSyncProject) {
-        const { session, gclb } = await getCookies();
+        const { session, gclb } = await getCookies(window.location.hostname);
         await sync(
           user?.id || "",
           getProjectId(),
@@ -157,7 +157,7 @@ export function useSendMessageStream() {
         {
           sync: async () => {
             try {
-              const { session, gclb } = await getCookies();
+              const { session, gclb } = await getCookies(window.location.hostname);
               await sync(
                 user?.id || "",
                 getProjectId(),

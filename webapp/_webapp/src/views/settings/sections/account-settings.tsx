@@ -13,7 +13,7 @@ export const AccountSettings = () => {
   const [gclb, setGclb] = useState("");
 
   useEffect(() => {
-    getCookies().then((cookies) => {
+    getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session);
       setGclb(cookies.gclb);
     });

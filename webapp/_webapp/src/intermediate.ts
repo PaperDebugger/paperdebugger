@@ -88,16 +88,16 @@ function makeFunction<A, T>(handlerName: string, opts?: MakeFunctionOpts): (args
   return fn;
 }
 
-let getCookies: () => Promise<{ session: string; gclb: string }>;
+let getCookies: (domain: string) => Promise<{ session: string; gclb: string }>;
 if (import.meta.env.DEV) {
-  getCookies = async () => {
+  getCookies = async (_: string) => {
     return {
       session: localStorage.getItem("pd.auth.overleafSession") ?? "",
       gclb: localStorage.getItem("pd.auth.gclb") ?? "",
     };
   };
 } else {
-  getCookies = makeFunction<void, { session: string; gclb: string }>(HANDLER_NAMES.GET_COOKIES);
+  getCookies = makeFunction<string, { session: string; gclb: string }>(HANDLER_NAMES.GET_COOKIES);
 }
 
 export { getCookies };

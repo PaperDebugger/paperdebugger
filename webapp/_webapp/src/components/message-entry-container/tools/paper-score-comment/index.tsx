@@ -28,7 +28,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    getCookies().then((cookies) => {
+    getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session);
       setGclb(cookies.gclb);
     });

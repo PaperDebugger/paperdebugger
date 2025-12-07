@@ -11,7 +11,7 @@ const App = () => {
   const [gclb, setGclb] = useState(localStorage.getItem("pd.auth.gclb") ?? "");
 
   useEffect(() => {
-    getCookies().then((cookies) => {
+    getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
       setGclb(cookies.gclb ?? localStorage.getItem("pd.auth.gclb") ?? "");
     });

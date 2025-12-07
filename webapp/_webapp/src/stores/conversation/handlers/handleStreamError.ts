@@ -18,7 +18,7 @@ export async function handleStreamError(
   sendMessageStream: (message: string, selectedText: string) => Promise<void>,
 ) {
   try {
-    const { session, gclb } = await getCookies();
+    const { session, gclb } = await getCookies(window.location.hostname);
     if (streamError.errorMessage.includes("project is out of date")) {
       await sync(
         userId,
