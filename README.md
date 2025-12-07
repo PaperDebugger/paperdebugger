@@ -159,13 +159,13 @@ cp .env.example .env
 ```
 
 #### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
-Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is currently closed-source while under active development. <br>
-You can run PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.
+Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially in-production but currently closed-source while under active development. If you wish to learn more about XtraMCP backend logic, refer to [/demo/xtramcp/readme.md](./demo/xtramcp/readme.md).<br>
+You can still self-host PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.
 
 Connecting to XtraMCP unlocks:
 - research-mode agents,  
 - structured reviewer-style critique,  
-- domain-specific revisions tailored to academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models
+- domain-specific revisions tailored to academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models.
 
 We plan to **open-source XtraMCP** once the API stabilizes for community use.
 
@@ -184,6 +184,8 @@ The server will start on `http://localhost:6060`.
 <div align="center">
   <img src="docs/imgs/run.png" alt="Backend Server Running" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 </div>
+
+**NOTE**: `"ERROR [AI Client] Failed to initialize XtraMCP session"` <br> is expected if you're hosting locally without XtraMCP or an equivalent MCP orchestration backend.
 
 ### Frontend Extension Build
 
