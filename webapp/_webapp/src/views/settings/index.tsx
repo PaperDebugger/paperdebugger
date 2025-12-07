@@ -31,6 +31,7 @@ export const Settings = () => {
       <SettingsHeader />
       <div className="pd-app-tab-content-body">
         <UISettings />
+        {/* <BetaFeatureSettings /> */}
         <AccountSettings />
         <SettingsFooter />
         {enableUserDeveloperTools && <UserDeveloperTools />}
