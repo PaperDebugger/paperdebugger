@@ -14,19 +14,20 @@ export const Login = () => {
 
   return (
     <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50 noselect py-12">
-      {!showEndpointSettings && <>
-        <Logo className="mb-4" />
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-exo-2 text-2xl font-light mb-2">Welcome to</p>
-          <div>
-            <span className="text-exo-2 text-2xl font-light">Paper</span>
-            <span className="text-exo-2 text-2xl font-bold">Debugger</span>
+      {!showEndpointSettings && (
+        <>
+          <Logo className="mb-4" />
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-exo-2 text-2xl font-light mb-2">Welcome to</p>
+            <div>
+              <span className="text-exo-2 text-2xl font-light">Paper</span>
+              <span className="text-exo-2 text-2xl font-bold">Debugger</span>
+            </div>
           </div>
-        </div>
-      </>}
+        </>
+      )}
       {showEndpointSettings && <AdvancedSettings />}
       <div className="flex-1"></div>
-
 
       <LoginWithGoogle
         isLoginLoading={isLoginLoading}

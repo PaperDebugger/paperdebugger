@@ -39,7 +39,7 @@ export const JsonRpc = ({ functionName, jsonRpcResult, preparing, animated }: Js
         >
           <svg
             className={cn("w-4 h-4 transition-transform duration-200", {
-              "rotate-180": !isCollapsed
+              "rotate-180": !isCollapsed,
             })}
             fill="none"
             stroke="currentColor"
@@ -49,24 +49,22 @@ export const JsonRpc = ({ functionName, jsonRpcResult, preparing, animated }: Js
           </svg>
         </button>
       </div>
-      
-      <div className={cn("canselect overflow-hidden transition-all duration-300 ease-in-out", {
-        "max-h-0 opacity-0": isCollapsed,
-        "max-h-[1000px] opacity-100": !isCollapsed
-      })}>
+
+      <div
+        className={cn("canselect overflow-hidden transition-all duration-300 ease-in-out", {
+          "max-h-0 opacity-0": isCollapsed,
+          "max-h-[1000px] opacity-100": !isCollapsed,
+        })}
+      >
         {jsonRpcResult.result && (
           <div className="text-xs">
             <MarkdownComponent animated={animated}>
-            {jsonRpcResult.result.content?.map((content) => content.text).join("\n") || ""}
-          </MarkdownComponent>
-            </div>
-        )}
-
-        {jsonRpcResult.error && (
-          <div className="text-xs text-red-600">
-            {jsonRpcResult.error.message}
+              {jsonRpcResult.result.content?.map((content) => content.text).join("\n") || ""}
+            </MarkdownComponent>
           </div>
         )}
+
+        {jsonRpcResult.error && <div className="text-xs text-red-600">{jsonRpcResult.error.message}</div>}
       </div>
     </div>
   );

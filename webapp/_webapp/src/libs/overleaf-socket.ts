@@ -245,7 +245,7 @@ export async function wsConnect(
   const wsUrl = import.meta.env.DEV ? "ws://localhost:3000" : "wss://" + currentDomain;
   const data = await res.text();
   const sessionId = data.split(":")[0];
-  
+
   // Set cookies for WebSocket connection
   document.cookie = `overleaf_session2=${overleafAuth.cookieOverleafSession2}; path=/; domain=${import.meta.env.DEV ? "localhost" : currentDomain}`;
   document.cookie = `GCLB=${overleafAuth.cookieGCLB}; path=/; domain=${import.meta.env.DEV ? "localhost" : currentDomain}`;

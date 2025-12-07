@@ -113,7 +113,8 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
 
   // Get status message based on phase
   const getStatusMessage = () => {
-    if (isTimeout) return "Sorry — this request took too long to complete. We're working on improving reliability. You can try waiting a bit longer or refreshing the page. Thanks for your patience.";
+    if (isTimeout)
+      return "Sorry — this request took too long to complete. We're working on improving reliability. You can try waiting a bit longer or refreshing the page. Thanks for your patience.";
     if (phase === "orange") return "Synthesizing...";
     if (phase === "red") return "Just a moment...";
     if (errorMessage && errorMessage.length > 0) return errorMessage;
