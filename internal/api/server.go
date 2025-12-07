@@ -150,6 +150,8 @@ func (s *Server) forwardResponseOption() func(ctx context.Context, w http.Respon
 
 func (s *Server) errorHandler() func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
 	return func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, reqError error) {
+		s.logger.Errorf("request error: %v", reqError)
+
 		code := status.Code(reqError)
 		errCode := sharedv1.ErrorCode_ERROR_CODE_UNKNOWN
 		if code >= codes.Code(sharedv1.ErrorCode_ERROR_CODE_UNKNOWN) {
