@@ -13,7 +13,6 @@
 **PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers with intelligent suggestions and seamless Overleaf integration. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
 This enables multi-step reasoning, reviewer-style critique, and structured revision passes beyond standard chat-based assistance.
 
-
 <div align="center">
     <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><strong>🚀 Install from Chrome Web Store</strong></a> • <a href="https://github.com/PaperDebugger/paperdebugger/releases/latest" target="_blank"><strong>📦 Download Latest Release</strong></a>
 </div>
@@ -23,6 +22,15 @@ This enables multi-step reasoning, reviewer-style critique, and structured revis
   <img src="docs/imgs/preview3.png" width="46%" style="margin: 0 1.5%;"/>
   <img src="docs/imgs/preview1.png" width="100%" style="margin: 0 1.5%; border-radius: 0.5rem;"/>
 </div>
+
+## 🌐 Social Media & Community Groups
+Our team is actively working to improve long-term reliability, hoping to iron out issues this month. Thank you for your patience. <br>
+Stay connected with the PaperDebugger community! Join our channels below for updates, announcements, and support.
+<div align="center">
+  <img src="docs/imgs/discord.png" width="40%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 1.5%;"/>
+</div>
+
 
 ## 📋 Table of Contents
 
