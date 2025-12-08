@@ -35,7 +35,6 @@ Stay connected with the PaperDebugger community! Join our channels below for upd
 ## 📋 Table of Contents
 
 - [📋 Table of Contents](#-table-of-contents)
-- [🌐 Social Media & Community Groups](#-social-media--community-groups)
 - [✨ Features](#-features)
 - [🎯 Quick Start](#-quick-start)
   - [For Users](#for-users)
