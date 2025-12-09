@@ -13,7 +13,6 @@ export const HostPermissionWidget = () => {
     submitPermissionRequest,
     getMessageClassName,
   } = useHostPermissionManager();
-  console.log("HostPermissionBody", permissions);
 
   return (
     <div className="border-b border-gray-200 pb-8 mb-8">
