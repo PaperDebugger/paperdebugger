@@ -44,9 +44,8 @@ export const HostPermissionForm = ({
             input: "font-mono",
           }}
         />
-        <p>Example: supported patterns: <code>*://*.overleaf.com/*</code> </p>
-        <p>Example: supported patterns: <code>*://cn.overleaf.com/*</code> </p>
-        <p>Example: supported patterns: <code>*://sharelatex.gwdg.de/*</code> </p>
+        <p className="mt-2">Example: <code>*://*.overleaf.com/*</code> </p>
+        <p className="mt-1">Example: <code>*://sharelatex.gwdg.de/*</code> </p>
       </div>
 
       <div className="flex gap-3 mb-4">

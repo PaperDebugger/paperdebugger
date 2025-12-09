@@ -10,17 +10,33 @@
     "128": "images/logo-1024.png",
     "48": "images/logo-1024.png"
   },
-  "host_permissions": ["*://*.overleaf.com/"],
-  "optional_host_permissions": ["*://*/*"],
-  "permissions": ["cookies", "storage", "scripting", "activeTab"],
+  "host_permissions": [
+    "*://*.overleaf.com/"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "permissions": [
+    "cookies",
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
   "options_page": "settings.html",
+  "action": {
+    "default_popup": "popup.html"
+  },
   "background": {
     "service_worker": "background.js"
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*"],
-      "matches": ["*://*/*"]
+      "resources": [
+        "images/*"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
     }
   ],
   "key": "[AUTO-GENERATED]"

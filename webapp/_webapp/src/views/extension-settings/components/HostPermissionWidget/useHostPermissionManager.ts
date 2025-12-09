@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MessageType, PermissionItem, PermissionMessage } from "./hostPermissionTypes";
 import { requestHostPermission } from "../../../../intermediate";
-import { registerContentScripts } from "../../../../background";
-
-const DEFAULT_PERMISSION_URL = "*://*.overleaf.com/*";
+import { registerContentScripts } from "../../../../libs/permissions";
 
 const normalizeWildcardPattern = (url: string) => {
   const trimmed = url.trim();
@@ -47,7 +45,7 @@ const normalizeWildcardPattern = (url: string) => {
 };
 
 export const useHostPermissionManager = () => {
-  const [permissionUrl, setPermissionUrl] = useState(DEFAULT_PERMISSION_URL);
+  const [permissionUrl, setPermissionUrl] = useState<string>("");
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<PermissionMessage | null>(null);
@@ -88,6 +86,12 @@ export const useHostPermissionManager = () => {
   }, []);
 
   const submitPermissionRequest = useCallback(async () => {
+    if (!permissionUrl) {
+      setMessage({ text: "Please enter a URL", type: "error" });
+      setIsSubmitting(false);
+      return;
+    }
+
     setMessage(null);
     setIsSubmitting(true);
 

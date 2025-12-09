@@ -67,7 +67,8 @@ const configs: Record<string, UserConfig> = {
   }),
   background: generateConfig("./src/background.ts", "background"),
   intermediate: generateConfig("./src/intermediate.ts", "intermediate"),
-  settings: generateConfig("./src/views/extension-settings/settings.tsx", "settings"),
+  settings: generateConfig("./src/views/extension-settings/app.tsx", "settings"),
+  popup: generateConfig("./src/views/extension-popup/app.tsx", "popup"),
 };
 
 const viteConfig = process.env.VITE_CONFIG || "default";
