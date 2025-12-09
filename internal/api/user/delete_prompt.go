@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
 )
 
@@ -18,7 +18,7 @@ func (s *UserServer) DeletePrompt(
 	}
 
 	if req.GetPromptId() == "" {
-		return nil, shared.ErrBadRequest("prompt_id cannot be empty")
+		return nil, apperrors.ErrBadRequest("prompt_id cannot be empty")
 	}
 
 	err = s.promptService.DeletePrompt(ctx, actor.ID, req.GetPromptId())

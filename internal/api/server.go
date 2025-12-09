@@ -10,7 +10,7 @@ import (
 
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/libs/metadatautil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
@@ -163,7 +163,7 @@ func (s *Server) errorHandler() func(ctx context.Context, mux *runtime.ServeMux,
 			Message: reqError.Error(),
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(shared.GetHTTPCode(reqError))
+		w.WriteHeader(apperrors.GetHTTPCode(reqError))
 		data, jsonErr := json.Marshal(err)
 		if jsonErr != nil {
 			s.logger.Errorf("failed to marshal error message: %v", err)

@@ -1,7 +1,7 @@
 package comment
 
 import (
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
@@ -14,7 +14,7 @@ type CommentServer struct {
 	conversationService   *services.ChatService
 	reverseCommentService *services.ReverseCommentService
 	logger                *logger.Logger
-	cfg                   *cfg.Cfg
+	cfg                   *config.Cfg
 }
 
 func NewCommentServer(
@@ -22,7 +22,7 @@ func NewCommentServer(
 	conversationService *services.ChatService,
 	reverseCommentService *services.ReverseCommentService,
 	logger *logger.Logger,
-	cfg *cfg.Cfg,
+	cfg *config.Cfg,
 ) commentv1.CommentServiceServer {
 	return &CommentServer{
 		projectService:        projectService,

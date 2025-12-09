@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"paperdebugger/internal/accesscontrol"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,7 +39,7 @@ func SetActor(ctx context.Context, actor *accesscontrol.Actor) context.Context {
 func GetActor(ctx context.Context) (*accesscontrol.Actor, error) {
 	v, ok := Get[*accesscontrol.Actor](ctx, actorKey)
 	if !ok {
-		return nil, shared.ErrInvalidActor()
+		return nil, apperrors.ErrInvalidActor()
 	}
 	return v, nil
 }
@@ -51,7 +51,7 @@ func SetProjectID(ctx context.Context, projectId string) context.Context {
 func GetProjectID(ctx context.Context) (string, error) {
 	v, ok := Get[string](ctx, projectIdKey)
 	if !ok {
-		return "", shared.ErrBadRequest("project id not found in context")
+		return "", apperrors.ErrBadRequest("project id not found in context")
 	}
 	return v, nil
 }
@@ -63,7 +63,7 @@ func SetConversationID(ctx context.Context, conversationID string) context.Conte
 func GetConversationID(ctx context.Context) (string, error) {
 	v, ok := Get[string](ctx, conversationIDKey)
 	if !ok {
-		return "", shared.ErrBadRequest("conversation id not found in context")
+		return "", apperrors.ErrBadRequest("conversation id not found in context")
 	}
 	return v, nil
 }

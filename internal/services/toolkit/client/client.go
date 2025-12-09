@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -25,7 +25,7 @@ type AIClient struct {
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
-	cfg                   *cfg.Cfg
+	cfg                   *config.Cfg
 	logger                *logger.Logger
 }
 
@@ -34,7 +34,7 @@ func NewAIClient(
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
-	cfg *cfg.Cfg,
+	cfg *config.Cfg,
 	logger *logger.Logger,
 ) *AIClient {
 	database := db.Database("paperdebugger")

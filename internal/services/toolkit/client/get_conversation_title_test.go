@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
@@ -18,12 +18,12 @@ import (
 
 func TestGetConversationTitle_Case1(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	title, err := aiClient.GetConversationTitle(context.Background(), []*chatv1.Message{
@@ -70,12 +70,12 @@ func TestGetConversationTitle_Case1(t *testing.T) {
 
 func TestGetConversationTitle_Case2(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	title, err := aiClient.GetConversationTitle(context.Background(), []*chatv1.Message{
@@ -145,12 +145,12 @@ func TestGetConversationTitle_Case2(t *testing.T) {
 }
 func TestGetConversationTitle_Case3(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	title, err := aiClient.GetConversationTitle(context.Background(), []*chatv1.Message{

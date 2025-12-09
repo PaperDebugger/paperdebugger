@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	aiclient "paperdebugger/internal/services/toolkit/client"
@@ -16,7 +16,7 @@ type ChatServer struct {
 	projectService *services.ProjectService
 	userService    *services.UserService
 	logger         *logger.Logger
-	cfg            *cfg.Cfg
+	cfg            *config.Cfg
 }
 
 func NewChatServer(
@@ -25,7 +25,7 @@ func NewChatServer(
 	projectService *services.ProjectService,
 	userService *services.UserService,
 	logger *logger.Logger,
-	cfg *cfg.Cfg,
+	cfg *config.Cfg,
 ) chatv1.ChatServiceServer {
 	return &ChatServer{
 		aiClient:       aiClient,

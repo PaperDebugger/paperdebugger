@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"os"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
@@ -17,7 +17,7 @@ import (
 
 func TestAuthServer(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	cfg := cfg.GetCfg()
+	cfg := config.GetCfg()
 	logger := logger.GetLogger()
 	db, err := db.NewDB(cfg, logger)
 	if err != nil {

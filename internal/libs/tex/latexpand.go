@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 )
 
 func removeComments(text string) string {
@@ -61,7 +61,7 @@ func Latexpand(docs map[string]string, rootDoc string) (string, error) {
 	rootDocDir := filepath.Dir(rootDoc)
 
 	if !ok {
-		return "", shared.ErrBadRequest("root doc not found")
+		return "", apperrors.ErrBadRequest("root doc not found")
 	}
 
 	return expandWithDepth(removeComments(content), docs, rootDocDir, 0), nil

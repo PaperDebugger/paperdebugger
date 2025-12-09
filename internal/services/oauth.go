@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -20,7 +20,7 @@ type OAuthService struct {
 	oauthCollection *mongo.Collection
 }
 
-func NewOAuthService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *OAuthService {
+func NewOAuthService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *OAuthService {
 	base := NewBaseService(db, cfg, logger)
 	collection := base.db.Collection((models.OAuth{}).CollectionName())
 

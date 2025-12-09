@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -19,7 +19,7 @@ type PromptService struct {
 	promptCollection *mongo.Collection
 }
 
-func NewPromptService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *PromptService {
+func NewPromptService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *PromptService {
 	base := NewBaseService(db, cfg, logger)
 	return &PromptService{
 		BaseService:      base,

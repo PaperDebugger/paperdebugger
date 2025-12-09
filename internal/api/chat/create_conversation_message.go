@@ -5,7 +5,7 @@ import (
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
@@ -202,7 +202,7 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 		latexFullSource = "latex_full_source is not available in debug mode"
 	default:
 		if project == nil || project.IsOutOfDate() {
-			return ctx, nil, shared.ErrProjectOutOfDate("project is out of date")
+			return ctx, nil, apperrors.ErrProjectOutOfDate("project is out of date")
 		}
 
 		latexFullSource, err = project.GetFullContent()

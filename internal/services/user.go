@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -19,7 +19,7 @@ type UserService struct {
 	userCollection *mongo.Collection
 }
 
-func NewUserService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UserService {
+func NewUserService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *UserService {
 	base := NewBaseService(db, cfg, logger)
 	return &UserService{
 		BaseService:    base,
@@ -29,7 +29,7 @@ func NewUserService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UserService
 
 func (s *UserService) UpsertUserByEmail(ctx context.Context, user *models.User) (*models.User, error) {
 	if user == nil || user.Email == "" {
-		return nil, shared.ErrInvalidUser()
+		return nil, apperrors.ErrInvalidUser()
 	}
 
 	existingUser, err := s.GetUserByEmail(ctx, user.Email)

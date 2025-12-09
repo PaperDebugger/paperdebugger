@@ -14,7 +14,7 @@ import (
 	"paperdebugger/internal/api/comment"
 	"paperdebugger/internal/api/project"
 	"paperdebugger/internal/api/user"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
@@ -24,7 +24,7 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() (*api.Server, error) {
-	cfgCfg := cfg.GetCfg()
+	cfgCfg := config.GetCfg()
 	loggerLogger := logger.GetLogger()
 	dbDB, err := db.NewDB(cfgCfg, loggerLogger)
 	if err != nil {
@@ -52,4 +52,4 @@ func InitializeApp() (*api.Server, error) {
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, services.NewReverseCommentService, services.NewChatService, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, services.NewReverseCommentService, services.NewChatService, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, config.GetCfg, logger.GetLogger, db.NewDB)

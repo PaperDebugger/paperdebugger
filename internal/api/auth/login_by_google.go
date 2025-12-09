@@ -10,7 +10,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"paperdebugger/internal/libs/jwt"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 )
@@ -21,16 +21,16 @@ func (s *AuthServer) LoginByGoogle(
 ) (*authv1.LoginByGoogleResponse, error) {
 	googleToken := req.GetGoogleToken()
 	if googleToken == "" {
-		return nil, shared.ErrInvalidCredential("google token is empty")
+		return nil, apperrors.ErrInvalidCredential("google token is empty")
 	}
 
 	googleUserInfo, err := fetchGoogleUserInfo(ctx, googleToken)
 	if err != nil {
-		return nil, shared.ErrInvalidCredential(err)
+		return nil, apperrors.ErrInvalidCredential(err)
 	}
 
 	if !googleUserInfo.VerifiedEmail {
-		return nil, shared.ErrInvalidCredential("email not verified")
+		return nil, apperrors.ErrInvalidCredential("email not verified")
 	}
 
 	// Create default user with Google info

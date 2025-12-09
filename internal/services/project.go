@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -27,7 +27,7 @@ type ClassifyPaperRequest struct {
 	LatexSource string `json:"latexSource"`
 }
 
-func NewProjectService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *ProjectService {
+func NewProjectService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *ProjectService {
 	base := NewBaseService(db, cfg, logger)
 	return &ProjectService{
 		BaseService:       base,

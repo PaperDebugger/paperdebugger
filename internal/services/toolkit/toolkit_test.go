@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -150,12 +150,12 @@ func createAppUserInputMessage(prompt string) chatv1.Message {
 
 func TestChatCompletion_SingleRoundChat_NotCallTool(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	testCases := []struct {
@@ -217,12 +217,12 @@ func TestChatCompletion_SingleRoundChat_NotCallTool(t *testing.T) {
 
 func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	testCases := []struct {
@@ -311,12 +311,12 @@ func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 
 func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	testCases := []struct {
@@ -387,12 +387,12 @@ func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing
 // 测试是否可以处理 err 的 message 添加到聊天记录中
 func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
-	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	var dbInstance, _ = db.NewDB(config.GetCfg(), logger.GetLogger())
 	var aiClient = client.NewAIClient(
 		dbInstance,
 		&services.ReverseCommentService{},
 		&services.ProjectService{},
-		cfg.GetCfg(),
+		config.GetCfg(),
 		logger.GetLogger(),
 	)
 	testCases := []struct {

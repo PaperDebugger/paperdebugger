@@ -2,7 +2,7 @@ package db
 
 import (
 	"os"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 	"testing"
 
@@ -16,7 +16,7 @@ func init() {
 }
 
 func TestDB(t *testing.T) {
-	db, err := NewDB(cfg.GetCfg(), logger.GetLogger())
+	db, err := NewDB(config.GetCfg(), logger.GetLogger())
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 }
@@ -32,7 +32,7 @@ func TestNewDB_PingError(t *testing.T) {
 		// Try with a completely invalid host that will fail on ping
 		os.Setenv("PD_MONGO_URI", "mongodb://nonexistent-host-12345:27017")
 
-		testCfg := cfg.GetCfg()
+		testCfg := config.GetCfg()
 
 		db, err := NewDB(testCfg, testLogger)
 
@@ -45,7 +45,7 @@ func TestNewDB_PingError(t *testing.T) {
 		// Use a port that's likely not running MongoDB
 		os.Setenv("PD_MONGO_URI", "mongodb://localhost:12345")
 
-		testCfg := cfg.GetCfg()
+		testCfg := config.GetCfg()
 
 		db, err := NewDB(testCfg, testLogger)
 
@@ -58,7 +58,7 @@ func TestNewDB_PingError(t *testing.T) {
 		// Use a very short timeout that will likely cause ping to fail
 		os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017/?serverSelectionTimeoutMS=1&connectTimeoutMS=1")
 
-		testCfg := cfg.GetCfg()
+		testCfg := config.GetCfg()
 
 		db, err := NewDB(testCfg, testLogger)
 

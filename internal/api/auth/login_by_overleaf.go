@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"paperdebugger/internal/libs/jwt"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 
@@ -24,12 +24,12 @@ func (s *AuthServer) LoginByOverleaf(
 ) (*authv1.LoginByOverleafResponse, error) {
 	overleafSession2 := req.GetOverleafToken()
 	if overleafSession2 == "" {
-		return nil, shared.ErrInvalidCredential("overleaf token is empty")
+		return nil, apperrors.ErrInvalidCredential("overleaf token is empty")
 	}
 
 	overleafUserInfo, err := fetchOverleafUserInfo(ctx, overleafSession2)
 	if err != nil {
-		return nil, shared.ErrInvalidCredential(err)
+		return nil, apperrors.ErrInvalidCredential(err)
 	}
 
 	// Create default user with Google info

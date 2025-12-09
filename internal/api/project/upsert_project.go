@@ -6,7 +6,7 @@ import (
 	"github.com/samber/lo"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 )
@@ -21,10 +21,10 @@ func (s *ProjectServer) UpsertProject(
 	}
 
 	if req.GetProjectId() == "" {
-		return nil, shared.ErrBadRequest("project_id is required")
+		return nil, apperrors.ErrBadRequest("project_id is required")
 	}
 	if req.GetName() == "" {
-		return nil, shared.ErrBadRequest("name is required")
+		return nil, apperrors.ErrBadRequest("name is required")
 	}
 
 	project := &models.Project{

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,11 +15,11 @@ import (
 type DB struct {
 	*mongo.Client
 
-	cfg    *cfg.Cfg
+	cfg    *config.Cfg
 	logger *logger.Logger
 }
 
-func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
+func NewDB(cfg *config.Cfg, logger *logger.Logger) (*DB, error) {
 	TIMEOUT := 10 * time.Second
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().

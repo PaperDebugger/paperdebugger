@@ -4,11 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"paperdebugger/internal/accesscontrol"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/metadatautil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/services"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
@@ -41,7 +42,7 @@ func WrapServerStream(stream grpc.ServerStream) *WrappedServerStream {
 type GrpcServer struct {
 	*grpc.Server
 	userService *services.UserService
-	cfg         *cfg.Cfg
+	cfg         *config.Cfg
 }
 
 func (s *GrpcServer) grpcUnaryAuthInterceptor(
@@ -89,16 +90,20 @@ func (s *GrpcServer) grpcStreamAuthInterceptor(
 func (s *GrpcServer) authUserActor(ctx context.Context) (*accesscontrol.Actor, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, shared.ErrInternal("failed to get metadata")
+		return nil, apperrors.ErrInternal("failed to get metadata")
 	}
 
 	token := metadatautil.GetAuthToken(md)
-	return parseUserActor(ctx, token, s.userService)
+	checkUserExists := func(ctx context.Context, userID bson.ObjectID) error {
+		_, err := s.userService.GetUserByID(ctx, userID)
+		return err
+	}
+	return accesscontrol.ParseUserActor(ctx, token, checkUserExists)
 }
 
 func NewGrpcServer(
 	userService *services.UserService,
-	cfg *cfg.Cfg,
+	cfg *config.Cfg,
 	authServer authv1.AuthServiceServer,
 	chatServer chatv1.ChatServiceServer,
 	userServer userv1.UserServiceServer,

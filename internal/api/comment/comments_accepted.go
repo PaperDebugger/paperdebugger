@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
 
@@ -13,16 +13,16 @@ import (
 
 func validateCommentsAcceptedRequest(req *commentv1.CommentsAcceptedRequest) error {
 	if req.GetProjectId() == "" {
-		return shared.ErrBadRequest("project_id is required")
+		return apperrors.ErrBadRequest("project_id is required")
 	}
 	if req.GetConversationId() == "" {
-		return shared.ErrBadRequest("conversation_id is required")
+		return apperrors.ErrBadRequest("conversation_id is required")
 	}
 	if req.GetMessageId() == "" {
-		return shared.ErrBadRequest("message_id is required")
+		return apperrors.ErrBadRequest("message_id is required")
 	}
 	if len(req.GetCommentIds()) == 0 {
-		return shared.ErrBadRequest("comment_ids is required")
+		return apperrors.ErrBadRequest("comment_ids is required")
 	}
 	return nil
 }
@@ -42,17 +42,17 @@ func (s *CommentServer) CommentsAccepted(
 
 	conversationObjectId, err := bson.ObjectIDFromHex(req.GetConversationId())
 	if err != nil {
-		return nil, shared.ErrBadRequest("invalid conversation_id")
+		return nil, apperrors.ErrBadRequest("invalid conversation_id")
 	}
 
 	_, err = s.projectService.GetProject(ctx, actor.ID, req.GetProjectId())
 	if err != nil {
-		return nil, shared.ErrBadRequest("failed to get project")
+		return nil, apperrors.ErrBadRequest("failed to get project")
 	}
 
 	conversation, err := s.conversationService.GetConversation(ctx, actor.ID, conversationObjectId)
 	if err != nil {
-		return nil, shared.ErrBadRequest("failed to get conversation")
+		return nil, apperrors.ErrBadRequest("failed to get conversation")
 	}
 
 	messageID := req.GetMessageId()
@@ -65,23 +65,23 @@ func (s *CommentServer) CommentsAccepted(
 		}
 	}
 	if !messageExists {
-		return nil, shared.ErrBadRequest("message_id not found in conversation")
+		return nil, apperrors.ErrBadRequest("message_id not found in conversation")
 	}
 
 	for _, commentID := range req.GetCommentIds() {
 		commentObjectId, err := bson.ObjectIDFromHex(commentID)
 		if err != nil {
-			return nil, shared.ErrBadRequest(fmt.Sprintf("invalid comment_id %s", commentID))
+			return nil, apperrors.ErrBadRequest(fmt.Sprintf("invalid comment_id %s", commentID))
 		}
 
 		comment, err := s.reverseCommentService.GetComment(ctx, actor.ID, req.GetProjectId(), commentObjectId)
 		if err != nil {
-			return nil, shared.ErrBadRequest(fmt.Sprintf("failed to get comment %s", commentID))
+			return nil, apperrors.ErrBadRequest(fmt.Sprintf("failed to get comment %s", commentID))
 		}
 
 		comment.IsAddedToOverleaf = models.CommentStatusAccepted
 		if err := s.reverseCommentService.UpdateComment(ctx, actor.ID, req.GetProjectId(), commentObjectId, comment); err != nil {
-			return nil, shared.ErrBadRequest(fmt.Sprintf("failed to update comment %s", commentID))
+			return nil, apperrors.ErrBadRequest(fmt.Sprintf("failed to update comment %s", commentID))
 		}
 	}
 	return &commentv1.CommentsAcceptedResponse{}, nil

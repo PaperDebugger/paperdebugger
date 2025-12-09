@@ -5,7 +5,7 @@ import (
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 )
 
@@ -19,7 +19,7 @@ func (s *ProjectServer) GetProject(
 	}
 
 	if req.GetProjectId() == "" {
-		return nil, shared.ErrBadRequest("project_id is required")
+		return nil, apperrors.ErrBadRequest("project_id is required")
 	}
 
 	project, err := s.projectService.GetProject(ctx, actor.ID, req.GetProjectId())

@@ -5,7 +5,7 @@ import (
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -31,7 +31,7 @@ func (s *ChatServer) UpdateConversation(
 	}
 
 	if req.GetTitle() == "" {
-		return nil, shared.ErrBadRequest("title is required")
+		return nil, apperrors.ErrBadRequest("title is required")
 	}
 
 	conversation.Title = req.GetTitle()

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
@@ -12,14 +12,14 @@ type AuthServer struct {
 
 	tokenService *services.TokenService
 	userService  *services.UserService
-	cfg          *cfg.Cfg
+	cfg          *config.Cfg
 	logger       *logger.Logger
 }
 
 func NewAuthServer(
 	tokenService *services.TokenService,
 	userService *services.UserService,
-	cfg *cfg.Cfg,
+	cfg *config.Cfg,
 	logger *logger.Logger,
 ) authv1.AuthServiceServer {
 	return &AuthServer{

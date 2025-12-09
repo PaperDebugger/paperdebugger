@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/libs/tex"
 
 	"github.com/samber/lo"
@@ -48,7 +48,7 @@ func (u *Project) GetFullContent() (string, error) {
 		return doc.ID == u.RootDocID
 	})
 	if !ok {
-		return "", shared.ErrInternal("root doc not found")
+		return "", apperrors.ErrInternal("root doc not found")
 	}
 	return tex.Latexpand(docs, rootDoc.Filepath)
 }

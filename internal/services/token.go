@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 
@@ -25,7 +25,7 @@ type TokenService struct {
 	tokenCollection *mongo.Collection
 }
 
-func NewTokenService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *TokenService {
+func NewTokenService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *TokenService {
 	base := NewBaseService(db, cfg, logger)
 	return &TokenService{
 		BaseService:     base,

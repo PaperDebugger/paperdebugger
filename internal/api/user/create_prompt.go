@@ -5,7 +5,7 @@ import (
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	"paperdebugger/internal/models"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
 )
@@ -20,10 +20,10 @@ func (s *UserServer) CreatePrompt(
 	}
 
 	if req.GetTitle() == "" {
-		return nil, shared.ErrBadRequest("title cannot be empty")
+		return nil, apperrors.ErrBadRequest("title cannot be empty")
 	}
 	if req.GetContent() == "" {
-		return nil, shared.ErrBadRequest("content cannot be empty")
+		return nil, apperrors.ErrBadRequest("content cannot be empty")
 	}
 
 	prompt := &models.Prompt{

@@ -10,7 +10,7 @@ import (
 	"paperdebugger/internal/api/comment"
 	"paperdebugger/internal/api/project"
 	"paperdebugger/internal/api/user"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
@@ -41,7 +41,7 @@ var Set = wire.NewSet(
 	services.NewPromptService,
 	services.NewOAuthService,
 
-	cfg.GetCfg,
+	config.GetCfg,
 	logger.GetLogger,
 	db.NewDB,
 )

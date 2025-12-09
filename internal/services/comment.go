@@ -5,7 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -56,7 +56,7 @@ const (
 	NoMatchPosition = -1
 )
 
-func NewReverseCommentService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger, projectService *ProjectService) *ReverseCommentService {
+func NewReverseCommentService(db *db.DB, cfg *config.Cfg, logger *logger.Logger, projectService *ProjectService) *ReverseCommentService {
 	base := NewBaseService(db, cfg, logger)
 	return &ReverseCommentService{
 		BaseService:       base,

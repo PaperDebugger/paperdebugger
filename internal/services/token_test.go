@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
@@ -17,11 +17,11 @@ import (
 
 func setupTestTokenService(t *testing.T) *services.TokenService {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017") // 确保本地有 MongoDB
-	dbInstance, err := db.NewDB(cfg.GetCfg(), logger.GetLogger())
+	dbInstance, err := db.NewDB(config.GetCfg(), logger.GetLogger())
 	if err != nil {
 		t.Fatalf("failed to connect to test db: %v", err)
 	}
-	return services.NewTokenService(dbInstance, cfg.GetCfg(), logger.GetLogger())
+	return services.NewTokenService(dbInstance, config.GetCfg(), logger.GetLogger())
 }
 
 func TestTokenService_CRUD(t *testing.T) {

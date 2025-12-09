@@ -8,7 +8,7 @@ import (
 	"text/template"
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/models"
@@ -41,7 +41,7 @@ type ChatService struct {
 // define default conversation title
 const DefaultConversationTitle = "New Conversation ."
 
-func NewChatService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *ChatService {
+func NewChatService(db *db.DB, cfg *config.Cfg, logger *logger.Logger) *ChatService {
 	base := NewBaseService(db, cfg, logger)
 	return &ChatService{
 		BaseService:            base,

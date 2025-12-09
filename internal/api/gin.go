@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"paperdebugger/internal/api/auth"
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 	"paperdebugger/internal/libs/logger"
 
 	"github.com/gin-contrib/cors"
@@ -13,10 +13,10 @@ import (
 
 type GinServer struct {
 	*gin.Engine
-	cfg *cfg.Cfg
+	cfg *config.Cfg
 }
 
-func NewGinServer(cfg *cfg.Cfg, oauthHandler *auth.OAuthHandler) *GinServer {
+func NewGinServer(cfg *config.Cfg, oauthHandler *auth.OAuthHandler) *GinServer {
 	gin.SetMode(gin.ReleaseMode)
 	ginServer := &GinServer{Engine: gin.New(), cfg: cfg}
 	ginServer.Use(ginServer.ginLogMiddleware(), gin.Recovery())

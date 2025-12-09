@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"paperdebugger/internal/libs/jwt"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,14 +15,14 @@ import (
 func (s *AuthServer) RefreshToken(ctx context.Context, req *authv1.RefreshTokenRequest) (*authv1.RefreshTokenResponse, error) {
 	token, err := s.tokenService.GetTokenByToken(ctx, req.RefreshToken)
 	if err == mongo.ErrNoDocuments {
-		return nil, shared.ErrInvalidToken()
+		return nil, apperrors.ErrInvalidToken()
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if token.Type != "refreshToken" || token.ExpiresAt.Before(time.Now()) {
-		return nil, shared.ErrInvalidToken()
+		return nil, apperrors.ErrInvalidToken()
 	}
 
 	token.Token = bson.NewObjectID().Hex()

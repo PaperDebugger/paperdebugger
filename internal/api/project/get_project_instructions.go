@@ -4,24 +4,24 @@ import (
 	"context"
 
 	"paperdebugger/internal/libs/contextutil"
-	"paperdebugger/internal/libs/shared"
+	apperrors "paperdebugger/internal/libs/errors"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 )
 
 func (s *ProjectServer) GetProjectInstructions(ctx context.Context, req *projectv1.GetProjectInstructionsRequest) (*projectv1.GetProjectInstructionsResponse, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
-		return nil, shared.ErrInvalidActor("user not authenticated")
+		return nil, apperrors.ErrInvalidActor("user not authenticated")
 	}
 
 	if req.GetProjectId() == "" {
-		return nil, shared.ErrBadRequest("project_id is required")
+		return nil, apperrors.ErrBadRequest("project_id is required")
 	}
 
 	instructions, err := s.projectService.GetProjectInstructions(ctx, actor.ID, req.GetProjectId())
 	if err != nil {
 		s.logger.Error("Failed to get project instructions", "error", err, "userID", actor.ID, "projectID", req.GetProjectId())
-		return nil, shared.ErrInternal("failed to get project instructions")
+		return nil, apperrors.ErrInternal("failed to get project instructions")
 	}
 
 	return &projectv1.GetProjectInstructionsResponse{

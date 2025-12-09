@@ -3,7 +3,7 @@ package jwt
 import (
 	"time"
 
-	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/config"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -22,7 +22,7 @@ func SignJwtToken(userID string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(cfg.GetCfg().JwtSigningKey))
+	signedToken, err := token.SignedString([]byte(config.GetCfg().JwtSigningKey))
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +33,7 @@ func SignJwtToken(userID string) (string, error) {
 func VerifyJwtToken(token string) (jwt.RegisteredClaims, error) {
 	claims := jwt.RegisteredClaims{}
 	parsedToken, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(cfg.GetCfg().JwtSigningKey), nil
+		return []byte(config.GetCfg().JwtSigningKey), nil
 	})
 
 	if err != nil {
