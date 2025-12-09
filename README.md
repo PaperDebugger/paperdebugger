@@ -18,9 +18,9 @@ This enables multi-step reasoning, reviewer-style critique, and structured revis
 </div>
 
 <div align="center">
-  <img src="docs/imgs/preview2.png" width="46%" style="margin: 0 1.5%;"/>
-  <img src="docs/imgs/preview3.png" width="46%" style="margin: 0 1.5%;"/>
-  <img src="docs/imgs/preview1.png" width="100%" style="margin: 0 1.5%; border-radius: 0.5rem;"/>
+  <img src="docs/imgs/preview2.png" width="47%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/preview3.png" width="44.6%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/preview1.png" width="96%" style="margin: 0 1.5%; border-radius: 0.5rem;"/>
 </div>
 
 ## 🌐 Social Media & Community Groups
