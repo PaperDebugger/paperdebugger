@@ -46,12 +46,21 @@ export default function Tools({ messageId, functionName, message, error, prepari
   } else if (functionName === "always_exception") {
     return <AlwaysExceptionCard message={message} preparing={preparing} animated={animated} />;
   } else if (XTRA_MCP_TOOL_NAMES.includes(functionName)) {
-    return <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult || UNKNOWN_JSONRPC_RESULT} preparing={preparing} animated={animated} />;
+    return (
+      <JsonRpc
+        functionName={functionName}
+        jsonRpcResult={jsonRpcResult || UNKNOWN_JSONRPC_RESULT}
+        preparing={preparing}
+        animated={animated}
+      />
+    );
   }
 
   // fallback to unknown tool card if the json rpc result is not defined
   if (jsonRpcResult) {
-    return <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult} preparing={preparing} animated={animated} />;
+    return (
+      <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult} preparing={preparing} animated={animated} />
+    );
   } else {
     return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
   }

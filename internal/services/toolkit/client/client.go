@@ -96,7 +96,8 @@ func CheckOpenAIWorks(oaiClient openai.Client, logger *logger.Logger) {
 		Model: openai.ChatModelGPT4o,
 	})
 	if err != nil {
-		logger.Fatalf("[AI Client] openai client does not work: %v", err)
+		logger.Errorf("[AI Client] openai client does not work: %v", err)
+		return
 	}
 	logger.Info("[AI Client] openai client works", "response", chatCompletion.Choices[0].Message.Content)
 }
