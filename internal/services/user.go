@@ -125,6 +125,8 @@ func (s *UserService) GetDefaultSettings() models.Settings {
 		EnableCompletion:             false,
 		FullDocumentRag:              false,
 		ShowedOnboarding:             false,
+		LlmProviderEndpoint:          "",
+		LlmProviderApiKey:            "",
 	}
 }
 

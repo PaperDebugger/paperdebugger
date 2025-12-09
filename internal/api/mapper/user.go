@@ -12,6 +12,8 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 		EnableCompletion:             settings.EnableCompletion,
 		FullDocumentRag:              settings.FullDocumentRag,
 		ShowedOnboarding:             settings.ShowedOnboarding,
+		LlmProviderEndpoint:          settings.LlmProviderEndpoint,
+		LlmProviderApiKey:            settings.LlmProviderApiKey,
 	}
 }
 
@@ -22,5 +24,7 @@ func MapModelSettingsToProto(settings *models.Settings) *userv1.Settings {
 		EnableCompletion:             settings.EnableCompletion,
 		FullDocumentRag:              settings.FullDocumentRag,
 		ShowedOnboarding:             settings.ShowedOnboarding,
+		LlmProviderEndpoint:          settings.LlmProviderEndpoint,
+		LlmProviderApiKey:            settings.LlmProviderApiKey,
 	}
 }
