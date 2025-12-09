@@ -16,6 +16,7 @@
   "optional_host_permissions": [
     "*://*/*"
   ],
+  "permissions_explanation": "The optional_host_permissions pattern '*://*/*' allows the extension to request access to any website. This is necessary to support self-hosted Overleaf instances and similar use cases. Users will be prompted to grant access only when needed. Please review the extension documentation for details on security and privacy implications.",
   "permissions": [
     "cookies",
     "storage",
