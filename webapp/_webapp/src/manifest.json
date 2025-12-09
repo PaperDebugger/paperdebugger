@@ -10,19 +10,10 @@
     "128": "images/logo-1024.png",
     "48": "images/logo-1024.png"
   },
-  "host_permissions": [
-    "*://*.overleaf.com/"
-  ],
-  "optional_host_permissions": [
-    "*://*/*"
-  ],
+  "host_permissions": ["*://*.overleaf.com/"],
+  "optional_host_permissions": ["*://*/*"],
   "permissions_explanation": "The optional_host_permissions pattern '*://*/*' allows the extension to request access to any website. This is necessary to support self-hosted Overleaf instances and similar use cases. Users will be prompted to grant access only when needed. Please review the extension documentation for details on security and privacy implications.",
-  "permissions": [
-    "cookies",
-    "storage",
-    "scripting",
-    "activeTab"
-  ],
+  "permissions": ["cookies", "storage", "scripting", "activeTab"],
   "options_page": "settings.html",
   "action": {
     "default_popup": "popup.html"
@@ -32,12 +23,8 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "images/*"
-      ],
-      "matches": [
-        "*://*/*"
-      ]
+      "resources": ["images/*"],
+      "matches": ["*://*/*"]
     }
   ],
   "key": "[AUTO-GENERATED]"

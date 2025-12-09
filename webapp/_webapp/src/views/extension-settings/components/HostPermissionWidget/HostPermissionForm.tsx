@@ -44,8 +44,12 @@ export const HostPermissionForm = ({
             input: "font-mono",
           }}
         />
-        <p className="mt-2">Example: <code>*://*.overleaf.com/*</code> </p>
-        <p className="mt-1">Example: <code>*://sharelatex.gwdg.de/*</code> </p>
+        <p className="mt-2">
+          Example: <code>*://*.overleaf.com/*</code>{" "}
+        </p>
+        <p className="mt-1">
+          Example: <code>*://sharelatex.gwdg.de/*</code>{" "}
+        </p>
       </div>
 
       <div className="flex gap-3 mb-4">
@@ -54,12 +58,7 @@ export const HostPermissionForm = ({
         </Button>
       </div>
 
-      {message && (
-        <div className={`p-3 rounded-md text-sm mb-4 ${messageClassName(message.type)}`}>
-          {message.text}
-        </div>
-      )}
+      {message && <div className={`p-3 rounded-md text-sm mb-4 ${messageClassName(message.type)}`}>{message.text}</div>}
     </>
   );
 };
-

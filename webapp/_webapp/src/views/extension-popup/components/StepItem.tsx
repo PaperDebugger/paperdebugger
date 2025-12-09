@@ -11,4 +11,3 @@ export const StepItem = ({ number, children }: StepItemProps) => (
     <p className="step-text">{children}</p>
   </div>
 );
-

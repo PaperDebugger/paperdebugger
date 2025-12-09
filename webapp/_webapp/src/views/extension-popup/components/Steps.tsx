@@ -19,4 +19,3 @@ export const Steps = ({ steps }: StepsProps) => (
     ))}
   </div>
 );
-

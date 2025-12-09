@@ -28,4 +28,3 @@ export const HostPermissionList = ({ permissions, isLoading }: HostPermissionLis
     </div>
   );
 };
-

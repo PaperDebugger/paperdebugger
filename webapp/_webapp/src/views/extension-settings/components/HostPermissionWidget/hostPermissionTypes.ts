@@ -1,4 +1,4 @@
-export type MessageType = 'success' | 'error' | 'info';
+export type MessageType = "success" | "error" | "info";
 
 export interface PermissionMessage {
   text: string;
@@ -9,4 +9,3 @@ export interface PermissionItem {
   origin: string;
   granted: boolean;
 }
-

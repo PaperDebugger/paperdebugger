@@ -6,12 +6,7 @@ const steps: Step[] = [
     content: (
       <>
         In{" "}
-        <a
-          className="step-link"
-          href="https://overleaf.com"
-          target="_blank"
-          rel="noreferrer"
-        >
+        <a className="step-link" href="https://overleaf.com" target="_blank" rel="noreferrer">
           overleaf.com
         </a>
         , open any of your projects.
@@ -38,8 +33,7 @@ export const ExtensionPopup = () => {
   };
 
   const settingsUrl =
-    (typeof chrome !== "undefined" ? chrome.runtime?.getURL?.("settings.html") : undefined) ??
-    "/settings.html";
+    (typeof chrome !== "undefined" ? chrome.runtime?.getURL?.("settings.html") : undefined) ?? "/settings.html";
 
   return (
     <div className="popup-shell noselect">

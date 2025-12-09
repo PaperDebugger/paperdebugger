@@ -164,4 +164,3 @@ export const useHostPermissionManager = () => {
     getMessageClassName,
   };
 };
-
