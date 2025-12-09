@@ -8,6 +8,7 @@ import { AccountSettings } from "./sections/account-settings";
 import { UISettings } from "./sections/ui-settings";
 import { RealDeveloperTools } from "./sections/real-developer-tools";
 import { SettingsFooter } from "./sections/footer";
+import { LLMProviderSettings } from "./sections/api-key-settings";
 
 export const Settings = () => {
   const { settings, isLoading, loadSettings, enableUserDeveloperTools } = useSettingStore();
@@ -32,6 +33,7 @@ export const Settings = () => {
       <div className="pd-app-tab-content-body">
         <UISettings />
         {/* <BetaFeatureSettings /> */}
+        <LLMProviderSettings />
         <AccountSettings />
         <SettingsFooter />
         {enableUserDeveloperTools && <UserDeveloperTools />}

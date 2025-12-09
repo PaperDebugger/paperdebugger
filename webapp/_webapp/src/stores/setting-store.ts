@@ -35,6 +35,8 @@ const defaultSettings: PlainMessage<Settings> = {
   enableCompletion: false,
   fullDocumentRag: false,
   showedOnboarding: true,
+  llmProviderEndpoint: "",
+  llmProviderApiKey: "",
 };
 
 export const useSettingStore = create<SettingStore>()((set, get) => ({
