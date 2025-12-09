@@ -23,6 +23,3 @@ root.render(
     </Providers>
   ),
 );
-
-
-
