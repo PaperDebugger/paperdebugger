@@ -17,6 +17,7 @@
 import { getAllCookies } from "./libs/browser";
 import { HANDLER_NAMES } from "./shared/constants";
 import { blobToBase64 } from "./libs/helpers";
+import { registerContentScripts } from "./libs/permissions";
 
 export type Handler<A, T> = {
   name: string;
@@ -78,12 +79,50 @@ export const fetchImageHandler: Handler<string, string> = {
   },
 };
 
+const registerContentScriptsIfPermitted = async () => {
+  try {
+    const { origins = [] } = await chrome.permissions.getAll();
+    if (!origins.length) {
+      console.log("[PaperDebugger] No origins found, skipping content script registration");
+      return;
+    }
+    await registerContentScripts(origins);
+  } catch (error) {
+    console.error("[PaperDebugger] Unable to register content scripts", error);
+  }
+};
+
+export const requestHostPermissionHandler: Handler<string, boolean> = {
+  name: HANDLER_NAMES.REQUEST_HOST_PERMISSION,
+  handler: async (origin, sendResponse) => {
+    const granted = await chrome.permissions.request({ origins: [origin] });
+    if (granted) {
+      // chrome.permissions.request requires a user gesture context, the requestHostPermissionHandler is in the background script
+      // and called via async messaging from the settings page.
+      // Here we must register content scripts because when a message is sent through chrome.runtime.sendMessage,
+      // the user gesture context is not preserved in the background script handler,
+      // causing the permission request to fail with "This function must be called during a user gesture."
+      // The permission request needs to be called directly from the settings page where the user click occurs,
+      // not delegated to the background script.
+      // Therefore, we must register content scripts here.
+      await registerContentScriptsIfPermitted();
+    }
+    sendResponse(granted);
+  },
+};
+
 // @ts-expect-error: browser may not be defined in all environments
 const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 
 browserAPI.runtime?.onMessage?.addListener(
   (request: { action: string; args: unknown }, _: unknown, sendResponse: (response: unknown) => void) => {
-    const handlers = [getCookiesHandler, getUrlHandler, getOrCreateSessionIdHandler, fetchImageHandler];
+    const handlers = [
+      getCookiesHandler,
+      getUrlHandler,
+      getOrCreateSessionIdHandler,
+      fetchImageHandler,
+      requestHostPermissionHandler,
+    ];
 
     const handler = handlers.find((h) => h.name === request.action) as HandlerAny;
     if (!handler) {
@@ -100,3 +139,5 @@ browserAPI.runtime?.onMessage?.addListener(
     return true;
   },
 );
+
+registerContentScriptsIfPermitted();
