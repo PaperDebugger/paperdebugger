@@ -15,7 +15,7 @@ document.getElementById('myButton')?.addEventListener('click', async () => {
   const origin = "https://www.google.com/";
   
   try {
-    // 直接调用 background script，类似于 intermediate.ts 中的实现
+    // Directly call the background script, similar to the implementation in intermediate.ts
     const response = await chrome.runtime.sendMessage({
       action: "requestHostPermission",
       args: origin,
