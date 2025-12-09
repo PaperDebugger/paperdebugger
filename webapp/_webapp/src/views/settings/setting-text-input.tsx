@@ -44,8 +44,8 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     const valueChanged = value !== originalValue;
 
     const saveSettings = useCallback(async () => {
-      await updateSettings({ [settingKey]: value } as Partial<PlainMessage<Settings>>);
-      setOriginalValue(value);
+      await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
+      setOriginalValue(value.trim());
       setIsEditing(false);
     }, [value, updateSettings, settingKey]);
 
@@ -54,7 +54,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     }, []);
 
     const handleCancel = useCallback(() => {
-      setValue(originalValue);
+      setValue(originalValue.trim());
       setIsEditing(false);
     }, [originalValue]);
 
@@ -147,7 +147,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
         ) : (
           <div className="flex items-center gap-2">
             <div className={cn(textDisplayClassName, "flex-grow")}>
-              {password ? "•".repeat(16) : value || placeholder || "No value set"}
+              {(password && value.trim().length > 0) ? "•".repeat(16) : value.trim() || placeholder?.trim() || "No value set"}
             </div>
             <Button
               size="sm"

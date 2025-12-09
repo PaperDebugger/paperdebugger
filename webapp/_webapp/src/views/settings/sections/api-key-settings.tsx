@@ -14,13 +14,13 @@ export const LLMProviderSettings = () => {
       <div className="px-4">
         <EndpointInput
           label="Endpoint"
-          description="Custom LLM provider endpoint URL"
+          description="Leave empty to use default endpoint"
           placeholder="e.g., https://api.openai.com/v1"
           multiline={false}
         />
         <ApiKeyInput
           label="API Key"
-          description="Your LLM provider API key (will be stored securely)"
+          description="Leave empty to use default API key"
           placeholder="sk-..."
           multiline={false}
           password={true}
