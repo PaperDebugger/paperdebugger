@@ -42,7 +42,7 @@ export const ExtensionPopup = () => {
     "/settings.html";
 
   return (
-    <div className="popup-shell">
+    <div className="popup-shell noselect">
       <h1 className="title">PaperDebugger</h1>
       <h2 className="subtitle">How to use</h2>
       <Steps steps={steps} />
