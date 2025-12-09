@@ -78,12 +78,20 @@ export const fetchImageHandler: Handler<string, string> = {
   },
 };
 
+export const requestHostPermissionHandler: Handler<string, boolean> = {
+  name: HANDLER_NAMES.REQUEST_HOST_PERMISSION,
+  handler: async (origin, sendResponse) => {
+    const granted = await chrome.permissions.request({ origins: [origin] });
+    sendResponse(granted);
+  },
+};
+
 // @ts-expect-error: browser may not be defined in all environments
 const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 
 browserAPI.runtime?.onMessage?.addListener(
   (request: { action: string; args: unknown }, _: unknown, sendResponse: (response: unknown) => void) => {
-    const handlers = [getCookiesHandler, getUrlHandler, getOrCreateSessionIdHandler, fetchImageHandler];
+    const handlers = [getCookiesHandler, getUrlHandler, getOrCreateSessionIdHandler, fetchImageHandler, requestHostPermissionHandler];
 
     const handler = handlers.find((h) => h.name === request.action) as HandlerAny;
     if (!handler) {

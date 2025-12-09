@@ -104,3 +104,4 @@ export { getCookies };
 export const getUrl = makeFunction<string, string>(HANDLER_NAMES.GET_URL);
 export const getOrCreateSessionId = makeFunction<void, string>(HANDLER_NAMES.GET_OR_CREATE_SESSION_ID);
 export const fetchImage = makeFunction<string, string>(HANDLER_NAMES.FETCH_IMAGE);
+export const requestHostPermission = makeFunction<string, boolean>(HANDLER_NAMES.REQUEST_HOST_PERMISSION);

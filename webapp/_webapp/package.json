@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "nodemon --watch src --ext ts,js,tsx,jsx,json --exec 'npm run build'",
     "dev:chat": "vite dev --config vite.config.dev.ts",
-    "build": "tsc -b && npm run _build:default && npm run _build:background && npm run _build:intermediate",
+    "build": "tsc -b && npm run _build:default && npm run _build:background && npm run _build:intermediate && npm run _build:settings",
     "_build": "vite build",
     "_build:default": "VITE_CONFIG=default npm run _build",
     "_build:background": "VITE_CONFIG=background npm run _build",
     "_build:intermediate": "VITE_CONFIG=intermediate npm run _build",
+    "_build:settings": "VITE_CONFIG=settings npm run _build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "build:local:chrome": "bash -c 'source ./scripts/build-local-chrome.sh'",

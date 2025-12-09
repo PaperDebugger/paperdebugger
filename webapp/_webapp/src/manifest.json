@@ -11,10 +11,9 @@
     "48": "images/logo-1024.png"
   },
   "host_permissions": ["*://*.overleaf.com/"],
+  "optional_host_permissions": ["*://*/*"],
   "permissions": ["cookies", "storage"],
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "options_page": "settings.html",
   "background": {
     "service_worker": "background.js"
   },
