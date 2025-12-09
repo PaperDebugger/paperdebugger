@@ -10,6 +10,9 @@ export function getManifest() {
   // This is the version on github tag.
   manifestJSON.version = semver.clean(version || "") || "0.0.0";
 
+  // @ts-expect-error we don't use this variable permissions_explanation
+  delete manifestJSON.permissions_explanation;
+
   if (betaBuild === "true") {
     manifestJSON.version_name = `v${manifestJSON.version}-${monorepoRevision}-beta`;
     manifestJSON.name = "PaperDebugger BETA";

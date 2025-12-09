@@ -1,31 +1,17 @@
 import { Button, Input } from "@heroui/react";
 import React, { useCallback } from "react";
-import { PermissionMessage } from "./hostPermissionTypes";
+import { getMessageClassName, useHostPermissionStore } from "./useHostPermissionStore";
 
-interface HostPermissionFormProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
-  isSubmitting: boolean;
-  message: PermissionMessage | null;
-  messageClassName: (type: PermissionMessage["type"]) => string;
-}
+export const HostPermissionInput = () => {
+  const { permissionUrl, setPermissionUrl, submitPermissionRequest, isSubmitting, message } = useHostPermissionStore();
 
-export const HostPermissionForm = ({
-  value,
-  onChange,
-  onSubmit,
-  isSubmitting,
-  message,
-  messageClassName,
-}: HostPermissionFormProps) => {
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && !isSubmitting) {
-        onSubmit();
+        submitPermissionRequest();
       }
     },
-    [isSubmitting, onSubmit],
+    [isSubmitting, submitPermissionRequest],
   );
 
   return (
@@ -37,9 +23,9 @@ export const HostPermissionForm = ({
           color="primary"
           radius="sm"
           placeholder="https://www.example.com/ or https://*.example.com/*"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyPress={handleKeyPress}
+          value={permissionUrl}
+          onChange={(e) => setPermissionUrl(e.target.value)}
+          onKeyDown={handleKeyPress}
           classNames={{
             input: "font-mono",
           }}
@@ -53,12 +39,14 @@ export const HostPermissionForm = ({
       </div>
 
       <div className="flex gap-3 mb-4">
-        <Button onPress={onSubmit} disabled={isSubmitting} color="primary">
+        <Button onPress={submitPermissionRequest} disabled={isSubmitting} color="primary">
           {isSubmitting ? "Requesting..." : "Request Permission"}
         </Button>
       </div>
 
-      {message && <div className={`p-3 rounded-md text-sm mb-4 ${messageClassName(message.type)}`}>{message.text}</div>}
+      {message && (
+        <div className={`p-3 rounded-md text-sm mb-4 ${getMessageClassName(message.type)}`}>{message.text}</div>
+      )}
     </>
   );
 };

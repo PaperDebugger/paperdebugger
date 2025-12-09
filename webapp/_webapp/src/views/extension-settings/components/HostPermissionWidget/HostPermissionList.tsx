@@ -1,13 +1,10 @@
-import { HostPermissionItem } from "./HostPermissionItem";
-import { PermissionItem } from "./hostPermissionTypes";
+import { HostPermissionListItem } from "./HostPermissionListItem";
+import { useHostPermissionStore } from "./useHostPermissionStore";
 
-interface HostPermissionListProps {
-  permissions: PermissionItem[];
-  isLoading: boolean;
-}
+export const HostPermissionList = () => {
+  const { permissions, isLoadingPermissions } = useHostPermissionStore();
 
-export const HostPermissionList = ({ permissions, isLoading }: HostPermissionListProps) => {
-  if (isLoading) {
+  if (isLoadingPermissions) {
     return <p className="text-gray-500 text-sm">Loading permissions...</p>;
   }
 
@@ -23,7 +20,7 @@ export const HostPermissionList = ({ permissions, isLoading }: HostPermissionLis
   return (
     <div className="space-y-4">
       {permissions.map((item) => (
-        <HostPermissionItem key={item.origin} item={item} />
+        <HostPermissionListItem key={item.origin} item={item} />
       ))}
     </div>
   );

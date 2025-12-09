@@ -1,18 +1,20 @@
-import { HostPermissionForm } from "./HostPermissionForm";
+import { useEffect } from "react";
+import { HostPermissionInput } from "./HostPermissionInput";
 import { HostPermissionList } from "./HostPermissionList";
-import { useHostPermissionManager } from "./useHostPermissionManager";
+import { useHostPermissionStore } from "./useHostPermissionStore";
 
 export const HostPermissionWidget = () => {
-  const {
-    permissionUrl,
-    setPermissionUrl,
-    permissions,
-    isSubmitting,
-    message,
-    isLoadingPermissions,
-    submitPermissionRequest,
-    getMessageClassName,
-  } = useHostPermissionManager();
+  const { message, loadPermissions, clearMessage } = useHostPermissionStore();
+
+  useEffect(() => {
+    loadPermissions();
+  }, [loadPermissions]);
+
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => clearMessage(), 5000);
+    return () => clearTimeout(timer);
+  }, [message, clearMessage]);
 
   return (
     <div className="border-b border-gray-200 pb-8 mb-8">
@@ -20,17 +22,10 @@ export const HostPermissionWidget = () => {
       <p className="text-gray-600 text-sm mb-5 leading-relaxed">
         Add your self-hosted Overleaf domain so PaperDebugger can interact with it.
       </p>
-      <HostPermissionForm
-        value={permissionUrl}
-        onChange={setPermissionUrl}
-        onSubmit={submitPermissionRequest}
-        isSubmitting={isSubmitting}
-        message={message}
-        messageClassName={getMessageClassName}
-      />
+      <HostPermissionInput />
 
       <div className="mt-5">
-        <HostPermissionList permissions={permissions} isLoading={isLoadingPermissions} />
+        <HostPermissionList />
       </div>
     </div>
   );
