@@ -12,27 +12,15 @@
   },
   "host_permissions": ["*://*.overleaf.com/"],
   "optional_host_permissions": ["*://*/*"],
-  "permissions": ["cookies", "storage"],
+  "permissions": ["cookies", "storage", "scripting", "activeTab"],
   "options_page": "settings.html",
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "js": ["paperdebugger.js"],
-      "matches": ["https://*.overleaf.com/project/*"],
-      "world": "MAIN"
-    },
-    {
-      "js": ["intermediate.js"],
-      "matches": ["https://*.overleaf.com/project/*"],
-      "run_at": "document_start"
-    }
-  ],
   "web_accessible_resources": [
     {
       "resources": ["images/*"],
-      "matches": ["https://*.overleaf.com/*"]
+      "matches": ["*://*/*"]
     }
   ],
   "key": "[AUTO-GENERATED]"

@@ -156,6 +156,8 @@ export const Main = () => {
   );
 };
 
+console.log("[PaperDebugger] PaperDebugger injected, find toolbar-left or ide-redesign-toolbar-menu-bar to add button");
+
 if (!import.meta.env.DEV) {
   onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {
     logInfo("initializing");

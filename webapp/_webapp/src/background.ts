@@ -17,6 +17,7 @@
 import { getAllCookies } from "./libs/browser";
 import { HANDLER_NAMES } from "./shared/constants";
 import { blobToBase64 } from "./libs/helpers";
+import { registerContentScripts } from "./libs/permissions";
 
 export type Handler<A, T> = {
   name: string;
@@ -108,3 +109,5 @@ browserAPI.runtime?.onMessage?.addListener(
     return true;
   },
 );
+
+registerContentScripts();
