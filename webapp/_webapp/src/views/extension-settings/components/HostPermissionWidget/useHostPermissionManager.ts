@@ -75,7 +75,6 @@ export const useHostPermissionManager = () => {
         origin,
         granted: true,
       }));
-      console.log("items", items);
       setPermissions(items);
     } catch (error) {
       console.error("Error loading permissions:", error);
