@@ -37,12 +37,13 @@ const SwitchCell = React.forwardRef<HTMLInputElement, SwitchCellProps>(
         ...classNames,
         base: cn(
           "inline-flex bg-content2 flex-row-reverse w-full max-w-full items-center",
-          "justify-between cursor-pointer rounded-medium gap-2 !p-3",
+          "justify-between cursor-pointer rounded-medium gap-2 !p-2",
           classNames?.base,
         ),
       }}
       thumbIcon={isLoading ? <Spinner style={{ zoom: 0.5 }} color="default" variant="gradient" /> : undefined}
       {...props}
+      size="sm"
     >
       <input ref={ref} type="checkbox" className="hidden" />
       <div className="flex flex-col">

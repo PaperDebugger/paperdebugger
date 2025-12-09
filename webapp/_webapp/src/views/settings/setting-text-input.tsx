@@ -13,6 +13,7 @@ type SettingsTextInputProps = {
   rows?: number;
   className?: string;
   multiline?: boolean;
+  password?: boolean;
 };
 
 export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
@@ -23,6 +24,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     rows = 3,
     className,
     multiline = true,
+    password = false,
   }: SettingsTextInputProps) {
     const { settings, isUpdating, updateSettings } = useSettingStore();
     const [value, setValue] = useState<string>("");
@@ -91,7 +93,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
 
     return (
       <div className="space-y-0 mt-2">
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row gap-2 items-center mb-1">
           {label && <div className="text-xs font-medium">{label}</div>}
           {description && <div className="text-xs text-default-500">{description}</div>}
         </div>
@@ -111,7 +113,6 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
               />
             ) : (
               <input
-                type="text"
                 onMouseDown={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyDown}
                 className={inputClassName}
@@ -146,7 +147,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
         ) : (
           <div className="flex items-center gap-2">
             <div className={cn(textDisplayClassName, "flex-grow")}>
-              {value || placeholder || "No value set"}
+              {password ? "•".repeat(16) : value || placeholder || "No value set"}
             </div>
             <Button
               size="sm"

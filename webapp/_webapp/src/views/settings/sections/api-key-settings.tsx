@@ -8,8 +8,10 @@ const EndpointInput = createSettingsTextInput("llmProviderEndpoint");
 export const LLMProviderSettings = () => {
   return (
     <SettingsSectionContainer>
-      <SettingsSectionTitle>LLM Provider</SettingsSectionTitle>
-      <div style={{ padding: "12px" }}>
+      <SettingsSectionTitle tooltip="LLM Provider must be OpenAI compatible. To use Agent Workflow, we will store the endpoint and API key in our server">
+        LLM Provider
+      </SettingsSectionTitle>
+      <div className="px-4">
         <EndpointInput
           label="Endpoint"
           description="Custom LLM provider endpoint URL"
@@ -21,6 +23,7 @@ export const LLMProviderSettings = () => {
           description="Your LLM provider API key (will be stored securely)"
           placeholder="sk-..."
           multiline={false}
+          password={true}
         />
       </div>
     </SettingsSectionContainer>
