@@ -1,7 +1,7 @@
 // can not running in content_script. registerContentScripts can only be called in service_worker.
 export async function registerContentScripts(origins?: string[]) {
     try {
-        const resolvedOrigins = origins ?? (await chrome.permissions.getAll()).origins || [];
+        const resolvedOrigins = origins ?? (await chrome.permissions.getAll()).origins ?? [];
         if (resolvedOrigins.length === 0) {
             console.log("[PaperDebugger] No origins found, skipping content script registration");
             return;

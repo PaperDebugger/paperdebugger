@@ -134,4 +134,4 @@ browserAPI.runtime?.onMessage?.addListener(
   },
 );
 
-void registerContentScriptsIfPermitted();
+registerContentScriptsIfPermitted();
