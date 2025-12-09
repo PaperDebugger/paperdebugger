@@ -19,7 +19,7 @@ export const HostPermissionWidget = () => {
     <div className="border-b border-gray-200 pb-8 mb-8">
       <div className="text-lg font-semibold mb-2 text-gray-800">Host Permissions</div>
       <p className="text-gray-600 text-sm mb-5 leading-relaxed">
-        Add your self-hosted Overleaf domain so PaperDebugger can interact with them.
+        Add your self-hosted Overleaf domain so PaperDebugger can interact with it.
       </p>
       <HostPermissionForm
         value={permissionUrl}

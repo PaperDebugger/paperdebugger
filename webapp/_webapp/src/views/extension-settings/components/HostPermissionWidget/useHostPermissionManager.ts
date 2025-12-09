@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { MessageType, PermissionItem, PermissionMessage } from "./hostPermissionTypes";
 import { requestHostPermission } from "../../../../intermediate";
-import { registerContentScripts } from "../../../../libs/permissions";
 
 const normalizeWildcardPattern = (url: string) => {
   const trimmed = url.trim();
@@ -117,7 +116,6 @@ export const useHostPermissionManager = () => {
       if (granted) {
         setMessage({ text: `Permission granted for ${origin}`, type: "success" });
         await loadPermissions();
-        await registerContentScripts();
       } else {
         setMessage({ text: `Permission denied for ${origin}`, type: "error" });
       }
@@ -127,7 +125,7 @@ export const useHostPermissionManager = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [permissionUrl, checkPermission, requestHostPermission, loadPermissions]);
+  }, [permissionUrl, checkPermission, loadPermissions]);
 
   const getMessageClassName = useCallback((type: MessageType): string => {
     switch (type) {
