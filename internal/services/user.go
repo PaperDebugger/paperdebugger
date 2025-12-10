@@ -127,6 +127,7 @@ func (s *UserService) GetDefaultSettings() models.Settings {
 		ShowedOnboarding:             false,
 		LlmProviderEndpoint:          "",
 		LlmProviderApiKey:            "",
+		LlmProviderModel:             "",
 	}
 }
 

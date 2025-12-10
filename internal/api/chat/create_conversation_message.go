@@ -252,6 +252,13 @@ func (s *ChatServer) CreateConversationMessage(
 	ctx context.Context,
 	req *chatv1.CreateConversationMessageRequest,
 ) (*chatv1.CreateConversationMessageResponse, error) {
+	// Get user's LLM provider configuration from settings
+	llmConfig, err := s.getLLMProviderConfig(ctx)
+	if err != nil {
+		s.logger.Warn("Failed to get LLM provider config, using default", "error", err)
+		// Continue with nil config (will use system defaults)
+	}
+
 	ctx, conversation, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
@@ -265,7 +272,7 @@ func (s *ChatServer) CreateConversationMessage(
 		return nil, err
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, conversation.LanguageModel, conversation.OpenaiChatHistory)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionWithConfig(ctx, conversation.LanguageModel, llmConfig, conversation.OpenaiChatHistory)
 	if err != nil {
 		return nil, err
 	}

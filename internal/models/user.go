@@ -10,6 +10,7 @@ type Settings struct {
 	ShowedOnboarding             bool   `bson:"showed_onboarding"`
 	LlmProviderEndpoint          string `bson:"llm_provider_endpoint"`
 	LlmProviderApiKey            string `bson:"llm_provider_api_key"`
+	LlmProviderModel             string `bson:"llm_provider_model"`
 }
 
 type User struct {

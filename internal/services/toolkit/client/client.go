@@ -29,6 +29,23 @@ type AIClient struct {
 	logger                *logger.Logger
 }
 
+// getOpenAIClient returns the appropriate OpenAI client based on the LLM provider config.
+// If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
+// Otherwise, the default client (using system OpenAI API key) is returned.
+func (a *AIClient) getOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
+	if llmConfig != nil && llmConfig.IsCustom() {
+		opts := []option.RequestOption{
+			option.WithAPIKey(llmConfig.APIKey),
+		}
+		if llmConfig.Endpoint != "" {
+			opts = append(opts, option.WithBaseURL(llmConfig.Endpoint))
+		}
+		client := openai.NewClient(opts...)
+		return &client
+	}
+	return a.openaiClient
+}
+
 func NewAIClient(
 	db *db.DB,
 

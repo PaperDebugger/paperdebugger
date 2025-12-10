@@ -1,7 +1,10 @@
 package chat
 
 import (
+	"context"
+
 	"paperdebugger/internal/api/mapper"
+	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
@@ -24,6 +27,14 @@ func (s *ChatServer) CreateConversationMessageStream(
 	stream chatv1.ChatService_CreateConversationMessageStreamServer,
 ) error {
 	ctx := stream.Context()
+
+	// Get user's LLM provider configuration from settings
+	llmConfig, err := s.getLLMProviderConfig(ctx)
+	if err != nil {
+		s.logger.Warn("Failed to get LLM provider config, using default", "error", err)
+		// Continue with nil config (will use system defaults)
+	}
+
 	ctx, conversation, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
@@ -38,7 +49,8 @@ func (s *ChatServer) CreateConversationMessageStream(
 	}
 
 	// Same usage as ChatCompletion, but with a stream parameter
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), conversation.LanguageModel, conversation.OpenaiChatHistory)
+	// Pass the LLM provider config to use custom endpoint if configured
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), conversation.LanguageModel, llmConfig, conversation.OpenaiChatHistory)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -79,4 +91,20 @@ func (s *ChatServer) CreateConversationMessageStream(
 
 	// The final conversation object is NOT returned
 	return nil
+}
+
+// getLLMProviderConfig retrieves the user's LLM provider configuration from their settings.
+// Returns nil if the user hasn't configured a custom endpoint.
+func (s *ChatServer) getLLMProviderConfig(ctx context.Context) (*models.LLMProviderConfig, error) {
+	actor, err := contextutil.GetActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	settings, err := s.userService.GetUserSettings(ctx, actor.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.NewLLMProviderConfigFromSettings(settings), nil
 }

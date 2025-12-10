@@ -14,6 +14,7 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 		ShowedOnboarding:             settings.ShowedOnboarding,
 		LlmProviderEndpoint:          settings.LlmProviderEndpoint,
 		LlmProviderApiKey:            settings.LlmProviderApiKey,
+		LlmProviderModel:             settings.LlmProviderModel,
 	}
 }
 
@@ -26,5 +27,6 @@ func MapModelSettingsToProto(settings *models.Settings) *userv1.Settings {
 		ShowedOnboarding:             settings.ShowedOnboarding,
 		LlmProviderEndpoint:          settings.LlmProviderEndpoint,
 		LlmProviderApiKey:            settings.LlmProviderApiKey,
+		LlmProviderModel:             settings.LlmProviderModel,
 	}
 }

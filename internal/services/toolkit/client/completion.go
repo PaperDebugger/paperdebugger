@@ -22,7 +22,25 @@ import (
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
 func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.LanguageModel, messages responses.ResponseInputParam) (responses.ResponseInputParam, []chatv1.Message, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", languageModel, messages)
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", languageModel, nil, messages)
+	if err != nil {
+		return nil, nil, err
+	}
+	return openaiChatHistory, inappChatHistory, nil
+}
+
+// ChatCompletionWithConfig orchestrates a chat completion process with optional custom LLM provider configuration.
+//
+// Parameters:
+//
+//	ctx: The context for controlling cancellation and deadlines.
+//	languageModel: The language model to use for completion (e.g., GPT-3.5, GPT-4).
+//	llmConfig: Optional custom LLM provider configuration (endpoint, API key, model name).
+//	messages: The full chat history (as input) to send to the language model.
+//
+// Returns: (same as ChatCompletion)
+func (a *AIClient) ChatCompletionWithConfig(ctx context.Context, languageModel models.LanguageModel, llmConfig *models.LLMProviderConfig, messages responses.ResponseInputParam) (responses.ResponseInputParam, []chatv1.Message, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", languageModel, llmConfig, messages)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -37,6 +55,8 @@ func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.Lang
 //	callbackStream: The gRPC stream to which incremental responses are sent in real time.
 //	conversationId: The unique identifier for the conversation session in PaperDebugger.
 //	languageModel: The language model to use for completion (e.g., GPT-3.5, GPT-4).
+//	llmConfig: Optional custom LLM provider configuration. If provided and IsCustom() returns true,
+//	           uses the custom endpoint, API key, and model name instead of the system defaults.
 //	messages: The full chat history (as input) to send to the language model.
 //
 // Returns: (same as ChatCompletion)
@@ -50,7 +70,7 @@ func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.Lang
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, languageModel models.LanguageModel, messages responses.ResponseInputParam) (responses.ResponseInputParam, []chatv1.Message, error) {
+func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, languageModel models.LanguageModel, llmConfig *models.LLMProviderConfig, messages responses.ResponseInputParam) (responses.ResponseInputParam, []chatv1.Message, error) {
 	openaiChatHistory := responses.ResponseNewParamsInputUnion{OfInputItemList: messages}
 	inappChatHistory := []chatv1.Message{}
 
@@ -61,12 +81,17 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 		streamHandler.SendFinalization()
 	}()
 
-	params := getDefaultParams(languageModel, openaiChatHistory, a.toolCallHandler.Registry)
+	// Get the appropriate model name (custom or default)
+	modelName := llmConfig.GetModelName(languageModel.Name())
+	params := getParamsWithModel(modelName, openaiChatHistory, a.toolCallHandler.Registry, languageModel)
+
+	// Get the appropriate OpenAI client (custom or default)
+	client := a.getOpenAIClient(llmConfig)
 
 	for {
 		params.Input = openaiChatHistory
 		var openaiOutput []responses.ResponseOutputItemUnion
-		stream := a.openaiClient.Responses.NewStreaming(context.Background(), params)
+		stream := client.Responses.NewStreaming(context.Background(), params)
 
 		for stream.Next() {
 			// time.Sleep(200 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode

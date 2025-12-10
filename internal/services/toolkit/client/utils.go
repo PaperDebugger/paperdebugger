@@ -44,18 +44,25 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
 func getDefaultParams(languageModel models.LanguageModel, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+	return getParamsWithModel(languageModel.Name(), chatHistory, toolRegistry, languageModel)
+}
+
+// getParamsWithModel constructs the parameters for a chat completion request with a specified model name.
+// This allows using custom model names from user configuration while still respecting the language model's
+// parameter settings (temperature, max tokens, etc.).
+func getParamsWithModel(modelName string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry, languageModel models.LanguageModel) responses.ResponseNewParams {
 	if languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5) ||
 		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI) ||
 		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO) {
 		return responses.ResponseNewParams{
-			Model: languageModel.Name(),
+			Model: modelName,
 			Tools: toolRegistry.GetTools(),
 			Input: chatHistory,
 			Store: openai.Bool(false),
 		}
 	}
 	return responses.ResponseNewParams{
-		Model:           languageModel.Name(),
+		Model:           modelName,
 		Temperature:     openai.Float(0.7),
 		MaxOutputTokens: openai.Int(4000),        // DEBUG POINT: change this to test the frontend handler
 		Tools:           toolRegistry.GetTools(), // Tool registration is managed centrally by the registry
