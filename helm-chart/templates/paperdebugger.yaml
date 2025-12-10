@@ -57,6 +57,7 @@ metadata:
   name: paperdebugger
   namespace: {{ .Values.namespace }}
 data:
+  OPENAI_BASE_URL: "{{ .Values.openai_base_url }}"
   OPENAI_API_KEY: "{{ .Values.openai_api_key }}"
   JWT_SIGNING_KEY: "{{ .Values.jwt_signing_key }}"
   {{ if not .Values.mongo.in_cluster }}

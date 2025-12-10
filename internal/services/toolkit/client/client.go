@@ -39,6 +39,7 @@ func NewAIClient(
 ) *AIClient {
 	database := db.Database("paperdebugger")
 	oaiClient := openai.NewClient(
+		option.WithBaseURL(cfg.OpenAIBaseURL),
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
 	CheckOpenAIWorks(oaiClient, logger)

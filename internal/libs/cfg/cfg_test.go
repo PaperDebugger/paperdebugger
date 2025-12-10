@@ -10,6 +10,7 @@ import (
 
 func init() {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
+	os.Setenv("OPENAI_BASE_URL", "https://dummy.openai.com/v1")
 	os.Setenv("OPENAI_API_KEY", "dummy OPENAI_API_KEY for testing")
 	os.Setenv("JWT_SIGNING_KEY", "dummy JWT_SIGNING_KEY for testing")
 }
@@ -22,9 +23,11 @@ func TestCfg(t *testing.T) {
 
 	assert.NotNil(t, cfg.MongoURI)
 	assert.NotNil(t, cfg.JwtSigningKey)
+	assert.NotNil(t, cfg.OpenAIBaseURL)
 	assert.NotNil(t, cfg.OpenAIAPIKey)
 
 	assert.NotEmpty(t, cfg.JwtSigningKey)
+	assert.NotEmpty(t, cfg.OpenAIBaseURL)
 	assert.NotEmpty(t, cfg.OpenAIAPIKey)
 	assert.NotEmpty(t, cfg.MongoURI)
 }

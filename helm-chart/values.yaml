@@ -1,4 +1,5 @@
 namespace: paperdebugger-dev
+openai_base_url: https://api.openai.com/v1
 openai_api_key: sk-dummy-OPENAI_API_KEY
 jwt_signing_key: paperdebugger
 ghcr_docker_config: dummy-ghcr-docker-config
