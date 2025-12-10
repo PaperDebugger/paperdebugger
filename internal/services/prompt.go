@@ -23,18 +23,12 @@ func NewPromptService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *PromptSer
 	base := NewBaseService(db, cfg, logger)
 	return &PromptService{
 		BaseService:      base,
-		promptCollection: base.db.Collection((models.Prompt{}).CollectionName()),
+		promptCollection: base.db.Collection(models.Prompt{}.CollectionName()),
 	}
 }
 
 func (s *PromptService) ListPrompts(ctx context.Context, userID bson.ObjectID) ([]*models.Prompt, error) {
-	filter := bson.M{
-		"user_id": userID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}
+	filter := db.WithNotDeleted(bson.M{"user_id": userID})
 
 	cursor, err := s.promptCollection.Find(ctx, filter)
 	if err != nil {
@@ -93,13 +87,8 @@ func (s *PromptService) UpdatePrompt(ctx context.Context, userID bson.ObjectID, 
 	updates.CreatedAt = existing.CreatedAt
 	updates.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 
-	_, err = s.promptCollection.ReplaceOne(ctx, bson.M{
-		"_id": objectID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}, updates)
+	filter := db.WithNotDeleted(bson.M{"_id": objectID})
+	_, err = s.promptCollection.ReplaceOne(ctx, filter, updates)
 	if err != nil {
 		return nil, err
 	}
@@ -123,28 +112,14 @@ func (s *PromptService) DeletePrompt(ctx context.Context, userID bson.ObjectID, 
 	}
 
 	now := bson.NewDateTimeFromTime(time.Now())
-	_, err = s.promptCollection.UpdateOne(
-		ctx,
-		bson.M{
-			"_id": objectID,
-			"$or": []bson.M{
-				{"deleted_at": nil},
-				{"deleted_at": bson.M{"$exists": false}},
-			},
-		},
-		bson.M{"$set": bson.M{"deleted_at": now, "updated_at": now}},
-	)
+	filter := db.WithNotDeleted(bson.M{"_id": objectID})
+	_, err = s.promptCollection.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"deleted_at": now, "updated_at": now}})
 	return err
 }
 
 func (s *PromptService) getPromptByID(ctx context.Context, id bson.ObjectID) (*models.Prompt, error) {
-	result := s.promptCollection.FindOne(ctx, bson.M{
-		"_id": id,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	})
+	filter := db.WithNotDeleted(bson.M{"_id": id})
+	result := s.promptCollection.FindOne(ctx, filter)
 	if result.Err() != nil {
 		if result.Err() == mongo.ErrNoDocuments {
 			return nil, errors.New("prompt not found")

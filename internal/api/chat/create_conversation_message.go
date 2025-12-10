@@ -16,9 +16,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// 设计理念：
-// 发送给 GPT 之前，消息列表已经构造进 Conversation 对象中（也保存在数据库里）
-// 我们发送给 GPT 的就是从数据库里拿到的 Conversation 对象里面的内容（InputItemList）
+// Design philosophy:
+// Before sending to GPT, the message list is constructed into the Conversation object (also saved in the database).
+// What we send to GPT is the content (InputItemList) from the Conversation object retrieved from the database.
 
 // buildUserMessage constructs both the user-facing message and the OpenAI input message
 func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, *responses.ResponseInputItemUnionParam, error) {
@@ -104,8 +104,8 @@ func convertToBSON(msg *chatv1.Message) (bson.M, error) {
 	return bsonMsg, nil
 }
 
-// 创建对话并写入数据库
-// 返回 Conversation 对象
+// createConversation creates a new conversation and saves it to the database.
+// Returns the created Conversation object.
 func (s *ChatServer) createConversation(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -139,8 +139,8 @@ func (s *ChatServer) createConversation(
 	)
 }
 
-// 追加消息到对话并写入数据库
-// 返回 Conversation 对象
+// appendConversationMessage appends a message to an existing conversation and saves it to the database.
+// Returns the updated Conversation object.
 func (s *ChatServer) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -171,15 +171,15 @@ func (s *ChatServer) appendConversationMessage(
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
 	conversation.OpenaiChatHistory = append(conversation.OpenaiChatHistory, *userOaiMsg)
 
-	if err := s.chatService.UpdateConversation(conversation); err != nil {
+	if err := s.chatService.UpdateConversation(ctx, conversation); err != nil {
 		return nil, err
 	}
 
 	return conversation, nil
 }
 
-// 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
-// conversationType 可以在一次 conversation 中多次切换
+// prepare creates a new conversation if conversationId is empty, otherwise appends a message to the existing conversation.
+// The conversationType can be switched multiple times within a single conversation.
 func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, languageModel models.LanguageModel, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
@@ -281,7 +281,7 @@ func (s *ChatServer) CreateConversationMessage(
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
 	conversation.OpenaiChatHistory = openaiChatHistory
 
-	if err := s.chatService.UpdateConversation(conversation); err != nil {
+	if err := s.chatService.UpdateConversation(ctx, conversation); err != nil {
 		return nil, err
 	}
 
@@ -296,7 +296,7 @@ func (s *ChatServer) CreateConversationMessage(
 			return
 		}
 		conversation.Title = title
-		if err := s.chatService.UpdateConversation(conversation); err != nil {
+		if err := s.chatService.UpdateConversation(ctx, conversation); err != nil {
 			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
 			return
 		}

@@ -3,8 +3,12 @@ package services
 import (
 	"context"
 	"crypto/sha1"
-	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+	"unicode/utf8"
+
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/db"
@@ -12,10 +16,6 @@ import (
 	"paperdebugger/internal/libs/stringutil"
 	"paperdebugger/internal/models"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
-	"strings"
-	"sync"
-	"time"
-	"unicode/utf8"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -25,31 +25,6 @@ type ReverseCommentService struct {
 	BaseService
 	commentCollection *mongo.Collection
 	projectService    *ProjectService
-}
-
-type CommentResponse struct {
-	TargetSectionName string                 `json:"target_section_name"`
-	AnchorText        string                 `json:"anchor_text"`
-	CommentText       string                 `json:"comment_text"`
-	ImportanceLevel   models.ImportanceLevel `json:"importance_level"`
-}
-
-// UnmarshalJSON implements custom JSON unmarshaling for CommentResponse
-func (c *CommentResponse) UnmarshalJSON(data []byte) error {
-	type Alias CommentResponse
-	aux := &struct {
-		ImportanceLevel string `json:"importance_level"`
-		*Alias
-	}{
-		Alias: (*Alias)(c),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-
-	c.ImportanceLevel = models.ImportanceLevel(aux.ImportanceLevel)
-	return nil
 }
 
 const (

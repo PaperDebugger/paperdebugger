@@ -37,13 +37,13 @@ func (s *ChatServer) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
+	// Same usage as ChatCompletion, but with a stream parameter
 	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), conversation.LanguageModel, conversation.OpenaiChatHistory)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
-	// 附加消息到对话
+	// Append messages to the conversation
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
 		bsonMsg, err := convertToBSON(&inappChatHistory[i])
@@ -54,7 +54,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
 	conversation.OpenaiChatHistory = openaiChatHistory
-	if err := s.chatService.UpdateConversation(conversation); err != nil {
+	if err := s.chatService.UpdateConversation(ctx, conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
@@ -70,7 +70,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 				return
 			}
 			conversation.Title = title
-			if err := s.chatService.UpdateConversation(conversation); err != nil {
+			if err := s.chatService.UpdateConversation(ctx, conversation); err != nil {
 				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
 				return
 			}

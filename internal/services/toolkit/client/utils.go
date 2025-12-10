@@ -58,7 +58,7 @@ func getDefaultParams(languageModel models.LanguageModel, chatHistory responses.
 		Model:           languageModel.Name(),
 		Temperature:     openai.Float(0.7),
 		MaxOutputTokens: openai.Int(4000),        // DEBUG POINT: change this to test the frontend handler
-		Tools:           toolRegistry.GetTools(), // 工具注册由 registry 统一管理
+		Tools:           toolRegistry.GetTools(), // Tool registration is managed centrally by the registry
 		Input:           chatHistory,
 		Store:           openai.Bool(false), // Must set to false, because we are construct our own chat history.
 	}

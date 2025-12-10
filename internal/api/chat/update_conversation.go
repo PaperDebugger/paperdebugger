@@ -35,7 +35,7 @@ func (s *ChatServer) UpdateConversation(
 	}
 
 	conversation.Title = req.GetTitle()
-	err = s.chatService.UpdateConversation(conversation)
+	err = s.chatService.UpdateConversation(ctx, conversation)
 	if err != nil {
 		return nil, err
 	}

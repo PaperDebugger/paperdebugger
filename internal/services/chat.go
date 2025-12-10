@@ -38,14 +38,13 @@ type ChatService struct {
 	conversationCollection *mongo.Collection
 }
 
-// define default conversation title
 const DefaultConversationTitle = "New Conversation ."
 
 func NewChatService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *ChatService {
 	base := NewBaseService(db, cfg, logger)
 	return &ChatService{
 		BaseService:            base,
-		conversationCollection: base.db.Collection((models.Conversation{}).CollectionName()),
+		conversationCollection: base.db.Collection(models.Conversation{}.CollectionName()),
 	}
 }
 
@@ -128,14 +127,10 @@ func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.Ob
 }
 
 func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectID, projectID string) ([]*models.Conversation, error) {
-	filter := bson.M{
+	filter := db.WithNotDeleted(bson.M{
 		"user_id":    userID,
 		"project_id": projectID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}
+	})
 	opts := options.Find().
 		SetProjection(bson.M{
 			"inapp_chat_history":  0,
@@ -158,49 +153,32 @@ func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectI
 
 func (s *ChatService) GetConversation(ctx context.Context, userID bson.ObjectID, conversationID bson.ObjectID) (*models.Conversation, error) {
 	conversation := &models.Conversation{}
-	err := s.conversationCollection.FindOne(ctx, bson.M{
+	filter := db.WithNotDeleted(bson.M{
 		"_id":     conversationID,
 		"user_id": userID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}).Decode(conversation)
+	})
+	err := s.conversationCollection.FindOne(ctx, filter).Decode(conversation)
 	if err != nil {
 		return nil, err
 	}
 	return conversation, nil
 }
 
-func (s *ChatService) UpdateConversation(conversation *models.Conversation) error {
+func (s *ChatService) UpdateConversation(ctx context.Context, conversation *models.Conversation) error {
 	conversation.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
-	_, err := s.conversationCollection.UpdateOne(
-		context.Background(),
-		bson.M{
-			"_id": conversation.ID,
-			"$or": []bson.M{
-				{"deleted_at": nil},
-				{"deleted_at": bson.M{"$exists": false}},
-			},
-		},
-		bson.M{"$set": conversation},
-	)
+	filter := db.WithNotDeleted(bson.M{"_id": conversation.ID})
+	// Use WithoutCancel to ensure the write completes even if the user disconnects
+	writeCtx := context.WithoutCancel(ctx)
+	_, err := s.conversationCollection.UpdateOne(writeCtx, filter, bson.M{"$set": conversation})
 	return err
 }
 
 func (s *ChatService) DeleteConversation(ctx context.Context, userID bson.ObjectID, conversationID bson.ObjectID) error {
 	now := bson.NewDateTimeFromTime(time.Now())
-	_, err := s.conversationCollection.UpdateOne(
-		ctx,
-		bson.M{
-			"_id":     conversationID,
-			"user_id": userID,
-			"$or": []bson.M{
-				{"deleted_at": nil},
-				{"deleted_at": bson.M{"$exists": false}},
-			},
-		},
-		bson.M{"$set": bson.M{"deleted_at": now, "updated_at": now}},
-	)
+	filter := db.WithNotDeleted(bson.M{
+		"_id":     conversationID,
+		"user_id": userID,
+	})
+	_, err := s.conversationCollection.UpdateOne(ctx, filter, bson.M{"$set": bson.M{"deleted_at": now, "updated_at": now}})
 	return err
 }
