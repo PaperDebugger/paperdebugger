@@ -3,7 +3,7 @@ import { createSettingsTextInput } from "../setting-text-input";
 
 const ApiKeyInput = createSettingsTextInput("llmProviderApiKey");
 const EndpointInput = createSettingsTextInput("llmProviderEndpoint");
-
+const ModelName = createSettingsTextInput("llmProviderModel");
 
 export const LLMProviderSettings = () => {
   return (
@@ -24,6 +24,12 @@ export const LLMProviderSettings = () => {
           placeholder="sk-..."
           multiline={false}
           password={true}
+        />
+        <ModelName
+          label="Model Name"
+          description="Leave empty to use default model name"
+          placeholder="e.g., gpt-4.1, Qwen/QwQ-32B"
+          multiline={false}
         />
       </div>
     </SettingsSectionContainer>

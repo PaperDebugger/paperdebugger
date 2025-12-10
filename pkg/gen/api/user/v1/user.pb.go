@@ -624,6 +624,7 @@ type Settings struct {
 	ShowedOnboarding             bool                   `protobuf:"varint,5,opt,name=showed_onboarding,json=showedOnboarding,proto3" json:"showed_onboarding,omitempty"`
 	LlmProviderEndpoint          string                 `protobuf:"bytes,6,opt,name=llm_provider_endpoint,json=llmProviderEndpoint,proto3" json:"llm_provider_endpoint,omitempty"`
 	LlmProviderApiKey            string                 `protobuf:"bytes,7,opt,name=llm_provider_api_key,json=llmProviderApiKey,proto3" json:"llm_provider_api_key,omitempty"`
+	LlmProviderModel             string                 `protobuf:"bytes,8,opt,name=llm_provider_model,json=llmProviderModel,proto3" json:"llm_provider_model,omitempty"`
 	unknownFields                protoimpl.UnknownFields
 	sizeCache                    protoimpl.SizeCache
 }
@@ -703,6 +704,13 @@ func (x *Settings) GetLlmProviderEndpoint() string {
 func (x *Settings) GetLlmProviderApiKey() string {
 	if x != nil {
 		return x.LlmProviderApiKey
+	}
+	return ""
+}
+
+func (x *Settings) GetLlmProviderModel() string {
+	if x != nil {
+		return x.LlmProviderModel
 	}
 	return ""
 }
@@ -1161,7 +1169,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x06prompt\x18\x01 \x01(\v2\x0f.user.v1.PromptR\x06prompt\"2\n" +
 	"\x13DeletePromptRequest\x12\x1b\n" +
 	"\tprompt_id\x18\x01 \x01(\tR\bpromptId\"\x16\n" +
-	"\x14DeletePromptResponse\"\x82\x03\n" +
+	"\x14DeletePromptResponse\"\xb0\x03\n" +
 	"\bSettings\x12C\n" +
 	"\x1eshow_shortcuts_after_selection\x18\x01 \x01(\bR\x1bshowShortcutsAfterSelection\x12F\n" +
 	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12+\n" +
@@ -1169,7 +1177,8 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x11full_document_rag\x18\x04 \x01(\bR\x0ffullDocumentRag\x12+\n" +
 	"\x11showed_onboarding\x18\x05 \x01(\bR\x10showedOnboarding\x122\n" +
 	"\x15llm_provider_endpoint\x18\x06 \x01(\tR\x13llmProviderEndpoint\x12/\n" +
-	"\x14llm_provider_api_key\x18\a \x01(\tR\x11llmProviderApiKey\"\x14\n" +
+	"\x14llm_provider_api_key\x18\a \x01(\tR\x11llmProviderApiKey\x12,\n" +
+	"\x12llm_provider_model\x18\b \x01(\tR\x10llmProviderModel\"\x14\n" +
 	"\x12GetSettingsRequest\"D\n" +
 	"\x13GetSettingsResponse\x12-\n" +
 	"\bsettings\x18\x01 \x01(\v2\x11.user.v1.SettingsR\bsettings\"F\n" +

@@ -122,6 +122,7 @@ message Settings {
   bool showed_onboarding = 5;
   string llm_provider_endpoint = 6;
   string llm_provider_api_key = 7;
+  string llm_provider_model = 8;
 }
 
 message GetSettingsRequest {}
