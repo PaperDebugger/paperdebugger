@@ -38,6 +38,20 @@ func (x LanguageModel) Name() string {
 		return openai.ChatModelGPT5Mini
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO:
 		return openai.ChatModelGPT5Nano
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST:
+		return openai.ChatModelGPT5ChatLatest
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1:
+		return openai.ChatModelO1
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI:
+		return openai.ChatModelO1Mini
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3:
+		return openai.ChatModelO3
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI:
+		return openai.ChatModelO3Mini
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI:
+		return openai.ChatModelO4Mini
+	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST:
+		return openai.ChatModelCodexMiniLatest
 	default:
 		return openai.ChatModelGPT5
 	}

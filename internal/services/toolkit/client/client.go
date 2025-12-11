@@ -32,17 +32,20 @@ type AIClient struct {
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
 func (a *AIClient) SetOpenAIClient(llmConfig *models.LLMProviderConfig) {
-	if llmConfig.Endpoint == "" {
-		llmConfig.Endpoint = a.cfg.OpenAIBaseURL
+	var Endpoint string = llmConfig.Endpoint
+	var APIKey string = llmConfig.APIKey
+
+	if Endpoint == "" {
+		Endpoint = a.cfg.OpenAIBaseURL
 	}
 
-	if llmConfig.APIKey == "" {
-		llmConfig.APIKey = a.cfg.OpenAIAPIKey
+	if APIKey == "" {
+		APIKey = a.cfg.OpenAIAPIKey
 	}
 
 	opts := []option.RequestOption{
-		option.WithAPIKey(llmConfig.APIKey),
-		option.WithBaseURL(llmConfig.Endpoint),
+		option.WithAPIKey(APIKey),
+		option.WithBaseURL(Endpoint),
 	}
 
 	client := openai.NewClient(opts...)

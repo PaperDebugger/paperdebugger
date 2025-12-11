@@ -26,34 +26,55 @@ const (
 type LanguageModel int32
 
 const (
-	LanguageModel_LANGUAGE_MODEL_UNSPECIFIED       LanguageModel = 0
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT4O      LanguageModel = 1
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI LanguageModel = 2
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41      LanguageModel = 4
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5       LanguageModel = 7
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI  LanguageModel = 8
-	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO  LanguageModel = 9
+	LanguageModel_LANGUAGE_MODEL_UNSPECIFIED              LanguageModel = 0
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT4O             LanguageModel = 1
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI        LanguageModel = 2
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41             LanguageModel = 4
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5              LanguageModel = 7
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI         LanguageModel = 8
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO         LanguageModel = 9
+	LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST  LanguageModel = 10
+	LanguageModel_LANGUAGE_MODEL_OPENAI_O1                LanguageModel = 11
+	LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI           LanguageModel = 12
+	LanguageModel_LANGUAGE_MODEL_OPENAI_O3                LanguageModel = 13
+	LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI           LanguageModel = 14
+	LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI           LanguageModel = 15
+	LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST LanguageModel = 16
 )
 
 // Enum value maps for LanguageModel.
 var (
 	LanguageModel_name = map[int32]string{
-		0: "LANGUAGE_MODEL_UNSPECIFIED",
-		1: "LANGUAGE_MODEL_OPENAI_GPT4O",
-		2: "LANGUAGE_MODEL_OPENAI_GPT41_MINI",
-		4: "LANGUAGE_MODEL_OPENAI_GPT41",
-		7: "LANGUAGE_MODEL_OPENAI_GPT5",
-		8: "LANGUAGE_MODEL_OPENAI_GPT5_MINI",
-		9: "LANGUAGE_MODEL_OPENAI_GPT5_NANO",
+		0:  "LANGUAGE_MODEL_UNSPECIFIED",
+		1:  "LANGUAGE_MODEL_OPENAI_GPT4O",
+		2:  "LANGUAGE_MODEL_OPENAI_GPT41_MINI",
+		4:  "LANGUAGE_MODEL_OPENAI_GPT41",
+		7:  "LANGUAGE_MODEL_OPENAI_GPT5",
+		8:  "LANGUAGE_MODEL_OPENAI_GPT5_MINI",
+		9:  "LANGUAGE_MODEL_OPENAI_GPT5_NANO",
+		10: "LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST",
+		11: "LANGUAGE_MODEL_OPENAI_O1",
+		12: "LANGUAGE_MODEL_OPENAI_O1_MINI",
+		13: "LANGUAGE_MODEL_OPENAI_O3",
+		14: "LANGUAGE_MODEL_OPENAI_O3_MINI",
+		15: "LANGUAGE_MODEL_OPENAI_O4_MINI",
+		16: "LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST",
 	}
 	LanguageModel_value = map[string]int32{
-		"LANGUAGE_MODEL_UNSPECIFIED":       0,
-		"LANGUAGE_MODEL_OPENAI_GPT4O":      1,
-		"LANGUAGE_MODEL_OPENAI_GPT41_MINI": 2,
-		"LANGUAGE_MODEL_OPENAI_GPT41":      4,
-		"LANGUAGE_MODEL_OPENAI_GPT5":       7,
-		"LANGUAGE_MODEL_OPENAI_GPT5_MINI":  8,
-		"LANGUAGE_MODEL_OPENAI_GPT5_NANO":  9,
+		"LANGUAGE_MODEL_UNSPECIFIED":              0,
+		"LANGUAGE_MODEL_OPENAI_GPT4O":             1,
+		"LANGUAGE_MODEL_OPENAI_GPT41_MINI":        2,
+		"LANGUAGE_MODEL_OPENAI_GPT41":             4,
+		"LANGUAGE_MODEL_OPENAI_GPT5":              7,
+		"LANGUAGE_MODEL_OPENAI_GPT5_MINI":         8,
+		"LANGUAGE_MODEL_OPENAI_GPT5_NANO":         9,
+		"LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST":  10,
+		"LANGUAGE_MODEL_OPENAI_O1":                11,
+		"LANGUAGE_MODEL_OPENAI_O1_MINI":           12,
+		"LANGUAGE_MODEL_OPENAI_O3":                13,
+		"LANGUAGE_MODEL_OPENAI_O3_MINI":           14,
+		"LANGUAGE_MODEL_OPENAI_O4_MINI":           15,
+		"LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST": 16,
 	}
 )
 
@@ -2051,7 +2072,7 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\x0fstream_part_end\x18\x05 \x01(\v2\x16.chat.v1.StreamPartEndH\x00R\rstreamPartEnd\x12N\n" +
 	"\x13stream_finalization\x18\x06 \x01(\v2\x1b.chat.v1.StreamFinalizationH\x00R\x12streamFinalization\x129\n" +
 	"\fstream_error\x18\a \x01(\v2\x14.chat.v1.StreamErrorH\x00R\vstreamErrorB\x12\n" +
-	"\x10response_payload*\x81\x02\n" +
+	"\x10response_payload*\xff\x03\n" +
 	"\rLanguageModel\x12\x1e\n" +
 	"\x1aLANGUAGE_MODEL_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bLANGUAGE_MODEL_OPENAI_GPT4O\x10\x01\x12$\n" +
@@ -2059,7 +2080,15 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\x1bLANGUAGE_MODEL_OPENAI_GPT41\x10\x04\x12\x1e\n" +
 	"\x1aLANGUAGE_MODEL_OPENAI_GPT5\x10\a\x12#\n" +
 	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_MINI\x10\b\x12#\n" +
-	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_NANO\x10\t*R\n" +
+	"\x1fLANGUAGE_MODEL_OPENAI_GPT5_NANO\x10\t\x12*\n" +
+	"&LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST\x10\n" +
+	"\x12\x1c\n" +
+	"\x18LANGUAGE_MODEL_OPENAI_O1\x10\v\x12!\n" +
+	"\x1dLANGUAGE_MODEL_OPENAI_O1_MINI\x10\f\x12\x1c\n" +
+	"\x18LANGUAGE_MODEL_OPENAI_O3\x10\r\x12!\n" +
+	"\x1dLANGUAGE_MODEL_OPENAI_O3_MINI\x10\x0e\x12!\n" +
+	"\x1dLANGUAGE_MODEL_OPENAI_O4_MINI\x10\x0f\x12+\n" +
+	"'LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST\x10\x10*R\n" +
 	"\x10ConversationType\x12!\n" +
 	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xd2\b\n" +
