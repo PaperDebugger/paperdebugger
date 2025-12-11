@@ -24,7 +24,7 @@ export const AccountSettings = () => {
       <SettingsSectionTitle>Account</SettingsSectionTitle>
       <CellWrapper>
         <div className="flex flex-col">
-          <div className="text-sm">View onboarding guide</div>
+          <div className="text-xs">View onboarding guide</div>
           <div className="text-xs text-default-500">Learn how to use PaperDebugger effectively</div>
         </div>
         <Button
@@ -40,7 +40,7 @@ export const AccountSettings = () => {
       </CellWrapper>
       <CellWrapper>
         <div className="flex flex-col flex-1">
-          <div className="text-sm">Status</div>
+          <div className="text-xs">Status</div>
           <div className="text-xs text-default-500">The current status of the app</div>
         </div>
         <div className="flex flex-col gap-0 text-xs text-default-500">
@@ -66,7 +66,7 @@ export const AccountSettings = () => {
       </CellWrapper>
       <CellWrapper>
         <div className="flex flex-col">
-          <div className="text-sm">Log out</div>
+          <div className="text-xs">Log out</div>
           <div className="text-xs text-default-500">Log out of your account and clear all your data</div>
         </div>
         <Button size="sm" color="danger" radius="full" variant="flat" onPress={logout}>

@@ -7,7 +7,8 @@ import { useSettingStore } from "../../../../stores/setting-store";
 
 export type SelectionItem<T> = {
   title: string;
-  description: string;
+  subtitle?: string;
+  description?: string;
   value: T;
 };
 
@@ -97,7 +98,7 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
     >
       {items?.map((item, idx) => (
         <div
-          key={item.description}
+          key={`${item.title}-${item.subtitle ?? ""}-${item.description ?? ""}`}
           className={cn(
             "prompt-selection-item w-full flex flex-col rounded-lg cursor-pointer",
             idx === selectedIdx && "bg-gray-100",
@@ -113,15 +114,32 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
             }
           }}
         >
-          <div className={cn("font-semibold", heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs")}>
-            {item.title}
-          </div>
           <div
-            className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
-            style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}
+            className={cn(
+              "font-semibold flex items-center gap-2",
+              heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs",
+            )}
           >
-            {item.description}
+            <span>{item.title}</span>
+            {item.subtitle && (
+              <span
+                className={cn(
+                  "text-gray-500 font-normal",
+                  heightCollapseRequired || minimalistMode ? "text-[0.55rem]" : "text-[0.6rem]",
+                )}
+              >
+                {item.subtitle}
+              </span>
+            )}
           </div>
+          {item.description && (
+            <div
+              className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
+              style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}
+            >
+              {item.description}
+            </div>
+          )}
         </div>
       ))}
     </div>

@@ -63,7 +63,7 @@ export const AssistantMessageContainer = ({
   );
   return (
     <div className="chat-message-entry noselect">
-      <div className={cn("message-box-assistant rnd-cancel")}>
+      <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
         {/* Message content */}
         <div className="canselect">
           <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>

@@ -22,6 +22,7 @@ jobs:
         run: |
           export PD_API_ENDPOINT=https://app.paperdebugger.com
           export BETA_BUILD=false
+          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
           cd webapp/_webapp
           npm install
           npm run build

@@ -120,6 +120,7 @@ message Settings {
   bool enable_completion = 3;
   bool full_document_rag = 4;
   bool showed_onboarding = 5;
+  string openai_api_key = 6;
 }
 
 message GetSettingsRequest {}

@@ -20,6 +20,8 @@ import {
   GetConversationResponseSchema,
   ListConversationsRequest,
   ListConversationsResponseSchema,
+  ListSupportedModelsRequest,
+  ListSupportedModelsResponseSchema,
   UpdateConversationRequest,
   UpdateConversationResponseSchema,
 } from "../pkg/gen/apiclient/chat/v1/chat_pb";
@@ -116,6 +118,11 @@ export const resetSettings = async () => {
 export const listConversations = async (data: PlainMessage<ListConversationsRequest>) => {
   const response = await apiclient.get("/chats/conversations", data);
   return fromJson(ListConversationsResponseSchema, response);
+};
+
+export const listSupportedModels = async (data: PlainMessage<ListSupportedModelsRequest>) => {
+  const response = await apiclient.get("/chats/models", data);
+  return fromJson(ListSupportedModelsResponseSchema, response);
 };
 
 export const getConversation = async (data: PlainMessage<GetConversationRequest>) => {

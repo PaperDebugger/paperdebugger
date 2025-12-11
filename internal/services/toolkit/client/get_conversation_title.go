@@ -13,7 +13,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (a *AIClient) GetConversationTitle(ctx context.Context, inappChatHistory []*chatv1.Message) (string, error) {
+func (a *AIClient) GetConversationTitle(ctx context.Context, inappChatHistory []*chatv1.Message, llmProvider *models.LLMProviderConfig) (string, error) {
 	messages := lo.Map(inappChatHistory, func(message *chatv1.Message, _ int) string {
 		if _, ok := message.Payload.MessageType.(*chatv1.MessagePayload_Assistant); ok {
 			return fmt.Sprintf("Assistant: %s", message.Payload.GetAssistant().GetContent())
@@ -46,7 +46,7 @@ func (a *AIClient) GetConversationTitle(ctx context.Context, inappChatHistory []
 				},
 			},
 		},
-	})
+	}, llmProvider)
 	if err != nil {
 		return "", err
 	}

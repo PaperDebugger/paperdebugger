@@ -21,6 +21,29 @@ import { DevTools } from "./views/devtools";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { getManifest } from "./libs/manifest";
+
+initializeFaro({
+  url: 'https://faro-collector-prod-ap-southeast-1.grafana.net/collect/79c7648395df4df8b58c228fad42af57',
+  app: {
+    name: getManifest().name,
+    version: getManifest().version,
+    environment: 'production'
+  },
+  sessionTracking: {
+    samplingRate: 1,
+    persistent: true
+  },
+  instrumentations: [
+    // Mandatory, omits default instrumentations otherwise.
+    ...getWebInstrumentations(),
+
+    // Tracing package to get end-to-end visibility for HTTP requests.
+    new TracingInstrumentation(),
+  ],
+});
 
 export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();

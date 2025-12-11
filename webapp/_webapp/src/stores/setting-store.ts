@@ -35,6 +35,7 @@ const defaultSettings: PlainMessage<Settings> = {
   enableCompletion: false,
   fullDocumentRag: false,
   showedOnboarding: true,
+  openaiApiKey: "",
 };
 
 export const useSettingStore = create<SettingStore>()((set, get) => ({

@@ -46,7 +46,14 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 func getDefaultParams(languageModel models.LanguageModel, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
 	if languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5) ||
 		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO) {
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1) ||
+		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST) {
 		return responses.ResponseNewParams{
 			Model: languageModel.Name(),
 			Tools: toolRegistry.GetTools(),

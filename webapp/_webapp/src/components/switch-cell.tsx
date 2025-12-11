@@ -37,7 +37,7 @@ const SwitchCell = React.forwardRef<HTMLInputElement, SwitchCellProps>(
         ...classNames,
         base: cn(
           "inline-flex bg-content2 flex-row-reverse w-full max-w-full items-center",
-          "justify-between cursor-pointer rounded-medium gap-2 !p-3",
+          "justify-between cursor-pointer rounded-medium gap-2 !p-2",
           classNames?.base,
         ),
       }}

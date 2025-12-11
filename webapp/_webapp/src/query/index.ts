@@ -4,6 +4,7 @@ import {
   DeleteConversationResponse,
   GetConversationResponse,
   ListConversationsResponse,
+  ListSupportedModelsResponse,
   UpdateConversationResponse,
 } from "../pkg/gen/apiclient/chat/v1/chat_pb";
 import { UseMutationOptionsOverride, UseQueryOptionsOverride } from "./types";
@@ -16,6 +17,7 @@ import {
   getProject,
   listConversations,
   listPrompts,
+  listSupportedModels,
   runProjectPaperScore,
   updateConversation,
   updatePrompt,
@@ -56,6 +58,14 @@ export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOver
   return useQuery({
     queryKey: queryKeys.projects.getProject(projectId).queryKey,
     queryFn: () => getProject({ projectId }),
+    ...opts,
+  });
+};
+
+export const useListSupportedModelsQuery = (opts?: UseQueryOptionsOverride<ListSupportedModelsResponse>) => {
+  return useQuery({
+    queryKey: queryKeys.chats.listSupportedModels().queryKey,
+    queryFn: () => listSupportedModels({}),
     ...opts,
   });
 };
@@ -149,7 +159,7 @@ export const useGetUserInstructionsQuery = (opts?: UseQueryOptionsOverride<GetUs
   const { user } = useAuthStore();
   return useQuery({
     queryKey: queryKeys.users.getUserInstructions().queryKey,
-    queryFn: getUserInstructions,
+    queryFn: () => getUserInstructions({}),
     enabled: !!user,
     ...opts,
   });

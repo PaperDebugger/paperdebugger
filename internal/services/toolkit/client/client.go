@@ -17,7 +17,6 @@ import (
 )
 
 type AIClient struct {
-	openaiClient    *openai.Client
 	toolCallHandler *handler.ToolCallHandler
 
 	db                     *mongo.Database
@@ -27,6 +26,29 @@ type AIClient struct {
 	projectService        *services.ProjectService
 	cfg                   *cfg.Cfg
 	logger                *logger.Logger
+}
+
+// SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
+// If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
+func (a *AIClient) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
+	var Endpoint string = llmConfig.Endpoint
+	var APIKey string = llmConfig.APIKey
+
+	if Endpoint == "" {
+		Endpoint = a.cfg.OpenAIBaseURL
+	}
+
+	if APIKey == "" {
+		APIKey = a.cfg.OpenAIAPIKey
+	}
+
+	opts := []option.RequestOption{
+		option.WithAPIKey(APIKey),
+		option.WithBaseURL(Endpoint),
+	}
+
+	client := openai.NewClient(opts...)
+	return &client
 }
 
 func NewAIClient(
@@ -73,7 +95,6 @@ func NewAIClient(
 
 	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
 	client := &AIClient{
-		openaiClient:    &oaiClient,
 		toolCallHandler: toolCallHandler,
 
 		db:                     database,

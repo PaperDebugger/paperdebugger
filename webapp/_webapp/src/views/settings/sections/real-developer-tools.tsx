@@ -77,7 +77,7 @@ export const RealDeveloperTools = () => {
       />
       <CellWrapper>
         <div className="flex flex-col">
-          <div className="text-sm">Reset localStorage and reload</div>
+          <div className="text-xs">Reset localStorage and reload</div>
           <div className="text-xs text-default-500">
             Reset all user-configurable localStorage of the app except the: <br />
             pd.projectId
