@@ -51,7 +51,6 @@ func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.Lang
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
 func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, languageModel models.LanguageModel, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
-	a.SetOpenAIClient(llmProvider)
 	openaiChatHistory := responses.ResponseNewParamsInputUnion{OfInputItemList: messages}
 	inappChatHistory := []chatv1.Message{}
 
@@ -62,12 +61,13 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 		streamHandler.SendFinalization()
 	}()
 
+	oaiClient := a.GetOpenAIClient(llmProvider)
 	params := getDefaultParams(languageModel, openaiChatHistory, a.toolCallHandler.Registry)
 
 	for {
 		params.Input = openaiChatHistory
 		var openaiOutput []responses.ResponseOutputItemUnion
-		stream := a.openaiClient.Responses.NewStreaming(context.Background(), params)
+		stream := oaiClient.Responses.NewStreaming(context.Background(), params)
 
 		for stream.Next() {
 			// time.Sleep(200 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
