@@ -149,7 +149,7 @@ export const useGetUserInstructionsQuery = (opts?: UseQueryOptionsOverride<GetUs
   const { user } = useAuthStore();
   return useQuery({
     queryKey: queryKeys.users.getUserInstructions().queryKey,
-    queryFn: getUserInstructions,
+    queryFn: () => getUserInstructions({}),
     enabled: !!user,
     ...opts,
   });
