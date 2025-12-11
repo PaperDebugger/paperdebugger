@@ -21,7 +21,7 @@ export function warnToast(description: string, title: string = "Warning") {
 export function errorToast(description: string, title: string = "Error") {
   addToast({
     title: title,
-    description: description,
+    description: <div className="text-xs text-wrap break-all">{description}</div>,
     color: "danger",
     timeout: 10000,
   });

@@ -13,7 +13,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2
 	github.com/joho/godotenv v1.5.1
-	github.com/openai/openai-go/v2 v2.1.1
+	github.com/openai/openai-go/v2 v2.7.1
 	github.com/samber/lo v1.51.0
 	github.com/stretchr/testify v1.10.0
 	go.mongodb.org/mongo-driver/v2 v2.3.0

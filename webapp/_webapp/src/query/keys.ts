@@ -8,6 +8,9 @@ export const queryKeys = createQueryKeyStore({
   prompts: {
     listPrompts: () => ["users", "@self", "prompts"],
   },
+  chats: {
+    listSupportedModels: () => ["chats", "models"],
+  },
   conversations: {
     listConversations: (projectId: string) => ["conversations", projectId],
     getConversation: (conversationId: string) => ["conversations", conversationId],

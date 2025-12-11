@@ -5,7 +5,7 @@ import { LanguageModel } from "../../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
 
 type ModelSelectionProps = {
-  onSelectModel: (languageModel: LanguageModel) => void;
+  onSelectModel: () => void;
 };
 
 export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
@@ -14,7 +14,7 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
   const items: SelectionItem<LanguageModel>[] = useMemo(() => {
     return models.map((model) => ({
       title: model.name,
-      description: model.description,
+      subtitle: model.slug,
       value: model.languageModel,
     }));
   }, [models]);
@@ -22,7 +22,7 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
   const onSelect = useCallback(
     (item: SelectionItem<LanguageModel>) => {
       setModel(models.find((m) => m.languageModel === item.value)!);
-      onSelectModel(item.value);
+      onSelectModel();
       inputRef.current?.focus();
     },
     [setModel, onSelectModel, inputRef, models],
