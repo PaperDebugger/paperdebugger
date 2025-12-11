@@ -252,20 +252,21 @@ func (s *ChatServer) CreateConversationMessage(
 	ctx context.Context,
 	req *chatv1.CreateConversationMessageRequest,
 ) (*chatv1.CreateConversationMessageResponse, error) {
+	languageModel := models.LanguageModel(req.GetLanguageModel())
 	ctx, conversation, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
-		models.LanguageModel(req.GetLanguageModel()),
+		languageModel,
 		req.GetConversationType(),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, conversation.LanguageModel, conversation.OpenaiChatHistory)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, languageModel, conversation.OpenaiChatHistory)
 	if err != nil {
 		return nil, err
 	}

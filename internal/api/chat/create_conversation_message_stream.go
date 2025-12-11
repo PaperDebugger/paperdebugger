@@ -24,13 +24,15 @@ func (s *ChatServer) CreateConversationMessageStream(
 	stream chatv1.ChatService_CreateConversationMessageStreamServer,
 ) error {
 	ctx := stream.Context()
+
+	languageModel := models.LanguageModel(req.GetLanguageModel())
 	ctx, conversation, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
-		models.LanguageModel(req.GetLanguageModel()),
+		languageModel,
 		req.GetConversationType(),
 	)
 	if err != nil {
@@ -38,7 +40,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 	}
 
 	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), conversation.LanguageModel, conversation.OpenaiChatHistory)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
