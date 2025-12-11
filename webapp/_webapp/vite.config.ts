@@ -23,7 +23,7 @@ function generateConfig(
         verbose: true,
         // instructions on how to obtain your API key are in the documentation
         // https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/sourcemap-upload-plugins/#obtain-an-api-key
-        apiKey: process.env.GRAFANA_API_KEY || "glc_xxxxx",
+        apiKey: process.env.GRAFANA_API_KEY || "glc_eyJvIjoiMTYxNTMzNCIsIm4iOiJwYXBlcmRlYnVnZ2VyLXNvdXJjZW1hcC1hY2Nlc3MtcG9saWN5LWNocm9tZS1leHRlbnNpb24iLCJrIjoiMzc4MnUzUDY1WjgyaVlpaGhEdUl0d0wxIiwibSI6eyJyIjoicHJvZC1hcC1zb3V0aGVhc3QtMSJ9fQ==",
         gzipContents: true,
       })],
       esbuild: {
@@ -50,6 +50,7 @@ function generateConfig(
           formats: ["iife"],
           fileName: () => `${name}.js`,
         },
+        sourcemap: true,
       },
     },
     (draft) => updater?.(draft),
