@@ -34,8 +34,12 @@ service ChatService {
   rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse) {
     option (google.api.http) = {delete: "/_pd/api/v1/chats/conversations/{conversation_id}"};
   }
+  rpc ListSupportedModels(ListSupportedModelsRequest) returns (ListSupportedModelsResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/chats/models"};
+  }
 }
 
+// deprecated
 enum LanguageModel {
   LANGUAGE_MODEL_UNSPECIFIED = 0;
   LANGUAGE_MODEL_OPENAI_GPT4O = 1;
@@ -147,6 +151,19 @@ message DeleteConversationRequest {
 
 message DeleteConversationResponse {
   // explicitly empty
+}
+
+message SupportedModel {
+  string name = 1;
+  string slug = 2;
+}
+
+message ListSupportedModelsRequest {
+  // explicitly empty
+}
+
+message ListSupportedModelsResponse {
+  repeated SupportedModel models = 1;
 }
 
 // ============================== Streaming Messages
