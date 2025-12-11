@@ -25,7 +25,8 @@ This enables multi-step reasoning, reviewer-style critique, and structured revis
 
 ## 🌐 Social Media & Community Groups
 Our team is actively working to improve long-term reliability, hoping to iron out issues this month. Thank you for your patience. <br>
-Stay connected with the PaperDebugger community! Join our channels below for updates, announcements, and support.
+Stay connected with the PaperDebugger community! Join our [Discord](https://discord.gg/WwTMzzt9xD) or WeChat channels below for updates, announcements, and support.
+
 <div align="center">
   <img src="docs/imgs/discord.png" width="40%" style="margin: 0 1.5%;"/>
   <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 1.5%;"/>
