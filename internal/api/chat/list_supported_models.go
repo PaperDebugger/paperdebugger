@@ -34,7 +34,7 @@ func (s *ChatServer) ListSupportedModels(
 			},
 			{
 				Name: "GPT-4.1",
-				Slug: openai.ChatModelGPT4_1_2025_04_14,
+				Slug: openai.ChatModelGPT4_1,
 			},
 			{
 				Name: "GPT-4.1-mini",
