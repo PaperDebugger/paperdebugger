@@ -25,7 +25,7 @@ export const SettingItem = ({
 }: SettingItemProps) => (
   <SwitchCell
     classNames={{
-      label: "text-sm",
+      label: "text-xs",
       description: "text-xs",
       base: className,
     }}
