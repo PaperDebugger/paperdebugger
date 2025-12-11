@@ -88,7 +88,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
 
     const textDisplayClassName = cn(
       "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 rounded-md content-center",
-      !value && "text-default-400 italic"
+      !value && "text-default-400 italic",
     );
 
     return (
@@ -124,12 +124,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
               />
             )}
             <div className="flex gap-2 shrink-0">
-              <Button
-                size="sm"
-                variant="bordered"
-                onPress={handleCancel}
-                isDisabled={isUpdating[settingKey]}
-              >
+              <Button size="sm" variant="bordered" onPress={handleCancel} isDisabled={isUpdating[settingKey]}>
                 Cancel
               </Button>
               <Button
@@ -147,14 +142,11 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
         ) : (
           <div className="flex items-center gap-2">
             <div className={cn(textDisplayClassName, "flex-grow")}>
-              {(password && value.trim().length > 0) ? "•".repeat(16) : value.trim() || placeholder?.trim() || "No value set"}
+              {password && value.trim().length > 0
+                ? "•".repeat(16)
+                : value.trim() || placeholder?.trim() || "No value set"}
             </div>
-            <Button
-              size="sm"
-              variant="bordered"
-              onPress={handleEdit}
-              className="shrink-0"
-            >
+            <Button size="sm" variant="bordered" onPress={handleEdit} className="shrink-0">
               Edit
             </Button>
           </div>
@@ -163,4 +155,3 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     );
   };
 }
-

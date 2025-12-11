@@ -1,8 +1,11 @@
-import { StreamError } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { MessageTypeAssistantSchema, StreamError } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { errorToast } from "../../../libs/toasts";
 import { OverleafAuthentication, OverleafVersionedDoc } from "../../../libs/overleaf-socket";
 import { getProjectId } from "../../../libs/helpers";
 import { getCookies } from "../../../intermediate";
+import { StreamingMessage } from "../../streaming-message-store";
+import { MessageEntry, MessageEntryStatus } from "../types";
+import { fromJson } from "@bufbuild/protobuf";
 
 export async function handleStreamError(
   streamError: StreamError,
@@ -16,10 +19,27 @@ export async function handleStreamError(
     csrfToken: string,
   ) => Promise<Map<string, OverleafVersionedDoc>>,
   sendMessageStream: (message: string, selectedText: string) => Promise<void>,
+  updateStreamingMessage: (updater: (prev: StreamingMessage) => StreamingMessage) => void,
 ) {
+  // Append an error message to the streaming message
+  const updateFunc = (prev: StreamingMessage) => {
+    const errorMessageEntry: MessageEntry = {
+      messageId: "error-" + Date.now(),
+      status: MessageEntryStatus.STALE,
+      assistant: fromJson(MessageTypeAssistantSchema, {
+        content: `${streamError.errorMessage}`,
+      }),
+    };
+    return {
+      ...prev,
+      parts: [...prev.parts, errorMessageEntry],
+    };
+  };
+
   try {
     const { session, gclb } = await getCookies(window.location.hostname);
     if (streamError.errorMessage.includes("project is out of date")) {
+      // TODO: replace this into a shared variable for both backend and frontend
       await sync(
         userId,
         getProjectId(),
@@ -32,9 +52,11 @@ export async function handleStreamError(
       // Retry sending the message after sync
       await sendMessageStream(currentPrompt, currentSelectedText);
     } else {
-      errorToast(streamError.errorMessage, "Chat Error");
+      updateStreamingMessage(updateFunc);
+      errorToast(streamError.errorMessage, "Chat Stream Error");
     }
   } catch (error) {
-    errorToast(error instanceof Error ? error.message : "Unknown error", "Chat Error");
+    updateStreamingMessage(updateFunc);
+    errorToast(error instanceof Error ? error.message : "Unknown error", "Chat Stream Error");
   }
 }

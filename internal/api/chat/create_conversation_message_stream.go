@@ -26,7 +26,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 	ctx := stream.Context()
 
 	languageModel := models.LanguageModel(req.GetLanguageModel())
-	ctx, conversation, err := s.prepare(
+	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
@@ -40,7 +40,12 @@ func (s *ChatServer) CreateConversationMessageStream(
 	}
 
 	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory)
+	llmProvider := &models.LLMProviderConfig{
+		Endpoint: s.cfg.OpenAIBaseURL,
+		APIKey:   settings.OpenAIAPIKey,
+	}
+
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -66,7 +71,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
 			}
-			title, err := s.aiClient.GetConversationTitle(ctx, protoMessages)
+			title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return

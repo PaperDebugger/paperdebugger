@@ -180,20 +180,20 @@ func (s *ChatServer) appendConversationMessage(
 
 // 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
 // conversationType 可以在一次 conversation 中多次切换
-func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, languageModel models.LanguageModel, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, error) {
+func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, languageModel models.LanguageModel, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
-		return ctx, nil, err
+		return ctx, nil, nil, err
 	}
 
 	project, err := s.projectService.GetProject(ctx, actor.ID, projectId)
 	if err != nil && err != mongo.ErrNoDocuments {
-		return ctx, nil, err
+		return ctx, nil, nil, err
 	}
 
 	userInstructions, err := s.userService.GetUserInstructions(ctx, actor.ID)
 	if err != nil {
-		return ctx, nil, err
+		return ctx, nil, nil, err
 	}
 
 	var latexFullSource string
@@ -202,12 +202,12 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 		latexFullSource = "latex_full_source is not available in debug mode"
 	default:
 		if project == nil || project.IsOutOfDate() {
-			return ctx, nil, shared.ErrProjectOutOfDate("project is out of date")
+			return ctx, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
 		}
 
 		latexFullSource, err = project.GetFullContent()
 		if err != nil {
-			return ctx, nil, err
+			return ctx, nil, nil, err
 		}
 	}
 
@@ -238,13 +238,18 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 	}
 
 	if err != nil {
-		return ctx, nil, err
+		return ctx, nil, nil, err
 	}
 
 	ctx = contextutil.SetProjectID(ctx, conversation.ProjectID)
 	ctx = contextutil.SetConversationID(ctx, conversation.ID.Hex())
 
-	return ctx, conversation, nil
+	settings, err := s.userService.GetUserSettings(ctx, actor.ID)
+	if err != nil {
+		return ctx, conversation, nil, err
+	}
+
+	return ctx, conversation, settings, nil
 }
 
 // Deprecated: Use CreateConversationMessageStream instead.
@@ -253,7 +258,7 @@ func (s *ChatServer) CreateConversationMessage(
 	req *chatv1.CreateConversationMessageRequest,
 ) (*chatv1.CreateConversationMessageResponse, error) {
 	languageModel := models.LanguageModel(req.GetLanguageModel())
-	ctx, conversation, err := s.prepare(
+	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
@@ -266,7 +271,11 @@ func (s *ChatServer) CreateConversationMessage(
 		return nil, err
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, languageModel, conversation.OpenaiChatHistory)
+	llmProvider := &models.LLMProviderConfig{
+		Endpoint: s.cfg.OpenAIBaseURL,
+		APIKey:   settings.OpenAIAPIKey,
+	}
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, languageModel, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +300,7 @@ func (s *ChatServer) CreateConversationMessage(
 		for i, bsonMsg := range conversation.InappChatHistory {
 			protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
 		}
-		title, err := s.aiClient.GetConversationTitle(ctx, protoMessages)
+		title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
 		if err != nil {
 			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 			return

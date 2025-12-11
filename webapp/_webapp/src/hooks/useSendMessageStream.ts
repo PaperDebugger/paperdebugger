@@ -139,6 +139,7 @@ export function useSendMessageStream() {
                   selectedText,
                   sync,
                   sendMessageStream,
+                  updateStreamingMessage,
                 );
                 break;
               case "incompleteIndicator":

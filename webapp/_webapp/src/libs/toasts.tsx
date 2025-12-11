@@ -26,4 +26,5 @@ export function errorToast(description: string, title: string = "Error") {
     timeout: 10000,
   });
   console.trace(); // eslint-disable-line no-console
+  console.error(title, description); // eslint-disable-line no-console
 }

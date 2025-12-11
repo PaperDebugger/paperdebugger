@@ -19,12 +19,12 @@ const normalizeWildcardPattern = (url: string) => {
     const scheme = match[1].toLowerCase();
     const host = match[2];
     const path = match[3] || "/*";
-    
+
     // Normalize scheme (keep * as is, normalize http/https)
     const normalizedScheme = scheme === "*" ? "*" : scheme;
     // Ensure path ends with /* if it's just /
     const normalizedPath = path === "/" ? "/*" : path.endsWith("/*") ? path : `${path}/*`;
-    
+
     return { valid: true as const, origin: `${normalizedScheme}://${host}${normalizedPath}` };
   }
 
@@ -71,7 +71,7 @@ export const useHostPermissionStore = create<HostPermissionState>((set, get) => 
   clearMessage: () => set({ message: null }),
   loadPermissions: async () => {
     set({ isLoadingPermissions: true });
-    
+
     const chromePermissions = await chrome.permissions.getAll().catch((error) => {
       const errorMessage = handleError(error, "Error loading permissions.");
       set({ message: { text: errorMessage, type: "error" } });
@@ -80,7 +80,7 @@ export const useHostPermissionStore = create<HostPermissionState>((set, get) => 
 
     const origins = chromePermissions?.origins || [];
     const permissions: PermissionItem[] = origins.map((origin) => ({ origin, granted: true }));
-    
+
     set({ permissions, isLoadingPermissions: false });
   },
   submitPermissionRequest: async () => {
@@ -119,7 +119,7 @@ export const useHostPermissionStore = create<HostPermissionState>((set, get) => 
     } else {
       set({ message: { text: `Permission denied for ${origin}`, type: "error" } });
     }
-    
+
     set({ isSubmitting: false });
   },
 }));
@@ -136,4 +136,3 @@ export const getMessageClassName = (type: PermissionMessage["type"]): string => 
       return "";
   }
 };
-
