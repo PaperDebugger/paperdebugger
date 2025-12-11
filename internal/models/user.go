@@ -3,11 +3,12 @@ package models
 import "go.mongodb.org/mongo-driver/v2/bson"
 
 type Settings struct {
-	ShowShortcutsAfterSelection  bool `bson:"show_shortcuts_after_selection"`
-	FullWidthPaperDebuggerButton bool `bson:"full_width_paper_debugger_button"`
-	EnableCompletion             bool `bson:"enable_completion"`
-	FullDocumentRag              bool `bson:"full_document_rag"`
-	ShowedOnboarding             bool `bson:"showed_onboarding"`
+	ShowShortcutsAfterSelection  bool   `bson:"show_shortcuts_after_selection"`
+	FullWidthPaperDebuggerButton bool   `bson:"full_width_paper_debugger_button"`
+	EnableCompletion             bool   `bson:"enable_completion"`
+	FullDocumentRag              bool   `bson:"full_document_rag"`
+	ShowedOnboarding             bool   `bson:"showed_onboarding"`
+	OpenAIAPIKey                 string `bson:"openai_api_key"`
 }
 
 type User struct {

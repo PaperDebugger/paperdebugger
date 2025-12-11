@@ -12,6 +12,7 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 		EnableCompletion:             settings.EnableCompletion,
 		FullDocumentRag:              settings.FullDocumentRag,
 		ShowedOnboarding:             settings.ShowedOnboarding,
+		OpenAIAPIKey:                 settings.OpenaiApiKey,
 	}
 }
 
@@ -22,5 +23,6 @@ func MapModelSettingsToProto(settings *models.Settings) *userv1.Settings {
 		EnableCompletion:             settings.EnableCompletion,
 		FullDocumentRag:              settings.FullDocumentRag,
 		ShowedOnboarding:             settings.ShowedOnboarding,
+		OpenaiApiKey:                 settings.OpenAIAPIKey,
 	}
 }
