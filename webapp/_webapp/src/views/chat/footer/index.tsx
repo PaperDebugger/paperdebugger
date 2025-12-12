@@ -76,6 +76,7 @@ export function PromptInput() {
       // Check if IME composition is in progress to avoid submitting during Chinese input
       if (
         e.key === "Enter" &&
+        !isStreaming &&
         !e.shiftKey &&
         !e.nativeEvent.isComposing && // Prevent submission during IME composition
         !prompt.startsWith("/") && // Select prompt
