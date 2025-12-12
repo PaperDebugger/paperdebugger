@@ -9,7 +9,6 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	"paperdebugger/internal/services/toolkit/registry"
-	"paperdebugger/internal/services/toolkit/tools"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 
 	"github.com/openai/openai-go/v3"
@@ -71,10 +70,10 @@ func NewAIClient(
 
 	toolRegistry := registry.NewToolRegistry()
 
-	toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
-	toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
-	toolRegistry.Register("get_weather", tools.GetWeatherToolDescription, tools.GetWeatherTool)
-	toolRegistry.Register("get_rain_probability", tools.GetRainProbabilityToolDescription, tools.GetRainProbabilityTool)
+	// toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
+	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
+	// toolRegistry.Register("get_weather", tools.GetWeatherToolDescription, tools.GetWeatherTool)
+	// toolRegistry.Register("get_rain_probability", tools.GetRainProbabilityToolDescription, tools.GetRainProbabilityTool)
 
 	// Load tools dynamically from backend
 	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, cfg.XtraMCPURI)

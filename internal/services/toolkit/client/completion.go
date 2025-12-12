@@ -2,11 +2,9 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
-	"time"
 
 	"github.com/openai/openai-go/v3"
 )
@@ -75,38 +73,14 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 
 		toolCalls := []openai.FinishedChatCompletionToolCall{}
 		for stream.Next() {
-			time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
+			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
 			acc.AddChunk(chunk)
-			// if using tool calls
 
-			fmt.Printf("chunk choices: %d\n", len(chunk.Choices))
-			fmt.Printf("chunk role: %s\n", chunk.Choices[0].Delta.Role)
-			fmt.Printf("chunk content: %s\n", chunk.Choices[0].Delta.Content)
-			fmt.Printf("chunk tool calls: %d\n", len(chunk.Choices[0].Delta.ToolCalls))
-			fmt.Printf("chunk finish reason: %s\n", chunk.Choices[0].FinishReason)
-			for _, tool := range chunk.Choices[0].Delta.ToolCalls {
-				fmt.Printf("tool call: idx: %d name: %s args: %s id: %s\n", tool.Index, tool.Function.Name, tool.Function.Arguments, tool.ID)
-			}
-			fmt.Printf("chunk raw: %s\n", chunk.Choices[0].RawJSON())
-			fmt.Println("")
-
-			// role := chunk.Choices[0].Delta.Role
 			content := chunk.Choices[0].Delta.Content
-			// toolCalls := chunk.Choices[0].Delta.ToolCalls
 			stopReason := chunk.Choices[0].FinishReason
 
-			// if role != "" && content != "" {
-			// 	fmt.Errorf("role should be empty: %s", chunk.RawJSON())
-			// }
-
-			// // if len(chunk.Choices) == 0 {
-			// // 	fmt.Errorf("Error, choices is 0: %s", chunk.RawJSON())
-			// // 	break
-			// // }
-
 			if content == "" && stopReason == "" {
-				fmt.Printf("== role: %v\n", chunk.Choices[0].Delta)
 				streamHandler.HandleAddedItem(chunk)
 			}
 
@@ -115,32 +89,17 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 			}
 
 			if content, ok := acc.JustFinishedContent(); ok {
-				println("finished content: " + content)
 				appendAssistantTextResponse(&openaiChatHistory, &inappChatHistory, content)
 				streamHandler.HandleTextDoneItem(chunk, content)
 			}
 
 			if tool, ok := acc.JustFinishedToolCall(); ok {
-				println("finished tool call: " + tool.Name)
 				toolCalls = append(toolCalls, tool)
 				streamHandler.HandleToolArgPreparedDoneItem(chunk, toolCalls)
 			}
 
-			if refusal, ok := acc.JustFinishedRefusal(); ok {
-				fmt.Printf("refusal: %+v\n", refusal)
-			}
-			// switch chunk.Event {
-			// // case "response.output_item.added":
-			// // streamHandler.HandleAddedItem(chunk)
-			// case "response.incomplete":
-			// 	// incomplete happens after "output_item.done" (if it happens)
-			// 	// It's an indicator that the response is incomplete.
-			// 	openaiOutput = chunk.Response.Output
-			// 	streamHandler.SendIncompleteIndicator(chunk.Response.IncompleteDetails.Reason, chunk.Response.ID)
-			// case "response.completed": // JustFinishedContent
-			// 	openaiOutput = chunk.Response.Output
-			// case "response.output_text.delta":
-			// 	streamHandler.HandleTextDelta(chunk)
+			// if refusal, ok := acc.JustFinishedRefusal(); ok {
+			// 	fmt.Printf("refusal: %+v\n", refusal)
 			// }
 		}
 
@@ -163,7 +122,6 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 			break
 		}
 	}
-	println("openaiChatHistory: ", openaiChatHistory)
 
 	return openaiChatHistory, inappChatHistory, nil
 }
