@@ -16,7 +16,7 @@ import (
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/google/uuid"
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3/responses"
 	"github.com/stretchr/testify/assert"
 )
 

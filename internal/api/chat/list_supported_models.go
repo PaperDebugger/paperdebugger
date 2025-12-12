@@ -7,7 +7,7 @@ import (
 	"paperdebugger/internal/libs/contextutil"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
-	"github.com/openai/openai-go/v2"
+	"github.com/openai/openai-go/v3"
 )
 
 func (s *ChatServer) ListSupportedModels(

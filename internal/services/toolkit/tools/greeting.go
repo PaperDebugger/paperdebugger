@@ -5,24 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/openai/openai-go/v2"
-	"github.com/openai/openai-go/v2/packages/param"
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/packages/param"
 )
 
-var GreetingToolDescription = responses.ToolUnionParam{
-	OfFunction: &responses.FunctionToolParam{
-		Name:        "greeting",
-		Description: param.NewOpt("This tool is used to greet the user. It is a demo tool. Please do not use this tool unless user explicitly ask for it. If you think you need to use this tool, please ask the user's name first."),
-		Parameters: openai.FunctionParameters{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"name": map[string]any{
-					"type":        "string",
-					"description": "The name of the user, must ask user's name first if you want to use this tool.",
+var GreetingToolDescription = openai.ChatCompletionToolUnionParam{
+	OfFunction: &openai.ChatCompletionFunctionToolParam{
+		Function: openai.FunctionDefinitionParam{
+			Name:        "greeting",
+			Description: param.NewOpt("This tool is used to greet the user. It is a demo tool. Please do not use this tool unless user explicitly ask for it. If you think you need to use this tool, please ask the user's name first."),
+			Parameters: openai.FunctionParameters{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"name": map[string]any{
+						"type":        "string",
+						"description": "The name of the user, must ask user's name first if you want to use this tool.",
+					},
 				},
+				"required": []string{"name"},
 			},
-			"required": []string{"name"},
 		},
 	},
 }

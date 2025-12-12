@@ -28,7 +28,7 @@ export function handleStreamPartBegin(
       parts: [...prev.parts, newMessageEntry],
       sequence: prev.sequence + 1,
     }));
-  } else if (role === "toolCall") {
+  } else if (role === "toolCall") { // argument is prepared, tool is calling...
     const newMessageEntry: MessageEntry = {
       messageId: partBegin.messageId,
       status: MessageEntryStatus.PREPARING,

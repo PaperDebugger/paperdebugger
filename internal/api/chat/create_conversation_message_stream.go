@@ -1,9 +1,7 @@
 package chat
 
 import (
-	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/models"
-	"paperdebugger/internal/services"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -65,24 +63,24 @@ func (s *ChatServer) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	if conversation.Title == services.DefaultConversationTitle {
-		go func() {
-			protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
-			for i, bsonMsg := range conversation.InappChatHistory {
-				protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
-			}
-			title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
-			if err != nil {
-				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
-				return
-			}
-			conversation.Title = title
-			if err := s.chatService.UpdateConversation(conversation); err != nil {
-				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
-				return
-			}
-		}()
-	}
+	// if conversation.Title == services.DefaultConversationTitle {
+	// 	go func() {
+	// 		protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
+	// 		for i, bsonMsg := range conversation.InappChatHistory {
+	// 			protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
+	// 		}
+	// 		title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
+	// 		if err != nil {
+	// 			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
+	// 			return
+	// 		}
+	// 		conversation.Title = title
+	// 		if err := s.chatService.UpdateConversation(conversation); err != nil {
+	// 			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
+	// 			return
+	// 		}
+	// 	}()
+	// }
 
 	// The final conversation object is NOT returned
 	return nil

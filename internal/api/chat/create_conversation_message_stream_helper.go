@@ -9,7 +9,7 @@ import (
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/google/uuid"
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -20,10 +20,10 @@ import (
 // 我们发送给 GPT 的就是从数据库里拿到的 Conversation 对象里面的内容（InputItemList）
 
 // buildUserMessage constructs both the user-facing message and the OpenAI input message
-func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, *responses.ResponseInputItemUnionParam, error) {
+func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, openai.ChatCompletionMessageParamUnion, error) {
 	userPrompt, err := s.chatService.GetPrompt(ctx, userMessage, userSelectedText, conversationType)
 	if err != nil {
-		return nil, nil, err
+		return nil, openai.ChatCompletionMessageParamUnion{}, err
 	}
 
 	var inappMessage *chatv1.Message
@@ -53,20 +53,12 @@ func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSele
 		}
 	}
 
-	openaiMessage := &responses.ResponseInputItemUnionParam{
-		OfInputMessage: &responses.ResponseInputItemMessageParam{
-			Role: "user",
-			Content: responses.ResponseInputMessageContentListParam{
-				responses.ResponseInputContentParamOfInputText(userPrompt),
-			},
-		},
-	}
-
+	openaiMessage := openai.UserMessage(userPrompt)
 	return inappMessage, openaiMessage, nil
 }
 
 // buildSystemMessage constructs both the user-facing system message and the OpenAI input message
-func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, *responses.ResponseInputItemUnionParam) {
+func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, openai.ChatCompletionMessageParamUnion) {
 	inappMessage := &chatv1.Message{
 		MessageId: "pd_msg_system_" + uuid.New().String(),
 		Payload: &chatv1.MessagePayload{
@@ -78,14 +70,7 @@ func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, *
 		},
 	}
 
-	openaiMessage := &responses.ResponseInputItemUnionParam{
-		OfInputMessage: &responses.ResponseInputItemMessageParam{
-			Role: "system",
-			Content: responses.ResponseInputMessageContentListParam{
-				responses.ResponseInputContentParamOfInputText(systemPrompt),
-			},
-		},
-	}
+	openaiMessage := openai.SystemMessage(systemPrompt)
 
 	return inappMessage, openaiMessage
 }
@@ -129,12 +114,13 @@ func (s *ChatServer) createConversation(
 	}
 
 	messages := []*chatv1.Message{inappUserMsg}
-	oaiHistory := responses.ResponseNewParamsInputUnion{
-		OfInputItemList: responses.ResponseInputParam{*openaiSystemMsg, *openaiUserMsg},
+	oaiHistory := []openai.ChatCompletionMessageParamUnion{
+		openaiSystemMsg,
+		openaiUserMsg,
 	}
 
 	return s.chatService.InsertConversationToDB(
-		ctx, userId, projectId, languageModel, messages, oaiHistory.OfInputItemList,
+		ctx, userId, projectId, languageModel, messages, oaiHistory,
 	)
 }
 
@@ -168,7 +154,7 @@ func (s *ChatServer) appendConversationMessage(
 		return nil, err
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
-	conversation.OpenaiChatHistory = append(conversation.OpenaiChatHistory, *userOaiMsg)
+	conversation.OpenaiChatHistory = append(conversation.OpenaiChatHistory, userOaiMsg)
 
 	if err := s.chatService.UpdateConversation(conversation); err != nil {
 		return nil, err

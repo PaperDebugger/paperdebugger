@@ -12,9 +12,8 @@ import (
 	toolCallRecordDB "paperdebugger/internal/services/toolkit/db"
 	"time"
 
-	"github.com/openai/openai-go/v2"
-	"github.com/openai/openai-go/v2/packages/param"
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/packages/param"
 )
 
 // ToolSchema represents the schema from your backend
@@ -42,7 +41,7 @@ type MCPParams struct {
 // DynamicTool represents a generic tool that can handle any schema
 type DynamicTool struct {
 	Name             string
-	Description      responses.ToolUnionParam
+	Description      openai.ChatCompletionToolUnionParam
 	toolCallRecordDB *toolCallRecordDB.ToolCallRecordDB
 	projectService   *services.ProjectService
 	coolDownTime     time.Duration
@@ -55,11 +54,13 @@ type DynamicTool struct {
 // NewDynamicTool creates a new dynamic tool from a schema
 func NewDynamicTool(db *db.DB, projectService *services.ProjectService, toolSchema ToolSchema, baseURL string, sessionID string) *DynamicTool {
 	// Create tool description with the schema
-	description := responses.ToolUnionParam{
-		OfFunction: &responses.FunctionToolParam{
-			Name:        toolSchema.Name,
-			Description: param.NewOpt(toolSchema.Description),
-			Parameters:  openai.FunctionParameters(toolSchema.InputSchema),
+	description := openai.ChatCompletionToolUnionParam{
+		OfFunction: &openai.ChatCompletionFunctionToolParam{
+			Function: openai.FunctionDefinitionParam{
+				Name:        toolSchema.Name,
+				Description: param.NewOpt(toolSchema.Description),
+				Parameters:  openai.FunctionParameters(toolSchema.InputSchema),
+			},
 		},
 	}
 

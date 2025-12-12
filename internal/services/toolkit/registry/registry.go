@@ -6,23 +6,23 @@ import (
 	"fmt"
 	"paperdebugger/internal/services/toolkit"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 	"github.com/samber/lo"
 )
 
 type ToolRegistry struct {
 	tools       map[string]toolkit.ToolHandler
-	description map[string]responses.ToolUnionParam
+	description map[string]openai.ChatCompletionToolUnionParam
 }
 
 func NewToolRegistry() *ToolRegistry {
 	return &ToolRegistry{
 		tools:       make(map[string]toolkit.ToolHandler),
-		description: make(map[string]responses.ToolUnionParam),
+		description: make(map[string]openai.ChatCompletionToolUnionParam),
 	}
 }
 
-func (r *ToolRegistry) Register(name string, description responses.ToolUnionParam, handler toolkit.ToolHandler) {
+func (r *ToolRegistry) Register(name string, description openai.ChatCompletionToolUnionParam, handler toolkit.ToolHandler) {
 	r.tools[name] = handler
 	r.description[name] = description
 }
@@ -44,6 +44,6 @@ func (r *ToolRegistry) Call(ctx context.Context, toolCallId string, toolCallName
 	}
 }
 
-func (r *ToolRegistry) GetTools() []responses.ToolUnionParam {
+func (r *ToolRegistry) GetTools() []openai.ChatCompletionToolUnionParam {
 	return lo.Values(r.description)
 }

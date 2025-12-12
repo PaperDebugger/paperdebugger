@@ -3,7 +3,7 @@ package models
 import (
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
-	"github.com/openai/openai-go/v2"
+	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/x/bsonx/bsoncore"
 )

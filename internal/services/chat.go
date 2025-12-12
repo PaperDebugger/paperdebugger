@@ -14,7 +14,7 @@ import (
 	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -92,7 +92,7 @@ func (s *ChatService) GetPrompt(ctx context.Context, content string, selectedTex
 	return strings.TrimSpace(userPromptBuffer.String()), nil
 }
 
-func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.ObjectID, projectID string, languageModel models.LanguageModel, inappChatHistory []*chatv1.Message, openaiChatHistory responses.ResponseInputParam) (*models.Conversation, error) {
+func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.ObjectID, projectID string, languageModel models.LanguageModel, inappChatHistory []*chatv1.Message, openaiChatHistory []openai.ChatCompletionMessageParamUnion) (*models.Conversation, error) {
 	// Convert protobuf messages to BSON
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
