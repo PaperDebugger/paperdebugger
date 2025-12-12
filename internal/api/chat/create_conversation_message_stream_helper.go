@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 
-	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
@@ -250,69 +249,4 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 	}
 
 	return ctx, conversation, settings, nil
-}
-
-// Deprecated: Use CreateConversationMessageStream instead.
-func (s *ChatServer) CreateConversationMessage(
-	ctx context.Context,
-	req *chatv1.CreateConversationMessageRequest,
-) (*chatv1.CreateConversationMessageResponse, error) {
-	languageModel := models.LanguageModel(req.GetLanguageModel())
-	ctx, conversation, settings, err := s.prepare(
-		ctx,
-		req.GetProjectId(),
-		req.GetConversationId(),
-		req.GetUserMessage(),
-		req.GetUserSelectedText(),
-		languageModel,
-		req.GetConversationType(),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	llmProvider := &models.LLMProviderConfig{
-		Endpoint: s.cfg.OpenAIBaseURL,
-		APIKey:   settings.OpenAIAPIKey,
-	}
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, languageModel, conversation.OpenaiChatHistory, llmProvider)
-	if err != nil {
-		return nil, err
-	}
-
-	bsonMessages := make([]bson.M, len(inappChatHistory))
-	for i := range inappChatHistory {
-		bsonMsg, err := convertToBSON(&inappChatHistory[i])
-		if err != nil {
-			return nil, err
-		}
-		bsonMessages[i] = bsonMsg
-	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistory = openaiChatHistory
-
-	if err := s.chatService.UpdateConversation(conversation); err != nil {
-		return nil, err
-	}
-
-	go func() {
-		protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
-		for i, bsonMsg := range conversation.InappChatHistory {
-			protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
-		}
-		title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
-		if err != nil {
-			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
-			return
-		}
-		conversation.Title = title
-		if err := s.chatService.UpdateConversation(conversation); err != nil {
-			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
-			return
-		}
-	}()
-
-	return &chatv1.CreateConversationMessageResponse{
-		Conversation: mapper.MapModelConversationToProto(conversation),
-	}, nil
 }
