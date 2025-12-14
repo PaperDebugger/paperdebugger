@@ -18,16 +18,18 @@ type ToolsProps = {
 
 // define a const string list.
 const XTRA_MCP_TOOL_NAMES = [
-  // researcher tools
+  // RESEARCHER TOOLS
   "search_relevant_papers",
   "online_search_papers",
-  "deep_research",
-  // reviewer tools
+  // "deep_research",
+  // REVIEWER TOOLS
   "review_paper",
-  // enhancer tools
-  "enhance_academic_writing",
-  // misc
-  "get_user_papers",
+  // "verify_citations"
+  // ENHANCER TOOLS
+  // "enhance_academic_writing",
+  // OPENREVIEW ONLINE TOOLS
+  // "get_user_papers",
+  // "search_user"
 ];
 
 export default function Tools({ messageId, functionName, message, error, preparing, animated }: ToolsProps) {
