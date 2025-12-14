@@ -1,6 +1,6 @@
 import { PaperScoreCard } from "./paper-score";
 import { PaperScoreCommentCard } from "./paper-score-comment/index";
-import { UnknownToolCard } from "./unknown";
+import { GeneralToolCard } from "./unknown";
 import { GreetingCard } from "./greeting";
 import { ErrorToolCard } from "./error";
 import { AlwaysExceptionCard } from "./always-exception";
@@ -62,6 +62,6 @@ export default function Tools({ messageId, functionName, message, error, prepari
       <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult} preparing={preparing} animated={animated} />
     );
   } else {
-    return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
+    return <GeneralToolCard functionName={functionName} message={message} animated={animated} />;
   }
 }

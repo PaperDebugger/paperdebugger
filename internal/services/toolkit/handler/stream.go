@@ -120,30 +120,25 @@ func (h *StreamHandler) HandleTextDoneItem(chunk openai.ChatCompletionChunk, con
 	})
 }
 
-func (h *StreamHandler) HandleToolArgPreparedDoneItem(chunk openai.ChatCompletionChunk, toolCalls []openai.FinishedChatCompletionToolCall) {
+func (h *StreamHandler) HandleToolArgPreparedDoneItem(index int, id string, name string, args string) {
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Choices[0].Delta.Role != "" && chunk.Choices[0].Delta.Content != "" {
-		return
-	}
-	for _, toolCall := range toolCalls { // Supports parallel tool calls
-		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
-				StreamPartEnd: &chatv1.StreamPartEnd{
-					MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", toolCall.Index, toolCall.ID),
-					Payload: &chatv1.MessagePayload{
-						MessageType: &chatv1.MessagePayload_ToolCallPrepareArguments{
-							ToolCallPrepareArguments: &chatv1.MessageTypeToolCallPrepareArguments{
-								Name: toolCall.Name,
-								Args: toolCall.Arguments,
-							},
+	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
+			StreamPartEnd: &chatv1.StreamPartEnd{
+				MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", index, id),
+				Payload: &chatv1.MessagePayload{
+					MessageType: &chatv1.MessagePayload_ToolCallPrepareArguments{
+						ToolCallPrepareArguments: &chatv1.MessageTypeToolCallPrepareArguments{
+							Name: name,
+							Args: args,
 						},
 					},
 				},
 			},
-		})
-	}
+		},
+	})
 }
 
 func (h *StreamHandler) HandleTextDelta(chunk openai.ChatCompletionChunk) {
