@@ -1,36 +1,38 @@
-# XtraMCP Server – Orchestration Prompts
+# XtraMCP Orchestration Layer
 
 XtraMCP is a **custom MCP-based orchestration server** that powers PaperDebugger’s higher-level workflows:
 
-- 🧑‍🔬 **Researcher** – find and position your work within the literature  
-- 🧑‍⚖️ **Reviewer** – critique drafts like a top-tier ML reviewer  
+- 🧑‍🔬 **Researcher** – find relevant papers and position your work within the literature  
+- 🧑‍⚖️ **Reviewer** – critique drafts like a top-tier ML conference reviewer  
 - ✍️ **Enhancer** – perform fine-grained, context-aware rewrites  
 - 🧾 **Conference Formatter** (WIP) – adapt drafts to conference templates (NeurIPS, ICLR, AAAI, etc.)
 
 This document describes the core tools exposed by XtraMCP and how they combine into these workflows.
 
-> **Note:** XtraMCP is currently **closed-source** while the API and deployment story stabilize.  
+> **Note:** XtraMCP (see [4ndrelim/academic-paper-mcp-server](https://github.com/4ndrelim/academic-paper-mcp-server)) is currently **closed-source** while the API and development stabilize.  
 > PaperDebugger runs fully without it; connecting XtraMCP unlocks the advanced research/review pipelines described here.
 
 ---
 
 ## Tool Overview
 
-| Tool Name                  | Role       | Purpose                                                         | Primary Data Source         |
+| Tool Name                 | Role      | Purpose                                                         | Primary Data Source         |
 |---------------------------|-----------|-----------------------------------------------------------------|-----------------------------|
-| `search_relevant_papers`  | Researcher | Fast semantic search over recent CS papers in a local vector DB, enhanced with semantic re-ranker module | Local vector database       |
-| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers |
-| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv          |
-| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft                  |
-| `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT        |
-| `get_user_papers`| Misc | Fetch all papers, alongside description, published (OpenReview) by a specific user identified by email | User's email address
+| `search_relevant_papers`  | Researcher | Fast semantic search over recent CS papers in a local vector DB, enhanced with semantic re-ranker module | Local DB |
+| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers analysis |
+| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv         |
+| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft + section-level review workflow comprising static & semantic issue detection |
+| `verify_citations`        | Reviewer   | Ensure citations are grounded, valid, and traceable             | Your draft's bibliography  |
+| `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT       |
+| `get_user_papers`         | Misc / Researcher| Fetch all published papers with description, by a specific user | OpenReview           |
+| `search_user`             | Misc | Fetch user's profile, including info such as publications, co-authors | OpenReview                 |
 
 ---
 
 ## 1. `search_relevant_papers`
 
 **Purpose:**  
-Search for similar or relevant papers by keywords or extracted concepts against a **local database of academic papers**.<br>This tool uses semantic search with vector embeddings to find the most relevant results, enhanced with a re-ranker module to better capture nuance. It is fast and the default and recommended tool for paper searches.
+Search for similar or relevant papers by keywords or extracted concepts against a **local corpus of ~800,000 academic papers**.<br>This tool uses semantic search with vector embeddings to find the most relevant results, enhanced with a re-ranker module to better capture nuance. It is fast and the default and recommended tool for paper searches.
 
 **How it works:**
 
@@ -48,7 +50,7 @@ Search for similar or relevant papers by keywords or extracted concepts against 
 ## 2. `deep_research`
 
 **Purpose:**  
-Given a **research topic or draft paper**, perform multi-step literature exploration and synthesis. Summarize their findings, and provide insights on similarities and differences to assist in the research process.
+Given a **research topic or draft paper**, perform multi-step literature exploration and synthesis. Summarize their findings, and provide insights on similarities and differences to assist in the research process. This helps you to position your work.
 
 **How it works:**
 
@@ -62,7 +64,7 @@ Given a **research topic or draft paper**, perform multi-step literature explora
 **Typical usage:**
 
 - “deep_research to compare my draft to recent work on retrieval-augmented generation.”  
-- “For this topic, deep_research 5-10 relevant papers and explain where the open gaps are.”
+- “For this topic, deep_research 5-10 relevant papers and explain where the open gaps are and what I can adopt.”
 
 ---
 
@@ -117,8 +119,26 @@ Analyze and review a draft against the standards of **top-tier ML conferences** 
 - “review_paper on method clarity and experimental rigor.”
 
 ---
+## 5. `verify_citations`
 
-## 5. `enhance_academic_writing`
+**Purpose:**
+Verify that citations in your draft are valid, grounded, and traceable, helping reduce the risk of desk rejection due to incorrect or unverifiable references.
+
+**How it works**:
+- Parses your bibliography and in-text citations.
+- Verifies that cited papers, preprints, and URLs:
+  - exist and are reachable,
+  - correspond to real publications or preprints,
+  - match their claimed titles/authors/venues where possible.
+- Flags any issues or un-verifiable sources.
+
+Typical usage:
+- “verify_citations”
+- “Check whether any citations in this draft are invalid or unverifiable.”
+
+---
+
+## 6. `enhance_academic_writing`
 
 **Purpose:**  
 Suggest **context-aware academic writing enhancements** for selected text.
@@ -137,7 +157,7 @@ Suggest **context-aware academic writing enhancements** for selected text.
 - "enhance_academic_writing this paragraph to be clearer and more concise, preserving all technical details.”  
 - "enhance_academic_writing the abstract to be suitable for NeurIPS.”
 
-## 6. `get_user_papers`
+## 7. `get_user_papers`
 
 **Purpose:**  
 Retrieve **all papers authored by a given user** (OpenReview), identified by email.  
@@ -152,7 +172,7 @@ Useful for quickly assembling a researcher’s publication list or grounding con
 - “get_user_papers for <author-email> in summary mode.”  
 - “Retrieve all publications by this researcher and then compare my draft using deep_research.”
 
-## 7. Conference Formatter (WIP)
+## 8. Conference Formatter (WIP)
 
 Upcoming workflows will:
 
