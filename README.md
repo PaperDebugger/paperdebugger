@@ -168,7 +168,7 @@ cp .env.example .env
 ```
 
 #### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
-Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially deployed in-production, with selected components enbaled to **balance stabillity and operational cost** at this stage. It is still under active development and remains closed-source for now. 
+Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially deployed in-production, with selected components enabled to **balance stability and operational cost** at this stage. It is still under active development and remains closed-source for now. 
 
 To understand the backend orchestration logic and view the currently available and gated features, as well as planned capabilities, refer to [/demo/xtramcp/readme.md](./demo/xtramcp/readme.md).<br>
 You can still self-host PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.

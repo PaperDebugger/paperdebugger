@@ -19,13 +19,13 @@ This document describes the core tools exposed by XtraMCP and how they combine i
 | Tool Name                 | Role      | Purpose                                                         | Primary Data Source            | Presently Deployed    |
 |---------------------------|-----------|-----------------------------------------------------------------|--------------------------------|----------------------|
 | `search_relevant_papers`  | Researcher | Fast semantic search over recent CS papers in a local vector DB, enhanced with semantic re-ranker module | Local DB | Yes |
-| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers analysis | _Temporarily Disabled_ |
-| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv         | Yes (_Partially_) with arXiv |
-| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft + section-level review (static & semantic) | Yes (_Partially_) — Title, Abstract, Intro — to balance operational cost. |
-| `verify_citations`        | Reviewer   | Ensure citations are grounded, valid, and traceable             | Your draft's bibliography  | _Coming Soon_! |
-| `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT       | _Temporarily Disabled_ |
-| `get_user_papers`         | Misc / Researcher| Fetch all published papers with description, by a specific user | OpenReview           | _Disabled_ (requires auth; easy to enable with local deployment) |
-| `search_user`             | Misc | Fetch user's profile, including info such as publications, co-authors | OpenReview                 | _Disabled_ (requires auth; easy to enable with local deployment)|
+| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers analysis | *Temporarily Disabled* |
+| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv         | Yes (*Partially*) with arXiv |
+| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft + section-level review (static & semantic) | Yes (*Partially*) — Title, Abstract, Intro — to balance operational cost. |
+| `verify_citations`        | Reviewer   | Ensure citations are grounded, valid, and traceable             | Your draft's bibliography  | *Coming Soon*! |
+| `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT       | *Temporarily Disabled* |
+| `get_user_papers`         | Misc / Researcher| Fetch all published papers with description, by a specific user | OpenReview           | *Disabled* (requires auth; easy to enable with local deployment) |
+| `search_user`             | Misc | Fetch user's profile, including info such as publications, co-authors | OpenReview                 | *Disabled* (requires auth; easy to enable with local deployment)|
 
 ---
 
