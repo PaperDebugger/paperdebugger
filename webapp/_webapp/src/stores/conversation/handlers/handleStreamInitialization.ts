@@ -24,6 +24,8 @@ export function handleStreamInitialization(streamInit: StreamInitialization, ref
     logWarn("Streaming message parts length is not 1, this may indicate some stale messages in the store");
   }
 
-  flushStreamingMessageToConversation(streamInit.conversationId, streamInit.languageModel);
+  // Extract modelSlug from the oneof model field
+  const modelSlug = streamInit.model.case === "modelSlug" ? streamInit.model.value : undefined;
+  flushStreamingMessageToConversation(streamInit.conversationId, modelSlug);
   refetchConversationList(); // Here we refetch conversation list because user may send chat message and immediately open history to view.
 }

@@ -10,7 +10,8 @@ type Conversation struct {
 	UserID           bson.ObjectID `bson:"user_id"`
 	ProjectID        string        `bson:"project_id"`
 	Title            string        `bson:"title"`
-	LanguageModel    LanguageModel `bson:"language_model"`
+	LanguageModel    LanguageModel `bson:"language_model"`     // deprecated: use ModelSlug instead
+	ModelSlug        string        `bson:"model_slug"`         // new: model slug string
 	InappChatHistory []bson.M      `bson:"inapp_chat_history"` // Store as raw BSON to avoid protobuf decoding issues
 
 	OpenaiChatHistory []openai.ChatCompletionMessageParamUnion `bson:"openai_chat_history"` // 实际上发给 GPT 的聊天历史

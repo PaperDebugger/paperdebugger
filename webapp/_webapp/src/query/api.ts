@@ -14,6 +14,7 @@ import {
   CreateConversationMessageResponseSchema,
   CreateConversationMessageStreamResponse,
   CreateConversationMessageStreamResponseSchema,
+  CreateConversationMessageStreamRequestSchema,
   DeleteConversationRequest,
   DeleteConversationResponseSchema,
   GetConversationRequest,
@@ -58,7 +59,7 @@ import {
   GetUserInstructionsRequest,
 } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "./types";
-import { fromJson } from "@bufbuild/protobuf";
+import { create, fromJson, toJson } from "@bufbuild/protobuf";
 import { processStream } from "./utils";
 import { CommentsAcceptedRequest, CommentsAcceptedResponseSchema } from "../pkg/gen/apiclient/comment/v1/comment_pb";
 
@@ -142,7 +143,13 @@ export const createConversationMessageStream = async (
   data: PlainMessage<CreateConversationMessageRequest>,
   onMessage: (chunk: CreateConversationMessageStreamResponse) => void,
 ) => {
-  const stream = await apiclient.postStream(`/chats/conversations/messages/stream`, data);
+  const stream = await apiclient.postStream(
+    `/chats/conversations/messages/stream`,
+    toJson(
+      CreateConversationMessageStreamRequestSchema,
+      create(CreateConversationMessageStreamRequestSchema, data),
+    ),
+  );
   await processStream(stream, CreateConversationMessageStreamResponseSchema, onMessage);
 };
 

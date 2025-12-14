@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Conversation, ConversationSchema, LanguageModel } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { fromJson } from "@bufbuild/protobuf";
 
 interface ConversationStore {
@@ -24,8 +24,9 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 export function newConversation(): Conversation {
   return fromJson(ConversationSchema, {
     id: "",
-    languageModel: LanguageModel.OPENAI_GPT41,
+    modelSlug: "gpt-4.1",
     title: "New Conversation",
     messages: [],
   });
 }
+

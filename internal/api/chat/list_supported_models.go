@@ -40,6 +40,14 @@ func (s *ChatServer) ListSupportedModels(
 				Name: "GPT-4.1-mini",
 				Slug: openai.ChatModelGPT4_1Mini,
 			},
+			{
+				Name: "通义千问 Plus（均衡）",
+				Slug: "qwen-plus",
+			},
+			{
+				Name: "通义千问 Flash（最快）",
+				Slug: "qwen-flash",
+			},
 		}
 	} else {
 		models = []*chatv1.SupportedModel{
@@ -94,6 +102,18 @@ func (s *ChatServer) ListSupportedModels(
 			{
 				Name: "Codex Mini Latest",
 				Slug: openai.ChatModelCodexMiniLatest,
+			},
+			{
+				Name: "通义千问 3 Max（最强）",
+				Slug: "qwen3-max",
+			},
+			{
+				Name: "通义千问 Plus（均衡）",
+				Slug: "qwen-plus",
+			},
+			{
+				Name: "通义千问 Flash（最快）",
+				Slug: "qwen-flash",
 			},
 		}
 	}

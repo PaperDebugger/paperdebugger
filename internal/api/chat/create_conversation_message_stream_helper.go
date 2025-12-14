@@ -99,7 +99,7 @@ func (s *ChatServer) createConversation(
 	userInstructions string,
 	userMessage string,
 	userSelectedText string,
-	languageModel models.LanguageModel,
+	modelSlug string,
 	conversationType chatv1.ConversationType,
 ) (*models.Conversation, error) {
 	systemPrompt, err := s.chatService.GetSystemPrompt(ctx, latexFullSource, projectInstructions, userInstructions, conversationType)
@@ -120,7 +120,7 @@ func (s *ChatServer) createConversation(
 	}
 
 	return s.chatService.InsertConversationToDB(
-		ctx, userId, projectId, languageModel, messages, oaiHistory,
+		ctx, userId, projectId, modelSlug, messages, oaiHistory,
 	)
 }
 
@@ -165,7 +165,7 @@ func (s *ChatServer) appendConversationMessage(
 
 // 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
 // conversationType 可以在一次 conversation 中多次切换
-func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, languageModel models.LanguageModel, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err
@@ -208,7 +208,7 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 			userInstructions,
 			userMessage,
 			userSelectedText,
-			languageModel,
+			modelSlug,
 			conversationType,
 		)
 	} else {

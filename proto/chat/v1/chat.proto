@@ -105,7 +105,10 @@ message Message {
 message Conversation {
   string id = 1;
   string title = 3;
-  LanguageModel language_model = 2;
+  oneof model {
+    LanguageModel language_model = 2;  // deprecated: use model_slug instead
+    string model_slug = 5;             // new: model slug string
+  }
   // If list conversations, then messages length is 0.
   repeated Message messages = 4;
 }
@@ -132,7 +135,10 @@ message CreateConversationMessageRequest {
   // If conversation_id is not provided,
   // a new conversation will be created and the id will be returned.
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
+  oneof model {
+    LanguageModel language_model = 3;  // deprecated: use model_slug instead
+    string model_slug = 7;             // new: model slug string
+  }
 
   string user_message = 4;
   optional string user_selected_text = 5;
@@ -178,7 +184,10 @@ message ListSupportedModelsResponse {
 // Information sent once at the beginning of a new conversation stream
 message StreamInitialization {
   string conversation_id = 1;
-  LanguageModel language_model = 5;
+  oneof model {
+    LanguageModel language_model = 5;  // deprecated: use model_slug instead
+    string model_slug = 6;             // new: model slug string
+  }
 }
 
 // Designed as StreamPartBegin and StreamPartEnd to
@@ -238,7 +247,10 @@ enum ConversationType {
 message CreateConversationMessageStreamRequest {
   string project_id = 1;
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
+  oneof model {
+    LanguageModel language_model = 3;  // deprecated: use model_slug instead
+    string model_slug = 7;             // new: model slug string
+  }
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;

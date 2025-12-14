@@ -7,7 +7,6 @@ It is used to append assistant responses to both OpenAI and in-app chat historie
 */
 import (
 	"fmt"
-	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
@@ -48,25 +47,31 @@ func appendAssistantTextResponse(openaiChatHistory *OpenAIChatHistory, inappChat
 // getDefaultParams constructs the default parameters for a chat completion request.
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
-func getDefaultParams(languageModel models.LanguageModel, toolRegistry *registry.ToolRegistry) openai.ChatCompletionNewParams {
-	if languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST) {
+func getDefaultParams(modelSlug string, toolRegistry *registry.ToolRegistry) openai.ChatCompletionNewParams {
+	// Models that require simplified parameters (newer reasoning models)
+	advancedModels := map[string]bool{
+		openai.ChatModelGPT5:            true,
+		openai.ChatModelGPT5Mini:        true,
+		openai.ChatModelGPT5Nano:        true,
+		openai.ChatModelGPT5ChatLatest:  true,
+		openai.ChatModelO4Mini:          true,
+		openai.ChatModelO3Mini:          true,
+		openai.ChatModelO3:              true,
+		openai.ChatModelO1Mini:          true,
+		openai.ChatModelO1:              true,
+		openai.ChatModelCodexMiniLatest: true,
+	}
+
+	if advancedModels[modelSlug] {
 		return openai.ChatCompletionNewParams{
-			Model: languageModel.Name(),
+			Model: modelSlug,
 			Tools: toolRegistry.GetTools(),
 			Store: openai.Bool(false),
 		}
 	}
+
 	return openai.ChatCompletionNewParams{
-		Model:               languageModel.Name(),
+		Model:               modelSlug,
 		Temperature:         openai.Float(0.7),
 		MaxCompletionTokens: openai.Int(4000),        // DEBUG POINT: change this to test the frontend handler
 		Tools:               toolRegistry.GetTools(), // 工具注册由 registry 统一管理

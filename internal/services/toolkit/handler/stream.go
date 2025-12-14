@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/openai/openai-go/v3"
@@ -11,18 +10,18 @@ import (
 type StreamHandler struct {
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer
 	conversationId string
-	languageModel  models.LanguageModel
+	modelSlug      string
 }
 
 func NewStreamHandler(
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer,
 	conversationId string,
-	languageModel models.LanguageModel,
+	modelSlug string,
 ) *StreamHandler {
 	return &StreamHandler{
 		callbackStream: callbackStream,
 		conversationId: conversationId,
-		languageModel:  languageModel,
+		modelSlug:      modelSlug,
 	}
 }
 
@@ -34,7 +33,9 @@ func (h *StreamHandler) SendInitialization() {
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamInitialization{
 			StreamInitialization: &chatv1.StreamInitialization{
 				ConversationId: h.conversationId,
-				LanguageModel:  chatv1.LanguageModel(h.languageModel),
+				Model: &chatv1.StreamInitialization_ModelSlug{
+					ModelSlug: h.modelSlug,
+				},
 			},
 		},
 	})

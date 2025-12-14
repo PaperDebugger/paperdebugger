@@ -11,6 +11,9 @@ type Cfg struct {
 	OpenAIAPIKey  string
 	JwtSigningKey string
 
+	QwenBaseURL string
+	QwenAPIKey  string
+
 	MongoURI   string
 	XtraMCPURI string
 }
@@ -23,6 +26,8 @@ func GetCfg() *Cfg {
 		OpenAIBaseURL: openAIBaseURL(),
 		OpenAIAPIKey:  os.Getenv("OPENAI_API_KEY"),
 		JwtSigningKey: os.Getenv("JWT_SIGNING_KEY"),
+		QwenBaseURL:   os.Getenv("QWEN_BASE_URL"),
+		QwenAPIKey:    os.Getenv("QWEN_API_KEY"),
 		MongoURI:      mongoURI(),
 		XtraMCPURI:    xtraMCPURI(),
 	}

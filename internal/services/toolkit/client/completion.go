@@ -22,8 +22,8 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.LanguageModel, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", languageModel, messages, llmProvider)
+func (a *AIClient) ChatCompletion(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return OpenAIChatHistory{}, AppChatHistory{}, err
 	}
@@ -52,19 +52,19 @@ func (a *AIClient) ChatCompletion(ctx context.Context, languageModel models.Lang
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
 
-func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, languageModel models.LanguageModel, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 
-	streamHandler := handler.NewStreamHandler(callbackStream, conversationId, languageModel)
+	streamHandler := handler.NewStreamHandler(callbackStream, conversationId, modelSlug)
 
 	streamHandler.SendInitialization()
 	defer func() {
 		streamHandler.SendFinalization()
 	}()
 
-	oaiClient := a.GetOpenAIClient(llmProvider)
-	params := getDefaultParams(languageModel, a.toolCallHandler.Registry)
+	oaiClient := a.GetOpenAIClient(llmProvider, modelSlug)
+	params := getDefaultParams(modelSlug, a.toolCallHandler.Registry)
 	// during
 	for {
 		params.Messages = openaiChatHistory
