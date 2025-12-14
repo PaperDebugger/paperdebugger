@@ -59,7 +59,13 @@ func (s *ChatServer) CreateConversationMessageStream(
 		APIKey:   settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistory, llmProvider)
+	var legacyLanguageModel *chatv1.LanguageModel
+	if req.GetModelSlug() == "" {
+		m := req.GetLanguageModel()
+		legacyLanguageModel = &m
+	}
+
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, legacyLanguageModel, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}

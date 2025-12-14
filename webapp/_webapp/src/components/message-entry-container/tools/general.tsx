@@ -21,7 +21,7 @@ const shimmerStyle = {
 } as const;
 
 export const GeneralToolCard = ({ functionName, message, animated }: GeneralToolCardProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // When no message, show minimal "Calling tool..." style like Preparing function
   if (!message) {

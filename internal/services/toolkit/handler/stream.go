@@ -11,17 +11,20 @@ type StreamHandler struct {
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer
 	conversationId string
 	modelSlug      string
+	languageModel  *chatv1.LanguageModel
 }
 
 func NewStreamHandler(
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer,
 	conversationId string,
 	modelSlug string,
+	languageModel *chatv1.LanguageModel,
 ) *StreamHandler {
 	return &StreamHandler{
 		callbackStream: callbackStream,
 		conversationId: conversationId,
 		modelSlug:      modelSlug,
+		languageModel:  languageModel,
 	}
 }
 
@@ -29,14 +32,22 @@ func (h *StreamHandler) SendInitialization() {
 	if h.callbackStream == nil {
 		return
 	}
+	streamInit := &chatv1.StreamInitialization{
+		ConversationId: h.conversationId,
+	}
+	if h.languageModel != nil {
+		streamInit.Model = &chatv1.StreamInitialization_LanguageModel{
+			LanguageModel: *h.languageModel,
+		}
+	} else {
+		streamInit.Model = &chatv1.StreamInitialization_ModelSlug{
+			ModelSlug: h.modelSlug,
+		}
+	}
+
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamInitialization{
-			StreamInitialization: &chatv1.StreamInitialization{
-				ConversationId: h.conversationId,
-				Model: &chatv1.StreamInitialization_ModelSlug{
-					ModelSlug: h.modelSlug,
-				},
-			},
+			StreamInitialization: streamInit,
 		},
 	})
 }
