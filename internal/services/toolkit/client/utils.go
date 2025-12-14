@@ -16,7 +16,7 @@ import (
 
 // appendAssistantTextResponse appends the assistant's response to both OpenAI and in-app chat histories.
 // Uses pointer passing internally to avoid unnecessary copying.
-func appendAssistantTextResponse(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string) {
+func appendAssistantTextResponse(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string) {
 	*openaiChatHistory = append(*openaiChatHistory, openai.ChatCompletionMessageParamUnion{
 		OfAssistant: &openai.ChatCompletionAssistantMessageParam{
 			Role: "assistant",
@@ -34,7 +34,7 @@ func appendAssistantTextResponse(openaiChatHistory *OpenAIChatHistory, inappChat
 	})
 
 	*inappChatHistory = append(*inappChatHistory, chatv1.Message{
-		MessageId: fmt.Sprintf("openai"),
+		MessageId: fmt.Sprintf("openai_%s", contentId),
 		Payload: &chatv1.MessagePayload{
 			MessageType: &chatv1.MessagePayload_Assistant{
 				Assistant: &chatv1.MessageTypeAssistant{

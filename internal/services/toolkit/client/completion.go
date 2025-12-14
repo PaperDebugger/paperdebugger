@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
@@ -64,47 +65,103 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
 	params := getDefaultParams(languageModel, a.toolCallHandler.Registry)
-
+	// during
 	for {
 		params.Messages = openaiChatHistory
 		// var openaiOutput OpenAIChatHistory
 		stream := oaiClient.Chat.Completions.NewStreaming(context.Background(), params)
-		acc := openai.ChatCompletionAccumulator{}
 
+		reasoning_content := ""
+		answer_content := ""
+		answer_content_id := ""
+		is_answering := false
+		tool_info := map[int]map[string]string{}
 		toolCalls := []openai.FinishedChatCompletionToolCall{}
 		for stream.Next() {
 			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
-			acc.AddChunk(chunk)
 
-			content := chunk.Choices[0].Delta.Content
-			stopReason := chunk.Choices[0].FinishReason
-
-			if content == "" && stopReason == "" {
-				streamHandler.HandleAddedItem(chunk)
+			if len(chunk.Choices) == 0 {
+				// 处理用量信息
+				// fmt.Printf("Usage: %+v\n", chunk.Usage)
+				continue
 			}
 
-			if content != "" {
-				streamHandler.HandleTextDelta(chunk)
+			if chunk.Choices[0].FinishReason != "" {
+				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
+				streamHandler.HandleTextDoneItem(chunk, answer_content)
+				break
 			}
 
-			if content, ok := acc.JustFinishedContent(); ok {
-				appendAssistantTextResponse(&openaiChatHistory, &inappChatHistory, content)
-				streamHandler.HandleTextDoneItem(chunk, content)
-			}
+			delta := chunk.Choices[0].Delta
 
-			if tool, ok := acc.JustFinishedToolCall(); ok {
-				toolCalls = append(toolCalls, tool)
-				streamHandler.HandleToolArgPreparedDoneItem(chunk, toolCalls)
-			}
+			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
+				var s string
+				err := json.Unmarshal([]byte(field.Raw()), &s)
+				if err != nil {
+					// fmt.Println(err)
+				}
+				reasoning_content += s
+				// fmt.Print(s)
+			} else {
+				if !is_answering {
+					is_answering = true
+					// fmt.Println("\n\n========== 回答内容 ==========")
+					streamHandler.HandleAddedItem(chunk)
+				}
 
-			// if refusal, ok := acc.JustFinishedRefusal(); ok {
-			// 	fmt.Printf("refusal: %+v\n", refusal)
-			// }
+				if delta.Content != "" {
+					answer_content += delta.Content
+					answer_content_id = chunk.ID
+					streamHandler.HandleTextDelta(chunk)
+				}
+
+				if len(delta.ToolCalls) > 0 {
+					for _, toolCall := range delta.ToolCalls {
+						index := int(toolCall.Index)
+
+						// haskey(tool_info, index)
+						if _, ok := tool_info[index]; !ok {
+							// fmt.Printf("Prepare tool %s\n", toolCall.Function.Name)
+							tool_info[index] = map[string]string{}
+							streamHandler.HandleAddedItem(chunk)
+						}
+
+						if toolCall.ID != "" {
+							tool_info[index]["id"] = tool_info[index]["id"] + toolCall.ID
+						}
+
+						if toolCall.Function.Name != "" {
+							tool_info[index]["name"] = tool_info[index]["name"] + toolCall.Function.Name
+						}
+
+						if toolCall.Function.Arguments != "" {
+							tool_info[index]["arguments"] = tool_info[index]["arguments"] + toolCall.Function.Arguments
+							// check if arguments can be unmarshaled, if not, means the arguments are not ready
+							var dummy map[string]any
+							if err := json.Unmarshal([]byte(tool_info[index]["arguments"]), &dummy); err == nil {
+								streamHandler.HandleToolArgPreparedDoneItem(index, tool_info[index]["id"], tool_info[index]["name"], tool_info[index]["arguments"])
+								toolCalls = append(toolCalls, openai.FinishedChatCompletionToolCall{
+									Index: index,
+									ID:    tool_info[index]["id"],
+									ChatCompletionMessageFunctionToolCallFunction: openai.ChatCompletionMessageFunctionToolCallFunction{
+										Name:      tool_info[index]["name"],
+										Arguments: tool_info[index]["arguments"],
+									},
+								})
+							}
+						}
+					}
+				}
+			}
 		}
 
 		if err := stream.Err(); err != nil {
 			return nil, nil, err
+		}
+
+		if answer_content != "" {
+			appendAssistantTextResponse(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id)
 		}
 
 		// 执行调用（如果有），返回增量数据
