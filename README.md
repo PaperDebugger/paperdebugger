@@ -10,7 +10,7 @@
 <a href="https://github.com/PaperDebugger/PaperDebugger?tab=AGPL-3.0-1-ov-file"><img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/></a>
 </div>
 
-**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their LaTeX papers with intelligent suggestions and seamless Overleaf integration. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
+**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their research papers with intelligent suggestions and seamless Overleaf integration, without leaving the editor. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
 This enables multi-step reasoning, reviewer-style critique, and structured revision passes beyond standard chat-based assistance.
 
 <div align="center">
@@ -25,11 +25,11 @@ This enables multi-step reasoning, reviewer-style critique, and structured revis
 
 ## 🌐 Social Media & Community Groups
 Our team is actively working to improve long-term reliability, hoping to iron out issues this month. Thank you for your patience. <br>
-Stay connected with the PaperDebugger community! Join our [Discord](https://discord.gg/WwTMzzt9xD) or WeChat channels below for updates, announcements, and support.
+Stay connected with the PaperDebugger community! Join our [Discord](https://discord.gg/WwTMzzt9xD) or WeChat channels for updates, announcements, and support.
 
 <div align="center">
-  <img src="docs/imgs/discord.png" width="40%" style="margin: 0 1.5%;"/>
-  <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 1.5%;"/>
+  <img src="docs/imgs/discord.png" width="40%" style="margin: 0 3%;"/>
+  <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 3%;"/>
 </div>
 
 
@@ -168,13 +168,15 @@ cp .env.example .env
 ```
 
 #### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
-Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially in-production but currently closed-source while under active development. If you wish to learn more about XtraMCP backend logic, refer to [/demo/xtramcp/readme.md](./demo/xtramcp/readme.md).<br>
+Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially deployed in-production, with selected components enabled to **balance stability and operational cost** at this stage. It is still under active development and remains closed-source for now. 
+
+To understand the backend orchestration logic and view the currently available and gated features, as well as planned capabilities, refer to [/demo/xtramcp/readme.md](./demo/xtramcp/readme.md).<br>
 You can still self-host PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.
 
 Connecting to XtraMCP unlocks:
-- research-mode agents,  
+- research-mode agents (with on-demand search for latest publications),  
 - structured reviewer-style critique,  
-- domain-specific revisions tailored to academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models.
+- domain-specific revisions tailored for academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models.
 
 We plan to **open-source XtraMCP** once the API stabilizes for community use.
 
