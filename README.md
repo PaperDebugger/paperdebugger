@@ -10,7 +10,7 @@
 <a href="https://github.com/PaperDebugger/PaperDebugger?tab=AGPL-3.0-1-ov-file"><img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/></a>
 </div>
 
-**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their research papers with intelligent suggestions and seamless Overleaf integration, wthiout leaving the editor. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
+**PaperDebugger** is an AI-powered academic writing assistant that helps researchers debug and improve their research papers with intelligent suggestions and seamless Overleaf integration, without leaving the editor. It is powered by a custom MCP-based orchestration engine that simulates the full academic workflow **Research → Critique → Revision**. <br>
 This enables multi-step reasoning, reviewer-style critique, and structured revision passes beyond standard chat-based assistance.
 
 <div align="center">
