@@ -25,7 +25,7 @@ import {
   StreamPartEnd,
 } from "../pkg/gen/apiclient/chat/v1/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../query/utils";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
 import { useSocketStore } from "../stores/socket-store";
@@ -90,7 +90,7 @@ export function useSendMessageStream() {
       const newMessageEntry: MessageEntry = {
         messageId: "dummy",
         status: MessageEntryStatus.PREPARING,
-        user: fromJson(MessageTypeUserSchema, {
+        user: safeFromJson(MessageTypeUserSchema, {
           content: message,
           selectedText: selectedText,
         }),

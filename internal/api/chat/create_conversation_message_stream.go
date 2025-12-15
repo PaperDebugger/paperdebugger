@@ -1,7 +1,6 @@
 package chat
 
 import (
-	"fmt"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
@@ -27,19 +26,15 @@ func (s *ChatServer) CreateConversationMessageStream(
 	ctx := stream.Context()
 
 	// Handle oneof model field: prefer ModelSlug, fallback to LanguageModel enum
-	var modelSlug string
-	var err error
-
-	if slug := req.GetModelSlug(); slug != "" {
-		modelSlug = slug
-	} else {
-		// Fallback: convert deprecated LanguageModel enum to string
+	modelSlug := req.GetModelSlug()
+	if modelSlug == "" {
+		var err error
 		modelSlug, err = models.LanguageModel(req.GetLanguageModel()).Name()
 		if err != nil {
 			return s.sendStreamError(stream, err)
 		}
 	}
-	fmt.Println("modelSlug", modelSlug)
+
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),

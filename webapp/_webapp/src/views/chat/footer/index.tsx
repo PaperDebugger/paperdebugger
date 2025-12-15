@@ -87,7 +87,7 @@ export function PromptInput() {
         await submit();
       }
     },
-    [prompt, submit],
+    [isStreaming, prompt, submit],
   );
 
   return (

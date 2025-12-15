@@ -39,7 +39,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
         setValue(stringValue);
         setOriginalValue(stringValue);
       }
-    }, [settings, settingKey]);
+    }, [settings]);
 
     const valueChanged = value !== originalValue;
 
@@ -47,7 +47,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
       await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
       setOriginalValue(value.trim());
       setIsEditing(false);
-    }, [value, updateSettings, settingKey]);
+    }, [value, updateSettings]);
 
     const handleEdit = useCallback(() => {
       setIsEditing(true);
@@ -71,7 +71,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           handleCancel();
         }
       },
-      [valueChanged, isUpdating, settingKey, saveSettings, handleCancel],
+      [valueChanged, isUpdating, saveSettings, handleCancel],
     );
 
     const inputClassName = cn(

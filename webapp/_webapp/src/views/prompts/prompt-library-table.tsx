@@ -2,7 +2,8 @@ import { cn, Spinner } from "@heroui/react";
 import { useCallback, useState } from "react";
 import { Prompt, PromptSchema } from "../../pkg/gen/apiclient/user/v1/user_pb";
 import { ChatButton } from "../chat/header/chat-button";
-import { fromJson, toJson } from "@bufbuild/protobuf";
+import { toJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../query/utils";
 import { usePromptLibraryStore } from "../../stores/prompt-library-store";
 
 type PromptLibraryTableProps = {
@@ -27,7 +28,7 @@ export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibrary
 
   const duplicatePrompt = useCallback((prompt: Prompt) => {
     const promptJson = toJson(PromptSchema, prompt);
-    return fromJson(PromptSchema, promptJson);
+    return safeFromJson(PromptSchema, promptJson);
   }, []);
 
   return isLoading ? (

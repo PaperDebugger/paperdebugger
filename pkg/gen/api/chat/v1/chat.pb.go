@@ -109,7 +109,7 @@ type ConversationType int32
 
 const (
 	ConversationType_CONVERSATION_TYPE_UNSPECIFIED ConversationType = 0
-	ConversationType_CONVERSATION_TYPE_DEBUG       ConversationType = 1 // does not contain any customized messages, the inapp_history and openai_history are synced.
+	ConversationType_CONVERSATION_TYPE_DEBUG       ConversationType = 1 // does not contain any customized messages, the
 )
 
 // Enum value maps for ConversationType.
@@ -654,14 +654,11 @@ func (x *Message) GetPayload() *MessagePayload {
 }
 
 type Conversation struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	// Types that are valid to be assigned to Model:
-	//
-	//	*Conversation_LanguageModel
-	//	*Conversation_ModelSlug
-	Model isConversation_Model `protobuf_oneof:"model"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	LanguageModel LanguageModel          `protobuf:"varint,2,opt,name=language_model,json=languageModel,proto3,enum=chat.v1.LanguageModel" json:"language_model,omitempty"` // deprecated: use model_slug instead
+	ModelSlug     *string                `protobuf:"bytes,5,opt,name=model_slug,json=modelSlug,proto3,oneof" json:"model_slug,omitempty"`                                   // new: model slug string
 	// If list conversations, then messages length is 0.
 	Messages      []*Message `protobuf:"bytes,4,rep,name=messages,proto3" json:"messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -712,27 +709,16 @@ func (x *Conversation) GetTitle() string {
 	return ""
 }
 
-func (x *Conversation) GetModel() isConversation_Model {
-	if x != nil {
-		return x.Model
-	}
-	return nil
-}
-
 func (x *Conversation) GetLanguageModel() LanguageModel {
 	if x != nil {
-		if x, ok := x.Model.(*Conversation_LanguageModel); ok {
-			return x.LanguageModel
-		}
+		return x.LanguageModel
 	}
 	return LanguageModel_LANGUAGE_MODEL_UNSPECIFIED
 }
 
 func (x *Conversation) GetModelSlug() string {
-	if x != nil {
-		if x, ok := x.Model.(*Conversation_ModelSlug); ok {
-			return x.ModelSlug
-		}
+	if x != nil && x.ModelSlug != nil {
+		return *x.ModelSlug
 	}
 	return ""
 }
@@ -743,22 +729,6 @@ func (x *Conversation) GetMessages() []*Message {
 	}
 	return nil
 }
-
-type isConversation_Model interface {
-	isConversation_Model()
-}
-
-type Conversation_LanguageModel struct {
-	LanguageModel LanguageModel `protobuf:"varint,2,opt,name=language_model,json=languageModel,proto3,enum=chat.v1.LanguageModel,oneof"` // deprecated: use model_slug instead
-}
-
-type Conversation_ModelSlug struct {
-	ModelSlug string `protobuf:"bytes,5,opt,name=model_slug,json=modelSlug,proto3,oneof"` // new: model slug string
-}
-
-func (*Conversation_LanguageModel) isConversation_Model() {}
-
-func (*Conversation_ModelSlug) isConversation_Model() {}
 
 type ListConversationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2141,15 +2111,15 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\aMessage\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x121\n" +
-	"\apayload\x18\x03 \x01(\v2\x17.chat.v1.MessagePayloadR\apayload\"\xcd\x01\n" +
+	"\apayload\x18\x03 \x01(\v2\x17.chat.v1.MessagePayloadR\apayload\"\xd4\x01\n" +
 	"\fConversation\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12?\n" +
-	"\x0elanguage_model\x18\x02 \x01(\x0e2\x16.chat.v1.LanguageModelH\x00R\rlanguageModel\x12\x1f\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12=\n" +
+	"\x0elanguage_model\x18\x02 \x01(\x0e2\x16.chat.v1.LanguageModelR\rlanguageModel\x12\"\n" +
 	"\n" +
-	"model_slug\x18\x05 \x01(\tH\x00R\tmodelSlug\x12,\n" +
-	"\bmessages\x18\x04 \x03(\v2\x10.chat.v1.MessageR\bmessagesB\a\n" +
-	"\x05model\"M\n" +
+	"model_slug\x18\x05 \x01(\tH\x00R\tmodelSlug\x88\x01\x01\x12,\n" +
+	"\bmessages\x18\x04 \x03(\v2\x10.chat.v1.MessageR\bmessagesB\r\n" +
+	"\v_model_slug\"M\n" +
 	"\x18ListConversationsRequest\x12\"\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tH\x00R\tprojectId\x88\x01\x01B\r\n" +
@@ -2381,10 +2351,7 @@ func file_chat_v1_chat_proto_init() {
 		(*MessagePayload_ToolCall)(nil),
 		(*MessagePayload_Unknown)(nil),
 	}
-	file_chat_v1_chat_proto_msgTypes[8].OneofWrappers = []any{
-		(*Conversation_LanguageModel)(nil),
-		(*Conversation_ModelSlug)(nil),
-	}
+	file_chat_v1_chat_proto_msgTypes[8].OneofWrappers = []any{}
 	file_chat_v1_chat_proto_msgTypes[9].OneofWrappers = []any{}
 	file_chat_v1_chat_proto_msgTypes[13].OneofWrappers = []any{
 		(*CreateConversationMessageRequest_LanguageModel)(nil),

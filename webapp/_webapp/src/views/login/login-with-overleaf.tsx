@@ -43,7 +43,7 @@ export default function LoginWithOverleaf({
       setIsLoginLoading(false);
       setLoginLoadingMessage("Please continue in the opened window/tab");
     }
-  }, [setToken, setRefreshToken, login, loadSettings, loadPrompts]);
+  }, [setToken, setRefreshToken, login, loadSettings, loadPrompts, setIsLoginLoading, setLoginLoadingMessage, setErrorMessage]);
 
   return (
     <div

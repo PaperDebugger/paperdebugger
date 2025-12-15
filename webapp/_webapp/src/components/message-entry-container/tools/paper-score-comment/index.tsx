@@ -1,4 +1,5 @@
-import { fromJson, JsonValue } from "@bufbuild/protobuf";
+import { JsonValue } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../../../query/utils";
 import { OverleafCommentSchema } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
 import { getProjectId } from "../../../../libs/helpers";
 import { useEffect, useState } from "react";
@@ -40,7 +41,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
       try {
         const response: unknown[] = JSON.parse(message);
         const comments = response.map((comment: unknown) => {
-          return fromJson(OverleafCommentSchema, comment as JsonValue);
+          return safeFromJson(OverleafCommentSchema, comment as JsonValue);
         });
 
         if (comments.length > 0) {
@@ -49,9 +50,8 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
           );
           setSelectedComments(new Set(allCommentIds));
         }
-      } catch (error) {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
-        // Ignore parsing errors here, they'll be handled in the render
+      } catch {
+        // Ignore parse errors - handled by outer try/catch
       }
     }
   }, [message]);
@@ -76,7 +76,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
   try {
     const response: unknown[] = JSON.parse(message);
     const comments = response.map((comment: unknown) => {
-      return fromJson(OverleafCommentSchema, comment as JsonValue);
+      return safeFromJson(OverleafCommentSchema, comment as JsonValue);
     });
 
     if (comments.length === 0) {

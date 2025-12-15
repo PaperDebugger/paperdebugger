@@ -1,4 +1,4 @@
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../../query/utils";
 import { Conversation, Message, MessageSchema } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../types";
 import { useStreamingMessageStore } from "../../streaming-message-store";
@@ -7,7 +7,7 @@ import { useConversationStore } from "../conversation-store";
 
 export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Message | undefined => {
   if (messageEntry.assistant) {
-    return fromJson(MessageSchema, {
+    return safeFromJson(MessageSchema, {
       messageId: messageEntry.messageId,
       payload: {
         assistant: {
@@ -16,7 +16,7 @@ export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Messag
       },
     });
   } else if (messageEntry.toolCall) {
-    return fromJson(MessageSchema, {
+    return safeFromJson(MessageSchema, {
       messageId: messageEntry.messageId,
       payload: {
         toolCall: {
@@ -28,7 +28,7 @@ export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Messag
       },
     });
   } else if (messageEntry.user) {
-    return fromJson(MessageSchema, {
+    return safeFromJson(MessageSchema, {
       messageId: messageEntry.messageId,
       payload: {
         user: {

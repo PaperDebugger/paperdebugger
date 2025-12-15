@@ -1,5 +1,5 @@
 import { PaperScoreResultSchema } from "../../../pkg/gen/apiclient/project/v1/project_pb";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../../query/utils";
 import { LoadingIndicator } from "../../loading-indicator";
 import { logError } from "../../../libs/logger";
 import { cn } from "@heroui/react";
@@ -38,7 +38,7 @@ export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardP
         </div>
       );
     }
-    const toolCall = fromJson(PaperScoreResultSchema, JSON.parse(json));
+    const toolCall = safeFromJson(PaperScoreResultSchema, JSON.parse(json), { ignoreUnknownFields: true });
     const currentPercentile = Number(Number(toolCall.percentile).toFixed(2)) * 100;
     const currentScore = Number(toolCall.score).toFixed(0);
     return (

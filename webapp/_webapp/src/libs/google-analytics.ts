@@ -38,32 +38,24 @@ class Analytics {
       params.user_id = clientId;
     }
 
-    try {
-      await fetch(
-        `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            client_id: clientId || "unknown",
-            events: [
-              {
-                name,
-                params,
-              },
-            ],
-          }),
-        },
-      ).catch((_) => {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
-        // logInfo("Google Analytics request failed with an exception", e);
-      });
+    await fetch(
+      `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          client_id: clientId || "unknown",
+          events: [
+            {
+              name,
+              params,
+            },
+          ],
+        }),
+      },
+    ).catch(() => { });
 
-      if (!this.debug) {
-        return;
-      }
-    } catch (e) {
-      // eslint-disable-line @typescript-eslint/no-unused-vars
-      // logInfo("Google Analytics request failed with an exception", e);
+    if (!this.debug) {
+      return;
     }
   }
 

@@ -1,12 +1,24 @@
-import { DescMessage, fromJson, JsonValue, JsonWriteOptions, toJson } from "@bufbuild/protobuf";
+import { DescMessage, fromJson, JsonReadOptions, JsonValue, JsonWriteOptions, MessageShape, toJson } from "@bufbuild/protobuf";
 import { logError } from "../libs/logger";
 import { useDevtoolStore } from "../stores/devtool-store";
+
+/**
+ * A wrapper around fromJson that ignores unknown fields by default.
+ * This makes the proto parsing more tolerant to version differences between frontend and backend.
+ */
+export function safeFromJson<Desc extends DescMessage>(
+  schema: Desc,
+  json: JsonValue,
+  options?: Partial<JsonReadOptions>,
+): MessageShape<Desc> {
+  return fromJson(schema, json, { ignoreUnknownFields: true, ...options });
+}
 
 export function getQueryParamsAsString<
   Desc extends DescMessage,
   Opts extends Partial<JsonWriteOptions> | undefined = undefined,
 >(schema: Desc, message: JsonValue, options?: Opts): string {
-  const json = toJson(schema, fromJson(schema, message), options) as object;
+  const json = toJson(schema, safeFromJson(schema, message), options) as object;
   const search = new URLSearchParams();
   Object.entries(json)
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -50,7 +62,7 @@ export const processStream = async <T>(
       try {
         const parsedValue = JSON.parse(message);
         const messageData = parsedValue.result || parsedValue;
-        onMessage(fromJson(schema, messageData) as T);
+        onMessage(safeFromJson(schema, messageData, { ignoreUnknownFields: true }) as T);
       } catch (err) {
         logError("Error parsing message from stream", err, message);
       }

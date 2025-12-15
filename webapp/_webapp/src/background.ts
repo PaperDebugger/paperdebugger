@@ -83,11 +83,13 @@ const registerContentScriptsIfPermitted = async () => {
   try {
     const { origins = [] } = await chrome.permissions.getAll();
     if (!origins.length) {
+      // eslint-disable-next-line no-console
       console.log("[PaperDebugger] No origins found, skipping content script registration");
       return;
     }
     await registerContentScripts(origins);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[PaperDebugger] Unable to register content scripts", error);
   }
 };

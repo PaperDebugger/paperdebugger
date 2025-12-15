@@ -90,6 +90,7 @@ function makeFunction<A, T>(handlerName: string, opts?: MakeFunctionOpts): (args
 
 let getCookies: (domain: string) => Promise<{ session: string; gclb: string }>;
 if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCookies = async (_: string) => {
     return {
       session: localStorage.getItem("pd.auth.overleafSession") ?? "",

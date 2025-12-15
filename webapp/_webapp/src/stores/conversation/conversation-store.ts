@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../query/utils";
 
 interface ConversationStore {
   isStreaming: boolean;
@@ -22,7 +22,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 }));
 
 export function newConversation(): Conversation {
-  return fromJson(ConversationSchema, {
+  return safeFromJson(ConversationSchema, {
     id: "",
     modelSlug: "gpt-4.1",
     title: "New Conversation",
