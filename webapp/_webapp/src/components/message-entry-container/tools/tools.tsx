@@ -60,7 +60,6 @@ export default function Tools({ messageId, functionName, message, error, prepari
     return (
       <JsonRpc
         functionName={functionName}
-        jsonRpcResult={jsonRpcResult || UNKNOWN_JSONRPC_RESULT}
         preparing={preparing}
         animated={animated}
       />
@@ -70,7 +69,7 @@ export default function Tools({ messageId, functionName, message, error, prepari
   // fallback to unknown tool card if the json rpc result is not defined
   if (jsonRpcResult) {
     return (
-      <JsonRpc functionName={functionName} jsonRpcResult={jsonRpcResult} preparing={preparing} animated={animated} />
+      <JsonRpc functionName={functionName} preparing={preparing} animated={animated} />
     );
   } else {
     return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;

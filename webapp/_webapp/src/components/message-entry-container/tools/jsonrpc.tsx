@@ -1,17 +1,13 @@
 import { cn } from "@heroui/react";
-import { JsonRpcResult } from "./utils/common";
-import MarkdownComponent from "../../markdown";
 import { LoadingIndicator } from "../../loading-indicator";
-import { useState } from "react";
 
 type JsonRpcProps = {
   functionName: string;
-  jsonRpcResult: JsonRpcResult;
   preparing: boolean;
   animated: boolean;
 };
 
-export const JsonRpc = ({ functionName, jsonRpcResult, preparing, animated }: JsonRpcProps) => {
+export const JsonRpc = ({ functionName, preparing, animated }: JsonRpcProps) => {
 
   if (preparing) {
     return (
