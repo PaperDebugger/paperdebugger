@@ -5,6 +5,7 @@ import { GreetingCard } from "./greeting";
 import { ErrorToolCard } from "./error";
 import { AlwaysExceptionCard } from "./always-exception";
 import { JsonRpc } from "./jsonrpc";
+import { ReviewPaperCard } from "./review-paper";
 import { parseJsonRpcResult, UNKNOWN_JSONRPC_RESULT } from "./utils/common";
 
 type ToolsProps = {
@@ -47,6 +48,14 @@ export default function Tools({ messageId, functionName, message, error, prepari
     return <GreetingCard message={message} preparing={preparing} animated={animated} />;
   } else if (functionName === "always_exception") {
     return <AlwaysExceptionCard message={message} preparing={preparing} animated={animated} />;
+  } else if (functionName === "review_paper") {
+    return (
+      <ReviewPaperCard
+        jsonRpcResult={jsonRpcResult || UNKNOWN_JSONRPC_RESULT}
+        preparing={preparing}
+        animated={animated}
+      />
+    );
   } else if (XTRA_MCP_TOOL_NAMES.includes(functionName)) {
     return (
       <JsonRpc
