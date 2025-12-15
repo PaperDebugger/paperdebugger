@@ -7,15 +7,11 @@ import (
 )
 
 type Cfg struct {
-	OpenAIBaseURL string
-	OpenAIAPIKey  string
-	JwtSigningKey string
-
-	QwenBaseURL string
-	QwenAPIKey  string
-
-	MongoURI   string
-	XtraMCPURI string
+	PDInferenceBaseURL string
+	PDInferenceAPIKey  string
+	JwtSigningKey      string
+	MongoURI           string
+	XtraMCPURI         string
 }
 
 var cfg *Cfg
@@ -23,24 +19,22 @@ var cfg *Cfg
 func GetCfg() *Cfg {
 	_ = godotenv.Load()
 	cfg = &Cfg{
-		OpenAIBaseURL: openAIBaseURL(),
-		OpenAIAPIKey:  os.Getenv("OPENAI_API_KEY"),
-		JwtSigningKey: os.Getenv("JWT_SIGNING_KEY"),
-		QwenBaseURL:   os.Getenv("QWEN_BASE_URL"),
-		QwenAPIKey:    os.Getenv("QWEN_API_KEY"),
-		MongoURI:      mongoURI(),
-		XtraMCPURI:    xtraMCPURI(),
+		PDInferenceBaseURL: pdInferenceBaseURL(),
+		PDInferenceAPIKey:  os.Getenv("PD_INFERENCE_API_KEY"),
+		JwtSigningKey:      os.Getenv("JWT_SIGNING_KEY"),
+		MongoURI:           mongoURI(),
+		XtraMCPURI:         xtraMCPURI(),
 	}
 
 	return cfg
 }
 
-func openAIBaseURL() string {
-	val := os.Getenv("OPENAI_BASE_URL")
+func pdInferenceBaseURL() string {
+	val := os.Getenv("PD_INFERENCE_BASE_URL")
 	if val != "" {
 		return val
 	}
-	return "https://api.openai.com/v1"
+	return "https://inference.paperdebugger.workers.dev/"
 }
 
 func xtraMCPURI() string {

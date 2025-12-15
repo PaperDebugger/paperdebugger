@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"net/url"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -31,33 +32,42 @@ type AIClient struct {
 
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
-func (a *AIClient) GetOpenAIClient(llmConfig *models.LLMProviderConfig, modelSlug string) *openai.Client {
-	var Endpoint string = llmConfig.Endpoint
-	var APIKey string = llmConfig.APIKey
+func (a *AIClient) GetOpenAIClient(userConfig *models.LLMProviderConfig, modelSlug string) (*openai.Client, error) {
+	endpoint := userConfig.Endpoint
+	apikey := userConfig.APIKey
 
-	if Endpoint == "" {
-		if len(modelSlug) >= 4 && modelSlug[:4] == "qwen" && a.cfg.QwenBaseURL != "" {
-			Endpoint = a.cfg.QwenBaseURL
-		} else {
-			Endpoint = a.cfg.OpenAIBaseURL
+	var err error
+	// use our services
+	if apikey == "" {
+		endpoint, err = url.JoinPath(a.cfg.PDInferenceBaseURL, "/openrouter")
+		if err != nil {
+			return nil, err
 		}
+		apikey = a.cfg.PDInferenceAPIKey
+		opts := []option.RequestOption{
+			option.WithAPIKey(apikey),
+			option.WithBaseURL(endpoint),
+		}
+
+		client := openai.NewClient(opts...)
+		return &client, nil
 	}
 
-	if APIKey == "" {
-		if len(modelSlug) >= 4 && modelSlug[:4] == "qwen" && a.cfg.QwenAPIKey != "" {
-			APIKey = a.cfg.QwenAPIKey
-		} else {
-			APIKey = a.cfg.OpenAIAPIKey
+	// if endpoint is not provided, use OpenAI as default
+	if endpoint == "" {
+		endpoint, err = url.JoinPath(a.cfg.PDInferenceBaseURL, "/openai")
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	opts := []option.RequestOption{
-		option.WithAPIKey(APIKey),
-		option.WithBaseURL(Endpoint),
+		option.WithAPIKey(apikey),
+		option.WithBaseURL(endpoint),
 	}
 
 	client := openai.NewClient(opts...)
-	return &client
+	return &client, nil
 }
 
 func NewAIClient(
@@ -69,11 +79,8 @@ func NewAIClient(
 	logger *logger.Logger,
 ) *AIClient {
 	database := db.Database("paperdebugger")
-	oaiClient := openai.NewClient(
-		option.WithBaseURL(cfg.OpenAIBaseURL),
-		option.WithAPIKey(cfg.OpenAIAPIKey),
-	)
-	CheckOpenAIWorks(oaiClient, logger)
+
+	CheckOpenAIWorks(cfg, logger)
 	// toolPaperScore := tools.NewPaperScoreTool(db, projectService)
 	// toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
 
@@ -120,13 +127,24 @@ func NewAIClient(
 	return client
 }
 
-func CheckOpenAIWorks(oaiClient openai.Client, logger *logger.Logger) {
+func CheckOpenAIWorks(cfg *cfg.Cfg, logger *logger.Logger) {
 	logger.Info("[AI Client] checking if openai client works")
+	endpoint, err := url.JoinPath(cfg.PDInferenceBaseURL, "openrouter")
+	if err != nil {
+		logger.Errorf("[AI Client] openai client does not work: %v", err)
+		return
+	}
+
+	oaiClient := openai.NewClient(
+		option.WithBaseURL(endpoint),
+		option.WithAPIKey(cfg.PDInferenceAPIKey),
+	)
+
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage("Say 'openai client works'"),
 		},
-		Model: openai.ChatModelGPT4o,
+		Model: "openai/gpt-4o-mini",
 	})
 	if err != nil {
 		logger.Errorf("[AI Client] openai client does not work: %v", err)

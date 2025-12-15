@@ -28,31 +28,31 @@ func (x *LanguageModel) UnmarshalBSONValue(t bson.Type, data []byte) error {
 func (x LanguageModel) Name() (string, error) {
 	switch chatv1.LanguageModel(x) {
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT4O:
-		return openai.ChatModelGPT4o, nil
+		return "openai/" + openai.ChatModelGPT4o, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41:
-		return openai.ChatModelGPT4_1, nil
+		return "openai/" + openai.ChatModelGPT4_1, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI:
-		return openai.ChatModelGPT4_1Mini, nil
+		return "openai/" + openai.ChatModelGPT4_1Mini, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5:
-		return openai.ChatModelGPT5, nil
+		return "openai/" + openai.ChatModelGPT5, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI:
-		return openai.ChatModelGPT5Mini, nil
+		return "openai/" + openai.ChatModelGPT5Mini, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO:
-		return openai.ChatModelGPT5Nano, nil
+		return "openai/" + openai.ChatModelGPT5Nano, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST:
-		return openai.ChatModelGPT5ChatLatest, nil
+		return "openai/" + openai.ChatModelGPT5ChatLatest, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1:
-		return openai.ChatModelO1, nil
+		return "openai/" + openai.ChatModelO1, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI:
-		return openai.ChatModelO1Mini, nil
+		return "openai/" + openai.ChatModelO1Mini, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3:
-		return openai.ChatModelO3, nil
+		return "openai/" + openai.ChatModelO3, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI:
-		return openai.ChatModelO3Mini, nil
+		return "openai/" + openai.ChatModelO3Mini, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI:
-		return openai.ChatModelO4Mini, nil
+		return "openai/" + openai.ChatModelO4Mini, nil
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST:
-		return openai.ChatModelCodexMiniLatest, nil
+		return "openai/" + openai.ChatModelCodexMiniLatest, nil
 	default:
 		// raise error
 		return "", errors.New("unknown model")

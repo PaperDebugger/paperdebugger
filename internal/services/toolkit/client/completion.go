@@ -63,7 +63,11 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 		streamHandler.SendFinalization()
 	}()
 
-	oaiClient := a.GetOpenAIClient(llmProvider, modelSlug)
+	oaiClient, err := a.GetOpenAIClient(llmProvider, modelSlug)
+	if err != nil {
+		return OpenAIChatHistory{}, AppChatHistory{}, err
+	}
+
 	params := getDefaultParams(modelSlug, a.toolCallHandler.Registry)
 	// during
 	for {
