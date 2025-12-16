@@ -261,7 +261,7 @@ func (s *ChatServer) CreateConversationMessage(
 ) (*chatv1.CreateConversationMessageResponse, error) {
 	languageModel := models.LanguageModel(req.GetLanguageModel())
 	modelSlug := req.GetModelSlug()
-	// still using old api
+	// still using old api. This backward compatibility fallback converts the deprecated LanguageModel enum to a model slug.
 	if modelSlug == "" {
 		modelSlug = languageModel.Name()
 	}

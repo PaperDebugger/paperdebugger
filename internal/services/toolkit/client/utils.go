@@ -44,6 +44,7 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
 func getDefaultParams(languageModel models.LanguageModel, modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+	// This backward compatibility fallback converts the deprecated LanguageModel enum to a model slug.
 	if modelSlug == "" {
 		modelSlug = languageModel.Name()
 	}
