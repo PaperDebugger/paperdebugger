@@ -43,8 +43,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 
 	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
 	llmProvider := &models.LLMProviderConfig{
-		Endpoint: s.cfg.OpenAIBaseURL,
-		APIKey:   settings.OpenAIAPIKey,
+		APIKey: settings.OpenAIAPIKey,
 	}
 
 	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, &languageModel, conversation.OpenaiChatHistory, llmProvider)
