@@ -71,9 +71,7 @@ export function useSendMessageStream() {
       message = message.trim();
 
       // Always use modelSlug case for the request
-      const modelSlug = (currentConversation.model.case === "modelSlug" && currentConversation.model.value)
-        ? currentConversation.model.value
-        : "gpt-4.1"; // fallback for legacy languageModel case or empty string
+      const modelSlug = currentConversation.modelSlug ?? "gpt-4.1"; // fallback for legacy languageModel case or empty string
 
       const request: PlainMessage<CreateConversationMessageStreamRequest> = {
         projectId: getProjectId(),

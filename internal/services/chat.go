@@ -14,6 +14,7 @@ import (
 	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
+	"github.com/openai/openai-go/v2/responses"
 	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -142,9 +143,10 @@ func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectI
 		},
 	}
 	opts := options.Find().
-		SetProjection(bson.M{
-			"inapp_chat_history":  0,
-			"openai_chat_history": 0,
+		SetProjection(bson.M{ // exclude these fields
+			"inapp_chat_history":             0,
+			"openai_chat_history":            0,
+			"openai_chat_history_completion": 0,
 		}).
 		SetSort(bson.M{"updated_at": -1}).
 		SetLimit(50)
@@ -161,6 +163,95 @@ func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectI
 	return conversations, nil
 }
 
+// migrateResponseInputToCompletion converts old Responses API format (v2) to Chat Completion API format (v3).
+// This is used for lazy migration of existing conversations.
+func migrateResponseInputToCompletion(oldHistory responses.ResponseInputParam) []openai.ChatCompletionMessageParamUnion {
+	result := make([]openai.ChatCompletionMessageParamUnion, 0, len(oldHistory))
+
+	for _, item := range oldHistory {
+		// Handle EasyInputMessage (simple user/assistant/system messages)
+		if item.OfMessage != nil {
+			msg := item.OfMessage
+			content := ""
+			if msg.Content.OfString.Valid() {
+				content = msg.Content.OfString.Value
+			}
+
+			switch msg.Role {
+			case responses.EasyInputMessageRoleUser:
+				result = append(result, openai.UserMessage(content))
+			case responses.EasyInputMessageRoleAssistant:
+				result = append(result, openai.AssistantMessage(content))
+			case responses.EasyInputMessageRoleSystem:
+				result = append(result, openai.SystemMessage(content))
+			}
+			continue
+		}
+
+		// Handle ResponseInputItemMessageParam (detailed input message)
+		if item.OfInputMessage != nil {
+			msg := item.OfInputMessage
+			// Extract text content from the message
+			var textContent string
+			for _, contentItem := range msg.Content {
+				if contentItem.OfInputText != nil {
+					textContent += contentItem.OfInputText.Text
+				}
+			}
+			if msg.Role == "user" {
+				result = append(result, openai.UserMessage(textContent))
+			}
+			continue
+		}
+
+		// Handle ResponseOutputMessageParam (assistant output)
+		if item.OfOutputMessage != nil {
+			msg := item.OfOutputMessage
+			var textContent string
+			for _, contentItem := range msg.Content {
+				if contentItem.OfOutputText != nil {
+					textContent += contentItem.OfOutputText.Text
+				}
+			}
+			result = append(result, openai.AssistantMessage(textContent))
+			continue
+		}
+
+		// Handle FunctionCall (tool call from assistant)
+		if item.OfFunctionCall != nil {
+			fc := item.OfFunctionCall
+			result = append(result, openai.ChatCompletionMessageParamUnion{
+				OfAssistant: &openai.ChatCompletionAssistantMessageParam{
+					Role: "assistant",
+					ToolCalls: []openai.ChatCompletionMessageToolCallUnionParam{
+						{
+							OfFunction: &openai.ChatCompletionMessageFunctionToolCallParam{
+								ID: fc.CallID,
+								Function: openai.ChatCompletionMessageFunctionToolCallFunctionParam{
+									Name:      fc.Name,
+									Arguments: fc.Arguments,
+								},
+							},
+						},
+					},
+				},
+			})
+			continue
+		}
+
+		// Handle FunctionCallOutput (tool response)
+		if item.OfFunctionCallOutput != nil {
+			fco := item.OfFunctionCallOutput
+			result = append(result, openai.ToolMessage(fco.Output, fco.CallID))
+			continue
+		}
+
+		// Other types (Reasoning, WebSearch, etc.) are skipped as they don't have direct equivalents
+	}
+
+	return result
+}
+
 func (s *ChatService) GetConversation(ctx context.Context, userID bson.ObjectID, conversationID bson.ObjectID) (*models.Conversation, error) {
 	conversation := &models.Conversation{}
 	err := s.conversationCollection.FindOne(ctx, bson.M{
@@ -174,6 +265,20 @@ func (s *ChatService) GetConversation(ctx context.Context, userID bson.ObjectID,
 	if err != nil {
 		return nil, err
 	}
+
+	// Lazy migration: convert old OpenaiChatHistory to new OpenaiChatHistoryCompletion
+	if len(conversation.OpenaiChatHistoryCompletion) == 0 && len(conversation.OpenaiChatHistory) > 0 {
+		conversation.OpenaiChatHistoryCompletion = migrateResponseInputToCompletion(conversation.OpenaiChatHistory)
+		// Async update to database
+		go func() {
+			if err := s.UpdateConversation(conversation); err != nil {
+				s.logger.Error("Failed to migrate conversation chat history", "error", err, "conversationID", conversationID.Hex())
+			} else {
+				s.logger.Info("Successfully migrated conversation chat history", "conversationID", conversationID.Hex())
+			}
+		}()
+	}
+
 	return conversation, nil
 }
 

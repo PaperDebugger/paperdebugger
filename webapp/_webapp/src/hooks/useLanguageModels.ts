@@ -35,20 +35,20 @@ export const useLanguageModels = () => {
   const currentModel = useMemo(() => {
     // Get the current model slug from the conversation
     let slug: string;
-    if (currentConversation.model.case === "modelSlug" && currentConversation.model.value) {
-      slug = currentConversation.model.value;
+    if (currentConversation.modelSlug) {
+      slug = currentConversation.modelSlug;
     } else {
       slug = "gpt-4.1"; // default for undefined, empty string, or legacy languageModel
     }
     const model = models.find((m) => m.slug === slug);
     return model || models[0];
-  }, [models, currentConversation.model]);
+  }, [models, currentConversation.modelSlug]);
 
   const setModel = useCallback(
     (model: Model) => {
       setCurrentConversation({
         ...currentConversation,
-        model: { case: "modelSlug", value: model.slug },
+        modelSlug: model.slug,
       });
     },
     [setCurrentConversation, currentConversation],

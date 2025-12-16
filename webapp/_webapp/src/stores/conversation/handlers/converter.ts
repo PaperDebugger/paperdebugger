@@ -59,7 +59,7 @@ export const flushStreamingMessageToConversation = (conversationId?: string, mod
     useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
       ...prev,
       id: conversationId ?? prev.id,
-      model: modelSlug ? { case: "modelSlug" as const, value: modelSlug } : prev.model,
+      modelSlug: modelSlug ?? prev.modelSlug,
       messages: [...prev.messages, ...flushMessages],
     }));
   });
