@@ -154,8 +154,7 @@ func (s *ChatServer) appendConversationMessage(
 		return nil, err
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
-	conversation.OpenaiChatHistory = append(conversation.OpenaiChatHistory, userOaiMsg)
-
+	conversation.OpenaiChatHistoryCompletion = append(conversation.OpenaiChatHistoryCompletion, userOaiMsg)
 	if err := s.chatService.UpdateConversation(conversation); err != nil {
 		return nil, err
 	}

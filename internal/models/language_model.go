@@ -58,3 +58,36 @@ func (x LanguageModel) Name() (string, error) {
 		return "", errors.New("unknown model")
 	}
 }
+
+func (x LanguageModel) FromSlug(slug string) LanguageModel {
+	switch slug {
+	case "openai/gpt-4o":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT4O)
+	case "openai/gpt-4.1":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41)
+	case "openai/gpt-4.1-mini":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)
+	case "openai/gpt-5":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5)
+	case "openai/gpt-5-mini":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI)
+	case "openai/gpt-5-nano":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO)
+	case "openai/gpt-5-chat-latest":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST)
+	case "openai/o1":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1)
+	case "openai/o1-mini":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI)
+	case "openai/o3":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3)
+	case "openai/o3-mini":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI)
+	case "openai/o4-mini":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI)
+	case "openai/codex-mini-latest":
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST)
+	default:
+		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_UNSPECIFIED)
+	}
+}

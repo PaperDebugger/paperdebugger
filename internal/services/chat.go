@@ -107,18 +107,23 @@ func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.Ob
 		bsonMessages[i] = bsonMsg
 	}
 
+	// Compatible Layer Begins
+	languageModel := models.LanguageModel(0).FromSlug(modelSlug)
+	// Compatible Layer Ends
+
 	conversation := &models.Conversation{
 		BaseModel: models.BaseModel{
 			ID:        bson.NewObjectID(),
 			CreatedAt: bson.NewDateTimeFromTime(time.Now()),
 			UpdatedAt: bson.NewDateTimeFromTime(time.Now()),
 		},
-		UserID:            userID,
-		ProjectID:         projectID,
-		Title:             DefaultConversationTitle,
-		ModelSlug:         modelSlug,
-		InappChatHistory:  bsonMessages,
-		OpenaiChatHistory: openaiChatHistory,
+		UserID:                      userID,
+		ProjectID:                   projectID,
+		Title:                       DefaultConversationTitle,
+		LanguageModel:               languageModel,
+		ModelSlug:                   modelSlug,
+		InappChatHistory:            bsonMessages,
+		OpenaiChatHistoryCompletion: openaiChatHistory,
 	}
 	_, err := s.conversationCollection.InsertOne(ctx, conversation)
 	if err != nil {

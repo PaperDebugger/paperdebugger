@@ -60,7 +60,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 		legacyLanguageModel = &m
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, legacyLanguageModel, conversation.OpenaiChatHistory, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, legacyLanguageModel, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -75,7 +75,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 		bsonMessages[i] = bsonMsg
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistory = openaiChatHistory
+	conversation.OpenaiChatHistoryCompletion = openaiChatHistory
 	if err := s.chatService.UpdateConversation(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}

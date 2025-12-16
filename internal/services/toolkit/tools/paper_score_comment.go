@@ -16,8 +16,8 @@ import (
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 	"time"
 
-	"github.com/openai/openai-go/v3/packages/param"
-	"github.com/openai/openai-go/v3/responses"
+	"github.com/openai/openai-go/v2/packages/param"
+	"github.com/openai/openai-go/v2/responses"
 )
 
 type PaperScoreCommentRequest struct {

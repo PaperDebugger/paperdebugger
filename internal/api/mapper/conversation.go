@@ -33,20 +33,20 @@ func MapModelConversationToProto(conversation *models.Conversation) *chatv1.Conv
 	})
 
 	// Get model slug: prefer new ModelSlug field, fallback to legacy LanguageModel
-	modelSlug := conversation.ModelSlug
-	if modelSlug == "" {
-		var err error
-		modelSlug, err = conversation.LanguageModel.Name()
-		if err != nil {
-			return nil
-		}
-	}
+	// modelSlug := conversation.ModelSlug
+	// if modelSlug == "" {
+	// 	var err error
+	// 	modelSlug, err = conversation.LanguageModel.Name()
+	// 	if err != nil {
+	// 		return nil
+	// 	}
+	// }
 
 	return &chatv1.Conversation{
 		Id:            conversation.ID.Hex(),
 		Title:         conversation.Title,
 		LanguageModel: chatv1.LanguageModel(conversation.LanguageModel),
-		ModelSlug:     &modelSlug,
-		Messages:      filteredMessages,
+		// ModelSlug:     &modelSlug, // TODO: when new version is ready, enable this line
+		Messages: filteredMessages,
 	}
 }
