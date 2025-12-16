@@ -6,6 +6,7 @@ This file contains utility functions for the client package. (Mainly miscellaneo
 It is used to append assistant responses to both OpenAI and in-app chat histories, and to create response items for chat interactions.
 */
 import (
+	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
@@ -42,7 +43,11 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 // getDefaultParams constructs the default parameters for a chat completion request.
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
-func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+func getDefaultParams(languageModel models.LanguageModel, modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+	if modelSlug == "" {
+		modelSlug = languageModel.Name()
+	}
+
 	if modelSlug == "gpt-5" ||
 		modelSlug == "gpt-5-mini" ||
 		modelSlug == "gpt-5-nano" ||
