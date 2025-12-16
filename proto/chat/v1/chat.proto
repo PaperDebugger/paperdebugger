@@ -7,35 +7,50 @@ import "google/api/annotations.proto";
 option go_package = "paperdebugger/pkg/gen/api/chat/v1;chatv1";
 
 service ChatService {
-  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse) {
-    option (google.api.http) = {get: "/_pd/api/v1/chats/conversations"};
-  }
-  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse) {
-    option (google.api.http) = {get: "/_pd/api/v1/chats/conversations/{conversation_id}"};
-  }
-  rpc CreateConversationMessage(CreateConversationMessageRequest) returns (CreateConversationMessageResponse) {
+  rpc ListConversations(ListConversationsRequest)
+      returns (ListConversationsResponse) {
     option (google.api.http) = {
-      post: "/_pd/api/v1/chats/conversations/messages"
-      body: "*"
+      get : "/_pd/api/v1/chats/conversations"
     };
   }
-  rpc CreateConversationMessageStream(CreateConversationMessageStreamRequest) returns (stream CreateConversationMessageStreamResponse) {
+  rpc GetConversation(GetConversationRequest)
+      returns (GetConversationResponse) {
     option (google.api.http) = {
-      post: "/_pd/api/v1/chats/conversations/messages/stream"
-      body: "*"
+      get : "/_pd/api/v1/chats/conversations/{conversation_id}"
     };
   }
-  rpc UpdateConversation(UpdateConversationRequest) returns (UpdateConversationResponse) {
+  rpc CreateConversationMessage(CreateConversationMessageRequest)
+      returns (CreateConversationMessageResponse) {
     option (google.api.http) = {
-      patch: "/_pd/api/v1/chats/conversations/{conversation_id}"
-      body: "*"
+      post : "/_pd/api/v1/chats/conversations/messages"
+      body : "*"
     };
   }
-  rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse) {
-    option (google.api.http) = {delete: "/_pd/api/v1/chats/conversations/{conversation_id}"};
+  rpc CreateConversationMessageStream(CreateConversationMessageStreamRequest)
+      returns (stream CreateConversationMessageStreamResponse) {
+    option (google.api.http) = {
+      post : "/_pd/api/v1/chats/conversations/messages/stream"
+      body : "*"
+    };
   }
-  rpc ListSupportedModels(ListSupportedModelsRequest) returns (ListSupportedModelsResponse) {
-    option (google.api.http) = {get: "/_pd/api/v1/chats/models"};
+  rpc UpdateConversation(UpdateConversationRequest)
+      returns (UpdateConversationResponse) {
+    option (google.api.http) = {
+      patch : "/_pd/api/v1/chats/conversations/{conversation_id}"
+      body : "*"
+    };
+  }
+  rpc DeleteConversation(DeleteConversationRequest)
+      returns (DeleteConversationResponse) {
+    option (google.api.http) = {
+      delete : "/_pd/api/v1/chats/conversations/{conversation_id}"
+    };
+  }
+  rpc ListSupportedModels(ListSupportedModelsRequest)
+      returns (ListSupportedModelsResponse) {
+    option (google.api.http) = {
+      get : "/_pd/api/v1/chats/models"
+    };
   }
 }
 
@@ -59,9 +74,9 @@ enum LanguageModel {
 
 message MessageTypeToolCall {
   string name = 1;
-  string args = 2; // Json string
+  string args = 2;   // Json string
   string result = 3; // Json string
-  string error = 4; // Json string
+  string error = 4;  // Json string
 }
 
 message MessageTypeToolCallPrepareArguments {
@@ -69,22 +84,16 @@ message MessageTypeToolCallPrepareArguments {
   string args = 2; // Json string
 }
 
-message MessageTypeSystem {
-  string content = 1;
-}
+message MessageTypeSystem { string content = 1; }
 
-message MessageTypeAssistant {
-  string content = 1;
-}
+message MessageTypeAssistant { string content = 1; }
 
 message MessageTypeUser {
   string content = 1;
   optional string selected_text = 2;
 }
 
-message MessageTypeUnknown {
-  string description = 1;
-}
+message MessageTypeUnknown { string description = 1; }
 
 message MessagePayload {
   oneof message_type {
@@ -105,56 +114,48 @@ message Message {
 message Conversation {
   string id = 1;
   string title = 3;
-  LanguageModel language_model = 2;
+  LanguageModel language_model = 2; // deprecated: use model_slug instead
+  optional string model_slug = 5;   // new: model slug string
   // If list conversations, then messages length is 0.
   repeated Message messages = 4;
 }
 
-message ListConversationsRequest {
-  optional string project_id = 1;
-}
+message ListConversationsRequest { optional string project_id = 1; }
 
 message ListConversationsResponse {
   // In this response, the length of conversations[i].messages should be 0.
   repeated Conversation conversations = 1;
 }
 
-message GetConversationRequest {
-  string conversation_id = 1;
-}
+message GetConversationRequest { string conversation_id = 1; }
 
-message GetConversationResponse {
-  Conversation conversation = 1;
-}
+message GetConversationResponse { Conversation conversation = 1; }
 
 message CreateConversationMessageRequest {
   string project_id = 1;
   // If conversation_id is not provided,
   // a new conversation will be created and the id will be returned.
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
+  oneof model {
+    LanguageModel language_model = 3; // deprecated: use model_slug instead
+    string model_slug = 7;            // new: model slug string
+  }
 
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
 }
 
-message CreateConversationMessageResponse {
-  Conversation conversation = 1;
-}
+message CreateConversationMessageResponse { Conversation conversation = 1; }
 
 message UpdateConversationRequest {
   string conversation_id = 1;
   string title = 2;
 }
 
-message UpdateConversationResponse {
-  Conversation conversation = 1;
-}
+message UpdateConversationResponse { Conversation conversation = 1; }
 
-message DeleteConversationRequest {
-  string conversation_id = 1;
-}
+message DeleteConversationRequest { string conversation_id = 1; }
 
 message DeleteConversationResponse {
   // explicitly empty
@@ -169,16 +170,17 @@ message ListSupportedModelsRequest {
   // explicitly empty
 }
 
-message ListSupportedModelsResponse {
-  repeated SupportedModel models = 1;
-}
+message ListSupportedModelsResponse { repeated SupportedModel models = 1; }
 
 // ============================== Streaming Messages
 
 // Information sent once at the beginning of a new conversation stream
 message StreamInitialization {
   string conversation_id = 1;
-  LanguageModel language_model = 5;
+  oneof model {
+    LanguageModel language_model = 5; // deprecated: use model_slug instead
+    string model_slug = 6;            // new: model slug string
+  }
 }
 
 // Designed as StreamPartBegin and StreamPartEnd to
@@ -195,7 +197,7 @@ message StreamPartBegin {
 //       and the StreamPartEnd can be directly called when the result is ready.
 message MessageChunk {
   string message_id = 1; // The id of the message that this chunk belongs to
-  string delta = 2; // The small piece of text
+  string delta = 2;      // The small piece of text
 }
 
 message IncompleteIndicator {
@@ -217,9 +219,7 @@ message StreamFinalization {
   //       it should be called after the entire API call is finished.
 }
 
-message StreamError {
-  string error_message = 1;
-}
+message StreamError { string error_message = 1; }
 
 // Currently, we inject two types of messages:
 // 1. System message
@@ -227,7 +227,8 @@ message StreamError {
 
 enum ConversationType {
   CONVERSATION_TYPE_UNSPECIFIED = 0;
-  CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the inapp_history and openai_history are synced.
+  CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the
+                               // inapp_history and openai_history are synced.
   // CONVERSATION_TYPE_NO_SYSTEM_MESSAGE_INJECTION = 2;
   // CONVERSATION_TYPE_NO_USER_MESSAGE_INJECTION = 3;
 }
@@ -238,7 +239,10 @@ enum ConversationType {
 message CreateConversationMessageStreamRequest {
   string project_id = 1;
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
+  oneof model {
+    LanguageModel language_model = 3; // deprecated: use model_slug instead
+    string model_slug = 7;            // new: model slug string
+  }
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
