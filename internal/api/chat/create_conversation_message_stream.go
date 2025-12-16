@@ -26,6 +26,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 	ctx := stream.Context()
 
 	languageModel := models.LanguageModel(req.GetLanguageModel())
+	modelSlug := req.GetModelSlug()
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
@@ -33,6 +34,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
 		languageModel,
+		modelSlug,
 		req.GetConversationType(),
 	)
 	if err != nil {
@@ -45,7 +47,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 		APIKey:   settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, &languageModel, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}

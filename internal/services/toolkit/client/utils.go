@@ -6,7 +6,6 @@ This file contains utility functions for the client package. (Mainly miscellaneo
 It is used to append assistant responses to both OpenAI and in-app chat histories, and to create response items for chat interactions.
 */
 import (
-	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
@@ -43,26 +42,26 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 // getDefaultParams constructs the default parameters for a chat completion request.
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
-func getDefaultParams(languageModel models.LanguageModel, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
-	if languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O4_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O3) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1_MINI) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1) ||
-		languageModel == models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_CODEX_MINI_LATEST) {
+func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+	if modelSlug == "gpt-5" ||
+		modelSlug == "gpt-5-mini" ||
+		modelSlug == "gpt-5-nano" ||
+		modelSlug == "gpt-5-chat-latest" ||
+		modelSlug == "o4-mini" ||
+		modelSlug == "o3-mini" ||
+		modelSlug == "o3" ||
+		modelSlug == "o1-mini" ||
+		modelSlug == "o1" ||
+		modelSlug == "codex-mini-latest" {
 		return responses.ResponseNewParams{
-			Model: languageModel.Name(),
+			Model: modelSlug,
 			Tools: toolRegistry.GetTools(),
 			Input: chatHistory,
 			Store: openai.Bool(false),
 		}
 	}
 	return responses.ResponseNewParams{
-		Model:           languageModel.Name(),
+		Model:           modelSlug,
 		Temperature:     openai.Float(0.7),
 		MaxOutputTokens: openai.Int(4000),        // DEBUG POINT: change this to test the frontend handler
 		Tools:           toolRegistry.GetTools(), // 工具注册由 registry 统一管理
