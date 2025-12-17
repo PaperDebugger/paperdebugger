@@ -14,14 +14,14 @@ import (
 // Parameters:
 //
 //	ctx: The context for controlling cancellation and deadlines.
-//	languageModel: The language model to use for completion (e.g., GPT-3.5, GPT-4).
+//	modelSlug: The language model to use for completion (e.g., GPT-3.5, GPT-4).
 //	messages: The full chat history (as input) to send to the language model.
 //
 // Returns:
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClient) ChatCompletion(ctx context.Context, modelSlug string, languageModel models.LanguageModel, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
+func (a *AIClient) ChatCompletion(ctx context.Context, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
 	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err

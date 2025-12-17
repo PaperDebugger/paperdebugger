@@ -25,15 +25,17 @@ func (s *ChatServer) CreateConversationMessageStream(
 ) error {
 	ctx := stream.Context()
 
-	languageModel := models.LanguageModel(req.GetLanguageModel())
 	modelSlug := req.GetModelSlug()
+	if modelSlug == "" {
+		modelSlug = models.LanguageModel(req.GetLanguageModel()).Name()
+	}
+
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
-		languageModel,
 		modelSlug,
 		req.GetConversationType(),
 	)
