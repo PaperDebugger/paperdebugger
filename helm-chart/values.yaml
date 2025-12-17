@@ -12,7 +12,7 @@ paperdebuggerMcpServer:
   image: ghcr.io/paperdebugger/paperdebugger-mcp-server:main-14409c5
 
 paperdebuggerXtraMcpServer:
-  image: ghcr.io/paperdebugger/xtragpt-mcp-server:main-cfe6e39
+  image: ghcr.io/paperdebugger/xtragpt-mcp-server:sha-cf4b736
 
 mongo:
   in_cluster: true
