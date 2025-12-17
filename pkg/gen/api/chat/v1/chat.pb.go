@@ -658,7 +658,7 @@ type Conversation struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	LanguageModel LanguageModel          `protobuf:"varint,2,opt,name=language_model,json=languageModel,proto3,enum=chat.v1.LanguageModel" json:"language_model,omitempty"` // deprecated: use model_slug instead
-	ModelSlug     string                 `protobuf:"bytes,5,opt,name=model_slug,json=modelSlug,proto3" json:"model_slug,omitempty"`                                         // new: model slug string
+	// string model_slug = 5; // new: model slug string
 	// If list conversations, then messages length is 0.
 	Messages      []*Message `protobuf:"bytes,4,rep,name=messages,proto3" json:"messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -714,13 +714,6 @@ func (x *Conversation) GetLanguageModel() LanguageModel {
 		return x.LanguageModel
 	}
 	return LanguageModel_LANGUAGE_MODEL_UNSPECIFIED
-}
-
-func (x *Conversation) GetModelSlug() string {
-	if x != nil {
-		return x.ModelSlug
-	}
-	return ""
 }
 
 func (x *Conversation) GetMessages() []*Message {
@@ -1358,7 +1351,6 @@ type StreamInitialization struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ConversationId string                 `protobuf:"bytes,1,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	LanguageModel  LanguageModel          `protobuf:"varint,5,opt,name=language_model,json=languageModel,proto3,enum=chat.v1.LanguageModel" json:"language_model,omitempty"` // deprecated: use model_slug instead
-	ModelSlug      string                 `protobuf:"bytes,6,opt,name=model_slug,json=modelSlug,proto3" json:"model_slug,omitempty"`                                         // new: model slug string
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1405,13 +1397,6 @@ func (x *StreamInitialization) GetLanguageModel() LanguageModel {
 		return x.LanguageModel
 	}
 	return LanguageModel_LANGUAGE_MODEL_UNSPECIFIED
-}
-
-func (x *StreamInitialization) GetModelSlug() string {
-	if x != nil {
-		return x.ModelSlug
-	}
-	return ""
 }
 
 // Designed as StreamPartBegin and StreamPartEnd to
@@ -2019,13 +2004,11 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\aMessage\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x121\n" +
-	"\apayload\x18\x03 \x01(\v2\x17.chat.v1.MessagePayloadR\apayload\"\xc0\x01\n" +
+	"\apayload\x18\x03 \x01(\v2\x17.chat.v1.MessagePayloadR\apayload\"\xa1\x01\n" +
 	"\fConversation\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12=\n" +
-	"\x0elanguage_model\x18\x02 \x01(\x0e2\x16.chat.v1.LanguageModelR\rlanguageModel\x12\x1d\n" +
-	"\n" +
-	"model_slug\x18\x05 \x01(\tR\tmodelSlug\x12,\n" +
+	"\x0elanguage_model\x18\x02 \x01(\x0e2\x16.chat.v1.LanguageModelR\rlanguageModel\x12,\n" +
 	"\bmessages\x18\x04 \x03(\v2\x10.chat.v1.MessageR\bmessages\"M\n" +
 	"\x18ListConversationsRequest\x12\"\n" +
 	"\n" +
@@ -2065,12 +2048,10 @@ const file_chat_v1_chat_proto_rawDesc = "" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
-	"\x06models\x18\x01 \x03(\v2\x17.chat.v1.SupportedModelR\x06models\"\x9d\x01\n" +
+	"\x06models\x18\x01 \x03(\v2\x17.chat.v1.SupportedModelR\x06models\"~\n" +
 	"\x14StreamInitialization\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\x12=\n" +
-	"\x0elanguage_model\x18\x05 \x01(\x0e2\x16.chat.v1.LanguageModelR\rlanguageModel\x12\x1d\n" +
-	"\n" +
-	"model_slug\x18\x06 \x01(\tR\tmodelSlug\"c\n" +
+	"\x0elanguage_model\x18\x05 \x01(\x0e2\x16.chat.v1.LanguageModelR\rlanguageModel\"c\n" +
 	"\x0fStreamPartBegin\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x121\n" +

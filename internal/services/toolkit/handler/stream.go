@@ -34,8 +34,8 @@ func (h *StreamHandler) SendInitialization() {
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamInitialization{
 			StreamInitialization: &chatv1.StreamInitialization{
 				ConversationId: h.conversationId,
-				ModelSlug:      h.modelSlug,
-				LanguageModel:  chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
+				// ModelSlug:      h.modelSlug,
+				LanguageModel: chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
 			},
 		},
 	})

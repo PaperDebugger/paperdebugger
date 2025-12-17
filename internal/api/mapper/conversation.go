@@ -46,7 +46,7 @@ func MapModelConversationToProto(conversation *models.Conversation) *chatv1.Conv
 		Id:            conversation.ID.Hex(),
 		Title:         conversation.Title,
 		LanguageModel: languageModel, // backward compatibility
-		ModelSlug:     modelSlug,
-		Messages:      filteredMessages,
+		// ModelSlug:     modelSlug,
+		Messages: filteredMessages,
 	}
 }
