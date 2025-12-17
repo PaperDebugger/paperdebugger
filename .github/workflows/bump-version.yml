@@ -53,4 +53,10 @@ jobs:
           git tag "${{ steps.bump.outputs.new_tag }}"
           git push origin "${{ steps.bump.outputs.new_tag }}"
 
+      - name: Trigger Release Workflow
+        uses: peter-evans/workflow-dispatch@v4
+        with:
+          workflow: release.yml
+          token: ${{ secrets.GH_PAT }}
+          inputs: '{"tag": "${{ steps.bump.outputs.new_tag }}"}'
 # TODO: use peter-evans/workflow-dispatch@v1 to dispatch build workflow, passing the new version so that the build workflow can use it without re-clone the whole repo
