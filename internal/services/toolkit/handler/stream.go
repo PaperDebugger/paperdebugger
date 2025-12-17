@@ -30,15 +30,13 @@ func (h *StreamHandler) SendInitialization() {
 		return
 	}
 
-	streamInit := &chatv1.StreamInitialization{
-		ConversationId: h.conversationId,
-		ModelSlug:      h.modelSlug,
-		LanguageModel:  chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
-	}
-
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamInitialization{
-			StreamInitialization: streamInit,
+			StreamInitialization: &chatv1.StreamInitialization{
+				ConversationId: h.conversationId,
+				ModelSlug:      h.modelSlug,
+				LanguageModel:  chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
+			},
 		},
 	})
 }

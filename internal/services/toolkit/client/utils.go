@@ -11,6 +11,7 @@ import (
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/responses"
+	"github.com/samber/lo"
 )
 
 // appendAssistantTextResponse appends the assistant's response to both OpenAI and in-app chat histories.
@@ -43,16 +44,19 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
 func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
-	if modelSlug == "gpt-5" ||
-		modelSlug == "gpt-5-mini" ||
-		modelSlug == "gpt-5-nano" ||
-		modelSlug == "gpt-5-chat-latest" ||
-		modelSlug == "o4-mini" ||
-		modelSlug == "o3-mini" ||
-		modelSlug == "o3" ||
-		modelSlug == "o1-mini" ||
-		modelSlug == "o1" ||
-		modelSlug == "codex-mini-latest" {
+	var reasoningModels = []string{
+		"gpt-5",
+		"gpt-5-mini",
+		"gpt-5-nano",
+		"gpt-5-chat-latest",
+		"o4-mini",
+		"o3-mini",
+		"o3",
+		"o1-mini",
+		"o1",
+		"codex-mini-latest",
+	}
+	if lo.Contains(reasoningModels, modelSlug) {
 		return responses.ResponseNewParams{
 			Model: modelSlug,
 			Tools: toolRegistry.GetTools(),
@@ -60,6 +64,7 @@ func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsI
 			Store: openai.Bool(false),
 		}
 	}
+
 	return responses.ResponseNewParams{
 		Model:           modelSlug,
 		Temperature:     openai.Float(0.7),
