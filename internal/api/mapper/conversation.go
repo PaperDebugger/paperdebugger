@@ -34,13 +34,18 @@ func MapModelConversationToProto(conversation *models.Conversation) *chatv1.Conv
 
 	modelSlug := conversation.ModelSlug
 	if modelSlug == "" {
-		modelSlug = chatv1.LanguageModel(conversation.LanguageModel).String()
+		modelSlug = models.SlugFromLanguageModel(models.LanguageModel(conversation.LanguageModel))
+	}
+
+	languageModel := chatv1.LanguageModel(conversation.LanguageModel)
+	if languageModel == chatv1.LanguageModel_LANGUAGE_MODEL_UNSPECIFIED {
+		languageModel = chatv1.LanguageModel(models.LanguageModelFromSlug(modelSlug))
 	}
 
 	return &chatv1.Conversation{
 		Id:            conversation.ID.Hex(),
 		Title:         conversation.Title,
-		LanguageModel: chatv1.LanguageModel(conversation.LanguageModel), // backward compatibility
+		LanguageModel: languageModel, // backward compatibility
 		ModelSlug:     modelSlug,
 		Messages:      filteredMessages,
 	}
