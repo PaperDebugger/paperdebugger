@@ -39,8 +39,8 @@ Stay connected with the PaperDebugger community! Join our [Discord](https://disc
 - [Quick Start](#-quick-start)
   - [For Users](#for-users)
   - [Custom Endpoint Configuration](#custom-endpoint-configuration)
-- [Architecture Overview](#️-architecture-overview)
-- [Self-Host Development Setup](#️-self-host-development-setup)
+- [Architecture Overview](#️architecture-overview)
+- [Self-Host Development Setup](#️self-host-development-setup)
 
 ## Features
 
