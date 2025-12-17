@@ -6,10 +6,10 @@ const ApiKeyInput = createSettingsTextInput("openaiApiKey");
 export const ApiKeySettings = () => {
   return (
     <SettingsSectionContainer>
-      <SettingsSectionTitle>LLM Provider</SettingsSectionTitle>
+      <SettingsSectionTitle>Bring Your Own Key (BYOK)</SettingsSectionTitle>
       <div className="px-4">
         <ApiKeyInput
-          label="API Key"
+          label="OpenAI API Key"
           description="Leave empty to use paperdebugger's API key"
           placeholder="sk-..."
           multiline={false}

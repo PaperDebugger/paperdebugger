@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { fromJson, JsonValue } from "@bufbuild/protobuf";
+import { JsonValue } from "@bufbuild/protobuf";
+import { safeFromJson } from "../query/utils";
 import { RefreshTokenResponseSchema } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";
@@ -29,7 +30,6 @@ class ApiClient {
   updateBaseURL(baseURL: string): void {
     this.axiosInstance.defaults.baseURL = baseURL;
     localStorage.setItem(LOCAL_STORAGE_KEY, baseURL);
-    console.log("apiclient baseURL updated to", baseURL);
   }
 
   addListener(event: "tokenRefreshed", listener: (args: { token: string; refreshToken: string }) => void): void {
@@ -58,7 +58,7 @@ class ApiClient {
   async isAuthed(): Promise<boolean> {
     try {
       const response = await this.get("/users/@self");
-      const user = fromJson(GetUserResponseSchema, response);
+      const user = safeFromJson(GetUserResponseSchema, response);
       return user.user?.id !== "";
     } catch {
       return false;
@@ -69,7 +69,7 @@ class ApiClient {
     const response = await this.axiosInstance.post<JsonValue>("/auth/refresh", {
       refreshToken: this.refreshToken,
     });
-    const resp = fromJson(RefreshTokenResponseSchema, response.data);
+    const resp = safeFromJson(RefreshTokenResponseSchema, response.data);
     this.setTokens(resp.token, resp.refreshToken);
     this.onTokenRefreshedEventEmitter.emit("tokenRefreshed", {
       token: resp.token,
@@ -97,7 +97,7 @@ class ApiClient {
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
-        const errorPayload = fromJson(ErrorSchema, errorData);
+        const errorPayload = safeFromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
           const message = errorPayload.message.replace(/^rpc error: code = Code\(\d+\) desc = /, "");
           errorToast(message, `Request Failed: ${ErrorCode[errorPayload.code]}`);
@@ -194,7 +194,7 @@ const LOCAL_STORAGE_KEY = "pd.devtool.endpoint";
 export const getEndpointFromLocalStorage = () => {
   try {
     return localStorage.getItem(LOCAL_STORAGE_KEY) || DEFAULT_ENDPOINT;
-  } catch (error) {
+  } catch {
     // Fallback if localStorage is not available (e.g., in SSR)
     return DEFAULT_ENDPOINT;
   }

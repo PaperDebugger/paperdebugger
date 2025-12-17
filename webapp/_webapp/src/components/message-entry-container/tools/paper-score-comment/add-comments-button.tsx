@@ -4,7 +4,7 @@ import { OverleafComment } from "../../../../pkg/gen/apiclient/project/v1/projec
 import { useSocketStore } from "../../../../stores/socket-store";
 import { addClickedOverleafComment, hasClickedOverleafComment } from "../../../../libs/helpers";
 import { acceptComments } from "../../../../query/api";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../../../query/utils";
 import { CommentsAcceptedRequestSchema } from "../../../../pkg/gen/apiclient/comment/v1/comment_pb";
 import { useConversationStore } from "../../../../stores/conversation/conversation-store";
 
@@ -68,7 +68,7 @@ export const AddCommentsButton = ({
       addClickedOverleafComment(projectId, messageId);
       setIsSuggestionsExpanded(false);
       acceptComments(
-        fromJson(CommentsAcceptedRequestSchema, {
+        safeFromJson(CommentsAcceptedRequestSchema, {
           projectId: projectId,
           conversationId: currentConversation.id,
           messageId: messageId,

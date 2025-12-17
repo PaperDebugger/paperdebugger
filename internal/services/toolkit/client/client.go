@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"net/url"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -9,10 +10,11 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	"paperdebugger/internal/services/toolkit/registry"
+	"paperdebugger/internal/services/toolkit/tools"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 
-	"github.com/openai/openai-go/v2"
-	"github.com/openai/openai-go/v2/option"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -30,25 +32,42 @@ type AIClient struct {
 
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
-func (a *AIClient) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
-	var Endpoint string = llmConfig.Endpoint
-	var APIKey string = llmConfig.APIKey
+func (a *AIClient) GetOpenAIClient(userConfig *models.LLMProviderConfig, modelSlug string) (*openai.Client, error) {
+	endpoint := userConfig.Endpoint
+	apikey := userConfig.APIKey
 
-	if Endpoint == "" {
-		Endpoint = a.cfg.OpenAIBaseURL
+	var err error
+	// use our services
+	if apikey == "" {
+		endpoint, err = url.JoinPath(a.cfg.PDInferenceBaseURL, "/openrouter")
+		if err != nil {
+			return nil, err
+		}
+		apikey = a.cfg.PDInferenceAPIKey
+		opts := []option.RequestOption{
+			option.WithAPIKey(apikey),
+			option.WithBaseURL(endpoint),
+		}
+
+		client := openai.NewClient(opts...)
+		return &client, nil
 	}
 
-	if APIKey == "" {
-		APIKey = a.cfg.OpenAIAPIKey
+	// if endpoint is not provided, use OpenAI as default
+	if endpoint == "" {
+		endpoint, err = url.JoinPath(a.cfg.PDInferenceBaseURL, "/openai")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	opts := []option.RequestOption{
-		option.WithAPIKey(APIKey),
-		option.WithBaseURL(Endpoint),
+		option.WithAPIKey(apikey),
+		option.WithBaseURL(endpoint),
 	}
 
 	client := openai.NewClient(opts...)
-	return &client
+	return &client, nil
 }
 
 func NewAIClient(
@@ -60,11 +79,8 @@ func NewAIClient(
 	logger *logger.Logger,
 ) *AIClient {
 	database := db.Database("paperdebugger")
-	oaiClient := openai.NewClient(
-		option.WithBaseURL(cfg.OpenAIBaseURL),
-		option.WithAPIKey(cfg.OpenAIAPIKey),
-	)
-	CheckOpenAIWorks(oaiClient, logger)
+
+	CheckOpenAIWorks(cfg, logger)
 	// toolPaperScore := tools.NewPaperScoreTool(db, projectService)
 	// toolPaperScoreComment := tools.NewPaperScoreCommentTool(db, projectService, reverseCommentService)
 
@@ -72,6 +88,8 @@ func NewAIClient(
 
 	// toolRegistry.Register("always_exception", tools.AlwaysExceptionToolDescription, tools.AlwaysExceptionTool)
 	// toolRegistry.Register("greeting", tools.GreetingToolDescription, tools.GreetingTool)
+	toolRegistry.Register("get_weather", tools.GetWeatherToolDescription, tools.GetWeatherTool)
+	toolRegistry.Register("get_rain_probability", tools.GetRainProbabilityToolDescription, tools.GetRainProbabilityTool)
 
 	// Load tools dynamically from backend
 	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, cfg.XtraMCPURI)
@@ -109,13 +127,24 @@ func NewAIClient(
 	return client
 }
 
-func CheckOpenAIWorks(oaiClient openai.Client, logger *logger.Logger) {
+func CheckOpenAIWorks(cfg *cfg.Cfg, logger *logger.Logger) {
 	logger.Info("[AI Client] checking if openai client works")
+	endpoint, err := url.JoinPath(cfg.PDInferenceBaseURL, "openrouter")
+	if err != nil {
+		logger.Errorf("[AI Client] openai client does not work: %v", err)
+		return
+	}
+
+	oaiClient := openai.NewClient(
+		option.WithBaseURL(endpoint),
+		option.WithAPIKey(cfg.PDInferenceAPIKey),
+	)
+
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage("Say 'openai client works'"),
 		},
-		Model: openai.ChatModelGPT4o,
+		Model: "openai/gpt-4o-mini",
 	})
 	if err != nil {
 		logger.Errorf("[AI Client] openai client does not work: %v", err)

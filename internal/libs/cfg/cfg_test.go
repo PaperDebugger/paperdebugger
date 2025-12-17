@@ -23,11 +23,11 @@ func TestCfg(t *testing.T) {
 
 	assert.NotNil(t, cfg.MongoURI)
 	assert.NotNil(t, cfg.JwtSigningKey)
-	assert.NotNil(t, cfg.OpenAIBaseURL)
-	assert.NotNil(t, cfg.OpenAIAPIKey)
+	assert.NotNil(t, cfg.PDInferenceBaseURL)
+	assert.NotNil(t, cfg.PDInferenceAPIKey)
 
 	assert.NotEmpty(t, cfg.JwtSigningKey)
-	assert.NotEmpty(t, cfg.OpenAIBaseURL)
-	assert.NotEmpty(t, cfg.OpenAIAPIKey)
+	assert.NotEmpty(t, cfg.PDInferenceBaseURL)
+	assert.NotEmpty(t, cfg.PDInferenceAPIKey)
 	assert.NotEmpty(t, cfg.MongoURI)
 }

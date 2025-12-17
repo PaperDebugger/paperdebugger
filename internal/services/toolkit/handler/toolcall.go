@@ -2,10 +2,11 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 )
 
 const (
@@ -38,64 +39,88 @@ func NewToolCallHandler(toolRegistry *registry.ToolRegistry) *ToolCallHandler {
 //   - openaiChatHistory: The OpenAI-compatible chat history including tool call and output items.
 //   - inappChatHistory:  The in-app chat history as a slice of chatv1.Message, reflecting tool call events.
 //   - error:             Any error encountered during processing (always nil in current implementation).
-func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, outputs []responses.ResponseOutputItemUnion, streamHandler *StreamHandler) (responses.ResponseNewParamsInputUnion, []chatv1.Message, error) {
-	openaiChatHistory := responses.ResponseNewParamsInputUnion{} // Accumulates OpenAI chat history items
-	inappChatHistory := []chatv1.Message{}                       // Accumulates in-app chat history messages
+func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, toolCalls []openai.FinishedChatCompletionToolCall, streamHandler *StreamHandler) ([]openai.ChatCompletionMessageParamUnion, []chatv1.Message, error) {
+	if len(toolCalls) == 0 {
+		return nil, nil, nil
+	}
+
+	openaiChatHistory := []openai.ChatCompletionMessageParamUnion{} // Accumulates OpenAI chat history items
+	inappChatHistory := []chatv1.Message{}                          // Accumulates in-app chat history messages
+
+	toolCallsParam := make([]openai.ChatCompletionMessageToolCallUnionParam, len(toolCalls))
+	for i, toolCall := range toolCalls {
+		toolCallsParam[i] = openai.ChatCompletionMessageToolCallUnionParam{
+			OfFunction: &openai.ChatCompletionMessageFunctionToolCallParam{
+				ID:   toolCall.ID,
+				Type: "function",
+				Function: openai.ChatCompletionMessageFunctionToolCallFunctionParam{
+					Name:      toolCall.Name,
+					Arguments: toolCall.Arguments,
+				},
+			},
+		}
+	}
+
+	openaiChatHistory = append(openaiChatHistory, openai.ChatCompletionMessageParamUnion{
+		OfAssistant: &openai.ChatCompletionAssistantMessageParam{
+			ToolCalls: toolCallsParam,
+		},
+	})
 
 	// Iterate over each output item to process tool calls
-	for _, output := range outputs {
-		if output.Type == messageTypeFunctionCall {
-			toolCall := output.AsFunctionCall()
-
-			// According to OpenAI, function_call and function_call_output must appear in pairs in the chat history.
-			// Add the function call to the OpenAI chat history.
-			openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, responses.ResponseInputItemParamOfFunctionCall(
-				toolCall.Arguments,
-				toolCall.CallID,
-				toolCall.Name,
-			))
-
-			// Notify the stream handler that a tool call is beginning.
-			if streamHandler != nil {
-				streamHandler.SendToolCallBegin(toolCall)
-			}
-			result, err := h.Registry.Call(ctx, toolCall.CallID, toolCall.Name, []byte(toolCall.Arguments))
-			if streamHandler != nil {
-				streamHandler.SendToolCallEnd(toolCall, result, err)
-			}
-
-			if err != nil {
-				// If there was an error, append an error output to OpenAI chat history and in-app chat history.
-				openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, responses.ResponseInputItemParamOfFunctionCallOutput(toolCall.CallID, "Error: "+err.Error()))
-				inappChatHistory = append(inappChatHistory, chatv1.Message{
-					MessageId: "openai_" + toolCall.CallID,
-					Payload: &chatv1.MessagePayload{
-						MessageType: &chatv1.MessagePayload_ToolCall{
-							ToolCall: &chatv1.MessageTypeToolCall{
-								Name:  toolCall.Name,
-								Args:  toolCall.Arguments,
-								Error: err.Error(),
-							},
-						},
-					},
-				})
-			} else {
-				// On success, append the result to both OpenAI and in-app chat histories.
-				openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, responses.ResponseInputItemParamOfFunctionCallOutput(toolCall.CallID, result))
-				inappChatHistory = append(inappChatHistory, chatv1.Message{
-					MessageId: "openai_" + toolCall.CallID,
-					Payload: &chatv1.MessagePayload{
-						MessageType: &chatv1.MessagePayload_ToolCall{
-							ToolCall: &chatv1.MessageTypeToolCall{
-								Name:   toolCall.Name,
-								Args:   toolCall.Arguments,
-								Result: result,
-							},
-						},
-					},
-				})
-			}
+	for _, toolCall := range toolCalls {
+		if streamHandler != nil {
+			streamHandler.SendToolCallBegin(toolCall)
 		}
+
+		toolResult, err := h.Registry.Call(ctx, toolCall.ID, toolCall.Name, []byte(toolCall.Arguments))
+
+		if streamHandler != nil {
+			streamHandler.SendToolCallEnd(toolCall, toolResult, err)
+		}
+
+		resultStr := toolResult
+		if err != nil {
+			resultStr = "Error: " + err.Error()
+		}
+
+		openaiChatHistory = append(openaiChatHistory, openai.ChatCompletionMessageParamUnion{
+			OfTool: &openai.ChatCompletionToolMessageParam{
+				Role:       "tool",
+				ToolCallID: toolCall.ID,
+				Content: openai.ChatCompletionToolMessageParamContentUnion{
+					OfArrayOfContentParts: []openai.ChatCompletionContentPartTextParam{
+						{
+							Type: "text",
+							Text: resultStr,
+						},
+						// {
+						// 	Type:     "image_url",
+						// 	ImageURL: "xxx"
+						// },
+					},
+				},
+			},
+		})
+
+		toolCallMsg := &chatv1.MessageTypeToolCall{
+			Name: toolCall.Name,
+			Args: toolCall.Arguments,
+		}
+		if err != nil {
+			toolCallMsg.Error = err.Error()
+		} else {
+			toolCallMsg.Result = resultStr
+		}
+
+		inappChatHistory = append(inappChatHistory, chatv1.Message{
+			MessageId: fmt.Sprintf("openai_toolCall[%d]_%s", toolCall.Index, toolCall.ID),
+			Payload: &chatv1.MessagePayload{
+				MessageType: &chatv1.MessagePayload_ToolCall{
+					ToolCall: toolCallMsg,
+				},
+			},
+		})
 	}
 
 	// Return both chat histories and nil error (no error aggregation in this implementation)

@@ -7,7 +7,7 @@ import (
 	"paperdebugger/internal/libs/contextutil"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
-	"github.com/openai/openai-go/v2"
+	"github.com/openai/openai-go/v3"
 )
 
 func (s *ChatServer) ListSupportedModels(
@@ -30,15 +30,27 @@ func (s *ChatServer) ListSupportedModels(
 			{
 
 				Name: "GPT-4o",
-				Slug: openai.ChatModelGPT4o,
+				Slug: "openai/" + openai.ChatModelGPT4o,
 			},
 			{
 				Name: "GPT-4.1",
-				Slug: openai.ChatModelGPT4_1,
+				Slug: "openai/" + openai.ChatModelGPT4_1,
 			},
 			{
 				Name: "GPT-4.1-mini",
-				Slug: openai.ChatModelGPT4_1Mini,
+				Slug: "openai/" + openai.ChatModelGPT4_1Mini,
+			},
+			{
+				Name: "GPT 5 nano",
+				Slug: "openai/" + openai.ChatModelGPT5Nano,
+			},
+			{
+				Name: "Qwen Plus",
+				Slug: "qwen/qwen-plus",
+			},
+			{
+				Name: "Qwen 3 (235B A22B)",
+				Slug: "qwen/qwen3-235b-a22b:free",
 			},
 		}
 	} else {

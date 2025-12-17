@@ -5,7 +5,7 @@ import { getProjectId } from "../../../libs/helpers";
 import { getCookies } from "../../../intermediate";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../../query/utils";
 
 export async function handleStreamError(
   streamError: StreamError,
@@ -26,7 +26,7 @@ export async function handleStreamError(
     const errorMessageEntry: MessageEntry = {
       messageId: "error-" + Date.now(),
       status: MessageEntryStatus.STALE,
-      assistant: fromJson(MessageTypeAssistantSchema, {
+      assistant: safeFromJson(MessageTypeAssistantSchema, {
         content: `${streamError.errorMessage}`,
       }),
     };

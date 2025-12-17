@@ -40,22 +40,22 @@ interface MessageCardProps {
 }
 
 export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: MessageCardProps) => {
-  if (messageEntry.toolCall !== undefined) {
-    return (
-      <div className="chat-message-entry">
-        <Tools
-          messageId={messageEntry.messageId}
-          functionName={messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"}
-          message={messageEntry.toolCall?.result}
-          error={messageEntry.toolCall?.error}
-          preparing={messageEntry.status === MessageEntryStatus.PREPARING}
-          animated={animated ?? false}
-        />
-      </div>
-    );
-  }
-
   const returnComponent = () => {
+    if (messageEntry.toolCall !== undefined) {
+      return (
+        <div className="chat-message-entry">
+          <Tools
+            messageId={messageEntry.messageId}
+            functionName={messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"}
+            message={messageEntry.toolCall?.result}
+            error={messageEntry.toolCall?.error}
+            preparing={messageEntry.status === MessageEntryStatus.PREPARING}
+            animated={animated ?? false}
+          />
+        </div>
+      );
+    }
+
     if (messageEntry.assistant !== undefined) {
       return (
         <AssistantMessageContainer
@@ -72,6 +72,7 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
     if (messageEntry.toolCallPrepareArguments !== undefined) {
       return (
         <ToolCallPrepareMessageContainer
+          functionName={messageEntry.toolCallPrepareArguments?.name || "undefined"}
           stale={messageEntry.status === MessageEntryStatus.STALE}
           preparing={messageEntry.status === MessageEntryStatus.PREPARING}
         />

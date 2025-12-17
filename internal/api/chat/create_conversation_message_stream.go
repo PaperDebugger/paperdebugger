@@ -25,14 +25,23 @@ func (s *ChatServer) CreateConversationMessageStream(
 ) error {
 	ctx := stream.Context()
 
-	languageModel := models.LanguageModel(req.GetLanguageModel())
+	// Handle oneof model field: prefer ModelSlug, fallback to LanguageModel enum
+	modelSlug := req.GetModelSlug()
+	if modelSlug == "" {
+		var err error
+		modelSlug, err = models.LanguageModel(req.GetLanguageModel()).Name()
+		if err != nil {
+			return s.sendStreamError(stream, err)
+		}
+	}
+
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
-		languageModel,
+		modelSlug,
 		req.GetConversationType(),
 	)
 	if err != nil {
@@ -41,11 +50,17 @@ func (s *ChatServer) CreateConversationMessageStream(
 
 	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
 	llmProvider := &models.LLMProviderConfig{
-		Endpoint: s.cfg.OpenAIBaseURL,
+		Endpoint: "",
 		APIKey:   settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory, llmProvider)
+	var legacyLanguageModel *chatv1.LanguageModel
+	if req.GetModelSlug() == "" {
+		m := req.GetLanguageModel()
+		legacyLanguageModel = &m
+	}
+
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, legacyLanguageModel, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -60,7 +75,7 @@ func (s *ChatServer) CreateConversationMessageStream(
 		bsonMessages[i] = bsonMsg
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistory = openaiChatHistory
+	conversation.OpenaiChatHistoryCompletion = openaiChatHistory
 	if err := s.chatService.UpdateConversation(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}

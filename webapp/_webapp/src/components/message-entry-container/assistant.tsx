@@ -49,7 +49,9 @@ export const AssistantMessageContainer = ({
     }
   }, [user?.id, projectId, processedMessage, messageId]);
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
-  const writingIndicator = stale ? null : (
+  const showActions = !preparing;
+  const showMessage = processedMessage?.length || 0 > 0;
+  const writingIndicator = (stale || !showMessage) ? null : (
     <Icon
       icon="tabler:pencil"
       className={cn(
@@ -61,7 +63,7 @@ export const AssistantMessageContainer = ({
       )}
     />
   );
-  return (
+  return showMessage && (
     <div className="chat-message-entry noselect">
       <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
         {/* Message content */}
@@ -76,11 +78,11 @@ export const AssistantMessageContainer = ({
         {/* Stale message */}
         {staleComponent}
 
-        <div className="actions rnd-cancel noselect">
+        {showActions && <div className="actions rnd-cancel noselect">
           <Tooltip content="Copy" placement="bottom" size="sm">
             <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" onClick={handleCopy} />
           </Tooltip>
-        </div>
+        </div>}
       </div>
     </div>
   );

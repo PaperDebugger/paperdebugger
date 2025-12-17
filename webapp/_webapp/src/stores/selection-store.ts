@@ -37,12 +37,12 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
     set({ selectedText: null, selectionRange: null });
   },
   clearOverleafSelection: () => {
-    let cmContentElement = document.querySelector(".cm-content");
+    const cmContentElement = document.querySelector(".cm-content");
     if (!cmContentElement) {
       return;
     }
-
-    let editorViewInstance = (cmContentElement as any).cmView.view as EditorView;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const editorViewInstance = (cmContentElement as any).cmView.view as EditorView;
     if (!editorViewInstance) {
       return;
     }

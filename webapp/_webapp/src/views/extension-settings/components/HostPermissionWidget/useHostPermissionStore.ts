@@ -39,7 +39,7 @@ const normalizeWildcardPattern = (url: string) => {
     return {
       valid: false as const,
       error:
-        "Invalid URL. Use a full URL (e.g., https://example.com) or a wildcard pattern (e.g., https://*.example.com/*, *://*.example.com/*)",
+        "Invalid URL. Use a full URL (e.g., https://example.com) or a wildcard pattern (e.g., https://*.example.com/*, *://*.example.com/*). Error: " + e,
     };
   }
 };
@@ -57,7 +57,7 @@ interface HostPermissionState {
 }
 
 const handleError = (error: unknown, defaultMessage: string): string => {
-  console.error(defaultMessage, error);
+  // console.error(defaultMessage, error);
   return error instanceof Error ? error.message : defaultMessage;
 };
 

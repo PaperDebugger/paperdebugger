@@ -9,7 +9,6 @@ interface LoginWithAppleProps {
 }
 
 export default function LoginWithApple({ isLoginLoading, setIsLoginLoading, setErrorMessage }: LoginWithAppleProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onAppleLogin = useCallback(async () => {
     try {
       setErrorMessage("");
@@ -21,7 +20,7 @@ export default function LoginWithApple({ isLoginLoading, setIsLoginLoading, setE
     } finally {
       setIsLoginLoading(false);
     }
-  }, []);
+  }, [setErrorMessage, setIsLoginLoading]);
 
   return (
     <div

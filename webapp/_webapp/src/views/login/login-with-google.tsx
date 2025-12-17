@@ -46,7 +46,7 @@ const LoginWithGoogle = ({
       setIsLoginLoading(false);
       setLoginLoadingMessage("Please continue in the opened window/tab");
     }
-  }, [setIsLoginLoading, loadSettings, setErrorMessage, loadPrompts, login, setToken, setRefreshToken]);
+  }, [setIsLoginLoading, loadSettings, setErrorMessage, loadPrompts, login, setToken, setRefreshToken, setLoginLoadingMessage]);
 
   return (
     <button

@@ -4,7 +4,7 @@ import { Button, Input } from "@heroui/react";
 import { useStreamingMessageStore } from "../../stores/streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { fromJson } from "@bufbuild/protobuf";
+import { safeFromJson } from "../../query/utils";
 import { MessageSchema } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
@@ -40,7 +40,7 @@ export const DevTools = () => {
       ...currentConversation,
       messages: [
         ...currentConversation.messages,
-        fromJson(MessageSchema, {
+        safeFromJson(MessageSchema, {
           messageId: randomUUID(),
           payload: { user: { content: "User, " + randomText(), selectedText: selectedText } },
         }),
@@ -51,7 +51,7 @@ export const DevTools = () => {
       ...currentConversation,
       messages: [
         ...currentConversation.messages,
-        fromJson(MessageSchema, {
+        safeFromJson(MessageSchema, {
           messageId: "1",
           payload: { assistant: { content: randomText() } },
         }),
@@ -62,18 +62,18 @@ export const DevTools = () => {
       ...currentConversation,
       messages: [
         ...currentConversation.messages,
-        fromJson(MessageSchema, {
+        safeFromJson(MessageSchema, {
           messageId: randomUUID(),
           payload:
             type === "greeting"
               ? { toolCall: { name: "greeting", args: JSON.stringify({ name: "Junyi" }), result: "Hello, Junyi!" } }
               : {
-                  toolCall: {
-                    name: "paper_score",
-                    args: JSON.stringify({ paper_id: "123" }),
-                    result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
-                  },
+                toolCall: {
+                  name: "paper_score",
+                  args: JSON.stringify({ paper_id: "123" }),
+                  result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
                 },
+              },
         }),
       ],
     });
@@ -125,10 +125,10 @@ export const DevTools = () => {
       const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
-              ...part,
-              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v1.MessageTypeUser" },
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-            }
+            ...part,
+            user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v1.MessageTypeUser" },
+            status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+          }
           : part,
       ) as MessageEntry[];
       setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
@@ -149,14 +149,14 @@ export const DevTools = () => {
       const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
-              ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCallPrepareArguments: {
-                name: "paper_score",
-                args: JSON.stringify({ paper_id: "123" }),
-                $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
-              },
-            }
+            ...part,
+            status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+            toolCallPrepareArguments: {
+              name: "paper_score",
+              args: JSON.stringify({ paper_id: "123" }),
+              $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
+            },
+          }
           : part,
       ) as MessageEntry[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
@@ -169,31 +169,31 @@ export const DevTools = () => {
       status: MessageEntryStatus.PREPARING,
       toolCall: isGreeting
         ? {
-            name: "greeting",
-            args: JSON.stringify({ name: "Junyi" }),
-            result: "preparing",
-            error: "",
-            $typeName: "chat.v1.MessageTypeToolCall",
-          }
+          name: "greeting",
+          args: JSON.stringify({ name: "Junyi" }),
+          result: "preparing",
+          error: "",
+          $typeName: "chat.v1.MessageTypeToolCall",
+        }
         : {
-            name: "paper_score",
-            args: JSON.stringify({ paper_id: "123" }),
-            result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
-            error: "",
-            $typeName: "chat.v1.MessageTypeToolCall",
-          },
+          name: "paper_score",
+          args: JSON.stringify({ paper_id: "123" }),
+          result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
+          error: "",
+          $typeName: "chat.v1.MessageTypeToolCall",
+        },
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
       const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
-              ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCall: isGreeting
-                ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v1.MessageTypeToolCall" }
-                : { ...part.toolCall, $typeName: "chat.v1.MessageTypeToolCall" },
-            }
+            ...part,
+            status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+            toolCall: isGreeting
+              ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v1.MessageTypeToolCall" }
+              : { ...part.toolCall, $typeName: "chat.v1.MessageTypeToolCall" },
+          }
           : part,
       ) as MessageEntry[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
@@ -210,14 +210,14 @@ export const DevTools = () => {
       const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
-              ...part,
-              status: MessageEntryStatus.FINALIZED,
-              assistant: {
-                ...part.assistant,
-                content: "Assistant Response Finalized " + randomText(),
-                $typeName: "chat.v1.MessageTypeAssistant",
-              },
-            }
+            ...part,
+            status: MessageEntryStatus.FINALIZED,
+            assistant: {
+              ...part.assistant,
+              content: "Assistant Response Finalized " + randomText(),
+              $typeName: "chat.v1.MessageTypeAssistant",
+            },
+          }
           : part,
       ) as MessageEntry[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
