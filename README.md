@@ -28,8 +28,8 @@ Our team is actively working to improve long-term reliability, hoping to iron ou
 Stay connected with the PaperDebugger community! Join our [Discord](https://discord.gg/WwTMzzt9xD) or WeChat channels for updates, announcements, and support.
 
 <div align="center">
-  <img src="docs/imgs/discord.png" width="40%" style="margin: 0 3%;"/>
-  <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 3%;"/>
+  <img src="docs/imgs/discord.png" width="40%" style="margin: 0 3%; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="docs/imgs/wechat.jpg" width="40%" style="margin: 0 3%; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 </div>
 
 
@@ -40,22 +40,9 @@ Stay connected with the PaperDebugger community! Join our [Discord](https://disc
   - [For Users](#for-users)
   - [Custom Endpoint Configuration](#custom-endpoint-configuration)
 - [Architecture Overview](#️-architecture-overview)
-- [Development Setup](#️-development-setup)
-  - [Prerequisites](#prerequisites)
-    - [System Requirements](#system-requirements)
-    - [Development Tools](#development-tools)
-    - [Quick Installation (macOS/Linux with Homebrew)](#quick-installation-macoslinux-with-homebrew)
-  - [Backend Build](#backend-build)
-    - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Start MongoDB](#2-start-mongodb)
-    - [3. Environment Configuration](#3-environment-configuration)
-    - [4. Custom MCP Backend Orchestration](#4-custom-mcp-backend-orchestration-optional-for-local-dev)
-    - [5. Build and Run](#5-build-and-run)
-  - [Frontend Extension Build](#frontend-extension-build)
-    - [Chrome Extension Development](#chrome-extension-development)
-    - [Installing the Development Extension](#installing-the-development-extension)
+- [Self-Host Development Setup](#️-self-host-development-setup)
 
-## ✨ Features
+## Features
 
 PaperDebugger never modifies your project, it only reads and provides suggestions.
 
@@ -68,12 +55,11 @@ PaperDebugger never modifies your project, it only reads and provides suggestion
 
 https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 
-## 🎯 Quick Start
+## Quick Start
 
 ### For Users
 
-1. **Install the extension**
-   - [Chrome Web Store](https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog) (Recommended)
+1. **Install the extension fron [Chrome Web Store](https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog)**
 
 2. **Ready to use**
    - Open any Overleaf project
@@ -82,26 +68,27 @@ https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 
 ### Custom Endpoint Configuration
 
-If you want to use a **self-hosted** PaperDebugger backend, you can configure a custom endpoint. **Note**: You need to handle HTTPS serving yourself, as Chrome blocks HTTP requests from HTTPS websites for security reasons.
+If you want to use a **self-hosted** PaperDebugger backend, you can configure a custom endpoint. Here are the steps:
 
-**Steps:**
 1. Open the PaperDebugger extension
-2. Go to Settings, click the version number 5 times to enable "Developer Tools" (a.)
-3. Enter your backend URL in the "Backend Endpoint" field (b.)
-4. Refresh the page
+
+    (a.) Go to Settings, click the version number 5 times to enable "Developer Tools" 
+
+    (b.) Enter your backend URL in the "Backend Endpoint" field 
+2. Refresh the page
 
 If you encounter endpoint errors after refresh, use the "Advanced Options" at the bottom of the login page to reconfigure.
 
 <div align="center">
-  <img src="docs/imgs/custom endpoint.png" alt="Custom Endpoint Configuration" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
+  <img src="docs/imgs/custom endpoint.png" alt="Custom Endpoint Configuration" style="max-width: 600px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
 </div>
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The PaperDebugger backend is built with modern technologies:
 
 <div align="center">
-  <img src="docs/imgs/stacks.png" style="max-height: 200px;" />
+  <img src="docs/imgs/stacks.png" alt="Stacks" style="max-height: 200px; border-radius: 16px;" />
 </div>
 
 - **Language**: Go 1.24+
@@ -111,107 +98,9 @@ The PaperDebugger backend is built with modern technologies:
 - **Architecture**: Microservices with Protocol Buffers
 - **Authentication**: JWT-based with OAuth support
 
+## Self-Host Development Setup
 
-## 🛠️ Development Setup
-
-### Prerequisites
-
-#### System Requirements
-- **Go**: 1.24 or higher
-- **Node.js**: LTS version (for frontend build)
-- **MongoDB**: 4.4 or higher
-- **Git**: For cloning the repository
-
-#### Development Tools
-- **Buf**: Protocol Buffer compiler
-- **Wire**: Dependency injection code generator
-- **Make**: Build automation
-
-#### Quick Installation (macOS/Linux with Homebrew)
-```bash
-# Install Go
-brew install go
-
-# Install Buf (required for Protocol Buffers)
-brew install bufbuild/buf/buf
-
-# Install Node.js
-brew install node
-```
-
-### Backend Build
-
-#### 1. Clone the Repository
-```bash
-git clone https://github.com/PaperDebugger/paperdebugger.git
-cd paperdebugger
-```
-
-#### 2. Start MongoDB
-```bash
-# Using Docker (recommended)
-docker run -d --name mongodb -p 27017:27017 mongo:latest
-```
-
-#### 3. Environment Configuration
-```bash
-cp .env.example .env
-# Edit the .env file based on your configuration
-```
-
-#### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
-Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially deployed in-production, with selected components enabled to **balance stability and operational cost** at this stage. It is still under active development and remains closed-source for now. 
-
-To understand the backend orchestration logic and view the currently available and gated features, as well as planned capabilities, refer to [/demo/xtramcp/readme.md](./demo/xtramcp/readme.md).<br>
-You can still self-host PaperDebugger without it; all core features (chat, formatting, edits, comments) work normally.
-
-Connecting to XtraMCP unlocks:
-- research-mode agents (with on-demand search for latest publications),  
-- structured reviewer-style critique,  
-- domain-specific revisions tailored for academic writing powered by [XtraGPT](https://huggingface.co/Xtra-Computing/XtraGPT-14B) models.
-
-We plan to **open-source XtraMCP** once the API stabilizes for community use.
-
-
-#### 5. Build and Run
-```bash
-# Build the backend
-make build
-
-# Run the backend server
-./dist/pd.exe
-```
-
-The server will start on `http://localhost:6060`.
-
-<div align="center">
-  <img src="docs/imgs/run.png" alt="Backend Server Running" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"/>
-</div>
-
-**NOTE**: `"ERROR [AI Client] Failed to initialize XtraMCP session"` <br> is expected if you're hosting locally without XtraMCP or an equivalent MCP orchestration backend.
-
-### Frontend Extension Build
-
-#### Chrome Extension Development
-```bash
-cd webapp/_webapp
-
-# Install frontend dependencies
-npm install
-
-# Build for production (connects to production server)
-npm run build:prd:chrome
-
-# Package the extension
-cd dist
-zip -r paperdebugger-extension.zip *
-```
-
-#### Installing the Development Extension
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" (toggle in top-right)
-3. Click "Load unpacked" and select the `webapp/_webapp/dist` directory
-   - Or drag the `paperdebugger-extension.zip` file into the extensions page
+Please refer to [DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## Citation
 ```
