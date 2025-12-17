@@ -32,10 +32,17 @@ func MapModelConversationToProto(conversation *models.Conversation) *chatv1.Conv
 		return msg.GetPayload().GetMessageType() != &chatv1.MessagePayload_System{}
 	})
 
+	// backward compatibility
+	modelSlug := conversation.ModelSlug
+	if modelSlug == "" {
+		modelSlug = chatv1.LanguageModel(conversation.LanguageModel).String()
+	}
+
 	return &chatv1.Conversation{
 		Id:            conversation.ID.Hex(),
 		Title:         conversation.Title,
 		LanguageModel: chatv1.LanguageModel(conversation.LanguageModel),
+		ModelSlug:     modelSlug,
 		Messages:      filteredMessages,
 	}
 }

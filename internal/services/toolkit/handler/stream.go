@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/openai/openai-go/v2/responses"
@@ -24,18 +25,6 @@ func NewStreamHandler(
 	}
 }
 
-func (h *StreamHandler) ConvertSlugToLanguageModel() chatv1.LanguageModel {
-	// TODO: finish this.
-	switch h.modelSlug {
-	case "gpt-4o":
-		return chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT4O
-	case "gpt-4.1-mini":
-		return chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI
-	default:
-		return chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41
-	}
-}
-
 func (h *StreamHandler) SendInitialization() {
 	if h.callbackStream == nil {
 		return
@@ -44,7 +33,7 @@ func (h *StreamHandler) SendInitialization() {
 	streamInit := &chatv1.StreamInitialization{
 		ConversationId: h.conversationId,
 		ModelSlug:      h.modelSlug,
-		LanguageModel:  h.ConvertSlugToLanguageModel(),
+		LanguageModel:  chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
 	}
 
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{

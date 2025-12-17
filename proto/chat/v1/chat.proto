@@ -115,7 +115,7 @@ message Conversation {
   string id = 1;
   string title = 3;
   LanguageModel language_model = 2; // deprecated: use model_slug instead
-  optional string model_slug = 5;   // new: model slug string
+  string model_slug = 5;            // new: model slug string
   // If list conversations, then messages length is 0.
   repeated Message messages = 4;
 }
