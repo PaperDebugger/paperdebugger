@@ -1,5 +1,5 @@
 import { fromJson } from "@bufbuild/protobuf";
-import { Conversation, LanguageModel, Message, MessageSchema } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation, Message, MessageSchema } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../types";
 import { useStreamingMessageStore } from "../../streaming-message-store";
 import { flushSync } from "react-dom";
@@ -41,7 +41,7 @@ export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Messag
   return undefined;
 };
 
-export const flushStreamingMessageToConversation = (conversationId?: string, languageModel?: LanguageModel) => {
+export const flushStreamingMessageToConversation = (conversationId?: string, modelSlug?: string) => {
   const flushMessages = useStreamingMessageStore
     .getState()
     .streamingMessage.parts.map((part) => {
@@ -59,7 +59,7 @@ export const flushStreamingMessageToConversation = (conversationId?: string, lan
     useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
       ...prev,
       id: conversationId ?? prev.id,
-      languageModel: languageModel ?? prev.languageModel,
+      modelSlug: modelSlug ?? prev.modelSlug,
       messages: [...prev.messages, ...flushMessages],
     }));
   });

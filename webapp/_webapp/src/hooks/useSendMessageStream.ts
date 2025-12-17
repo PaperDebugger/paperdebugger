@@ -73,7 +73,10 @@ export function useSendMessageStream() {
       const request: PlainMessage<CreateConversationMessageStreamRequest> = {
         projectId: getProjectId(),
         conversationId: currentConversation.id,
-        languageModel: currentConversation.languageModel,
+        model: {
+          case: "modelSlug",
+          value: currentConversation.modelSlug!,
+        },
         userMessage: message,
         userSelectedText: selectedText,
         conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,

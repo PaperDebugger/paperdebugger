@@ -22,7 +22,7 @@ import (
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
 func (a *AIClient) ChatCompletion(ctx context.Context, modelSlug string, languageModel models.LanguageModel, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", modelSlug, &languageModel, messages, llmProvider)
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStream(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -50,11 +50,11 @@ func (a *AIClient) ChatCompletion(ctx context.Context, modelSlug string, languag
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, languageModel *models.LanguageModel, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
+func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
 	openaiChatHistory := responses.ResponseNewParamsInputUnion{OfInputItemList: messages}
 	inappChatHistory := []chatv1.Message{}
 
-	streamHandler := handler.NewStreamHandler(callbackStream, conversationId, modelSlug, languageModel)
+	streamHandler := handler.NewStreamHandler(callbackStream, conversationId, modelSlug)
 
 	streamHandler.SendInitialization()
 	defer func() {
@@ -62,7 +62,7 @@ func (a *AIClient) ChatCompletionStream(ctx context.Context, callbackStream chat
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
-	params := getDefaultParams(*languageModel, modelSlug, openaiChatHistory, a.toolCallHandler.Registry)
+	params := getDefaultParams(modelSlug, openaiChatHistory, a.toolCallHandler.Registry)
 
 	for {
 		params.Input = openaiChatHistory
