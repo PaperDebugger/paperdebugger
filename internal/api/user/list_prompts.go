@@ -13,14 +13,14 @@ import (
 )
 
 var defaultPrompts = []*userv1.Prompt{
-	{
-		Id:           "1",
-		CreatedAt:    timestamppb.New(time.Time{}),
-		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Enhance Academic Writing (Powered by XtraGPT)",
-		Content:      "Suggest context-aware academic paper writing enhancements for selected text.",
-		IsUserPrompt: false,
-	},
+	// {
+	// 	Id:           "1",
+	// 	CreatedAt:    timestamppb.New(time.Time{}),
+	// 	UpdatedAt:    timestamppb.New(time.Time{}),
+	// 	Title:        "Enhance Academic Writing (Powered by XtraGPT)",
+	// 	Content:      "Suggest context-aware academic paper writing enhancements for selected text.",
+	// 	IsUserPrompt: false,
+	// },
 	{
 		Id:           "2",
 		CreatedAt:    timestamppb.New(time.Time{}),
@@ -37,14 +37,14 @@ var defaultPrompts = []*userv1.Prompt{
 		Content:      "Find me relevant papers to read",
 		IsUserPrompt: false,
 	},
-	{
-		Id:           "4",
-		CreatedAt:    timestamppb.New(time.Time{}),
-		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Deep Research (Powered by XtraMCP)",
-		Content:      "Do deep research and compare my papers against others",
-		IsUserPrompt: false,
-	},
+	// {
+	// 	Id:           "4",
+	// 	CreatedAt:    timestamppb.New(time.Time{}),
+	// 	UpdatedAt:    timestamppb.New(time.Time{}),
+	// 	Title:        "Deep Research (Powered by XtraMCP)",
+	// 	Content:      "Do deep research and compare my papers against others",
+	// 	IsUserPrompt: false,
+	// },
 }
 
 func (s *UserServer) ListPrompts(
