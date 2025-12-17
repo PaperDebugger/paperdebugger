@@ -10,18 +10,18 @@ import (
 type StreamHandler struct {
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer
 	conversationId string
-	languageModel  models.LanguageModel
+	modelSlug      string
 }
 
 func NewStreamHandler(
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer,
 	conversationId string,
-	languageModel models.LanguageModel,
+	modelSlug string,
 ) *StreamHandler {
 	return &StreamHandler{
 		callbackStream: callbackStream,
 		conversationId: conversationId,
-		languageModel:  languageModel,
+		modelSlug:      modelSlug,
 	}
 }
 
@@ -29,11 +29,13 @@ func (h *StreamHandler) SendInitialization() {
 	if h.callbackStream == nil {
 		return
 	}
+
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamInitialization{
 			StreamInitialization: &chatv1.StreamInitialization{
 				ConversationId: h.conversationId,
-				LanguageModel:  chatv1.LanguageModel(h.languageModel),
+				// ModelSlug:      h.modelSlug,
+				LanguageModel: chatv1.LanguageModel(models.LanguageModelFromSlug(h.modelSlug)), // compatible with old code
 			},
 		},
 	})

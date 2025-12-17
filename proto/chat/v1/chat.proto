@@ -105,7 +105,8 @@ message Message {
 message Conversation {
   string id = 1;
   string title = 3;
-  LanguageModel language_model = 2;
+  LanguageModel language_model = 2; // deprecated: use model_slug instead
+  // string model_slug = 5; // new: model slug string
   // If list conversations, then messages length is 0.
   repeated Message messages = 4;
 }
@@ -132,8 +133,8 @@ message CreateConversationMessageRequest {
   // If conversation_id is not provided,
   // a new conversation will be created and the id will be returned.
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
-
+  LanguageModel language_model = 3; // deprecated: use model_slug instead
+  string model_slug = 7; // new: model slug string
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
@@ -178,7 +179,8 @@ message ListSupportedModelsResponse {
 // Information sent once at the beginning of a new conversation stream
 message StreamInitialization {
   string conversation_id = 1;
-  LanguageModel language_model = 5;
+  LanguageModel language_model = 5; // deprecated: use model_slug instead
+  // string model_slug = 6; // new: model slug string
 }
 
 // Designed as StreamPartBegin and StreamPartEnd to
@@ -227,7 +229,8 @@ message StreamError {
 
 enum ConversationType {
   CONVERSATION_TYPE_UNSPECIFIED = 0;
-  CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the inapp_history and openai_history are synced.
+  CONVERSATION_TYPE_DEBUG = 1; // does not contain any customized messages, the
+  // inapp_history and openai_history are synced.
   // CONVERSATION_TYPE_NO_SYSTEM_MESSAGE_INJECTION = 2;
   // CONVERSATION_TYPE_NO_USER_MESSAGE_INJECTION = 3;
 }
@@ -238,7 +241,8 @@ enum ConversationType {
 message CreateConversationMessageStreamRequest {
   string project_id = 1;
   optional string conversation_id = 2;
-  LanguageModel language_model = 3;
+  LanguageModel language_model = 3; // deprecated: use model_slug instead
+  string model_slug = 7; // new: model slug string
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;

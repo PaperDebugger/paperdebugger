@@ -3,6 +3,7 @@ import {
   ConversationType,
   CreateConversationMessageStreamRequest,
   IncompleteIndicator,
+  LanguageModel,
   StreamFinalization,
 } from "../pkg/gen/apiclient/chat/v1/chat_pb";
 import { PlainMessage } from "../query/types";
@@ -73,7 +74,8 @@ export function useSendMessageStream() {
       const request: PlainMessage<CreateConversationMessageStreamRequest> = {
         projectId: getProjectId(),
         conversationId: currentConversation.id,
-        languageModel: currentConversation.languageModel,
+        languageModel: LanguageModel.UNSPECIFIED, // backward compatibility
+        modelSlug: currentConversation.modelSlug,
         userMessage: message,
         userSelectedText: selectedText,
         conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,

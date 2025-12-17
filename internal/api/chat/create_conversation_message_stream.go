@@ -25,14 +25,18 @@ func (s *ChatServer) CreateConversationMessageStream(
 ) error {
 	ctx := stream.Context()
 
-	languageModel := models.LanguageModel(req.GetLanguageModel())
+	modelSlug := req.GetModelSlug()
+	if modelSlug == "" {
+		modelSlug = models.LanguageModel(req.GetLanguageModel()).Name()
+	}
+
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
-		languageModel,
+		modelSlug,
 		req.GetConversationType(),
 	)
 	if err != nil {
@@ -41,11 +45,10 @@ func (s *ChatServer) CreateConversationMessageStream(
 
 	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
 	llmProvider := &models.LLMProviderConfig{
-		Endpoint: s.cfg.OpenAIBaseURL,
-		APIKey:   settings.OpenAIAPIKey,
+		APIKey: settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), languageModel, conversation.OpenaiChatHistory, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletionStream(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}

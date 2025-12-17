@@ -92,7 +92,7 @@ func (s *ChatService) GetPrompt(ctx context.Context, content string, selectedTex
 	return strings.TrimSpace(userPromptBuffer.String()), nil
 }
 
-func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.ObjectID, projectID string, languageModel models.LanguageModel, inappChatHistory []*chatv1.Message, openaiChatHistory responses.ResponseInputParam) (*models.Conversation, error) {
+func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, inappChatHistory []*chatv1.Message, openaiChatHistory responses.ResponseInputParam) (*models.Conversation, error) {
 	// Convert protobuf messages to BSON
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
@@ -116,7 +116,7 @@ func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.Ob
 		UserID:            userID,
 		ProjectID:         projectID,
 		Title:             DefaultConversationTitle,
-		LanguageModel:     languageModel,
+		ModelSlug:         modelSlug,
 		InappChatHistory:  bsonMessages,
 		OpenaiChatHistory: openaiChatHistory,
 	}

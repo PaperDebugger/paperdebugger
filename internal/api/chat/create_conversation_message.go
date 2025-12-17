@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 
-	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
@@ -115,7 +114,7 @@ func (s *ChatServer) createConversation(
 	userInstructions string,
 	userMessage string,
 	userSelectedText string,
-	languageModel models.LanguageModel,
+	modelSlug string,
 	conversationType chatv1.ConversationType,
 ) (*models.Conversation, error) {
 	systemPrompt, err := s.chatService.GetSystemPrompt(ctx, latexFullSource, projectInstructions, userInstructions, conversationType)
@@ -135,7 +134,7 @@ func (s *ChatServer) createConversation(
 	}
 
 	return s.chatService.InsertConversationToDB(
-		ctx, userId, projectId, languageModel, messages, oaiHistory.OfInputItemList,
+		ctx, userId, projectId, modelSlug, messages, oaiHistory.OfInputItemList,
 	)
 }
 
@@ -180,7 +179,7 @@ func (s *ChatServer) appendConversationMessage(
 
 // 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
 // conversationType 可以在一次 conversation 中多次切换
-func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, languageModel models.LanguageModel, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err
@@ -223,7 +222,7 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 			userInstructions,
 			userMessage,
 			userSelectedText,
-			languageModel,
+			modelSlug,
 			conversationType,
 		)
 	} else {
@@ -250,69 +249,4 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 	}
 
 	return ctx, conversation, settings, nil
-}
-
-// Deprecated: Use CreateConversationMessageStream instead.
-func (s *ChatServer) CreateConversationMessage(
-	ctx context.Context,
-	req *chatv1.CreateConversationMessageRequest,
-) (*chatv1.CreateConversationMessageResponse, error) {
-	languageModel := models.LanguageModel(req.GetLanguageModel())
-	ctx, conversation, settings, err := s.prepare(
-		ctx,
-		req.GetProjectId(),
-		req.GetConversationId(),
-		req.GetUserMessage(),
-		req.GetUserSelectedText(),
-		languageModel,
-		req.GetConversationType(),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	llmProvider := &models.LLMProviderConfig{
-		Endpoint: s.cfg.OpenAIBaseURL,
-		APIKey:   settings.OpenAIAPIKey,
-	}
-	openaiChatHistory, inappChatHistory, err := s.aiClient.ChatCompletion(ctx, languageModel, conversation.OpenaiChatHistory, llmProvider)
-	if err != nil {
-		return nil, err
-	}
-
-	bsonMessages := make([]bson.M, len(inappChatHistory))
-	for i := range inappChatHistory {
-		bsonMsg, err := convertToBSON(&inappChatHistory[i])
-		if err != nil {
-			return nil, err
-		}
-		bsonMessages[i] = bsonMsg
-	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistory = openaiChatHistory
-
-	if err := s.chatService.UpdateConversation(conversation); err != nil {
-		return nil, err
-	}
-
-	go func() {
-		protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
-		for i, bsonMsg := range conversation.InappChatHistory {
-			protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
-		}
-		title, err := s.aiClient.GetConversationTitle(ctx, protoMessages, llmProvider)
-		if err != nil {
-			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
-			return
-		}
-		conversation.Title = title
-		if err := s.chatService.UpdateConversation(conversation); err != nil {
-			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
-			return
-		}
-	}()
-
-	return &chatv1.CreateConversationMessageResponse{
-		Conversation: mapper.MapModelConversationToProto(conversation),
-	}, nil
 }

@@ -29,7 +29,7 @@ func (a *AIClient) GetConversationTitle(ctx context.Context, inappChatHistory []
 	message := strings.Join(messages, "\n")
 	message = fmt.Sprintf("%s\nBased on above conversation, generate a short, clear, and descriptive title that summarizes the main topic or purpose of the discussion. The title should be concise, specific, and use natural language. Avoid vague or generic titles. Use abbreviation and short words if possible. Use 3-5 words if possible. Give me the title only, no other text including any other words.", message)
 
-	_, resp, err := a.ChatCompletion(ctx, models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI), responses.ResponseInputParam{
+	_, resp, err := a.ChatCompletion(ctx, "gpt-4.1-mini", responses.ResponseInputParam{
 		{
 			OfInputMessage: &responses.ResponseInputItemMessageParam{
 				Role: "system",

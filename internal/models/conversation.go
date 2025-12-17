@@ -11,6 +11,7 @@ type Conversation struct {
 	ProjectID        string        `bson:"project_id"`
 	Title            string        `bson:"title"`
 	LanguageModel    LanguageModel `bson:"language_model"`
+	ModelSlug        string        `bson:"model_slug"`
 	InappChatHistory []bson.M      `bson:"inapp_chat_history"` // Store as raw BSON to avoid protobuf decoding issues
 
 	OpenaiChatHistory responses.ResponseInputParam `bson:"openai_chat_history"` // 实际上发给 GPT 的聊天历史

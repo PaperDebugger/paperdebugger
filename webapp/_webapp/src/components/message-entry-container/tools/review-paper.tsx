@@ -58,9 +58,9 @@ export const ReviewPaperCard = ({ jsonRpcResult, preparing, animated }: ReviewPa
         {jsonRpcResult.result && (
           <div className="text-xs">
             <MarkdownComponent animated={animated}>
-              ℹ️ Review paper is currently scaled back to balance cost. Presently it identifies issues in Title, Abstract, and Introduction. 
-              We are working to support the full review flow again. 
-              If you find the input might not be properly passed, try highlighting the relevant sections and adding to chat.
+              ℹ️ Review paper is currently scaled back to balance cost. Presently it identifies issues in Title,
+              Abstract, and Introduction. We are working to support the full review flow again. If you find the input
+              might not be properly passed, try highlighting the relevant sections and adding to chat.
             </MarkdownComponent>
           </div>
         )}

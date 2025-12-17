@@ -8,7 +8,6 @@ type JsonRpcProps = {
 };
 
 export const JsonRpc = ({ functionName, preparing, animated }: JsonRpcProps) => {
-
   if (preparing) {
     return (
       <div className={cn("tool-card", { animated: animated })}>
