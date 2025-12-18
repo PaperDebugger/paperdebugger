@@ -116,10 +116,5 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 	}
 
-	ptrChatHistory := make([]*chatv2.Message, len(inappChatHistory))
-	for i := range inappChatHistory {
-		ptrChatHistory[i] = &inappChatHistory[i]
-	}
-
 	return openaiChatHistory.OfInputItemList, inappChatHistory, nil
 }

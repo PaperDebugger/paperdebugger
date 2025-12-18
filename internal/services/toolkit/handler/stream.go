@@ -18,6 +18,9 @@ type StreamHandler interface {
 	SendToolCallEnd(toolCall responses.ResponseFunctionToolCall, result string, err error)
 }
 
+// Compile-time check: ensure StreamHandlerV1 implements StreamHandler interface
+var _ StreamHandler = (*StreamHandlerV1)(nil)
+
 type StreamHandlerV1 struct {
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer
 	conversationId string

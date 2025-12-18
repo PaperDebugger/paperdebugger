@@ -6,6 +6,9 @@ import (
 	"github.com/openai/openai-go/v2/responses"
 )
 
+// Compile-time check: ensure StreamHandlerV2 implements StreamHandler interface
+var _ StreamHandler = (*StreamHandlerV2)(nil)
+
 type StreamHandlerV2 struct {
 	callbackStream chatv2.ChatService_CreateConversationMessageStreamServer
 	conversationId string
