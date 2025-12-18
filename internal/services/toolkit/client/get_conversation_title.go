@@ -7,6 +7,7 @@ import (
 	"paperdebugger/internal/models"
 	"strings"
 
+	"paperdebugger/internal/api/mapper"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/openai/openai-go/v2/responses"
@@ -55,7 +56,8 @@ func (a *AIClient) GetConversationTitle(ctx context.Context, inappChatHistory []
 		return "Untitled", nil
 	}
 
-	title := strings.TrimSpace(resp[0].Payload.GetAssistant().GetContent())
+	msg := mapper.BSONToChatMessage(resp[0])
+	title := strings.TrimSpace(msg.Payload.GetAssistant().GetContent())
 	title = strings.TrimLeft(title, "\"")
 	title = strings.TrimRight(title, "\"")
 	title = strings.TrimSpace(title)

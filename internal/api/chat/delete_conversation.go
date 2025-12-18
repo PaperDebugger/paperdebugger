@@ -3,12 +3,13 @@ package chat
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/v2/bson"
 	"paperdebugger/internal/libs/contextutil"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (s *ChatServer) DeleteConversation(
+func (s *ChatServerV1) DeleteConversation(
 	ctx context.Context,
 	req *chatv1.DeleteConversationRequest,
 ) (*chatv1.DeleteConversationResponse, error) {

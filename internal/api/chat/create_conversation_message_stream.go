@@ -19,7 +19,7 @@ func (s *ChatServer) sendStreamError(stream chatv1.ChatService_CreateConversatio
 	})
 }
 
-func (s *ChatServer) CreateConversationMessageStream(
+func (s *ChatServerV1) CreateConversationMessageStream(
 	req *chatv1.CreateConversationMessageStreamRequest,
 	stream chatv1.ChatService_CreateConversationMessageStreamServer,
 ) error {

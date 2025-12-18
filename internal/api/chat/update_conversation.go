@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (s *ChatServer) UpdateConversation(
+func (s *ChatServerV1) UpdateConversation(
 	ctx context.Context,
 	req *chatv1.UpdateConversationRequest,
 ) (*chatv1.UpdateConversationResponse, error) {

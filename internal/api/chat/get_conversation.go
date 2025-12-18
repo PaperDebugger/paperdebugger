@@ -3,13 +3,14 @@ package chat
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/v2/bson"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (s *ChatServer) GetConversation(
+func (s *ChatServerV1) GetConversation(
 	ctx context.Context,
 	req *chatv1.GetConversationRequest,
 ) (*chatv1.GetConversationResponse, error) {
