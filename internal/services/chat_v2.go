@@ -14,7 +14,7 @@ import (
 	"paperdebugger/internal/models"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -92,7 +92,7 @@ func (s *ChatServiceV2) GetPrompt(ctx context.Context, content string, selectedT
 	return strings.TrimSpace(userPromptBuffer.String()), nil
 }
 
-func (s *ChatServiceV2) InsertConversationToDBV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, inappChatHistory []*chatv2.Message, openaiChatHistory responses.ResponseInputParam) (*models.Conversation, error) {
+func (s *ChatServiceV2) InsertConversationToDBV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, inappChatHistory []*chatv2.Message, openaiChatHistory []openai.ChatCompletionMessageParamUnion) (*models.Conversation, error) {
 	// Convert protobuf messages to BSON
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
@@ -113,12 +113,12 @@ func (s *ChatServiceV2) InsertConversationToDBV2(ctx context.Context, userID bso
 			CreatedAt: bson.NewDateTimeFromTime(time.Now()),
 			UpdatedAt: bson.NewDateTimeFromTime(time.Now()),
 		},
-		UserID:            userID,
-		ProjectID:         projectID,
-		Title:             DefaultConversationTitleV2,
-		ModelSlug:         modelSlug,
-		InappChatHistory:  bsonMessages,
-		OpenaiChatHistory: openaiChatHistory,
+		UserID:                      userID,
+		ProjectID:                   projectID,
+		Title:                       DefaultConversationTitleV2,
+		ModelSlug:                   modelSlug,
+		InappChatHistory:            bsonMessages,
+		OpenaiChatHistoryCompletion: openaiChatHistory,
 	}
 	_, err := s.conversationCollection.InsertOne(ctx, conversation)
 	if err != nil {

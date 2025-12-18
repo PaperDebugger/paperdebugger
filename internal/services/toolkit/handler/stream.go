@@ -59,7 +59,8 @@ func (h *StreamHandlerV1) HandleAddedItem(chunk responses.ResponseStreamEventUni
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Item.Type == "message" {
+	switch chunk.Item.Type {
+	case "message":
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{
@@ -72,7 +73,7 @@ func (h *StreamHandlerV1) HandleAddedItem(chunk responses.ResponseStreamEventUni
 				},
 			},
 		})
-	} else if chunk.Item.Type == "function_call" {
+	case "function_call":
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{

@@ -12,9 +12,6 @@ import (
 
 // define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
 
-type OpenAIChatHistory []openai.ChatCompletionMessageParamUnion
-type AppChatHistory []chatv2.Message
-
 // ChatCompletion orchestrates a chat completion process with a language model (e.g., GPT), handling tool calls and message history management.
 //
 // Parameters:
@@ -165,7 +162,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 
 		if answer_content != "" {
-			appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id)
+			appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id, modelSlug)
 		}
 
 		// 执行调用（如果有），返回增量数据

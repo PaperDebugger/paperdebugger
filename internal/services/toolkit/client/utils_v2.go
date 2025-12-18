@@ -21,7 +21,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string) {
+func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string, modelSlug string) {
 	*openaiChatHistory = append(*openaiChatHistory, openaiv3.ChatCompletionMessageParamUnion{
 		OfAssistant: &openaiv3.ChatCompletionAssistantMessageParam{
 			Role: "assistant",
@@ -43,7 +43,8 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 		Payload: &chatv2.MessagePayload{
 			MessageType: &chatv2.MessagePayload_Assistant{
 				Assistant: &chatv2.MessageTypeAssistant{
-					Content: content,
+					Content:   content,
+					ModelSlug: modelSlug,
 				},
 			},
 		},

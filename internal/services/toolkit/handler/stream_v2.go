@@ -112,7 +112,8 @@ func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, c
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_Assistant{
 						Assistant: &chatv2.MessageTypeAssistant{
-							Content: content,
+							Content:   content,
+							ModelSlug: h.modelSlug,
 						},
 					},
 				},
