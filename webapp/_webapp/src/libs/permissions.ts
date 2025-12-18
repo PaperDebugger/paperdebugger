@@ -3,12 +3,14 @@ export async function registerContentScripts(origins?: string[]) {
   try {
     const resolvedOrigins = origins ?? (await chrome.permissions.getAll()).origins ?? [];
     if (resolvedOrigins.length === 0) {
+      // eslint-disable-next-line no-console
       console.log("[PaperDebugger] No origins found, skipping content script registration");
       return;
     }
 
     const scriptIds = (await chrome.scripting.getRegisteredContentScripts()).map((script) => script.id);
     if (scriptIds.length > 0) {
+      // eslint-disable-next-line no-console
       console.log("[PaperDebugger] Unregistering dynamic content scripts", scriptIds);
       await chrome.scripting.unregisterContentScripts({ ids: scriptIds });
     }
@@ -30,8 +32,10 @@ export async function registerContentScripts(origins?: string[]) {
       },
     ]);
 
+    // eslint-disable-next-line no-console
     console.log("[PaperDebugger] Registration complete", resolvedOrigins);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[PaperDebugger] Failed to register content scripts", error);
   }
 }

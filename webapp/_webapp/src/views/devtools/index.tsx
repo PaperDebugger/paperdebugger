@@ -203,7 +203,11 @@ export const DevTools = () => {
     const messageEntry: MessageEntry = {
       messageId: randomUUID(),
       status: MessageEntryStatus.PREPARING,
-      assistant: { content: "Assistant Response Preparing " + randomText(), modelSlug: "gpt-4.1", $typeName: "chat.v2.MessageTypeAssistant" },
+      assistant: {
+        content: "Assistant Response Preparing " + randomText(),
+        modelSlug: "gpt-4.1",
+        $typeName: "chat.v2.MessageTypeAssistant",
+      },
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {

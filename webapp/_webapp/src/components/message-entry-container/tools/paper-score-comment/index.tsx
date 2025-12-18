@@ -49,8 +49,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
           );
           setSelectedComments(new Set(allCommentIds));
         }
-      } catch (error) {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
+      } catch {
         // Ignore parsing errors here, they'll be handled in the render
       }
     }

@@ -29,7 +29,6 @@ class ApiClient {
   updateBaseURL(baseURL: string): void {
     this.axiosInstance.defaults.baseURL = baseURL;
     localStorage.setItem(LOCAL_STORAGE_KEY, baseURL);
-    console.log("apiclient baseURL updated to", baseURL);
   }
 
   addListener(event: "tokenRefreshed", listener: (args: { token: string; refreshToken: string }) => void): void {
@@ -194,7 +193,7 @@ const LOCAL_STORAGE_KEY = "pd.devtool.endpoint";
 export const getEndpointFromLocalStorage = () => {
   try {
     return localStorage.getItem(LOCAL_STORAGE_KEY) || DEFAULT_ENDPOINT;
-  } catch (error) {
+  } catch {
     // Fallback if localStorage is not available (e.g., in SSR)
     return DEFAULT_ENDPOINT;
   }

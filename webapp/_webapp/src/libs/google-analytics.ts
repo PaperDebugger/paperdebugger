@@ -53,17 +53,15 @@ class Analytics {
             ],
           }),
         },
-      ).catch((_) => {
-        // eslint-disable-line @typescript-eslint/no-unused-vars
-        // logInfo("Google Analytics request failed with an exception", e);
+      ).catch(() => {
+        // logInfo("Google Analytics request failed with an exception");
       });
 
       if (!this.debug) {
         return;
       }
-    } catch (e) {
-      // eslint-disable-line @typescript-eslint/no-unused-vars
-      // logInfo("Google Analytics request failed with an exception", e);
+    } catch {
+      // logInfo("Google Analytics request failed with an exception");
     }
   }
 

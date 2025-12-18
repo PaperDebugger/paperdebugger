@@ -35,7 +35,7 @@ const normalizeWildcardPattern = (url: string) => {
       return { valid: false as const, error: "URL must start with http://, https://, or *://" };
     }
     return { valid: true as const, origin: `${urlObj.protocol}//${urlObj.host}/*` };
-  } catch (e) {
+  } catch {
     return {
       valid: false as const,
       error:
@@ -57,6 +57,7 @@ interface HostPermissionState {
 }
 
 const handleError = (error: unknown, defaultMessage: string): string => {
+  // eslint-disable-next-line no-console
   console.error(defaultMessage, error);
   return error instanceof Error ? error.message : defaultMessage;
 };

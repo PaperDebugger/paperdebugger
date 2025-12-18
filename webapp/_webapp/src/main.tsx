@@ -74,12 +74,10 @@ export const Main = () => {
     if (disableLineWrap) {
       onElementAppeared(".cm-lineWrapping", (editor) => {
         editor.classList.remove("cm-lineWrapping");
-        console.log("disable line wrap");
       });
     } else {
       onElementAppeared(".cm-content", (editor) => {
         editor.classList.add("cm-lineWrapping");
-        console.log("enable line wrap");
       });
     }
   }, [disableLineWrap]);
@@ -111,7 +109,15 @@ export const Main = () => {
     setSelectionRange(lastSelectionRange);
     setIsOpen(true);
     clearOverleafSelection();
-  }, [setSelectedText, setSelectionRange, setIsOpen, lastSelectedText, lastSelectionRange, clearOverleafSelection]);
+  }, [
+    setActiveTab,
+    setSelectedText,
+    setSelectionRange,
+    setIsOpen,
+    lastSelectedText,
+    lastSelectionRange,
+    clearOverleafSelection,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -178,8 +184,6 @@ export const Main = () => {
     </>
   );
 };
-
-console.log("[PaperDebugger] PaperDebugger injected, find toolbar-left or ide-redesign-toolbar-menu-bar to add button");
 
 if (!import.meta.env.DEV) {
   onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {
