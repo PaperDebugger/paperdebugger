@@ -25,8 +25,10 @@ const getProviderIcon = (provider: string | undefined): string => {
 };
 
 export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
-  const { inputRef, setPrompt } = useConversationUiStore();
+  const { inputRef, setPrompt, prompt } = useConversationUiStore();
   const { currentModel } = useLanguageModels();
+
+  const isPromptsAndActionsDisabled = prompt.length > 0 && !prompt.startsWith("/") && !prompt.startsWith(":");
 
   return (
     <div className="flex flex-row gap-2 noselect">
@@ -35,6 +37,7 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
         icon="tabler:notebook"
         text="Prompts"
         alwaysShowText
+        disabled={isPromptsAndActionsDisabled}
         onClick={() => {
           if (inputRef.current) {
             setPrompt("/");
@@ -48,6 +51,7 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
         icon="tabler:sparkles"
         text="Actions"
         alwaysShowText
+        disabled={isPromptsAndActionsDisabled}
         onClick={() => {
           if (inputRef.current) {
             setPrompt(":");

@@ -125,6 +125,10 @@ message DeleteConversationResponse {
 message SupportedModel {
   string name = 1;
   string slug = 2;
+  int64 total_context = 3;
+  int64 max_output = 4;
+  int64 input_price = 5; // in cents per 1M tokens
+  int64 output_price = 6; // in cents per 1M tokens
 }
 
 message ListSupportedModelsRequest {

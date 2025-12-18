@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	"paperdebugger/internal/services"
+	"paperdebugger/internal/services/toolkit"
 
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/packages/param"
@@ -42,7 +46,108 @@ type ReadFileArgs struct {
 	EndLine   *int   `json:"end_line,omitempty"`
 }
 
-func ReadFileTool(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
+type ReadFileTool struct {
+	projectService *services.ProjectService
+}
+
+func NewReadFileTool(projectService *services.ProjectService) *ReadFileTool {
+	return &ReadFileTool{
+		projectService: projectService,
+	}
+}
+
+func (t *ReadFileTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
+	var getArgs ReadFileArgs
+
+	if err := json.Unmarshal(args, &getArgs); err != nil {
+		return "", "", err
+	}
+
+	// Get project from context
+	actor, projectId, _ := toolkit.GetActorProjectConversationID(ctx)
+	if actor == nil || projectId == "" {
+		return "", "", fmt.Errorf("failed to get actor or project id from context")
+	}
+
+	project, err := t.projectService.GetProject(ctx, actor.ID, projectId)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to get project: %w", err)
+	}
+
+	// Normalize the path for matching
+	targetPath := normalizePath(getArgs.Path)
+
+	// Find the document by path
+	var foundDoc *struct {
+		Lines    []string
+		Filepath string
+	}
+	for _, doc := range project.Docs {
+		docPath := normalizePath(doc.Filepath)
+		if docPath == targetPath || strings.HasSuffix(docPath, "/"+targetPath) || docPath == "/"+targetPath {
+			foundDoc = &struct {
+				Lines    []string
+				Filepath string
+			}{Lines: doc.Lines, Filepath: doc.Filepath}
+			break
+		}
+	}
+
+	if foundDoc == nil {
+		return fmt.Sprintf("File not found: %s", getArgs.Path), "", nil
+	}
+
+	lines := foundDoc.Lines
+	totalLines := len(lines)
+
+	// Apply line range filtering
+	startIdx := 0
+	endIdx := totalLines
+
+	if getArgs.StartLine != nil {
+		startIdx = *getArgs.StartLine - 1 // Convert to 0-indexed
+		if startIdx < 0 {
+			startIdx = 0
+		}
+		if startIdx >= totalLines {
+			startIdx = totalLines
+		}
+	}
+
+	if getArgs.EndLine != nil {
+		endIdx = *getArgs.EndLine // EndLine is inclusive, so we use it directly
+		if endIdx > totalLines {
+			endIdx = totalLines
+		}
+		if endIdx < 0 {
+			endIdx = 0
+		}
+	}
+
+	if startIdx >= endIdx {
+		return "No content in the specified line range", "", nil
+	}
+
+	// Build result with line numbers
+	var result strings.Builder
+	result.WriteString(fmt.Sprintf("File: %s (lines %d-%d of %d)\n\n", foundDoc.Filepath, startIdx+1, endIdx, totalLines))
+
+	for i := startIdx; i < endIdx; i++ {
+		result.WriteString(fmt.Sprintf("%4d: %s\n", i+1, lines[i]))
+	}
+
+	return result.String(), "", nil
+}
+
+// normalizePath removes leading slashes and normalizes path separators
+func normalizePath(path string) string {
+	path = strings.TrimPrefix(path, "/")
+	path = strings.TrimPrefix(path, "./")
+	return path
+}
+
+// ReadFileToolLegacy for backward compatibility (standalone function)
+func ReadFileToolLegacy(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
 	var getArgs ReadFileArgs
 
 	if err := json.Unmarshal(args, &getArgs); err != nil {
@@ -58,6 +163,6 @@ func ReadFileTool(ctx context.Context, toolCallId string, args json.RawMessage) 
 		lineRange = fmt.Sprintf("to line %d", *getArgs.EndLine)
 	}
 
-	// TODO: Implement actual file reading logic
-	return fmt.Sprintf("[DUMMY] Read file: %s (%s)", getArgs.Path, lineRange), "", nil
+	// TODO: This legacy function doesn't have access to ProjectService
+	return fmt.Sprintf("[WARNING] read_file tool not properly initialized. Requested: %s (%s)", getArgs.Path, lineRange), "", nil
 }

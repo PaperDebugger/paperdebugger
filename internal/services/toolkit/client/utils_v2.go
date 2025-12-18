@@ -112,23 +112,38 @@ func initializeToolkitV2(
 ) *registry.ToolRegistryV2 {
 	toolRegistry := registry.NewToolRegistryV2()
 
-	// Register static file tools
+	// Register static file tools (create/delete don't need ProjectService - they're placeholder only)
 	toolRegistry.Register("create_file", filetools.CreateFileToolDescriptionV2, filetools.CreateFileTool)
 	toolRegistry.Register("delete_file", filetools.DeleteFileToolDescriptionV2, filetools.DeleteFileTool)
-	toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, filetools.ReadFileTool)
 	toolRegistry.Register("create_folder", filetools.CreateFolderToolDescriptionV2, filetools.CreateFolderTool)
 	toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
-	toolRegistry.Register("read_folder", filetools.ReadFolderToolDescriptionV2, filetools.ReadFolderTool)
-	toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, filetools.SearchStringTool)
-	toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, filetools.SearchFileTool)
+
+	// Register file tools with ProjectService injection
+	readFileTool := filetools.NewReadFileTool(projectService)
+	toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, readFileTool.Call)
+
+	readFolderTool := filetools.NewReadFolderTool(projectService)
+	toolRegistry.Register("read_folder", filetools.ReadFolderToolDescriptionV2, readFolderTool.Call)
+
+	searchStringTool := filetools.NewSearchStringTool(projectService)
+	toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, searchStringTool.Call)
+
+	searchFileTool := filetools.NewSearchFileTool(projectService)
+	toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, searchFileTool.Call)
 
 	logger.Info("[AI Client V2] Registered static file tools", "count", 8)
 
-	// Register static LaTeX tools
-	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, latextools.GetDocumentStructureTool)
+	// Register LaTeX tools with ProjectService injection
+	documentStructureTool := latextools.NewDocumentStructureTool(projectService)
+	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, documentStructureTool.Call)
+
 	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
-	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, latextools.ReadSectionSourceTool)
-	toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, latextools.ReadSourceLineRangeTool)
+
+	readSectionSourceTool := latextools.NewReadSectionSourceTool(projectService)
+	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, readSectionSourceTool.Call)
+
+	readSourceLineRangeTool := latextools.NewReadSourceLineRangeTool(projectService)
+	toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, readSourceLineRangeTool.Call)
 
 	logger.Info("[AI Client V2] Registered static LaTeX tools", "count", 4)
 

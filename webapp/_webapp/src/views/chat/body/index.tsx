@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCard } from "../../../components/message-card";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
+import { Conversation, Message } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { filterVisibleMessages, getPrevUserMessage, isEmptyConversation, messageToMessageEntry } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
@@ -20,15 +20,15 @@ enum ReloadStatus {
 }
 
 export const ChatBody = ({ conversation }: ChatBodyProps) => {
-  const { setCurrentConversation } = useConversationStore();
+  const setCurrentConversation = useConversationStore((s) => s.setCurrentConversation);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const expanderRef = useRef<HTMLDivElement>(null);
   const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
-  const visibleMessages = filterVisibleMessages(conversation);
+  const visibleMessages = useMemo(() => filterVisibleMessages(conversation), [conversation]);
   const [reloadSuccess, setReloadSuccess] = useState(ReloadStatus.Default);
 
-  const { conversationMode } = useSettingStore();
+  const conversationMode = useSettingStore((s) => s.conversationMode);
   const isDebugMode = conversationMode === "debug";
 
   // Scroll to the top of the last user message
@@ -68,30 +68,39 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     }
   }, [visibleMessages.length]);
 
+  const finalizedMessageCards = useMemo(
+    () =>
+      visibleMessages.map((message: Message, index: number) => (
+        <div
+          key={index}
+          ref={
+            index === visibleMessages.length - 1 && message.payload?.messageType.case === "user"
+              ? lastUserMsgRef
+              : undefined
+          }
+        >
+          <MessageCard
+            animated={false}
+            messageEntry={messageToMessageEntry(message)}
+            prevAttachment={getPrevUserMessage(visibleMessages, index)?.selectedText}
+          />
+        </div>
+      )),
+    [visibleMessages],
+  );
+
+  const streamingMessageCards = useMemo(
+    () =>
+      streamingMessage.parts.map((entry) => (
+        <MessageCard key={`streaming-${entry.messageId}`} animated={true} messageEntry={entry} />
+      )),
+    [streamingMessage.parts],
+  );
+
   if (isEmptyConversation()) {
     return <EmptyView />;
   }
 
-  const finalizedMessageCards = visibleMessages.map((message, index) => (
-    <div
-      key={index}
-      ref={
-        index === visibleMessages.length - 1 && message.payload?.messageType.case === "user"
-          ? lastUserMsgRef
-          : undefined
-      }
-    >
-      <MessageCard
-        animated={false}
-        messageEntry={messageToMessageEntry(message)}
-        prevAttachment={getPrevUserMessage(visibleMessages, index)?.selectedText}
-      />
-    </div>
-  ));
-
-  const streamingMessageCards = streamingMessage.parts.map((entry) => (
-    <MessageCard key={`streaming-${entry.messageId}`} animated={true} messageEntry={entry} />
-  ));
 
   const expander = (
     <div
@@ -157,3 +166,4 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     </div>
   );
 };
+

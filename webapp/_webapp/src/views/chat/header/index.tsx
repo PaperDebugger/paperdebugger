@@ -26,8 +26,8 @@ export const ShowHistory = () => {
 };
 
 export const ChatHeader = () => {
-  const { currentConversation } = useConversationStore();
-  const { showChatHistory } = useConversationUiStore();
+  const currentConversation = useConversationStore((s) => s.currentConversation);
+  const showChatHistory = useConversationUiStore((s) => s.showChatHistory);
 
   const title = currentConversation?.title ?? "New Conversation";
   const messageCount = useMemo(() => {

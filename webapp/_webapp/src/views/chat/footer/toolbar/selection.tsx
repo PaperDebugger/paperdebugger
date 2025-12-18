@@ -14,11 +14,12 @@ export type SelectionItem<T> = {
 
 type SelectionProps<T> = {
   items: SelectionItem<T>[];
+  initialValue?: T;
   onSelect?: (item: SelectionItem<T>) => void;
   onClose?: () => void;
 };
 
-export function Selection<T>({ items, onSelect, onClose }: SelectionProps<T>) {
+export function Selection<T>({ items, initialValue, onSelect, onClose }: SelectionProps<T>) {
   const { heightCollapseRequired } = useConversationUiStore();
   const { minimalistMode } = useSettingStore();
   const { user } = useAuthStore();
@@ -28,8 +29,15 @@ export function Selection<T>({ items, onSelect, onClose }: SelectionProps<T>) {
   const itemCount = items?.length ?? 0;
 
   useEffect(() => {
+    if (initialValue !== undefined) {
+      const idx = items.findIndex((item) => item.value === initialValue);
+      if (idx !== -1) {
+        setSelectedIdx(idx);
+        return;
+      }
+    }
     setSelectedIdx(0);
-  }, [itemCount]);
+  }, [itemCount, initialValue, items]);
 
   // Handle click outside and Escape key to close
   useEffect(() => {

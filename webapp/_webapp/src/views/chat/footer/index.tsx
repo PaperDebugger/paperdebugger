@@ -38,8 +38,12 @@ if (typeof document !== "undefined") {
 }
 
 export function PromptInput() {
-  const { prompt, heightCollapseRequired, inputRef, setPrompt } = useConversationUiStore();
-  const { searchPrompts } = usePromptLibraryStore();
+  const prompt = useConversationUiStore((s) => s.prompt);
+  const heightCollapseRequired = useConversationUiStore((s) => s.heightCollapseRequired);
+  const inputRef = useConversationUiStore((s) => s.inputRef);
+  const setPrompt = useConversationUiStore((s) => s.setPrompt);
+
+  const searchPrompts = usePromptLibraryStore((s) => s.searchPrompts);
   const [showModelSelection, setShowModelSelection] = useState(false);
   const prompts = useMemo(
     () => (!prompt.startsWith("/") ? [] : searchPrompts(prompt.slice(1))),
@@ -50,11 +54,14 @@ export function PromptInput() {
     filter: prompt.startsWith(":") ? prompt.slice(1) : undefined,
   });
 
-  const { user } = useAuthStore();
-  const { isStreaming, setIsStreaming } = useConversationStore();
+  const user = useAuthStore((s) => s.user);
+  const isStreaming = useConversationStore((s) => s.isStreaming);
+  const setIsStreaming = useConversationStore((s) => s.setIsStreaming);
+
   const selectedText = useSelectionStore((s) => s.selectedText);
+
   const { sendMessageStream } = useSendMessageStream();
-  const { minimalistMode } = useSettingStore();
+  const minimalistMode = useSettingStore((s) => s.minimalistMode);
 
   const handleModelSelect = useCallback(() => {
     setShowModelSelection(false);

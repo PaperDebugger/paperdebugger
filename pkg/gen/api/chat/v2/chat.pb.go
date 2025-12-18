@@ -1012,6 +1012,10 @@ type SupportedModel struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	TotalContext  int64                  `protobuf:"varint,3,opt,name=total_context,json=totalContext,proto3" json:"total_context,omitempty"`
+	MaxOutput     int64                  `protobuf:"varint,4,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
+	InputPrice    int64                  `protobuf:"varint,5,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`    // in cents per 1M tokens
+	OutputPrice   int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"` // in cents per 1M tokens
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1058,6 +1062,34 @@ func (x *SupportedModel) GetSlug() string {
 		return x.Slug
 	}
 	return ""
+}
+
+func (x *SupportedModel) GetTotalContext() int64 {
+	if x != nil {
+		return x.TotalContext
+	}
+	return 0
+}
+
+func (x *SupportedModel) GetMaxOutput() int64 {
+	if x != nil {
+		return x.MaxOutput
+	}
+	return 0
+}
+
+func (x *SupportedModel) GetInputPrice() int64 {
+	if x != nil {
+		return x.InputPrice
+	}
+	return 0
+}
+
+func (x *SupportedModel) GetOutputPrice() int64 {
+	if x != nil {
+		return x.OutputPrice
+	}
+	return 0
 }
 
 type ListSupportedModelsRequest struct {
@@ -1817,10 +1849,16 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"8\n" +
+	"\x1aDeleteConversationResponse\"\xc0\x01\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x02 \x01(\tR\x04slug\"\x1c\n" +
+	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
+	"\rtotal_context\x18\x03 \x01(\x03R\ftotalContext\x12\x1d\n" +
+	"\n" +
+	"max_output\x18\x04 \x01(\x03R\tmaxOutput\x12\x1f\n" +
+	"\vinput_price\x18\x05 \x01(\x03R\n" +
+	"inputPrice\x12!\n" +
+	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
 	"\x06models\x18\x01 \x03(\v2\x17.chat.v2.SupportedModelR\x06models\"^\n" +

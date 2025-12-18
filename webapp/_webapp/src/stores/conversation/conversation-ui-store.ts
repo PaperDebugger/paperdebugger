@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { createRef } from "react";
 
 export const COLLAPSED_HEIGHT = 460;
@@ -9,26 +10,6 @@ export const DISPLAY_MODES = [
   { key: "bottom-fixed", label: "Bottom Fixed" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
-
-const localStorageKey = {
-  displayMode: "pd.layout.displayMode",
-  floatingX: "pd.layout.floating.X",
-  floatingY: "pd.layout.floating.Y",
-  floatingWidth: "pd.layout.floating.W",
-  floatingHeight: "pd.layout.floating.H",
-  rightFixedWidth: "pd.layout.rightFixed.W",
-  bottomFixedHeight: "pd.layout.bottomFixed.H",
-  isOpen: "pd.layout.isOpen",
-  activeTab: "pd.layout.activeTab",
-  sidebarCollapsed: "pd.layout.sidebar.collapsed",
-  heightCollapseRequired: "pd.layout.heightCollapseRequired",
-  lastUsedModelSlug: "pd.chat.lastUsedModelSlug",
-} as const;
-
-export const getLocalStorage = <T>(key: keyof typeof localStorageKey): T | undefined => {
-  const value = localStorage.getItem(localStorageKey[key]);
-  return value ? (JSON.parse(value) as T) : undefined;
-};
 
 interface ConversationUiStore {
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
@@ -78,99 +59,76 @@ interface ConversationUiStore {
   resetPosition: () => void;
 }
 
-// TODO: track the behavior
-export const useConversationUiStore = create<ConversationUiStore>((set) => ({
-  inputRef: createRef<HTMLTextAreaElement>(),
+export const useConversationUiStore = create<ConversationUiStore>()(
+  persist(
+    (set) => ({
+      inputRef: createRef<HTMLTextAreaElement>(),
 
-  prompt: "",
-  setPrompt: (prompt: string) => set({ prompt }),
+      prompt: "",
+      setPrompt: (prompt: string) => set({ prompt }),
 
-  showChatHistory: false,
-  setShowChatHistory: (showChatHistory: boolean) => set({ showChatHistory: showChatHistory }),
+      showChatHistory: false,
+      setShowChatHistory: (showChatHistory: boolean) => set({ showChatHistory }),
 
-  displayMode: getLocalStorage("displayMode") || "right-fixed",
-  setDisplayMode: (displayMode: DisplayMode) => {
-    localStorage.setItem(localStorageKey.displayMode, JSON.stringify(displayMode));
-    set({ displayMode });
-  },
+      displayMode: "right-fixed",
+      setDisplayMode: (displayMode: DisplayMode) => set({ displayMode }),
 
-  floatingX: getLocalStorage("floatingX") || 100,
-  setFloatingX: (floatingX: number) => {
-    localStorage.setItem(localStorageKey.floatingX, JSON.stringify(floatingX));
-    set({ floatingX });
-  },
+      floatingX: 100,
+      setFloatingX: (floatingX: number) => set({ floatingX }),
 
-  floatingY: getLocalStorage("floatingY") || 100,
-  setFloatingY: (floatingY: number) => {
-    localStorage.setItem(localStorageKey.floatingY, JSON.stringify(floatingY));
-    set({ floatingY });
-  },
+      floatingY: 100,
+      setFloatingY: (floatingY: number) => set({ floatingY }),
 
-  floatingWidth: getLocalStorage("floatingWidth") || 660,
-  setFloatingWidth: (floatingWidth: number) => {
-    localStorage.setItem(localStorageKey.floatingWidth, JSON.stringify(floatingWidth));
-    set({ floatingWidth });
-  },
+      floatingWidth: 660,
+      setFloatingWidth: (floatingWidth: number) => set({ floatingWidth }),
 
-  floatingHeight: getLocalStorage("floatingHeight") || 500,
-  setFloatingHeight: (floatingHeight: number) => {
-    localStorage.setItem(localStorageKey.floatingHeight, JSON.stringify(floatingHeight));
-    set({ floatingHeight });
-  },
+      floatingHeight: 500,
+      setFloatingHeight: (floatingHeight: number) => set({ floatingHeight }),
 
-  bottomFixedHeight: getLocalStorage("bottomFixedHeight") || 470,
-  setBottomFixedHeight: (bottomFixedHeight: number) => {
-    localStorage.setItem(localStorageKey.bottomFixedHeight, JSON.stringify(bottomFixedHeight));
-    set({ bottomFixedHeight });
-  },
+      bottomFixedHeight: 470,
+      setBottomFixedHeight: (bottomFixedHeight: number) => set({ bottomFixedHeight }),
 
-  rightFixedWidth: getLocalStorage("rightFixedWidth") || 580,
-  setRightFixedWidth: (rightFixedWidth: number) => {
-    localStorage.setItem(localStorageKey.rightFixedWidth, JSON.stringify(rightFixedWidth));
-    set({ rightFixedWidth });
-  },
+      rightFixedWidth: 580,
+      setRightFixedWidth: (rightFixedWidth: number) => set({ rightFixedWidth }),
 
-  isOpen: getLocalStorage("isOpen") || false,
-  setIsOpen: (isOpen: boolean) => {
-    localStorage.setItem(localStorageKey.isOpen, JSON.stringify(isOpen));
-    set({ isOpen });
-  },
+      isOpen: false,
+      setIsOpen: (isOpen: boolean) => set({ isOpen }),
 
-  activeTab: getLocalStorage("activeTab") || "chat",
-  setActiveTab: (activeTab: string) => {
-    localStorage.setItem(localStorageKey.activeTab, JSON.stringify(activeTab));
-    set({ activeTab });
-  },
+      activeTab: "chat",
+      setActiveTab: (activeTab: string) => set({ activeTab }),
 
-  sidebarCollapsed: getLocalStorage("sidebarCollapsed") || false,
-  setSidebarCollapsed: (sidebarCollapsed: boolean) => {
-    localStorage.setItem(localStorageKey.sidebarCollapsed, JSON.stringify(sidebarCollapsed));
-    set({ sidebarCollapsed });
-  },
+      sidebarCollapsed: false,
+      setSidebarCollapsed: (sidebarCollapsed: boolean) => set({ sidebarCollapsed }),
 
-  heightCollapseRequired: getLocalStorage("heightCollapseRequired") || false,
-  setHeightCollapseRequired: (heightCollapseRequired: boolean) => {
-    localStorage.setItem(localStorageKey.heightCollapseRequired, JSON.stringify(heightCollapseRequired));
-    set({ heightCollapseRequired });
-  },
+      heightCollapseRequired: false,
+      setHeightCollapseRequired: (heightCollapseRequired: boolean) => set({ heightCollapseRequired }),
 
-  lastUsedModelSlug: getLocalStorage("lastUsedModelSlug") || "gpt-4.1",
-  setLastUsedModelSlug: (lastUsedModelSlug: string) => {
-    localStorage.setItem(localStorageKey.lastUsedModelSlug, JSON.stringify(lastUsedModelSlug));
-    set({ lastUsedModelSlug });
-  },
+      lastUsedModelSlug: "gpt-4.1",
+      setLastUsedModelSlug: (lastUsedModelSlug: string) => set({ lastUsedModelSlug }),
 
-  resetPosition: () => {
-    set((state) => {
-      state.setFloatingX(100);
-      state.setFloatingY(100);
-      state.setFloatingWidth(620);
-      state.setFloatingHeight(200);
-      state.setDisplayMode("floating");
+      resetPosition: () => {
+        set({
+          floatingX: 100,
+          floatingY: 100,
+          floatingWidth: 620,
+          floatingHeight: 200,
+          displayMode: "floating",
+        });
+      },
+    }),
+    {
+      name: "pd.layout-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { inputRef, prompt, ...rest } = state;
+        return rest;
+      },
+      // Map old keys to new storage if needed, or just migration
+      version: 1,
+    },
+  ),
+);
 
-      return {};
-    });
-  },
-}));
 
 // selectedText is controlled by  the "selection-store.ts"
