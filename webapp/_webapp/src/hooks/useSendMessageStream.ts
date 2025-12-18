@@ -3,9 +3,8 @@ import {
   ConversationType,
   CreateConversationMessageStreamRequest,
   IncompleteIndicator,
-  LanguageModel,
   StreamFinalization,
-} from "../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { PlainMessage } from "../query/types";
 import { useStreamingMessageStore } from "../stores/streaming-message-store";
 import { getProjectId } from "../libs/helpers";
@@ -24,7 +23,7 @@ import {
   StreamInitialization,
   StreamPartBegin,
   StreamPartEnd,
-} from "../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
 import { fromJson } from "@bufbuild/protobuf";
 import { useConversationStore } from "../stores/conversation/conversation-store";
@@ -74,7 +73,6 @@ export function useSendMessageStream() {
       const request: PlainMessage<CreateConversationMessageStreamRequest> = {
         projectId: getProjectId(),
         conversationId: currentConversation.id,
-        languageModel: LanguageModel.UNSPECIFIED, // backward compatibility
         modelSlug: currentConversation.modelSlug,
         userMessage: message,
         userSelectedText: selectedText,

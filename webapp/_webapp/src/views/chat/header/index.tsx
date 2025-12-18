@@ -5,7 +5,7 @@ import { useConversationStore } from "../../../stores/conversation/conversation-
 import { flushSync } from "react-dom";
 import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { Message } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Message } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { ChatHistoryModal } from "./chat-history-modal";
 
 export const NewConversation = () => {

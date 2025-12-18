@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { SupportedModel } from "../pkg/gen/apiclient/chat/v1/chat_pb";
+import { SupportedModel } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListSupportedModelsQuery } from "../query";
 

@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { MessageEntry } from "./conversation/types";
 import { flushSync } from "react-dom";
-import { IncompleteIndicator } from "../pkg/gen/apiclient/chat/v1/chat_pb";
+import { IncompleteIndicator } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { SetterResetterStore } from "./types";
 
 export type StreamingMessage = {

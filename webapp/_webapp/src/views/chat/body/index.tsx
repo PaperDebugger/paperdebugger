@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCard } from "../../../components/message-card";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { filterVisibleMessages, getPrevUserMessage, isEmptyConversation, messageToMessageEntry } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";

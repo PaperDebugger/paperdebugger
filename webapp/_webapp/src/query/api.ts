@@ -1,4 +1,4 @@
-import apiclient, { RequestOptions } from "../libs/apiclient";
+import apiclient from "../libs/apiclient";
 import {
   LoginByGoogleRequest,
   LoginByGoogleResponseSchema,
@@ -10,8 +10,7 @@ import {
   RefreshTokenResponseSchema,
 } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import {
-  CreateConversationMessageRequest,
-  CreateConversationMessageResponseSchema,
+  CreateConversationMessageStreamRequest,
   CreateConversationMessageStreamResponse,
   CreateConversationMessageStreamResponseSchema,
   DeleteConversationRequest,
@@ -24,7 +23,7 @@ import {
   ListSupportedModelsResponseSchema,
   UpdateConversationRequest,
   UpdateConversationResponseSchema,
-} from "../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
   GetProjectRequest,
   GetProjectResponseSchema,
@@ -130,16 +129,8 @@ export const getConversation = async (data: PlainMessage<GetConversationRequest>
   return fromJson(GetConversationResponseSchema, response);
 };
 
-export const createConversationMessage = async (
-  data: PlainMessage<CreateConversationMessageRequest>,
-  options?: RequestOptions,
-) => {
-  const response = await apiclient.post(`/chats/conversations/messages`, data, options);
-  return fromJson(CreateConversationMessageResponseSchema, response);
-};
-
 export const createConversationMessageStream = async (
-  data: PlainMessage<CreateConversationMessageRequest>,
+  data: PlainMessage<CreateConversationMessageStreamRequest>,
   onMessage: (chunk: CreateConversationMessageStreamResponse) => void,
 ) => {
   const stream = await apiclient.postStream(`/chats/conversations/messages/stream`, data);

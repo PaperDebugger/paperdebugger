@@ -1,6 +1,6 @@
 import { LoadingIndicator } from "../../../components/loading-indicator";
 import { UnknownEntryMessageContainer } from "../../../components/message-entry-container/unknown-entry";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { MessageEntryStatus } from "../../../stores/conversation/types";
 import { useSocketStore } from "../../../stores/socket-store";
 import { useStreamingMessageStore } from "../../../stores/streaming-message-store";

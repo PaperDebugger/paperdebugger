@@ -1,7 +1,7 @@
 import { Input, Listbox, ListboxItem, ListboxSection, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useEffect, useRef, useState } from "react";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { getConversation, updateConversation } from "../../../query/api";
 import { errorToast } from "../../../libs/toasts";
 import { useDeleteConversationMutation, useListConversationsQuery } from "../../../query";

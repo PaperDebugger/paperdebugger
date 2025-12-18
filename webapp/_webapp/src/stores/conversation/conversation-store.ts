@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { fromJson } from "@bufbuild/protobuf";
 
 interface ConversationStore {

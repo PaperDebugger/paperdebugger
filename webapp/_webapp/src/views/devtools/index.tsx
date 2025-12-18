@@ -5,7 +5,7 @@ import { useStreamingMessageStore } from "../../stores/streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { fromJson } from "@bufbuild/protobuf";
-import { MessageSchema } from "../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
 
@@ -117,7 +117,7 @@ export const DevTools = () => {
       user: {
         content: "User Message Preparing",
         selectedText: selectedText ?? "",
-        $typeName: "chat.v1.MessageTypeUser",
+        $typeName: "chat.v2.MessageTypeUser",
       },
     };
     setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, messageEntry] });
@@ -126,7 +126,7 @@ export const DevTools = () => {
         part.messageId === messageEntry.messageId
           ? {
               ...part,
-              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v1.MessageTypeUser" },
+              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v2.MessageTypeUser" },
               status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
             }
           : part,
@@ -141,7 +141,7 @@ export const DevTools = () => {
       toolCallPrepareArguments: {
         name: "paper_score",
         args: JSON.stringify({ paper_id: "123" }),
-        $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
+        $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
       },
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
@@ -154,7 +154,7 @@ export const DevTools = () => {
               toolCallPrepareArguments: {
                 name: "paper_score",
                 args: JSON.stringify({ paper_id: "123" }),
-                $typeName: "chat.v1.MessageTypeToolCallPrepareArguments",
+                $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
               },
             }
           : part,
@@ -173,14 +173,14 @@ export const DevTools = () => {
             args: JSON.stringify({ name: "Junyi" }),
             result: "preparing",
             error: "",
-            $typeName: "chat.v1.MessageTypeToolCall",
+            $typeName: "chat.v2.MessageTypeToolCall",
           }
         : {
             name: "paper_score",
             args: JSON.stringify({ paper_id: "123" }),
             result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
             error: "",
-            $typeName: "chat.v1.MessageTypeToolCall",
+            $typeName: "chat.v2.MessageTypeToolCall",
           },
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
@@ -191,8 +191,8 @@ export const DevTools = () => {
               ...part,
               status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
               toolCall: isGreeting
-                ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v1.MessageTypeToolCall" }
-                : { ...part.toolCall, $typeName: "chat.v1.MessageTypeToolCall" },
+                ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v2.MessageTypeToolCall" }
+                : { ...part.toolCall, $typeName: "chat.v2.MessageTypeToolCall" },
             }
           : part,
       ) as MessageEntry[];
@@ -203,7 +203,7 @@ export const DevTools = () => {
     const messageEntry: MessageEntry = {
       messageId: randomUUID(),
       status: MessageEntryStatus.PREPARING,
-      assistant: { content: "Assistant Response Preparing " + randomText(), $typeName: "chat.v1.MessageTypeAssistant" },
+      assistant: { content: "Assistant Response Preparing " + randomText(), modelSlug: "gpt-4.1", $typeName: "chat.v2.MessageTypeAssistant" },
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
@@ -215,7 +215,8 @@ export const DevTools = () => {
               assistant: {
                 ...part.assistant,
                 content: "Assistant Response Finalized " + randomText(),
-                $typeName: "chat.v1.MessageTypeAssistant",
+                modelSlug: "gpt-4.1",
+                $typeName: "chat.v2.MessageTypeAssistant",
               },
             }
           : part,

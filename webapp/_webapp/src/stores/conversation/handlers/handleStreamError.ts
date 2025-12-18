@@ -1,4 +1,4 @@
-import { MessageTypeAssistantSchema, StreamError } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { MessageTypeAssistantSchema, StreamError } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { errorToast } from "../../../libs/toasts";
 import { OverleafAuthentication, OverleafVersionedDoc } from "../../../libs/overleaf-socket";
 import { getProjectId } from "../../../libs/helpers";

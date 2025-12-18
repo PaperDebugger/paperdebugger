@@ -1,15 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  CreateConversationMessageResponse,
   DeleteConversationResponse,
   GetConversationResponse,
   ListConversationsResponse,
   ListSupportedModelsResponse,
   UpdateConversationResponse,
-} from "../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { UseMutationOptionsOverride, UseQueryOptionsOverride } from "./types";
 import {
-  createConversationMessage,
   createPrompt,
   deleteConversation,
   deletePrompt,
@@ -138,14 +136,7 @@ export const useGetConversationQuery = (
   });
 };
 
-export const useCreateConversationMessageMutation = (
-  opts?: UseMutationOptionsOverride<CreateConversationMessageResponse>,
-) => {
-  return useMutation({
-    mutationFn: createConversationMessage,
-    ...opts,
-  });
-};
+// Removed: useCreateConversationMessageMutation - use streaming API instead
 
 export const useUpdateConversationMutation = (opts?: UseMutationOptionsOverride<UpdateConversationResponse>) => {
   return useMutation({
