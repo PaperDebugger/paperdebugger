@@ -27,12 +27,18 @@ type AIClientV2 struct {
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
 // V2 uses the inference endpoint by default.
+// When a user provides their own API key, use the /openai endpoint instead of /openrouter.
 func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
 	var Endpoint string = llmConfig.Endpoint
 	var APIKey string = llmConfig.APIKey
 
 	if Endpoint == "" {
-		Endpoint = a.cfg.InferenceBaseURL
+		if APIKey != "" {
+			// User provided their own API key, use the OpenAI-compatible endpoint
+			Endpoint = a.cfg.InferenceBaseURL + "/openai"
+		} else {
+			Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
+		}
 	}
 
 	if APIKey == "" {
@@ -58,7 +64,7 @@ func NewAIClientV2(
 ) *AIClientV2 {
 	database := db.Database("paperdebugger")
 	oaiClient := openai.NewClient(
-		option.WithBaseURL(cfg.InferenceBaseURL),
+		option.WithBaseURL(cfg.InferenceBaseURL+"/openrouter"),
 		option.WithAPIKey(cfg.InferenceAPIKey),
 	)
 	CheckOpenAIWorksV2(oaiClient, logger)

@@ -47,7 +47,7 @@ func inferenceBaseURL() string {
 	if val != "" {
 		return val
 	}
-	return "https://inference.paperdebugger.workers.dev/openrouter"
+	return "https://inference.paperdebugger.workers.dev"
 }
 
 func xtraMCPURI() string {
