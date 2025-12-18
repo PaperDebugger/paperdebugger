@@ -22,6 +22,7 @@ const localStorageKey = {
   activeTab: "pd.layout.activeTab",
   sidebarCollapsed: "pd.layout.sidebar.collapsed",
   heightCollapseRequired: "pd.layout.heightCollapseRequired",
+  lastUsedModelSlug: "pd.chat.lastUsedModelSlug",
 } as const;
 
 export const getLocalStorage = <T>(key: keyof typeof localStorageKey): T | undefined => {
@@ -70,6 +71,9 @@ interface ConversationUiStore {
 
   heightCollapseRequired: boolean;
   setHeightCollapseRequired: (heightCollapseRequired: boolean) => void;
+
+  lastUsedModelSlug: string;
+  setLastUsedModelSlug: (lastUsedModelSlug: string) => void;
 
   resetPosition: () => void;
 }
@@ -148,6 +152,12 @@ export const useConversationUiStore = create<ConversationUiStore>((set) => ({
   setHeightCollapseRequired: (heightCollapseRequired: boolean) => {
     localStorage.setItem(localStorageKey.heightCollapseRequired, JSON.stringify(heightCollapseRequired));
     set({ heightCollapseRequired });
+  },
+
+  lastUsedModelSlug: getLocalStorage("lastUsedModelSlug") || "gpt-4.1",
+  setLastUsedModelSlug: (lastUsedModelSlug: string) => {
+    localStorage.setItem(localStorageKey.lastUsedModelSlug, JSON.stringify(lastUsedModelSlug));
+    set({ lastUsedModelSlug });
   },
 
   resetPosition: () => {

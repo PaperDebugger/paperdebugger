@@ -17,10 +17,10 @@ import (
 	latextools "paperdebugger/internal/services/toolkit/tools/latex"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 	"time"
 
 	openaiv3 "github.com/openai/openai-go/v3"
-	"github.com/samber/lo"
 )
 
 func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string, modelSlug string) {
@@ -67,13 +67,15 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		"o1",
 		"codex-mini-latest",
 	}
-	if lo.Contains(reasoningModels, modelSlug) {
-		return openaiv3.ChatCompletionNewParams{
-			Model:               modelSlug,
-			MaxCompletionTokens: openaiv3.Int(4000),
-			Tools:               toolRegistry.GetTools(),
-			ParallelToolCalls:   openaiv3.Bool(true),
-			Store:               openaiv3.Bool(false),
+	for _, model := range reasoningModels {
+		if strings.Contains(modelSlug, model) {
+			return openaiv3.ChatCompletionNewParams{
+				Model:               modelSlug,
+				MaxCompletionTokens: openaiv3.Int(4000),
+				Tools:               toolRegistry.GetTools(),
+				ParallelToolCalls:   openaiv3.Bool(true),
+				Store:               openaiv3.Bool(false),
+			}
 		}
 	}
 
@@ -88,18 +90,18 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 }
 
 func CheckOpenAIWorksV2(oaiClient openaiv3.Client, logger *logger.Logger) {
-	logger.Info("[AI Client] checking if openai client works")
+	logger.Info("[AI Client V2] checking if openai client works")
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
 		Messages: []openaiv3.ChatCompletionMessageParamUnion{
 			openaiv3.UserMessage("Say 'openai client works'"),
 		},
-		Model: openaiv3.ChatModelGPT4o,
+		Model: "openai/gpt-5-nano",
 	})
 	if err != nil {
-		logger.Errorf("[AI Client] openai client does not work: %v", err)
+		logger.Errorf("[AI Client V2] openai client does not work: %v", err)
 		return
 	}
-	logger.Info("[AI Client] openai client works", "response", chatCompletion.Choices[0].Message.Content)
+	logger.Info("[AI Client V2] openai client works", "response", chatCompletion.Choices[0].Message.Content)
 }
 
 func initializeToolkitV2(

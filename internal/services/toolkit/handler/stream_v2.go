@@ -102,7 +102,7 @@ func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, c
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Choices[0].Delta.Role != "" && chunk.Choices[0].Delta.Content != "" {
+	if chunk.Choices[0].Delta.Role != "" {
 		return
 	}
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{

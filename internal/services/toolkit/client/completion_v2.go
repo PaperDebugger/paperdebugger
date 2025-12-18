@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -84,12 +85,14 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 			if len(chunk.Choices) == 0 {
 				// 处理用量信息
-				// fmt.Printf("Usage: %+v\n", chunk.Usage)
+				fmt.Printf("Usage: %+v\n", chunk.Usage)
 				continue
 			}
 
 			if chunk.Choices[0].FinishReason != "" {
-				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
+				fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
+				answer_content += chunk.Choices[0].Delta.Content
+				fmt.Printf("answer_content: %s\n", answer_content)
 				streamHandler.HandleTextDoneItem(chunk, answer_content)
 				break
 			}
@@ -100,14 +103,14 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				var s string
 				err := json.Unmarshal([]byte(field.Raw()), &s)
 				if err != nil {
-					// fmt.Println(err)
+					fmt.Println(err)
 				}
 				reasoning_content += s
-				// fmt.Print(s)
+				fmt.Print(s)
 			} else {
 				if !is_answering {
 					is_answering = true
-					// fmt.Println("\n\n========== 回答内容 ==========")
+					fmt.Println("\n\n========== 回答内容 ==========")
 					streamHandler.HandleAddedItem(chunk)
 				}
 
@@ -115,6 +118,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 					answer_content += delta.Content
 					answer_content_id = chunk.ID
 					streamHandler.HandleTextDelta(chunk)
+					fmt.Print(delta.Content)
 				}
 
 				if len(delta.ToolCalls) > 0 {
@@ -123,7 +127,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 						// haskey(tool_info, index)
 						if _, ok := tool_info[index]; !ok {
-							// fmt.Printf("Prepare tool %s\n", toolCall.Function.Name)
+							fmt.Printf("Prepare tool %s\n", toolCall.Function.Name)
 							tool_info[index] = map[string]string{}
 							streamHandler.HandleAddedItem(chunk)
 						}

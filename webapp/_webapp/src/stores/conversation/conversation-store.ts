@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { fromJson } from "@bufbuild/protobuf";
+import { getLocalStorage } from "./conversation-ui-store";
 
 interface ConversationStore {
   isStreaming: boolean;
@@ -22,9 +23,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
 }));
 
 export function newConversation(): Conversation {
+  const lastUsedModelSlug = getLocalStorage<string>("lastUsedModelSlug") || "gpt-4.1";
+
   return fromJson(ConversationSchema, {
     id: "",
-    modelSlug: "gpt-4.1",
+    modelSlug: lastUsedModelSlug,
     title: "New Conversation",
     messages: [],
   });

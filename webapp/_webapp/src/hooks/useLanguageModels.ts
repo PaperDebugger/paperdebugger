@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { SupportedModel } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useConversationStore } from "../stores/conversation/conversation-store";
+import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
 import { useListSupportedModelsQuery } from "../query";
 
 export type Model = {
@@ -23,6 +24,7 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
 
 export const useLanguageModels = () => {
   const { currentConversation, setCurrentConversation } = useConversationStore();
+  const { setLastUsedModelSlug } = useConversationUiStore();
   const { data: supportedModelsResponse } = useListSupportedModelsQuery();
 
   const models: Model[] = useMemo(() => {
@@ -39,12 +41,13 @@ export const useLanguageModels = () => {
 
   const setModel = useCallback(
     (model: Model) => {
+      setLastUsedModelSlug(model.slug);
       setCurrentConversation({
         ...currentConversation,
         modelSlug: model.slug,
       });
     },
-    [setCurrentConversation, currentConversation],
+    [setCurrentConversation, currentConversation, setLastUsedModelSlug],
   );
 
   return { models, currentModel, setModel };

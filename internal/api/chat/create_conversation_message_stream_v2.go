@@ -2,11 +2,9 @@ package chat
 
 import (
 	"context"
-	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
-	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/google/uuid"
@@ -292,24 +290,24 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	if conversation.Title == services.DefaultConversationTitle {
-		go func() {
-			protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
-			for i, bsonMsg := range conversation.InappChatHistory {
-				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
-			}
-			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
-			if err != nil {
-				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
-				return
-			}
-			conversation.Title = title
-			if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
-				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
-				return
-			}
-		}()
-	}
+	// if conversation.Title == services.DefaultConversationTitle {
+	// 	go func() {
+	// 		protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
+	// 		for i, bsonMsg := range conversation.InappChatHistory {
+	// 			protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
+	// 		}
+	// 		title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
+	// 		if err != nil {
+	// 			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
+	// 			return
+	// 		}
+	// 		conversation.Title = title
+	// 		if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
+	// 			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
+	// 			return
+	// 		}
+	// 	}()
+	// }
 
 	// The final conversation object is NOT returned
 	return nil
