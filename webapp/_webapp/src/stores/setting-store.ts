@@ -27,6 +27,9 @@ export interface SettingStore {
 
   hideAvatar: boolean;
   setHideAvatar: (enable: boolean) => void;
+
+  allowOutOfBounds: boolean;
+  setAllowOutOfBounds: (enable: boolean) => void;
 }
 
 const defaultSettings: PlainMessage<Settings> = {
@@ -150,5 +153,11 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
   setHideAvatar: (enable: boolean) => {
     localStorage.setItem("pd.ui.hideAvatar", enable.toString());
     set({ hideAvatar: enable });
+  },
+
+  allowOutOfBounds: localStorage.getItem("pd.ui.allowOutOfBounds") === "true" || false,
+  setAllowOutOfBounds: (enable: boolean) => {
+    localStorage.setItem("pd.ui.allowOutOfBounds", enable.toString());
+    set({ allowOutOfBounds: enable });
   },
 }));

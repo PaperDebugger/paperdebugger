@@ -13,6 +13,8 @@ export const UISettings = () => {
     setMinimalistMode,
     hideAvatar,
     setHideAvatar,
+    allowOutOfBounds,
+    setAllowOutOfBounds,
   } = useSettingStore();
 
   return (
@@ -43,6 +45,12 @@ export const UISettings = () => {
         description="Hide the avatar in the header"
         selected={hideAvatar}
         onSelectChange={(selected) => setHideAvatar(selected)}
+      />
+      <SettingItem
+        label="Allow window out of bounds"
+        description="You can right-click the PaperDebugger button to reset position if the window is lost."
+        selected={allowOutOfBounds}
+        onSelectChange={(selected) => setAllowOutOfBounds(selected)}
       />
       <SettingItem
         label="Disable line wrap"
