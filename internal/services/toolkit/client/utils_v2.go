@@ -13,6 +13,8 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
+	filetools "paperdebugger/internal/services/toolkit/tools/files"
+	latextools "paperdebugger/internal/services/toolkit/tools/latex"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"time"
@@ -107,6 +109,25 @@ func initializeToolkitV2(
 	logger *logger.Logger,
 ) *registry.ToolRegistryV2 {
 	toolRegistry := registry.NewToolRegistryV2()
+
+	// Register static file tools
+	toolRegistry.Register("create_file", filetools.CreateFileToolDescriptionV2, filetools.CreateFileTool)
+	toolRegistry.Register("delete_file", filetools.DeleteFileToolDescriptionV2, filetools.DeleteFileTool)
+	toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, filetools.ReadFileTool)
+	toolRegistry.Register("create_folder", filetools.CreateFolderToolDescriptionV2, filetools.CreateFolderTool)
+	toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
+	toolRegistry.Register("read_folder", filetools.ReadFolderToolDescriptionV2, filetools.ReadFolderTool)
+	toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, filetools.SearchStringTool)
+
+	logger.Info("[AI Client V2] Registered static file tools", "count", 7)
+
+	// Register static LaTeX tools
+	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, latextools.GetDocumentStructureTool)
+	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
+	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, latextools.ReadSectionSourceTool)
+	toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, latextools.ReadSourceLineRangeTool)
+
+	logger.Info("[AI Client V2] Registered static LaTeX tools", "count", 4)
 
 	// Load tools dynamically from backend
 	xtraMCPLoader := xtramcp.NewXtraMCPLoaderV2(db, projectService, cfg.XtraMCPURI)

@@ -48,8 +48,10 @@ export const AssistantMessageContainer = ({
       }, 2000);
     }
   }, [user?.id, projectId, processedMessage, messageId]);
+
+  const showMessage = processedMessage?.length || 0 > 0;
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
-  const writingIndicator = stale ? null : (
+  const writingIndicator = (stale || !showMessage) ? null : (
     <Icon
       icon="tabler:pencil"
       className={cn(
@@ -61,7 +63,7 @@ export const AssistantMessageContainer = ({
       )}
     />
   );
-  return (
+  return showMessage && (
     <div className="chat-message-entry noselect">
       <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
         {/* Message content */}
