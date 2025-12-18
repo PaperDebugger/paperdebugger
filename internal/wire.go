@@ -33,8 +33,10 @@ var Set = wire.NewSet(
 	comment.NewCommentServer,
 
 	aiclient.NewAIClient,
+	aiclient.NewAIClientV2,
 	services.NewReverseCommentService,
 	services.NewChatService,
+	services.NewChatServiceV2,
 	services.NewTokenService,
 	services.NewUserService,
 	services.NewProjectService,

@@ -76,7 +76,8 @@ message MessagePayload {
 
 message Message {
   string message_id = 1;
-  MessagePayload payload = 3;
+  MessagePayload payload = 2;
+  int64 timestamp = 3;
 }
 
 message Conversation {

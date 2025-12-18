@@ -7,6 +7,7 @@
 package internal
 
 import (
+	"github.com/google/wire"
 	"paperdebugger/internal/api"
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/api/chat"
@@ -18,8 +19,6 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/client"
-
-	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -55,4 +54,4 @@ func InitializeApp() (*api.Server, error) {
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, services.NewReverseCommentService, services.NewChatService, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)

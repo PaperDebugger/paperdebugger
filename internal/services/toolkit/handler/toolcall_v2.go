@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"time"
 
 	"github.com/openai/openai-go/v3"
 )
@@ -117,6 +118,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 					ToolCall: toolCallMsg,
 				},
 			},
+			Timestamp: time.Now().Unix(),
 		})
 	}
 

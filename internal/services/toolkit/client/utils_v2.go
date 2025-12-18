@@ -15,6 +15,7 @@ import (
 	"paperdebugger/internal/services/toolkit/registry"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"time"
 
 	openaiv3 "github.com/openai/openai-go/v3"
 	"github.com/samber/lo"
@@ -46,6 +47,7 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 				},
 			},
 		},
+		Timestamp: time.Now().Unix(),
 	})
 }
 

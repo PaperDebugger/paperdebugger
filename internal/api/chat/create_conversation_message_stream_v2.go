@@ -8,6 +8,7 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v2/responses"
@@ -49,6 +50,7 @@ func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSe
 					},
 				},
 			},
+			Timestamp: time.Now().Unix(),
 		}
 	default:
 		inappMessage = &chatv2.Message{
@@ -61,6 +63,7 @@ func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSe
 					},
 				},
 			},
+			Timestamp: time.Now().Unix(),
 		}
 	}
 
@@ -87,6 +90,7 @@ func (s *ChatServerV2) buildSystemMessage(systemPrompt string) (*chatv2.Message,
 				},
 			},
 		},
+		Timestamp: time.Now().Unix(),
 	}
 
 	openaiMessage := &responses.ResponseInputItemUnionParam{

@@ -529,7 +529,8 @@ func (*MessagePayload_Unknown) isMessagePayload_MessageType() {}
 type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	Payload       *MessagePayload        `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	Payload       *MessagePayload        `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -576,6 +577,13 @@ func (x *Message) GetPayload() *MessagePayload {
 		return x.Payload
 	}
 	return nil
+}
+
+func (x *Message) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
 }
 
 type Conversation struct {
@@ -1780,11 +1788,12 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x1btool_call_prepare_arguments\x18\x04 \x01(\v2,.chat.v2.MessageTypeToolCallPrepareArgumentsH\x00R\x18toolCallPrepareArguments\x12;\n" +
 	"\ttool_call\x18\x05 \x01(\v2\x1c.chat.v2.MessageTypeToolCallH\x00R\btoolCall\x127\n" +
 	"\aunknown\x18\x06 \x01(\v2\x1b.chat.v2.MessageTypeUnknownH\x00R\aunknownB\x0e\n" +
-	"\fmessage_type\"[\n" +
+	"\fmessage_type\"y\n" +
 	"\aMessage\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x121\n" +
-	"\apayload\x18\x03 \x01(\v2\x17.chat.v2.MessagePayloadR\apayload\"\x81\x01\n" +
+	"\apayload\x18\x02 \x01(\v2\x17.chat.v2.MessagePayloadR\apayload\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\x81\x01\n" +
 	"\fConversation\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1d\n" +
