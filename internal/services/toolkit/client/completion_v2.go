@@ -89,14 +89,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				continue
 			}
 
-			if chunk.Choices[0].FinishReason != "" {
-				fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
-				answer_content += chunk.Choices[0].Delta.Content
-				fmt.Printf("answer_content: %s\n", answer_content)
-				streamHandler.HandleTextDoneItem(chunk, answer_content)
-				break
-			}
-
 			delta := chunk.Choices[0].Delta
 
 			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
@@ -158,6 +150,14 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 						}
 					}
 				}
+			}
+
+			if chunk.Choices[0].FinishReason != "" {
+				fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
+				// answer_content += chunk.Choices[0].Delta.Content
+				fmt.Printf("answer_content: %s\n", answer_content)
+				streamHandler.HandleTextDoneItem(chunk, answer_content)
+				break
 			}
 		}
 

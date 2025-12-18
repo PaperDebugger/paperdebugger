@@ -50,7 +50,7 @@ func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
 		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv2.StreamPartBegin{
-					MessageId: "openai_" + chunk.ID,
+					MessageId: chunk.ID,
 					Payload: &chatv2.MessagePayload{
 						MessageType: &chatv2.MessagePayload_Assistant{
 							Assistant: &chatv2.MessageTypeAssistant{},
@@ -63,7 +63,7 @@ func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
 		// 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		// 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
 		// 			StreamPartBegin: &chatv2.StreamPartBegin{
-		// 				MessageId: "openai_" + chunk.ID,
+		// 				MessageId: chunk.ID,
 		// 				Payload: &chatv2.MessagePayload{
 		// 					MessageType: &chatv2.MessagePayload_Unknown{
 		// 						Unknown: &chatv2.MessageTypeUnknown{
@@ -83,7 +83,7 @@ func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
 		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv2.StreamPartBegin{
-					MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", toolCall.Index, toolCall.ID),
+					MessageId: fmt.Sprintf("toolCallPrepareArguments[%d]_%s", toolCall.Index, toolCall.ID),
 					Payload: &chatv2.MessagePayload{
 						MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
 							ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
@@ -102,13 +102,11 @@ func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, c
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Choices[0].Delta.Role != "" {
-		return
-	}
+
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv2.StreamPartEnd{
-				MessageId: "openai_" + chunk.ID,
+				MessageId: chunk.ID,
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_Assistant{
 						Assistant: &chatv2.MessageTypeAssistant{
@@ -129,7 +127,7 @@ func (h *StreamHandlerV2) HandleToolArgPreparedDoneItem(index int, id string, na
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv2.StreamPartEnd{
-				MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", index, id),
+				MessageId: fmt.Sprintf("toolCallPrepareArguments[%d]_%s", index, id),
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
 						ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
@@ -150,7 +148,7 @@ func (h *StreamHandlerV2) HandleTextDelta(chunk openai.ChatCompletionChunk) {
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_MessageChunk{
 			MessageChunk: &chatv2.MessageChunk{
-				MessageId: "openai_" + chunk.ID,
+				MessageId: chunk.ID,
 				Delta:     chunk.Choices[0].Delta.Content,
 			},
 		},
@@ -191,7 +189,7 @@ func (h *StreamHandlerV2) SendToolCallBegin(toolCall openai.FinishedChatCompleti
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
 			StreamPartBegin: &chatv2.StreamPartBegin{
-				MessageId: fmt.Sprintf("openai_tool[%d]_%s", toolCall.Index, toolCall.ID),
+				MessageId: fmt.Sprintf("tool[%d]_%s", toolCall.Index, toolCall.ID),
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_ToolCall{
 						ToolCall: &chatv2.MessageTypeToolCall{
@@ -212,7 +210,7 @@ func (h *StreamHandlerV2) SendToolCallEnd(toolCall openai.FinishedChatCompletion
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv2.StreamPartEnd{
-				MessageId: fmt.Sprintf("openai_tool[%d]_%s", toolCall.Index, toolCall.ID),
+				MessageId: fmt.Sprintf("tool[%d]_%s", toolCall.Index, toolCall.ID),
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_ToolCall{
 						ToolCall: &chatv2.MessageTypeToolCall{
