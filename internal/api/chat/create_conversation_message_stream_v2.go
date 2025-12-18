@@ -7,7 +7,7 @@ import (
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
-	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v2/responses"
@@ -16,10 +16,10 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (s *ChatServer) sendStreamError(stream chatv1.ChatService_CreateConversationMessageStreamServer, err error) error {
-	return stream.Send(&chatv1.CreateConversationMessageStreamResponse{
-		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamError{
-			StreamError: &chatv1.StreamError{
+func (s *ChatServerV2) sendStreamError(stream chatv2.ChatService_CreateConversationMessageStreamServer, err error) error {
+	return stream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamError{
+			StreamError: &chatv2.StreamError{
 				ErrorMessage: err.Error(),
 			},
 		},
@@ -31,31 +31,31 @@ func (s *ChatServer) sendStreamError(stream chatv1.ChatService_CreateConversatio
 // 我们发送给 GPT 的就是从数据库里拿到的 Conversation 对象里面的内容（InputItemList）
 
 // buildUserMessage constructs both the user-facing message and the OpenAI input message
-func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, *responses.ResponseInputItemUnionParam, error) {
-	userPrompt, err := s.chatServiceV1.GetPrompt(ctx, userMessage, userSelectedText, conversationType)
+func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv2.ConversationType) (*chatv2.Message, *responses.ResponseInputItemUnionParam, error) {
+	userPrompt, err := s.chatServiceV2.GetPrompt(ctx, userMessage, userSelectedText, conversationType)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	var inappMessage *chatv1.Message
+	var inappMessage *chatv2.Message
 	switch conversationType {
-	case chatv1.ConversationType_CONVERSATION_TYPE_DEBUG:
-		inappMessage = &chatv1.Message{
+	case chatv2.ConversationType_CONVERSATION_TYPE_DEBUG:
+		inappMessage = &chatv2.Message{
 			MessageId: "pd_msg_user_" + uuid.New().String(),
-			Payload: &chatv1.MessagePayload{
-				MessageType: &chatv1.MessagePayload_User{
-					User: &chatv1.MessageTypeUser{
+			Payload: &chatv2.MessagePayload{
+				MessageType: &chatv2.MessagePayload_User{
+					User: &chatv2.MessageTypeUser{
 						Content: userPrompt,
 					},
 				},
 			},
 		}
 	default:
-		inappMessage = &chatv1.Message{
+		inappMessage = &chatv2.Message{
 			MessageId: "pd_msg_user_" + uuid.New().String(),
-			Payload: &chatv1.MessagePayload{
-				MessageType: &chatv1.MessagePayload_User{
-					User: &chatv1.MessageTypeUser{
+			Payload: &chatv2.MessagePayload{
+				MessageType: &chatv2.MessagePayload_User{
+					User: &chatv2.MessageTypeUser{
 						Content:      userMessage,
 						SelectedText: &userSelectedText,
 					},
@@ -77,12 +77,12 @@ func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSele
 }
 
 // buildSystemMessage constructs both the user-facing system message and the OpenAI input message
-func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, *responses.ResponseInputItemUnionParam) {
-	inappMessage := &chatv1.Message{
+func (s *ChatServerV2) buildSystemMessage(systemPrompt string) (*chatv2.Message, *responses.ResponseInputItemUnionParam) {
+	inappMessage := &chatv2.Message{
 		MessageId: "pd_msg_system_" + uuid.New().String(),
-		Payload: &chatv1.MessagePayload{
-			MessageType: &chatv1.MessagePayload_System{
-				System: &chatv1.MessageTypeSystem{
+		Payload: &chatv2.MessagePayload{
+			MessageType: &chatv2.MessagePayload_System{
+				System: &chatv2.MessageTypeSystem{
 					Content: systemPrompt,
 				},
 			},
@@ -102,7 +102,7 @@ func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, *
 }
 
 // convertToBSON converts a protobuf message to BSON
-func convertToBSON(msg *chatv1.Message) (bson.M, error) {
+func convertToBSONV2(msg *chatv2.Message) (bson.M, error) {
 	jsonBytes, err := protojson.Marshal(msg)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func convertToBSON(msg *chatv1.Message) (bson.M, error) {
 
 // 创建对话并写入数据库
 // 返回 Conversation 对象
-func (s *ChatServer) createConversation(
+func (s *ChatServerV2) createConversation(
 	ctx context.Context,
 	userId bson.ObjectID,
 	projectId string,
@@ -126,9 +126,9 @@ func (s *ChatServer) createConversation(
 	userMessage string,
 	userSelectedText string,
 	modelSlug string,
-	conversationType chatv1.ConversationType,
+	conversationType chatv2.ConversationType,
 ) (*models.Conversation, error) {
-	systemPrompt, err := s.chatServiceV1.GetSystemPrompt(ctx, latexFullSource, projectInstructions, userInstructions, conversationType)
+	systemPrompt, err := s.chatServiceV2.GetSystemPromptV2(ctx, latexFullSource, projectInstructions, userInstructions, conversationType)
 	if err != nil {
 		return nil, err
 	}
@@ -139,32 +139,32 @@ func (s *ChatServer) createConversation(
 		return nil, err
 	}
 
-	messages := []*chatv1.Message{inappUserMsg}
+	messages := []*chatv2.Message{inappUserMsg}
 	oaiHistory := responses.ResponseNewParamsInputUnion{
 		OfInputItemList: responses.ResponseInputParam{*openaiSystemMsg, *openaiUserMsg},
 	}
 
-	return s.chatServiceV1.InsertConversationToDB(
+	return s.chatServiceV2.InsertConversationToDBV2(
 		ctx, userId, projectId, modelSlug, messages, oaiHistory.OfInputItemList,
 	)
 }
 
 // 追加消息到对话并写入数据库
 // 返回 Conversation 对象
-func (s *ChatServer) appendConversationMessage(
+func (s *ChatServerV2) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
 	conversationId string,
 	userMessage string,
 	userSelectedText string,
-	conversationType chatv1.ConversationType,
+	conversationType chatv2.ConversationType,
 ) (*models.Conversation, error) {
 	objectID, err := bson.ObjectIDFromHex(conversationId)
 	if err != nil {
 		return nil, err
 	}
 
-	conversation, err := s.chatServiceV1.GetConversation(ctx, userId, objectID)
+	conversation, err := s.chatServiceV2.GetConversationV2(ctx, userId, objectID)
 	if err != nil {
 		return nil, err
 	}
@@ -174,14 +174,14 @@ func (s *ChatServer) appendConversationMessage(
 		return nil, err
 	}
 
-	bsonMsg, err := convertToBSON(userMsg)
+	bsonMsg, err := convertToBSONV2(userMsg)
 	if err != nil {
 		return nil, err
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
 	conversation.OpenaiChatHistory = append(conversation.OpenaiChatHistory, *userOaiMsg)
 
-	if err := s.chatServiceV1.UpdateConversation(conversation); err != nil {
+	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return nil, err
 	}
 
@@ -190,7 +190,7 @@ func (s *ChatServer) appendConversationMessage(
 
 // 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
 // conversationType 可以在一次 conversation 中多次切换
-func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err
@@ -208,7 +208,7 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 
 	var latexFullSource string
 	switch conversationType {
-	case chatv1.ConversationType_CONVERSATION_TYPE_DEBUG:
+	case chatv2.ConversationType_CONVERSATION_TYPE_DEBUG:
 		latexFullSource = "latex_full_source is not available in debug mode"
 	default:
 		if project == nil || project.IsOutOfDate() {
@@ -262,17 +262,13 @@ func (s *ChatServer) prepare(ctx context.Context, projectId string, conversation
 	return ctx, conversation, settings, nil
 }
 
-func (s *ChatServerV1) CreateConversationMessageStream(
-	req *chatv1.CreateConversationMessageStreamRequest,
-	stream chatv1.ChatService_CreateConversationMessageStreamServer,
+func (s *ChatServerV2) CreateConversationMessageStream(
+	req *chatv2.CreateConversationMessageStreamRequest,
+	stream chatv2.ChatService_CreateConversationMessageStreamServer,
 ) error {
 	ctx := stream.Context()
 
 	modelSlug := req.GetModelSlug()
-	if modelSlug == "" {
-		modelSlug = models.LanguageModel(req.GetLanguageModel()).Name()
-	}
-
 	ctx, conversation, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
@@ -291,7 +287,7 @@ func (s *ChatServerV1) CreateConversationMessageStream(
 		APIKey: settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV1.ChatCompletionStreamV1(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistory, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistory, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -299,7 +295,7 @@ func (s *ChatServerV1) CreateConversationMessageStream(
 	// 附加消息到对话
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
-		bsonMsg, err := convertToBSON(&inappChatHistory[i])
+		bsonMsg, err := convertToBSONV2(&inappChatHistory[i])
 		if err != nil {
 			return s.sendStreamError(stream, err)
 		}
@@ -307,23 +303,23 @@ func (s *ChatServerV1) CreateConversationMessageStream(
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
 	conversation.OpenaiChatHistory = openaiChatHistory
-	if err := s.chatServiceV1.UpdateConversation(conversation); err != nil {
+	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
 	if conversation.Title == services.DefaultConversationTitle {
 		go func() {
-			protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
+			protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
 			for i, bsonMsg := range conversation.InappChatHistory {
-				protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
+				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
-			title, err := s.aiClientV1.GetConversationTitle(ctx, protoMessages, llmProvider)
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return
 			}
 			conversation.Title = title
-			if err := s.chatServiceV1.UpdateConversation(conversation); err != nil {
+			if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
 				return
 			}

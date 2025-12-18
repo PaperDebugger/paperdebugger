@@ -23,7 +23,7 @@ func (s *ChatServerV1) DeleteConversation(
 		return nil, err
 	}
 
-	err = s.chatService.DeleteConversation(ctx, actor.ID, conversationID)
+	err = s.chatServiceV1.DeleteConversation(ctx, actor.ID, conversationID)
 	if err != nil {
 		return nil, err
 	}

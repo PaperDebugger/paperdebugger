@@ -5,15 +5,15 @@ import (
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
-	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (s *ChatServerV1) GetConversation(
+func (s *ChatServerV2) GetConversation(
 	ctx context.Context,
-	req *chatv1.GetConversationRequest,
-) (*chatv1.GetConversationResponse, error) {
+	req *chatv2.GetConversationRequest,
+) (*chatv2.GetConversationResponse, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return nil, err
@@ -24,12 +24,12 @@ func (s *ChatServerV1) GetConversation(
 		return nil, err
 	}
 
-	conversation, err := s.chatServiceV1.GetConversation(ctx, actor.ID, conversationID)
+	conversation, err := s.chatServiceV2.GetConversationV2(ctx, actor.ID, conversationID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &chatv1.GetConversationResponse{
-		Conversation: mapper.MapModelConversationToProto(conversation),
+	return &chatv2.GetConversationResponse{
+		Conversation: mapper.MapModelConversationToProtoV2(conversation),
 	}, nil
 }

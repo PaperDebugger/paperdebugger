@@ -7,7 +7,6 @@
 package internal
 
 import (
-	"github.com/google/wire"
 	"paperdebugger/internal/api"
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/api/chat"
@@ -19,6 +18,8 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/client"
+
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -36,8 +37,10 @@ func InitializeApp() (*api.Server, error) {
 	projectService := services.NewProjectService(dbDB, cfgCfg, loggerLogger)
 	reverseCommentService := services.NewReverseCommentService(dbDB, cfgCfg, loggerLogger, projectService)
 	aiClient := client.NewAIClient(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
+	aiClientV2 := client.NewAIClientV2(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
 	chatService := services.NewChatService(dbDB, cfgCfg, loggerLogger)
-	chatServiceServer := chat.NewChatServer(aiClient, chatService, projectService, userService, loggerLogger, cfgCfg)
+	chatServiceV2 := services.NewChatServiceV2(dbDB, cfgCfg, loggerLogger)
+	chatServiceServer := chat.NewChatServer(aiClient, aiClientV2, chatService, chatServiceV2, projectService, userService, loggerLogger, cfgCfg)
 	promptService := services.NewPromptService(dbDB, cfgCfg, loggerLogger)
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
 	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)

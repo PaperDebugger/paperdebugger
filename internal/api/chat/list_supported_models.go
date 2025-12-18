@@ -6,6 +6,7 @@ import (
 
 	"paperdebugger/internal/libs/contextutil"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/openai/openai-go/v2"
 )
@@ -102,3 +103,51 @@ func (s *ChatServerV1) ListSupportedModels(
 		Models: models,
 	}, nil
 }
+
+func (s *ChatServerV2) ListSupportedModels(
+	ctx context.Context,
+	req *chatv2.ListSupportedModelsRequest,
+) (*chatv2.ListSupportedModelsResponse, error) {
+	actor, err := contextutil.GetActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	settings, err := s.userService.GetUserSettings(ctx, actor.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var models []*chatv2.SupportedModel
+	// Copied from V1 logic
+	if strings.TrimSpace(settings.OpenAIAPIKey) == "" {
+		models = []*chatv2.SupportedModel{
+			{Name: "GPT-4o", Slug: openai.ChatModelGPT4o},
+			{Name: "GPT-4.1", Slug: openai.ChatModelGPT4_1},
+			{Name: "GPT-4.1-mini", Slug: openai.ChatModelGPT4_1Mini},
+		}
+	} else {
+		models = []*chatv2.SupportedModel{
+			{Name: "GPT 4o", Slug: openai.ChatModelGPT4o},
+			{Name: "GPT 4.1", Slug: openai.ChatModelGPT4_1},
+			{Name: "GPT 4.1 mini", Slug: openai.ChatModelGPT4_1Mini},
+			{Name: "GPT 5", Slug: openai.ChatModelGPT5},
+			{Name: "GPT 5 mini", Slug: openai.ChatModelGPT5Mini},
+			{Name: "GPT 5 nano", Slug: openai.ChatModelGPT5Nano},
+			{Name: "GPT 5 Chat Latest", Slug: openai.ChatModelGPT5ChatLatest},
+			{Name: "o1", Slug: openai.ChatModelO1},
+			{Name: "o1 mini", Slug: openai.ChatModelO1Mini},
+			{Name: "o3", Slug: openai.ChatModelO3},
+			{Name: "o3 mini", Slug: openai.ChatModelO3Mini},
+			{Name: "o4 mini", Slug: openai.ChatModelO4Mini},
+			{Name: "Codex Mini Latest", Slug: openai.ChatModelCodexMiniLatest},
+		}
+	}
+
+	return &chatv2.ListSupportedModelsResponse{
+		Models: models,
+	}, nil
+}
+
+// CreateConversationMessageStream is more complex as it involves streaming response mapping.
+// I'll implement it separately or in the same file.

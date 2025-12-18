@@ -8,6 +8,7 @@ It is used to append assistant responses to both OpenAI and in-app chat historie
 import (
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/responses"
@@ -33,6 +34,30 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 		Payload: &chatv1.MessagePayload{
 			MessageType: &chatv1.MessagePayload_Assistant{
 				Assistant: &chatv1.MessageTypeAssistant{
+					Content: text,
+				},
+			},
+		},
+	})
+}
+
+func appendAssistantTextResponseV2(openaiChatHistory *responses.ResponseNewParamsInputUnion, inappChatHistory *[]chatv2.Message, item responses.ResponseOutputItemUnion) {
+	text := item.Content[0].Text
+	response := responses.ResponseInputItemUnionParam{
+		OfOutputMessage: &responses.ResponseOutputMessageParam{
+			Content: []responses.ResponseOutputMessageContentUnionParam{
+				{
+					OfOutputText: &responses.ResponseOutputTextParam{Text: text},
+				},
+			},
+		},
+	}
+	openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, response)
+	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
+		MessageId: "openai_" + item.ID,
+		Payload: &chatv2.MessagePayload{
+			MessageType: &chatv2.MessagePayload_Assistant{
+				Assistant: &chatv2.MessageTypeAssistant{
 					Content: text,
 				},
 			},

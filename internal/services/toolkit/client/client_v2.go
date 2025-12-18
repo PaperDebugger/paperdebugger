@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -16,9 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type AIClient struct {
-	toolCallHandler        *handler.ToolCallHandler
-	toolCallHandlerV2      *handler.ToolCallHandlerV2
+type AIClientV2 struct {
+	toolCallHandler        *handler.ToolCallHandlerV2
 	db                     *mongo.Database
 	functionCallCollection *mongo.Collection
 
@@ -30,7 +28,7 @@ type AIClient struct {
 
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
-func (a *AIClient) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
+func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
 	var Endpoint string = llmConfig.Endpoint
 	var APIKey string = llmConfig.APIKey
 
@@ -51,14 +49,14 @@ func (a *AIClient) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.
 	return &client
 }
 
-func NewAIClient(
+func NewAIClientV2(
 	db *db.DB,
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
 	cfg *cfg.Cfg,
 	logger *logger.Logger,
-) *AIClient {
+) *AIClientV2 {
 	database := db.Database("paperdebugger")
 	oaiClient := openai.NewClient(
 		option.WithBaseURL(cfg.OpenAIBaseURL),
@@ -93,8 +91,8 @@ func NewAIClient(
 		}
 	}
 
-	toolCallHandler := handler.NewToolCallHandler(toolRegistry)
-	client := &AIClient{
+	toolCallHandler := handler.NewToolCallHandlerV2(toolRegistry)
+	client := &AIClientV2{
 		toolCallHandler: toolCallHandler,
 
 		db:                     database,
@@ -107,19 +105,4 @@ func NewAIClient(
 	}
 
 	return client
-}
-
-func CheckOpenAIWorks(oaiClient openai.Client, logger *logger.Logger) {
-	logger.Info("[AI Client] checking if openai client works")
-	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
-		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.UserMessage("Say 'openai client works'"),
-		},
-		Model: openai.ChatModelGPT4o,
-	})
-	if err != nil {
-		logger.Errorf("[AI Client] openai client does not work: %v", err)
-		return
-	}
-	logger.Info("[AI Client] openai client works", "response", chatCompletion.Choices[0].Message.Content)
 }

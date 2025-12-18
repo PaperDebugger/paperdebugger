@@ -4,7 +4,7 @@ import (
 	"context"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
-	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/openai/openai-go/v2/responses"
 )
@@ -21,8 +21,8 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClient) ChatCompletionV1(ctx context.Context, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV1(ctx, nil, "", modelSlug, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv2.Message, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -50,11 +50,11 @@ func (a *AIClient) ChatCompletionV1(ctx context.Context, modelSlug string, messa
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClient) ChatCompletionStreamV1(ctx context.Context, callbackStream chatv1.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv1.Message, error) {
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv2.Message, error) {
 	openaiChatHistory := responses.ResponseNewParamsInputUnion{OfInputItemList: messages}
-	inappChatHistory := []chatv1.Message{}
+	inappChatHistory := []chatv2.Message{}
 
-	streamHandler := handler.NewStreamHandlerV1(callbackStream, conversationId, modelSlug)
+	streamHandler := handler.NewStreamHandlerV2(callbackStream, conversationId, modelSlug)
 
 	streamHandler.SendInitialization()
 	defer func() {
@@ -96,12 +96,12 @@ func (a *AIClient) ChatCompletionStreamV1(ctx context.Context, callbackStream ch
 		// 把 openai 的 response 记录下来，然后执行调用（如果有）
 		for _, item := range openaiOutput {
 			if item.Type == "message" && item.Role == "assistant" {
-				appendAssistantTextResponse(&openaiChatHistory, &inappChatHistory, item)
+				appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, item)
 			}
 		}
 
 		// 执行调用（如果有），返回增量数据
-		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCalls(ctx, openaiOutput, streamHandler)
+		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, openaiOutput, streamHandler)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -116,7 +116,7 @@ func (a *AIClient) ChatCompletionStreamV1(ctx context.Context, callbackStream ch
 		}
 	}
 
-	ptrChatHistory := make([]*chatv1.Message, len(inappChatHistory))
+	ptrChatHistory := make([]*chatv2.Message, len(inappChatHistory))
 	for i := range inappChatHistory {
 		ptrChatHistory[i] = &inappChatHistory[i]
 	}

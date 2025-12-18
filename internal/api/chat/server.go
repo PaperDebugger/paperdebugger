@@ -10,8 +10,10 @@ import (
 )
 
 type ChatServer struct {
-	aiClient       *aiclient.AIClient
-	chatService    *services.ChatService
+	aiClientV1     *aiclient.AIClient
+	aiClientV2     *aiclient.AIClientV2
+	chatServiceV1  *services.ChatService
+	chatServiceV2  *services.ChatServiceV2
 	projectService *services.ProjectService
 	userService    *services.UserService
 	logger         *logger.Logger
@@ -29,8 +31,10 @@ type ChatServerV2 struct {
 }
 
 func NewChatServer(
-	aiClient *aiclient.AIClient,
+	aiClientV1 *aiclient.AIClient,
+	aiClientV2 *aiclient.AIClientV2,
 	chatService *services.ChatService,
+	chatServiceV2 *services.ChatServiceV2,
 	projectService *services.ProjectService,
 	userService *services.UserService,
 	logger *logger.Logger,
@@ -38,17 +42,19 @@ func NewChatServer(
 ) chatv1.ChatServiceServer {
 	return &ChatServerV1{
 		ChatServer: &ChatServer{
-			aiClient:       aiClient,
-			chatService:    chatService,
+			aiClientV1:     aiClientV1,
+			aiClientV2:     aiClientV2,
 			projectService: projectService,
 			userService:    userService,
 			logger:         logger,
+			chatServiceV1:  chatService,
+			chatServiceV2:  chatServiceV2,
 			cfg:            cfg,
 		},
 	}
 }
 
-func NewChatServerV2(v1Server chatv1.ChatServiceServer) chatv2.ChatServiceServer {
+func NewChatServerV2(v1Server chatv1.ChatServiceServer, chatService *services.ChatServiceV2) chatv2.ChatServiceServer {
 	if s, ok := v1Server.(*ChatServerV1); ok {
 		return &ChatServerV2{
 			ChatServer: s.ChatServer,

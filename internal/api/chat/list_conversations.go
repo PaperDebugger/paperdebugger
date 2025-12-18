@@ -20,7 +20,7 @@ func (s *ChatServerV1) ListConversations(
 		return nil, err
 	}
 
-	conversations, err := s.chatService.ListConversations(ctx, actor.ID, req.GetProjectId())
+	conversations, err := s.chatServiceV1.ListConversations(ctx, actor.ID, req.GetProjectId())
 	if err != nil {
 		return nil, err
 	}
