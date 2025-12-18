@@ -287,7 +287,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		APIKey: settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistory, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -302,7 +302,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		bsonMessages[i] = bsonMsg
 	}
 	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistory = openaiChatHistory
+	conversation.OpenaiChatHistoryCompletion = openaiChatHistory
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}

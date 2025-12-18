@@ -14,9 +14,9 @@ import (
 	"paperdebugger/internal/services/toolkit/registry"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
-	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/openai/openai-go/v2"
+	openaiv2 "github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/responses"
 	"github.com/samber/lo"
 )
@@ -47,34 +47,10 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 	})
 }
 
-func appendAssistantTextResponseV2(openaiChatHistory *responses.ResponseNewParamsInputUnion, inappChatHistory *[]chatv2.Message, item responses.ResponseOutputItemUnion) {
-	text := item.Content[0].Text
-	response := responses.ResponseInputItemUnionParam{
-		OfOutputMessage: &responses.ResponseOutputMessageParam{
-			Content: []responses.ResponseOutputMessageContentUnionParam{
-				{
-					OfOutputText: &responses.ResponseOutputTextParam{Text: text},
-				},
-			},
-		},
-	}
-	openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, response)
-	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
-		MessageId: "openai_" + item.ID,
-		Payload: &chatv2.MessagePayload{
-			MessageType: &chatv2.MessagePayload_Assistant{
-				Assistant: &chatv2.MessageTypeAssistant{
-					Content: text,
-				},
-			},
-		},
-	})
-}
-
 // getDefaultParams constructs the default parameters for a chat completion request.
 // The tool registry is managed centrally by the registry package.
 // The chat history is constructed manually, so Store must be set to false.
-func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsInputUnion, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
+func getDefaultParams(modelSlug string, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
 	var reasoningModels = []string{
 		"gpt-5",
 		"gpt-5-mini",
@@ -91,18 +67,16 @@ func getDefaultParams(modelSlug string, chatHistory responses.ResponseNewParamsI
 		return responses.ResponseNewParams{
 			Model: modelSlug,
 			Tools: toolRegistry.GetTools(),
-			Input: chatHistory,
-			Store: openai.Bool(false),
+			Store: openaiv2.Bool(false),
 		}
 	}
 
 	return responses.ResponseNewParams{
 		Model:           modelSlug,
-		Temperature:     openai.Float(0.7),
-		MaxOutputTokens: openai.Int(4000),        // DEBUG POINT: change this to test the frontend handler
+		Temperature:     openaiv2.Float(0.7),
+		MaxOutputTokens: openaiv2.Int(4000),      // DEBUG POINT: change this to test the frontend handler
 		Tools:           toolRegistry.GetTools(), // 工具注册由 registry 统一管理
-		Input:           chatHistory,
-		Store:           openai.Bool(false), // Must set to false, because we are construct our own chat history.
+		Store:           openaiv2.Bool(false),    // Must set to false, because we are construct our own chat history.
 	}
 }
 

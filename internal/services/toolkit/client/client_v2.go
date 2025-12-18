@@ -8,8 +8,8 @@ import (
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 
-	"github.com/openai/openai-go/v2"
-	"github.com/openai/openai-go/v2/option"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -60,9 +60,9 @@ func NewAIClientV2(
 		option.WithBaseURL(cfg.OpenAIBaseURL),
 		option.WithAPIKey(cfg.OpenAIAPIKey),
 	)
-	CheckOpenAIWorks(oaiClient, logger)
+	CheckOpenAIWorksV2(oaiClient, logger)
 
-	toolRegistry := initializeToolkit(db, projectService, cfg, logger)
+	toolRegistry := initializeToolkitV2(db, projectService, cfg, logger)
 	toolCallHandler := handler.NewToolCallHandlerV2(toolRegistry)
 
 	client := &AIClientV2{

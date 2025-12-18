@@ -2,12 +2,18 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 )
+
+// define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
+
+type OpenAIChatHistory []openai.ChatCompletionMessageParamUnion
+type AppChatHistory []chatv2.Message
 
 // ChatCompletion orchestrates a chat completion process with a language model (e.g., GPT), handling tool calls and message history management.
 //
@@ -21,7 +27,7 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv2.Message, error) {
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
 	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
@@ -50,9 +56,9 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, mes
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages responses.ResponseInputParam, llmProvider *models.LLMProviderConfig) (responses.ResponseInputParam, []chatv2.Message, error) {
-	openaiChatHistory := responses.ResponseNewParamsInputUnion{OfInputItemList: messages}
-	inappChatHistory := []chatv2.Message{}
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+	openaiChatHistory := messages
+	inappChatHistory := AppChatHistory{}
 
 	streamHandler := handler.NewStreamHandlerV2(callbackStream, conversationId, modelSlug)
 
@@ -62,30 +68,95 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
-	params := getDefaultParams(modelSlug, openaiChatHistory, a.toolCallHandler.Registry)
+	params := getDefaultParamsV2(modelSlug, a.toolCallHandler.Registry)
 
 	for {
-		params.Input = openaiChatHistory
-		var openaiOutput []responses.ResponseOutputItemUnion
-		stream := oaiClient.Responses.NewStreaming(context.Background(), params)
+		params.Messages = openaiChatHistory
+		// var openaiOutput OpenAIChatHistory
+		stream := oaiClient.Chat.Completions.NewStreaming(context.Background(), params)
 
+		reasoning_content := ""
+		answer_content := ""
+		answer_content_id := ""
+		is_answering := false
+		tool_info := map[int]map[string]string{}
+		toolCalls := []openai.FinishedChatCompletionToolCall{}
 		for stream.Next() {
-			// time.Sleep(200 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
+			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
-			switch chunk.Type {
-			case "response.output_item.added":
-				streamHandler.HandleAddedItem(chunk)
-			case "response.output_item.done":
-				streamHandler.HandleDoneItem(chunk) // send part end
-			case "response.incomplete":
-				// incomplete happens after "output_item.done" (if it happens)
-				// It's an indicator that the response is incomplete.
-				openaiOutput = chunk.Response.Output
-				streamHandler.SendIncompleteIndicator(chunk.Response.IncompleteDetails.Reason, chunk.Response.ID)
-			case "response.completed":
-				openaiOutput = chunk.Response.Output
-			case "response.output_text.delta":
-				streamHandler.HandleTextDelta(chunk)
+
+			if len(chunk.Choices) == 0 {
+				// 处理用量信息
+				// fmt.Printf("Usage: %+v\n", chunk.Usage)
+				continue
+			}
+
+			if chunk.Choices[0].FinishReason != "" {
+				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
+				streamHandler.HandleTextDoneItem(chunk, answer_content)
+				break
+			}
+
+			delta := chunk.Choices[0].Delta
+
+			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
+				var s string
+				err := json.Unmarshal([]byte(field.Raw()), &s)
+				if err != nil {
+					// fmt.Println(err)
+				}
+				reasoning_content += s
+				// fmt.Print(s)
+			} else {
+				if !is_answering {
+					is_answering = true
+					// fmt.Println("\n\n========== 回答内容 ==========")
+					streamHandler.HandleAddedItem(chunk)
+				}
+
+				if delta.Content != "" {
+					answer_content += delta.Content
+					answer_content_id = chunk.ID
+					streamHandler.HandleTextDelta(chunk)
+				}
+
+				if len(delta.ToolCalls) > 0 {
+					for _, toolCall := range delta.ToolCalls {
+						index := int(toolCall.Index)
+
+						// haskey(tool_info, index)
+						if _, ok := tool_info[index]; !ok {
+							// fmt.Printf("Prepare tool %s\n", toolCall.Function.Name)
+							tool_info[index] = map[string]string{}
+							streamHandler.HandleAddedItem(chunk)
+						}
+
+						if toolCall.ID != "" {
+							tool_info[index]["id"] = tool_info[index]["id"] + toolCall.ID
+						}
+
+						if toolCall.Function.Name != "" {
+							tool_info[index]["name"] = tool_info[index]["name"] + toolCall.Function.Name
+						}
+
+						if toolCall.Function.Arguments != "" {
+							tool_info[index]["arguments"] = tool_info[index]["arguments"] + toolCall.Function.Arguments
+							// check if arguments can be unmarshaled, if not, means the arguments are not ready
+							var dummy map[string]any
+							if err := json.Unmarshal([]byte(tool_info[index]["arguments"]), &dummy); err == nil {
+								streamHandler.HandleToolArgPreparedDoneItem(index, tool_info[index]["id"], tool_info[index]["name"], tool_info[index]["arguments"])
+								toolCalls = append(toolCalls, openai.FinishedChatCompletionToolCall{
+									Index: index,
+									ID:    tool_info[index]["id"],
+									ChatCompletionMessageFunctionToolCallFunction: openai.ChatCompletionMessageFunctionToolCallFunction{
+										Name:      tool_info[index]["name"],
+										Arguments: tool_info[index]["arguments"],
+									},
+								})
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -93,22 +164,19 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			return nil, nil, err
 		}
 
-		// 把 openai 的 response 记录下来，然后执行调用（如果有）
-		for _, item := range openaiOutput {
-			if item.Type == "message" && item.Role == "assistant" {
-				appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, item)
-			}
+		if answer_content != "" {
+			appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id)
 		}
 
 		// 执行调用（如果有），返回增量数据
-		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, openaiOutput, streamHandler)
+		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, toolCalls, streamHandler)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		// 把工具调用结果记录下来
-		if len(openaiToolHistory.OfInputItemList) > 0 {
-			openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, openaiToolHistory.OfInputItemList...)
+		// // 把工具调用结果记录下来
+		if len(openaiToolHistory) > 0 {
+			openaiChatHistory = append(openaiChatHistory, openaiToolHistory...)
 			inappChatHistory = append(inappChatHistory, inappToolHistory...)
 		} else {
 			// response stream is finished, if there is no tool call, then break
@@ -116,5 +184,5 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 	}
 
-	return openaiChatHistory.OfInputItemList, inappChatHistory, nil
+	return openaiChatHistory, inappChatHistory, nil
 }

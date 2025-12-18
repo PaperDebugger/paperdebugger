@@ -1,13 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
-	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 )
-
-// Compile-time check: ensure StreamHandlerV2 implements StreamHandler interface
-var _ StreamHandler = (*StreamHandlerV2)(nil)
 
 type StreamHandlerV2 struct {
 	callbackStream chatv2.ChatService_CreateConversationMessageStreamServer
@@ -19,7 +17,7 @@ func NewStreamHandlerV2(
 	callbackStream chatv2.ChatService_CreateConversationMessageStreamServer,
 	conversationId string,
 	modelSlug string,
-) StreamHandler {
+) *StreamHandlerV2 {
 	return &StreamHandlerV2{
 		callbackStream: callbackStream,
 		conversationId: conversationId,
@@ -31,119 +29,128 @@ func (h *StreamHandlerV2) SendInitialization() {
 	if h.callbackStream == nil {
 		return
 	}
+	streamInit := &chatv2.StreamInitialization{
+		ConversationId: h.conversationId,
+		ModelSlug:      h.modelSlug,
+	}
 
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamInitialization{
-			StreamInitialization: &chatv2.StreamInitialization{
-				ConversationId: h.conversationId,
-				ModelSlug:      h.modelSlug,
+			StreamInitialization: streamInit,
+		},
+	})
+}
+
+func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
+	if h.callbackStream == nil {
+		return
+	}
+	switch chunk.Choices[0].Delta.Role {
+	case "assistant":
+		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
+				StreamPartBegin: &chatv2.StreamPartBegin{
+					MessageId: "openai_" + chunk.ID,
+					Payload: &chatv2.MessagePayload{
+						MessageType: &chatv2.MessagePayload_Assistant{
+							Assistant: &chatv2.MessageTypeAssistant{},
+						},
+					},
+				},
+			},
+		})
+		// default:
+		// 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		// 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
+		// 			StreamPartBegin: &chatv2.StreamPartBegin{
+		// 				MessageId: "openai_" + chunk.ID,
+		// 				Payload: &chatv2.MessagePayload{
+		// 					MessageType: &chatv2.MessagePayload_Unknown{
+		// 						Unknown: &chatv2.MessageTypeUnknown{
+		// 							Description: fmt.Sprintf("%v", chunk.Choices[0].Delta.Role),
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	})
+	}
+	toolCalls := chunk.Choices[0].Delta.ToolCalls
+	for _, toolCall := range toolCalls {
+		if toolCall.Function.Name == "" {
+			continue
+		}
+		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
+				StreamPartBegin: &chatv2.StreamPartBegin{
+					MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", toolCall.Index, toolCall.ID),
+					Payload: &chatv2.MessagePayload{
+						MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
+							ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
+								Name: toolCall.Function.Name,
+								Args: "",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+}
+
+func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, content string) {
+	if h.callbackStream == nil {
+		return
+	}
+	if chunk.Choices[0].Delta.Role != "" && chunk.Choices[0].Delta.Content != "" {
+		return
+	}
+	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
+			StreamPartEnd: &chatv2.StreamPartEnd{
+				MessageId: "openai_" + chunk.ID,
+				Payload: &chatv2.MessagePayload{
+					MessageType: &chatv2.MessagePayload_Assistant{
+						Assistant: &chatv2.MessageTypeAssistant{
+							Content: content,
+						},
+					},
+				},
 			},
 		},
 	})
 }
 
-func (h *StreamHandlerV2) HandleAddedItem(chunk responses.ResponseStreamEventUnion) {
+func (h *StreamHandlerV2) HandleToolArgPreparedDoneItem(index int, id string, name string, args string) {
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Item.Type == "message" {
-		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
-				StreamPartBegin: &chatv2.StreamPartBegin{
-					MessageId: "openai_" + chunk.Item.ID,
-					Payload: &chatv2.MessagePayload{
-						MessageType: &chatv2.MessagePayload_Assistant{
-							Assistant: &chatv2.MessageTypeAssistant{
-								ModelSlug: h.modelSlug,
-							},
+	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
+			StreamPartEnd: &chatv2.StreamPartEnd{
+				MessageId: fmt.Sprintf("openai_toolCallPrepareArguments[%d]_%s", index, id),
+				Payload: &chatv2.MessagePayload{
+					MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
+						ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
+							Name: name,
+							Args: args,
 						},
 					},
 				},
 			},
-		})
-	} else if chunk.Item.Type == "function_call" {
-		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
-				StreamPartBegin: &chatv2.StreamPartBegin{
-					MessageId: "openai_" + chunk.Item.ID,
-					Payload: &chatv2.MessagePayload{
-						MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
-							ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
-								Name: chunk.Item.Name,
-							},
-						},
-					},
-				},
-			},
-		})
-	}
+		},
+	})
 }
 
-func (h *StreamHandlerV2) HandleDoneItem(chunk responses.ResponseStreamEventUnion) {
-	if h.callbackStream == nil {
-		return
-	}
-	item := chunk.Item
-	switch item.Type {
-	case "message":
-		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
-				StreamPartEnd: &chatv2.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
-					Payload: &chatv2.MessagePayload{
-						MessageType: &chatv2.MessagePayload_Assistant{
-							Assistant: &chatv2.MessageTypeAssistant{
-								Content:   item.Content[0].Text,
-								ModelSlug: h.modelSlug,
-							},
-						},
-					},
-				},
-			},
-		})
-	case "function_call":
-		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
-				StreamPartEnd: &chatv2.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
-					Payload: &chatv2.MessagePayload{
-						MessageType: &chatv2.MessagePayload_ToolCallPrepareArguments{
-							ToolCallPrepareArguments: &chatv2.MessageTypeToolCallPrepareArguments{
-								Name: item.Name,
-								Args: item.Arguments,
-							},
-						},
-					},
-				},
-			},
-		})
-	default:
-		h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
-			ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
-				StreamPartEnd: &chatv2.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
-					Payload: &chatv2.MessagePayload{
-						MessageType: &chatv2.MessagePayload_Unknown{
-							Unknown: &chatv2.MessageTypeUnknown{
-								Description: "Unknown message type: " + item.Type,
-							},
-						},
-					},
-				},
-			},
-		})
-	}
-}
-
-func (h *StreamHandlerV2) HandleTextDelta(chunk responses.ResponseStreamEventUnion) {
+func (h *StreamHandlerV2) HandleTextDelta(chunk openai.ChatCompletionChunk) {
 	if h.callbackStream == nil {
 		return
 	}
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_MessageChunk{
 			MessageChunk: &chatv2.MessageChunk{
-				MessageId: "openai_" + chunk.ItemID,
-				Delta:     chunk.Delta,
+				MessageId: "openai_" + chunk.ID,
+				Delta:     chunk.Choices[0].Delta.Content,
 			},
 		},
 	})
@@ -176,14 +183,14 @@ func (h *StreamHandlerV2) SendFinalization() {
 	})
 }
 
-func (h *StreamHandlerV2) SendToolCallBegin(toolCall responses.ResponseFunctionToolCall) {
+func (h *StreamHandlerV2) SendToolCallBegin(toolCall openai.FinishedChatCompletionToolCall) {
 	if h.callbackStream == nil {
 		return
 	}
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
 			StreamPartBegin: &chatv2.StreamPartBegin{
-				MessageId: "openai_" + toolCall.CallID,
+				MessageId: fmt.Sprintf("openai_tool[%d]_%s", toolCall.Index, toolCall.ID),
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_ToolCall{
 						ToolCall: &chatv2.MessageTypeToolCall{
@@ -197,14 +204,14 @@ func (h *StreamHandlerV2) SendToolCallBegin(toolCall responses.ResponseFunctionT
 	})
 }
 
-func (h *StreamHandlerV2) SendToolCallEnd(toolCall responses.ResponseFunctionToolCall, result string, err error) {
+func (h *StreamHandlerV2) SendToolCallEnd(toolCall openai.FinishedChatCompletionToolCall, result string, err error) {
 	if h.callbackStream == nil {
 		return
 	}
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv2.StreamPartEnd{
-				MessageId: "openai_" + toolCall.CallID,
+				MessageId: fmt.Sprintf("openai_tool[%d]_%s", toolCall.Index, toolCall.ID),
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_ToolCall{
 						ToolCall: &chatv2.MessageTypeToolCall{

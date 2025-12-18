@@ -1,0 +1,129 @@
+package client
+
+/*
+This file contains utility functions for the client package. (Mainly miscellaneous helpers)
+
+It is used to append assistant responses to both OpenAI and in-app chat histories, and to create response items for chat interactions.
+*/
+import (
+	"context"
+	"fmt"
+	"paperdebugger/internal/libs/cfg"
+	"paperdebugger/internal/libs/db"
+	"paperdebugger/internal/libs/logger"
+	"paperdebugger/internal/services"
+	"paperdebugger/internal/services/toolkit/registry"
+	"paperdebugger/internal/services/toolkit/tools/xtramcp"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+
+	openaiv3 "github.com/openai/openai-go/v3"
+	"github.com/samber/lo"
+)
+
+func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string) {
+	*openaiChatHistory = append(*openaiChatHistory, openaiv3.ChatCompletionMessageParamUnion{
+		OfAssistant: &openaiv3.ChatCompletionAssistantMessageParam{
+			Role: "assistant",
+			Content: openaiv3.ChatCompletionAssistantMessageParamContentUnion{
+				OfArrayOfContentParts: []openaiv3.ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion{
+					{
+						OfText: &openaiv3.ChatCompletionContentPartTextParam{
+							Type: "text",
+							Text: content,
+						},
+					},
+				},
+			},
+		},
+	})
+
+	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
+		MessageId: fmt.Sprintf("openai_%s", contentId),
+		Payload: &chatv2.MessagePayload{
+			MessageType: &chatv2.MessagePayload_Assistant{
+				Assistant: &chatv2.MessageTypeAssistant{
+					Content: content,
+				},
+			},
+		},
+	})
+}
+
+func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2) openaiv3.ChatCompletionNewParams {
+	var reasoningModels = []string{
+		"gpt-5",
+		"gpt-5-mini",
+		"gpt-5-nano",
+		"gpt-5-chat-latest",
+		"o4-mini",
+		"o3-mini",
+		"o3",
+		"o1-mini",
+		"o1",
+		"codex-mini-latest",
+	}
+	if lo.Contains(reasoningModels, modelSlug) {
+		return openaiv3.ChatCompletionNewParams{
+			Model:               modelSlug,
+			MaxCompletionTokens: openaiv3.Int(4000),
+			Tools:               toolRegistry.GetTools(),
+			ParallelToolCalls:   openaiv3.Bool(true),
+			Store:               openaiv3.Bool(false),
+		}
+	}
+
+	return openaiv3.ChatCompletionNewParams{
+		Model:               modelSlug,
+		Temperature:         openaiv3.Float(0.7),
+		MaxCompletionTokens: openaiv3.Int(4000),      // DEBUG POINT: change this to test the frontend handler
+		Tools:               toolRegistry.GetTools(), // 工具注册由 registry 统一管理
+		ParallelToolCalls:   openaiv3.Bool(true),
+		Store:               openaiv3.Bool(false), // Must set to false, because we are construct our own chat history.
+	}
+}
+
+func CheckOpenAIWorksV2(oaiClient openaiv3.Client, logger *logger.Logger) {
+	logger.Info("[AI Client] checking if openai client works")
+	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
+		Messages: []openaiv3.ChatCompletionMessageParamUnion{
+			openaiv3.UserMessage("Say 'openai client works'"),
+		},
+		Model: openaiv3.ChatModelGPT4o,
+	})
+	if err != nil {
+		logger.Errorf("[AI Client] openai client does not work: %v", err)
+		return
+	}
+	logger.Info("[AI Client] openai client works", "response", chatCompletion.Choices[0].Message.Content)
+}
+
+func initializeToolkitV2(
+	db *db.DB,
+	projectService *services.ProjectService,
+	cfg *cfg.Cfg,
+	logger *logger.Logger,
+) *registry.ToolRegistryV2 {
+	toolRegistry := registry.NewToolRegistryV2()
+
+	// Load tools dynamically from backend
+	xtraMCPLoader := xtramcp.NewXtraMCPLoaderV2(db, projectService, cfg.XtraMCPURI)
+
+	// initialize MCP session first and log session ID
+	sessionID, err := xtraMCPLoader.InitializeMCP()
+	if err != nil {
+		logger.Errorf("[AI Client V2] Failed to initialize XtraMCP session: %v", err)
+		// TODO: Fallback to static tools or exit?
+	} else {
+		logger.Info("[AI Client V2] XtraMCP session initialized", "sessionID", sessionID)
+
+		// dynamically load all tools from XtraMCP backend
+		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+		if err != nil {
+			logger.Errorf("[AI Client V2] Failed to load XtraMCP tools: %v", err)
+		} else {
+			logger.Info("[AI Client V2] Successfully loaded XtraMCP tools")
+		}
+	}
+
+	return toolRegistry
+}

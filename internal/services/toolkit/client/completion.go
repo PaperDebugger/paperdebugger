@@ -62,7 +62,7 @@ func (a *AIClient) ChatCompletionStreamV1(ctx context.Context, callbackStream ch
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
-	params := getDefaultParams(modelSlug, openaiChatHistory, a.toolCallHandler.Registry)
+	params := getDefaultParams(modelSlug, a.toolCallHandler.Registry)
 
 	for {
 		params.Input = openaiChatHistory
