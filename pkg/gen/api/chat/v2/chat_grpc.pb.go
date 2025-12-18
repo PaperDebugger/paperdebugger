@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	ChatService_ListConversations_FullMethodName               = "/chat.v2.ChatService/ListConversations"
 	ChatService_GetConversation_FullMethodName                 = "/chat.v2.ChatService/GetConversation"
-	ChatService_CreateConversationMessage_FullMethodName       = "/chat.v2.ChatService/CreateConversationMessage"
 	ChatService_CreateConversationMessageStream_FullMethodName = "/chat.v2.ChatService/CreateConversationMessageStream"
 	ChatService_UpdateConversation_FullMethodName              = "/chat.v2.ChatService/UpdateConversation"
 	ChatService_DeleteConversation_FullMethodName              = "/chat.v2.ChatService/DeleteConversation"
@@ -34,7 +33,6 @@ const (
 type ChatServiceClient interface {
 	ListConversations(ctx context.Context, in *ListConversationsRequest, opts ...grpc.CallOption) (*ListConversationsResponse, error)
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*GetConversationResponse, error)
-	CreateConversationMessage(ctx context.Context, in *CreateConversationMessageRequest, opts ...grpc.CallOption) (*CreateConversationMessageResponse, error)
 	CreateConversationMessageStream(ctx context.Context, in *CreateConversationMessageStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CreateConversationMessageStreamResponse], error)
 	UpdateConversation(ctx context.Context, in *UpdateConversationRequest, opts ...grpc.CallOption) (*UpdateConversationResponse, error)
 	DeleteConversation(ctx context.Context, in *DeleteConversationRequest, opts ...grpc.CallOption) (*DeleteConversationResponse, error)
@@ -63,16 +61,6 @@ func (c *chatServiceClient) GetConversation(ctx context.Context, in *GetConversa
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetConversationResponse)
 	err := c.cc.Invoke(ctx, ChatService_GetConversation_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) CreateConversationMessage(ctx context.Context, in *CreateConversationMessageRequest, opts ...grpc.CallOption) (*CreateConversationMessageResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateConversationMessageResponse)
-	err := c.cc.Invoke(ctx, ChatService_CreateConversationMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +122,6 @@ func (c *chatServiceClient) ListSupportedModels(ctx context.Context, in *ListSup
 type ChatServiceServer interface {
 	ListConversations(context.Context, *ListConversationsRequest) (*ListConversationsResponse, error)
 	GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error)
-	CreateConversationMessage(context.Context, *CreateConversationMessageRequest) (*CreateConversationMessageResponse, error)
 	CreateConversationMessageStream(*CreateConversationMessageStreamRequest, grpc.ServerStreamingServer[CreateConversationMessageStreamResponse]) error
 	UpdateConversation(context.Context, *UpdateConversationRequest) (*UpdateConversationResponse, error)
 	DeleteConversation(context.Context, *DeleteConversationRequest) (*DeleteConversationResponse, error)
@@ -154,9 +141,6 @@ func (UnimplementedChatServiceServer) ListConversations(context.Context, *ListCo
 }
 func (UnimplementedChatServiceServer) GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetConversation not implemented")
-}
-func (UnimplementedChatServiceServer) CreateConversationMessage(context.Context, *CreateConversationMessageRequest) (*CreateConversationMessageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateConversationMessage not implemented")
 }
 func (UnimplementedChatServiceServer) CreateConversationMessageStream(*CreateConversationMessageStreamRequest, grpc.ServerStreamingServer[CreateConversationMessageStreamResponse]) error {
 	return status.Error(codes.Unimplemented, "method CreateConversationMessageStream not implemented")
@@ -223,24 +207,6 @@ func _ChatService_GetConversation_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ChatServiceServer).GetConversation(ctx, req.(*GetConversationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_CreateConversationMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateConversationMessageRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).CreateConversationMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_CreateConversationMessage_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).CreateConversationMessage(ctx, req.(*CreateConversationMessageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -324,10 +290,6 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConversation",
 			Handler:    _ChatService_GetConversation_Handler,
-		},
-		{
-			MethodName: "CreateConversationMessage",
-			Handler:    _ChatService_CreateConversationMessage_Handler,
 		},
 		{
 			MethodName: "UpdateConversation",
