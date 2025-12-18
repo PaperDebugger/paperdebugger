@@ -431,7 +431,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
 					oaiHistory,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
 				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
@@ -459,7 +459,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			}
 
 			assert.Equal(t, 4, len(oaiHistory))
-			//pd_user, openai_call, openai_msg 或者 pd_user, openai_msg, openai_call, openai_msg
+			//pd_user, openai_call, openai_msg or pd_user, openai_msg, openai_call, openai_msg
 			assert.Condition(t, func() bool {
 				var firstMsg = appHistory[0].MessageId
 				if !strings.HasPrefix(firstMsg, "pd_user_") {
@@ -506,7 +506,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
 					oaiHistory,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
 				openaiHistory, inappHistory, err = aiClient.ChatCompletion(

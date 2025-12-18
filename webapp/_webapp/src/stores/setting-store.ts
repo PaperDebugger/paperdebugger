@@ -13,7 +13,7 @@ export interface SettingStore {
   updateSettings: (newSettings: Partial<PlainMessage<Settings>>) => Promise<void>;
   resetSettings: () => Promise<void>;
 
-  enableUserDeveloperTools: boolean; // 不是真的 developer tool
+  enableUserDeveloperTools: boolean; // Not actual developer tools
   setEnableUserDeveloperTools: (enable: boolean) => void;
 
   conversationMode: "debug" | "normal";

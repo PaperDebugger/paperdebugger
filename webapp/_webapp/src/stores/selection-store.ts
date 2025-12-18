@@ -21,7 +21,7 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   setSelectedText: (selectedText) => {
     set({ selectedText });
   },
-  lastSelectedText: null, // 有一种情况：用户选择了文本，移动了一下 paperdebugger，然后点击 Add to chat。这个时候需要 lastSelectedText 来恢复刚刚选中的文本。
+  lastSelectedText: null, // There's a case where user selects text, moves paperdebugger, then clicks Add to chat. In this case lastSelectedText is needed to restore the just-selected text.
   setLastSelectedText: (lastSelectedText) => {
     set({ lastSelectedText });
   },

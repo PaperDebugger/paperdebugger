@@ -13,7 +13,7 @@ var LocateSectionToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	OfFunction: &openai.ChatCompletionFunctionToolParam{
 		Function: openai.FunctionDefinitionParam{
 			Name:        "locate_section",
-			Description: param.NewOpt("根据标题查找特定章节的精确位置 (文件路径 + 行号范围)。Locates a specific section by its title and returns the file path and line number range."),
+			Description: param.NewOpt("Locates a specific section by its title and returns the exact position (file path + line number range). Locates a specific section by its title and returns the file path and line number range."),
 			Parameters: openai.FunctionParameters{
 				"type": "object",
 				"properties": map[string]interface{}{

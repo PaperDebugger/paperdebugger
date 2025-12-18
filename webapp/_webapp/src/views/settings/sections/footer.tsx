@@ -61,7 +61,7 @@ export const SettingsFooter = () => {
             text="App Store"
             alwaysShowText
             onClick={() => {
-              alert("我们还没有在 App Store 上架");
+              alert("We are not yet listed on the App Store");
             }}
           />
         )}
@@ -84,7 +84,7 @@ export const SettingsFooter = () => {
             text="Like Us"
             alwaysShowText
             onClick={() => {
-              alert("现在不能评论！因为应用还未上架！");
+              alert("Cannot leave a review now! The app is not yet listed!");
               // window.open(
               //   "https://apps.apple.com/cn/app/",
               //   "_blank",

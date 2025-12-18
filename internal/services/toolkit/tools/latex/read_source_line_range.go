@@ -13,7 +13,7 @@ var ReadSourceLineRangeToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	OfFunction: &openai.ChatCompletionFunctionToolParam{
 		Function: openai.FunctionDefinitionParam{
 			Name:        "read_source_line_range",
-			Description: param.NewOpt("(底层兜底) 读取指定文件、指定行号范围的源码。Reads the source code from a specific file within a given line range."),
+			Description: param.NewOpt("(Fallback) Reads the source code from a specific file within a given line range."),
 			Parameters: openai.FunctionParameters{
 				"type": "object",
 				"properties": map[string]interface{}{

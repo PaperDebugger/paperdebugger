@@ -12,7 +12,7 @@ var GetDocumentStructureToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	OfFunction: &openai.ChatCompletionFunctionToolParam{
 		Function: openai.FunctionDefinitionParam{
 			Name:        "get_document_structure",
-			Description: param.NewOpt("获取整个项目的目录大纲 (章节树)。Returns the complete document outline including all sections, subsections, and their hierarchy."),
+			Description: param.NewOpt("Gets the complete project document outline (section tree). Returns the complete document outline including all sections, subsections, and their hierarchy."),
 			Parameters: openai.FunctionParameters{
 				"type":       "object",
 				"properties": map[string]interface{}{},

@@ -63,7 +63,7 @@ export const TopMenuButton = () => {
           </span>
         </p>
       </button>
-      {/* 位置重置菜单 */}
+      {/* Position reset menu */}
       <div
         className={`pd-context-menu noselect ${contextMenuVisible ? "show" : ""}`}
         style={{

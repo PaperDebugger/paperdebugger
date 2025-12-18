@@ -12,9 +12,13 @@ const getProviderIcon = (provider: string | undefined): string => {
     case "openai":
       return "tabler:brand-openai";
     case "qwen":
-      return "simple-icons:alibabadotcom";
-    case "gemini":
-      return "simple-icons:googlegemini";
+      return "hugeicons:qwen";
+    case "google":
+      return "vscode-icons:file-type-gemini";
+    case "deepseek":
+      return "ri:deepseek-fill";
+    case "anthropic":
+      return "ri:anthropic-fill"
     default:
       return "tabler:brain";
   }

@@ -16,7 +16,7 @@ import (
 )
 
 func setupTestTokenService(t *testing.T) *services.TokenService {
-	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017") // 确保本地有 MongoDB
+	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017") // Ensure MongoDB is running locally
 	dbInstance, err := db.NewDB(cfg.GetCfg(), logger.GetLogger())
 	if err != nil {
 		t.Fatalf("failed to connect to test db: %v", err)

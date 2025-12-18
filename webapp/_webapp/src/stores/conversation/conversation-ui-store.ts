@@ -4,9 +4,9 @@ import { createRef } from "react";
 export const COLLAPSED_HEIGHT = 460;
 
 export const DISPLAY_MODES = [
-  { key: "floating", label: "窗口化" },
-  { key: "right-fixed", label: "右侧固定" },
-  { key: "bottom-fixed", label: "底部固定" },
+  { key: "floating", label: "Floating" },
+  { key: "right-fixed", label: "Right Fixed" },
+  { key: "bottom-fixed", label: "Bottom Fixed" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
 

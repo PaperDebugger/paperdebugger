@@ -4,40 +4,40 @@ import { Logo } from './components/logo';
 
 const colorProfile = {
   default: {
-    background: 'linear-gradient(135deg, #f6f7f9 0%, #e2e4ea 100%)', // 低调灰
-    cardBorderColor: '#e2e4ea', // 浅灰色边框
-    textPrimaryColor: '#222', // 主文字深灰
-    textDescColor: '#666', // 描述文字中灰
-    textFooterColor: '#aaa', // 脚注浅灰
+    background: 'linear-gradient(135deg, #f6f7f9 0%, #e2e4ea 100%)', // Subtle gray
+    cardBorderColor: '#e2e4ea', // Light gray border
+    textPrimaryColor: '#222', // Primary text dark gray
+    textDescColor: '#666', // Description text medium gray
+    textFooterColor: '#aaa', // Footer text light gray
   },
   success: {
-    background: 'linear-gradient(135deg, #f3fcf7 0%, #b7eacb 100%)', // 低调绿
-    cardBorderColor: '#b7eacb', // 绿色边框
-    textPrimaryColor: '#217a4a', // 主文字深绿
-    textDescColor: '#4ca96b', // 描述文字中绿
-    textFooterColor: '#7fd6a3', // 脚注浅绿
+    background: 'linear-gradient(135deg, #f3fcf7 0%, #b7eacb 100%)', // Subtle green
+    cardBorderColor: '#b7eacb', // Green border
+    textPrimaryColor: '#217a4a', // Primary text dark green
+    textDescColor: '#4ca96b', // Description text medium green
+    textFooterColor: '#7fd6a3', // Footer text light green
   },
   error: {
-    background: 'linear-gradient(135deg, #fdf7f7 0%, #f7d4d4 100%)', // 更浅更低调的红色
-    cardBorderColor: '#f7d4d4', // 红色边框
-    textPrimaryColor: '#a94442', // 主文字深红
-    textDescColor: '#d9534f', // 描述文字中红
-    textFooterColor: '#f7bcbc', // 脚注浅红
+    background: 'linear-gradient(135deg, #fdf7f7 0%, #f7d4d4 100%)', // Subtle light red
+    cardBorderColor: '#f7d4d4', // Red border
+    textPrimaryColor: '#a94442', // Primary text dark red
+    textDescColor: '#d9534f', // Description text medium red
+    textFooterColor: '#f7bcbc', // Footer text light red
   },
   requesting: {
-    background: 'linear-gradient(135deg, #fafaf5 0%, #f5e9be 100%)', // 低调黄
-    cardBorderColor: '#f5e9be', // 黄色边框
-    textPrimaryColor: '#8a6d3b', // 主文字深黄
-    textDescColor: '#c7a94a', // 描述文字中黄
-    textFooterColor: '#f5e9be', // 脚注浅黄
+    background: 'linear-gradient(135deg, #fafaf5 0%, #f5e9be 100%)', // Subtle yellow
+    cardBorderColor: '#f5e9be', // Yellow border
+    textPrimaryColor: '#8a6d3b', // Primary text dark yellow
+    textDescColor: '#c7a94a', // Description text medium yellow
+    textFooterColor: '#f5e9be', // Footer text light yellow
   },
 }
 
 type Status = 'default' | 'success' | 'error' | 'requesting';
 
 function App() {
-  const [title, setTitle] = useState('OAuth 登录');
-  const [desc, setDesc] = useState('初始界面，可以关闭');
+  const [title, setTitle] = useState('OAuth Login');
+  const [desc, setDesc] = useState('Initial screen, you can close this');
   const [footer, setFooter] = useState('');
   const [status, setStatus] = useState<Status>('default');
   // const [status, setStatus] = useState<Status>('success');

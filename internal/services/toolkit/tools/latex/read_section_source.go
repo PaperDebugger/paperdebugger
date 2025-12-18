@@ -13,7 +13,7 @@ var ReadSectionSourceToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	OfFunction: &openai.ChatCompletionFunctionToolParam{
 		Function: openai.FunctionDefinitionParam{
 			Name:        "read_section_source",
-			Description: param.NewOpt("读取特定章节的完整 LaTeX 源码。Reads the complete LaTeX source code of a specific section by its title."),
+			Description: param.NewOpt("Reads the complete LaTeX source code of a specific section by its title."),
 			Parameters: openai.FunctionParameters{
 				"type": "object",
 				"properties": map[string]interface{}{
