@@ -22,12 +22,12 @@ export const TabHeader = ({ title, subTitle, actions }: TabHeaderProps) => {
   const expandedHeader = (
     <div className="pd-app-tab-content-header noselect">
       <div className="min-w-0">
-        <div className="font-bold whitespace-nowrap text-ellipsis overflow-hidden">{title}</div>
-        <div className="text-sm text-gray-500 whitespace-nowrap text-ellipsis overflow-hidden w-full noselect">
+        <div className="font-bold text-xs whitespace-nowrap text-ellipsis overflow-hidden">{title}</div>
+        {/* <div className="text-xs text-gray-500 whitespace-nowrap text-ellipsis overflow-hidden w-full noselect">
           {subTitle}
-        </div>
+        </div> */}
       </div>
-      <div className="ms-auto flex-shrink-0 flex flex-row gap-2">{actions}</div>
+      <div className="ms-auto flex-shrink-0 flex flex-row gap-0">{actions}</div>
     </div>
   );
 

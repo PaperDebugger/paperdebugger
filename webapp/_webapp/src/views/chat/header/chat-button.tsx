@@ -48,12 +48,12 @@ export const ChatButton = ({
 
   const content = (
     <div
-      style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "32px" }}
+      style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "24px" }}
       className={cn(
         className,
         "rounded-full w-fit flex items-center overflow-hidden",
         disabled ? "cursor-not-allowed grayscale" : "cursor-pointer",
-        heightCollapseRequired || minimalistMode ? "px-0.5" : "px-2",
+        heightCollapseRequired || minimalistMode ? "px-0.5" : "px-1",
         noBorder ? "" : "border",
         disableAnimation ? "" : "transition-all duration-100",
         showText ? "max-w-full" : "max-w-[42px]",
@@ -63,7 +63,7 @@ export const ChatButton = ({
           ? "text-gray-400 border-gray-200"
           : variant === "danger"
             ? "text-danger border-danger-200"
-            : "text-gray-500 border-gray-200",
+            : "text-gray-500 border-gray-100 hover:border-gray-200",
         iconLoaded ? "opacity-100" : "opacity-0",
       )}
       onClick={() => {

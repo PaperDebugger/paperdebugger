@@ -43,7 +43,7 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
   const returnComponent = () => {
     if (messageEntry.toolCall !== undefined) {
       return (
-        <div className="chat-message-entry">
+        <div className="chat-message-entry rnd-cancel">
           <Tools
             messageId={messageEntry.messageId}
             functionName={messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"}

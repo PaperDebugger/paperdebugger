@@ -258,11 +258,11 @@ body {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header {
-  @apply bg-gray-100 px-3 py-2 gap-2 items-center w-full transition-all;
+  @apply bg-gray-100 pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
-  height: 60px;
+  height: 24px;
   border-bottom: 1px solid var(--pd-border-color);
 }
 
@@ -282,6 +282,7 @@ body {
   width: 100%;
   min-width: 0;
   flex: 1;
+  overflow-anchor: none;
   @apply bg-gray-50 p-2;
 }
 
