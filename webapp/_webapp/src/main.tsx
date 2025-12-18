@@ -9,7 +9,7 @@ import googleAnalytics from "./libs/google-analytics";
 import { generateSHA1Hash, onElementAdded, onElementAppeared } from "./libs/helpers";
 import { OverleafCodeMirror, completion, createSuggestionExtension } from "./libs/inline-suggestion";
 import { logInfo } from "./libs/logger";
-import apiclient, { getEndpointFromLocalStorage } from "./libs/apiclient";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage } from "./libs/apiclient";
 import { Providers } from "./providers";
 import { useAuthStore } from "./stores/auth-store";
 import { useConversationUiStore } from "./stores/conversation/conversation-ui-store";
@@ -64,7 +64,8 @@ export const Main = () => {
   const { loadPrompts } = usePromptLibraryStore();
 
   useEffect(() => {
-    apiclient.updateBaseURL(getEndpointFromLocalStorage());
+    apiclient.updateBaseURL(getEndpointFromLocalStorage(), "v1");
+    apiclientV2.updateBaseURL(getEndpointFromLocalStorage(), "v2");
     login();
     loadSettings();
     loadPrompts();

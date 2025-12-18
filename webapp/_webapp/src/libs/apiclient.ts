@@ -6,18 +6,31 @@ import { EventEmitter } from "events";
 import { ErrorCode, ErrorSchema } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
 
+// Exhaustive type check helper - will cause compile error if a case is not handled
+const assertNever = (x: never): never => {
+  throw new Error("Unexpected api version: " + x);
+};
+
 export type RequestOptions = {
   ignoreErrorToast?: boolean;
 };
+
+export type ApiVersion = "v1" | "v2";
+
+// Storage key mapping for each API version - add new versions here
+const API_VERSION_STORAGE_KEYS: Record<ApiVersion, string> = {
+  v1: "pd.devtool.endpoint",
+  v2: "pd.devtool.endpoint.v2",
+} as const;
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
   private refreshToken: string | null;
   private onTokenRefreshedEventEmitter: EventEmitter;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, apiVersion: ApiVersion) {
     this.axiosInstance = axios.create({
-      baseURL,
+      baseURL: `${baseURL}/_pd/api/${apiVersion}`,
       headers: {
         "Content-Type": "application/json",
       },
@@ -26,9 +39,18 @@ class ApiClient {
     this.onTokenRefreshedEventEmitter = new EventEmitter();
   }
 
-  updateBaseURL(baseURL: string): void {
-    this.axiosInstance.defaults.baseURL = baseURL;
-    localStorage.setItem(LOCAL_STORAGE_KEY, baseURL);
+  updateBaseURL(baseURL: string, apiVersion: ApiVersion): void {
+    this.axiosInstance.defaults.baseURL = `${baseURL}/_pd/api/${apiVersion}`;
+    switch (apiVersion) {
+      case "v1":
+        localStorage.setItem(API_VERSION_STORAGE_KEYS.v1, this.axiosInstance.defaults.baseURL);
+        break;
+      case "v2":
+        localStorage.setItem(API_VERSION_STORAGE_KEYS.v2, this.axiosInstance.defaults.baseURL);
+        break;
+      default:
+        assertNever(apiVersion); // Compile error if a new version is added but not handled
+    }
   }
 
   addListener(event: "tokenRefreshed", listener: (args: { token: string; refreshToken: string }) => void): void {
@@ -99,7 +121,7 @@ class ApiClient {
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
           const message = errorPayload.message.replace(/^rpc error: code = Code\(\d+\) desc = /, "");
-          errorToast(message, `Request Failed: ${ErrorCode[errorPayload.code]}`);
+          errorToast(message + ` (${config.url})`, `Request Failed: ${ErrorCode[errorPayload.code]}`);
         }
         throw errorPayload;
       }
@@ -187,22 +209,30 @@ class ApiClient {
   }
 }
 
-const DEFAULT_ENDPOINT = `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}/_pd/api/v1`;
-const LOCAL_STORAGE_KEY = "pd.devtool.endpoint";
+const DEFAULT_ENDPOINT = `${process.env.PD_API_ENDPOINT || "http://localhost:3000"}`;
+const LOCAL_STORAGE_KEY_V1 = "pd.devtool.endpoint";
+const LOCAL_STORAGE_KEY_V2 = "pd.devtool.endpoint.v2";
+
 // Create apiclient instance with endpoint from localStorage or default
 export const getEndpointFromLocalStorage = () => {
+  var endpoint = "";
   try {
-    return localStorage.getItem(LOCAL_STORAGE_KEY) || DEFAULT_ENDPOINT;
+    endpoint = localStorage.getItem(LOCAL_STORAGE_KEY_V1) || DEFAULT_ENDPOINT;
   } catch {
     // Fallback if localStorage is not available (e.g., in SSR)
-    return DEFAULT_ENDPOINT;
+    endpoint = DEFAULT_ENDPOINT;
   }
+
+  return endpoint.replace("/_pd/api/v1", "").replace("/_pd/api/v2", ""); // compatible with old endpoint
 };
 
 export const resetApiClientEndpoint = () => {
-  localStorage.removeItem(LOCAL_STORAGE_KEY);
-  apiclient.updateBaseURL(getEndpointFromLocalStorage());
+  localStorage.removeItem(LOCAL_STORAGE_KEY_V1);
+  localStorage.removeItem(LOCAL_STORAGE_KEY_V2);
+  apiclient.updateBaseURL(getEndpointFromLocalStorage(), "v1");
+  apiclientV2.updateBaseURL(getEndpointFromLocalStorage(), "v2");
 };
 
-const apiclient = new ApiClient(getEndpointFromLocalStorage());
+const apiclient = new ApiClient(getEndpointFromLocalStorage(), "v1");
+export const apiclientV2 = new ApiClient(getEndpointFromLocalStorage(), "v2");
 export default apiclient;

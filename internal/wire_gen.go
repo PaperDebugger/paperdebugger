@@ -36,15 +36,16 @@ func InitializeApp() (*api.Server, error) {
 	projectService := services.NewProjectService(dbDB, cfgCfg, loggerLogger)
 	reverseCommentService := services.NewReverseCommentService(dbDB, cfgCfg, loggerLogger, projectService)
 	aiClient := client.NewAIClient(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
-	aiClientV2 := client.NewAIClientV2(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
 	chatService := services.NewChatService(dbDB, cfgCfg, loggerLogger)
+	chatServiceServer := chat.NewChatServer(aiClient, chatService, projectService, userService, loggerLogger, cfgCfg)
+	aiClientV2 := client.NewAIClientV2(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
 	chatServiceV2 := services.NewChatServiceV2(dbDB, cfgCfg, loggerLogger)
-	chatServiceServer := chat.NewChatServer(aiClient, aiClientV2, chatService, chatServiceV2, projectService, userService, loggerLogger, cfgCfg)
+	chatv2ChatServiceServer := chat.NewChatServerV2(aiClientV2, chatServiceV2, projectService, userService, loggerLogger, cfgCfg)
 	promptService := services.NewPromptService(dbDB, cfgCfg, loggerLogger)
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
 	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)
 	commentServiceServer := comment.NewCommentServer(projectService, chatService, reverseCommentService, loggerLogger, cfgCfg)
-	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, userServiceServer, projectServiceServer, commentServiceServer)
+	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer)
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)
 	oAuthHandler := auth.NewOAuthHandler(oAuthService)
 	ginServer := api.NewGinServer(cfgCfg, oAuthHandler)
@@ -54,4 +55,4 @@ func InitializeApp() (*api.Server, error) {
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)

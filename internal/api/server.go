@@ -13,6 +13,7 @@ import (
 	"paperdebugger/internal/libs/shared"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 	sharedv1 "paperdebugger/pkg/gen/api/shared/v1"
@@ -82,6 +83,11 @@ func (s *Server) Run(addr string) {
 	err = chatv1.RegisterChatServiceHandler(context.Background(), mux, client)
 	if err != nil {
 		s.logger.Fatalf("failed to register chat service grpc gateway: %v", err)
+		return
+	}
+	err = chatv2.RegisterChatServiceHandler(context.Background(), mux, client)
+	if err != nil {
+		s.logger.Fatalf("failed to register chat v2 service grpc gateway: %v", err)
 		return
 	}
 	err = userv1.RegisterUserServiceHandler(context.Background(), mux, client)

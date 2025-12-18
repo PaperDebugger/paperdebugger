@@ -16,7 +16,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func (s *ChatServer) sendStreamError(stream chatv1.ChatService_CreateConversationMessageStreamServer, err error) error {
+func (s *ChatServerV1) sendStreamError(stream chatv1.ChatService_CreateConversationMessageStreamServer, err error) error {
 	return stream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamError{
 			StreamError: &chatv1.StreamError{
@@ -31,7 +31,7 @@ func (s *ChatServer) sendStreamError(stream chatv1.ChatService_CreateConversatio
 // 我们发送给 GPT 的就是从数据库里拿到的 Conversation 对象里面的内容（InputItemList）
 
 // buildUserMessage constructs both the user-facing message and the OpenAI input message
-func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, *responses.ResponseInputItemUnionParam, error) {
+func (s *ChatServerV1) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv1.ConversationType) (*chatv1.Message, *responses.ResponseInputItemUnionParam, error) {
 	userPrompt, err := s.chatServiceV1.GetPrompt(ctx, userMessage, userSelectedText, conversationType)
 	if err != nil {
 		return nil, nil, err
@@ -77,7 +77,7 @@ func (s *ChatServer) buildUserMessage(ctx context.Context, userMessage, userSele
 }
 
 // buildSystemMessage constructs both the user-facing system message and the OpenAI input message
-func (s *ChatServer) buildSystemMessage(systemPrompt string) (*chatv1.Message, *responses.ResponseInputItemUnionParam) {
+func (s *ChatServerV1) buildSystemMessage(systemPrompt string) (*chatv1.Message, *responses.ResponseInputItemUnionParam) {
 	inappMessage := &chatv1.Message{
 		MessageId: "pd_msg_system_" + uuid.New().String(),
 		Payload: &chatv1.MessagePayload{
@@ -116,7 +116,7 @@ func convertToBSON(msg *chatv1.Message) (bson.M, error) {
 
 // 创建对话并写入数据库
 // 返回 Conversation 对象
-func (s *ChatServer) createConversation(
+func (s *ChatServerV1) createConversation(
 	ctx context.Context,
 	userId bson.ObjectID,
 	projectId string,
@@ -151,7 +151,7 @@ func (s *ChatServer) createConversation(
 
 // 追加消息到对话并写入数据库
 // 返回 Conversation 对象
-func (s *ChatServer) appendConversationMessage(
+func (s *ChatServerV1) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
 	conversationId string,
@@ -190,7 +190,7 @@ func (s *ChatServer) appendConversationMessage(
 
 // 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
 // conversationType 可以在一次 conversation 中多次切换
-func (s *ChatServer) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServerV1) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv1.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err

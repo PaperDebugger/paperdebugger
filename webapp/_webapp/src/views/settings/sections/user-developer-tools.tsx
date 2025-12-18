@@ -3,14 +3,15 @@ import { SettingItemSelect } from "../setting-item-select";
 import { useSettingStore } from "../../../stores/setting-store";
 import { SettingItemInput } from "../setting-item-input";
 import { useEffect, useState } from "react";
-import apiclient, { getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../../libs/apiclient";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../../libs/apiclient";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
   const [endpoint, setEndpoint] = useState(getEndpointFromLocalStorage());
 
   useEffect(() => {
-    apiclient.updateBaseURL(endpoint);
+    apiclient.updateBaseURL(endpoint, "v1");
+    apiclientV2.updateBaseURL(endpoint, "v2");
   }, [endpoint]);
 
   return (

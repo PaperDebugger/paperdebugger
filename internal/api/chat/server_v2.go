@@ -5,33 +5,33 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	aiclient "paperdebugger/internal/services/toolkit/client"
-	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 )
 
-type ChatServerV1 struct {
-	chatv1.UnimplementedChatServiceServer
-	aiClientV1     *aiclient.AIClient
-	chatServiceV1  *services.ChatService
+type ChatServerV2 struct {
+	chatv2.UnimplementedChatServiceServer
+	aiClientV2     *aiclient.AIClientV2
+	chatServiceV2  *services.ChatServiceV2
 	projectService *services.ProjectService
 	userService    *services.UserService
 	logger         *logger.Logger
 	cfg            *cfg.Cfg
 }
 
-func NewChatServer(
-	aiClientV1 *aiclient.AIClient,
-	chatService *services.ChatService,
+func NewChatServerV2(
+	aiClientV2 *aiclient.AIClientV2,
+	chatServiceV2 *services.ChatServiceV2,
 	projectService *services.ProjectService,
 	userService *services.UserService,
 	logger *logger.Logger,
 	cfg *cfg.Cfg,
-) chatv1.ChatServiceServer {
-	return &ChatServerV1{
-		aiClientV1:     aiClientV1,
+) chatv2.ChatServiceServer {
+	return &ChatServerV2{
+		aiClientV2:     aiClientV2,
 		projectService: projectService,
 		userService:    userService,
 		logger:         logger,
-		chatServiceV1:  chatService,
+		chatServiceV2:  chatServiceV2,
 		cfg:            cfg,
 	}
 }

@@ -5,15 +5,15 @@ import (
 	"strings"
 
 	"paperdebugger/internal/libs/contextutil"
-	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
-	"github.com/openai/openai-go/v2"
+	"github.com/openai/openai-go/v3"
 )
 
-func (s *ChatServerV1) ListSupportedModels(
+func (s *ChatServerV2) ListSupportedModels(
 	ctx context.Context,
-	req *chatv1.ListSupportedModelsRequest,
-) (*chatv1.ListSupportedModelsResponse, error) {
+	req *chatv2.ListSupportedModelsRequest,
+) (*chatv2.ListSupportedModelsResponse, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return nil, err
@@ -24,9 +24,9 @@ func (s *ChatServerV1) ListSupportedModels(
 		return nil, err
 	}
 
-	var models []*chatv1.SupportedModel
+	var models []*chatv2.SupportedModel
 	if strings.TrimSpace(settings.OpenAIAPIKey) == "" {
-		models = []*chatv1.SupportedModel{
+		models = []*chatv2.SupportedModel{
 			{
 
 				Name: "GPT-4o",
@@ -42,7 +42,7 @@ func (s *ChatServerV1) ListSupportedModels(
 			},
 		}
 	} else {
-		models = []*chatv1.SupportedModel{
+		models = []*chatv2.SupportedModel{
 			{
 				Name: "GPT 4o",
 				Slug: openai.ChatModelGPT4o,
@@ -98,7 +98,7 @@ func (s *ChatServerV1) ListSupportedModels(
 		}
 	}
 
-	return &chatv1.ListSupportedModelsResponse{
+	return &chatv2.ListSupportedModelsResponse{
 		Models: models,
 	}, nil
 }

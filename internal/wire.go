@@ -28,6 +28,7 @@ var Set = wire.NewSet(
 	auth.NewOAuthHandler,
 	auth.NewAuthServer,
 	chat.NewChatServer,
+	chat.NewChatServerV2,
 	user.NewUserServer,
 	project.NewProjectServer,
 	comment.NewCommentServer,

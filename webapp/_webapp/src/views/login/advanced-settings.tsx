@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { SettingItemInput } from "../settings/setting-item-input";
-import apiclient, { getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../libs/apiclient";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../libs/apiclient";
 
 export default function AdvancedSettings() {
   const [endpoint, setEndpoint] = useState(getEndpointFromLocalStorage());
 
   useEffect(() => {
-    apiclient.updateBaseURL(endpoint);
+    apiclient.updateBaseURL(endpoint, "v1");
+    apiclientV2.updateBaseURL(endpoint, "v2");
   }, [endpoint]);
 
   return (
