@@ -215,7 +215,7 @@ const LOCAL_STORAGE_KEY_V2 = "pd.devtool.endpoint.v2";
 
 // Create apiclient instance with endpoint from localStorage or default
 export const getEndpointFromLocalStorage = () => {
-  var endpoint = "";
+  let endpoint = "";
   try {
     endpoint = localStorage.getItem(LOCAL_STORAGE_KEY_V1) || DEFAULT_ENDPOINT;
   } catch {

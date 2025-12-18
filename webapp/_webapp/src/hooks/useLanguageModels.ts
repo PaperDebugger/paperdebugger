@@ -45,7 +45,7 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
 
 export const useLanguageModels = () => {
   const { currentConversation, setCurrentConversation } = useConversationStore();
-  const { setLastUsedModelSlug} = useConversationUiStore();
+  const { setLastUsedModelSlug } = useConversationUiStore();
   const { data: supportedModelsResponse } = useListSupportedModelsQuery();
 
   const models: Model[] = useMemo(() => {

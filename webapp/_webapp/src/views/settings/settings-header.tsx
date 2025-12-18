@@ -7,7 +7,6 @@ export const SettingsHeader = () => {
   return (
     <TabHeader
       title="Settings"
-      subTitle="All settings"
       actions={
         <>
           <ChatButton

@@ -77,7 +77,11 @@ export const ChatButton = ({
     >
       <div className="flex items-center">
         <div className={cn("flex items-center justify-center")}>
-          <Icon icon={icon} fontSize={heightCollapseRequired || minimalistMode ? 12 : 16} onLoad={() => setIconLoaded(true)} />
+          <Icon
+            icon={icon}
+            fontSize={heightCollapseRequired || minimalistMode ? 12 : 16}
+            onLoad={() => setIconLoaded(true)}
+          />
         </div>
         {text && (
           <span

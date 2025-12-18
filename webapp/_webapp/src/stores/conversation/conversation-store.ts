@@ -53,4 +53,3 @@ export function newConversation(): Conversation {
     messages: [],
   });
 }
-

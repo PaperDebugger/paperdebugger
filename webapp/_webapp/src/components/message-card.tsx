@@ -55,7 +55,7 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
         </div>
       );
     }
-    
+
     if (messageEntry.assistant !== undefined) {
       return (
         <AssistantMessageContainer

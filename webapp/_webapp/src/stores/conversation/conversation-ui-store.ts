@@ -130,5 +130,4 @@ export const useConversationUiStore = create<ConversationUiStore>()(
   ),
 );
 
-
 // selectedText is controlled by  the "selection-store.ts"

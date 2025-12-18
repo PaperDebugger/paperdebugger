@@ -18,7 +18,7 @@ const getProviderIcon = (provider: string | undefined): string => {
     case "deepseek":
       return "ri:deepseek-fill";
     case "anthropic":
-      return "ri:anthropic-fill"
+      return "ri:anthropic-fill";
     default:
       return "tabler:brain";
   }

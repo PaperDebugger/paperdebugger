@@ -101,7 +101,9 @@ export function PromptInput() {
       {/* Only show one popup at a time - priority: prompts > actions > model selection */}
       {prompts.length > 0 && <PromptSelection prompts={prompts} />}
       {prompts.length === 0 && actions.length > 0 && <ActionSelection actions={actions} />}
-      {prompts.length === 0 && actions.length === 0 && showModelSelection && <ModelSelection onSelectModel={handleModelSelect} />}
+      {prompts.length === 0 && actions.length === 0 && showModelSelection && (
+        <ModelSelection onSelectModel={handleModelSelect} />
+      )}
 
       <div className={cn("pd-chat-toolbar noselect", heightCollapseRequired || minimalistMode ? "collapsed" : "")}>
         <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />

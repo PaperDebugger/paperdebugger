@@ -101,7 +101,6 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     return <EmptyView />;
   }
 
-
   const expander = (
     <div
       style={{
@@ -166,4 +165,3 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     </div>
   );
 };
-
