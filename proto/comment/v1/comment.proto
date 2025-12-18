@@ -19,7 +19,7 @@ message CommentsAcceptedRequest {
   string project_id = 1;
   string conversation_id = 2;
   string message_id = 3;
-  repeated string comment_ids = 4; // 被 accept 的 comment id 列表
+  repeated string comment_ids = 4; // List of accepted comment IDs
 }
 
 message CommentsAcceptedResponse {

@@ -9,7 +9,7 @@ import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
 
-// --- 工具函数 ---
+// --- Utility functions ---
 const loremIpsum =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 const randomText = () =>
@@ -24,16 +24,16 @@ const randomUUID = () => {
   return result;
 };
 
-// --- DevTools主组件 ---
+// --- DevTools main component ---
 export const DevTools = () => {
-  // 状态管理
+  // State management
   const { selectedText, setSelectedText, setSelectionRange } = useSelectionStore();
   const { streamingMessage, setStreamingMessage, updateStreamingMessage } = useStreamingMessageStore();
   const { startFromScratch, currentConversation, setCurrentConversation } = useConversationStore();
   const [preparingDelay, setPreparingDelay] = useState(2);
 
-  // --- 事件处理函数 ---
-  // Conversation相关
+  // --- Event handlers ---
+  // Conversation related
   const handleClearConversation = () => setCurrentConversation({ ...currentConversation, messages: [] });
   const handleAddUserMessage = () =>
     setCurrentConversation({
@@ -84,7 +84,7 @@ export const DevTools = () => {
     setCurrentConversation({ ...currentConversation, messages: newMessages });
   };
 
-  // SelectedText相关
+  // SelectedText related
   const handleClearSelectedText = () => {
     setSelectedText(null);
     setSelectionRange(null);
@@ -94,7 +94,7 @@ export const DevTools = () => {
     setSelectionRange(new Range());
   };
 
-  // StreamingMessage相关
+  // StreamingMessage related
   const handleClearStreamingMessage = () => setStreamingMessage({ ...streamingMessage, parts: [] });
   const handleStaleLastStreamingMessage = () => {
     const newParts = useStreamingMessageStore
@@ -104,12 +104,12 @@ export const DevTools = () => {
       );
     setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
   };
-  // 通用延迟处理
+  // Generic delay handler
   const withDelay = (fn: () => void) => {
     if (preparingDelay > 0) setTimeout(fn, preparingDelay * 1000);
     else fn();
   };
-  // StreamingMessage添加各类消息
+  // StreamingMessage add various message types
   const handleAddStreamingUserMessage = () => {
     const messageEntry: MessageEntry = {
       messageId: randomUUID(),
@@ -229,7 +229,7 @@ export const DevTools = () => {
     });
   };
 
-  // --- 渲染 ---
+  // --- Render ---
   return (
     <Rnd
       style={{ zIndex: 1003, position: "static", top: 0, left: 0 }}
@@ -237,7 +237,7 @@ export const DevTools = () => {
     >
       <div className="flex flex-col gap-2 w-full h-full bg-orange-100 border-2 border-orange-600 rounded-lg overflow-hidden p-2">
         <h1 className="text-2xl font-bold text-center text-orange-600">DevTools</h1>
-        {/* Conversation 区块 */}
+        {/* Conversation section */}
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-bold flex items-center gap-2">
             Conversation (
@@ -289,7 +289,7 @@ export const DevTools = () => {
               </Button>
             </div>
           </div>
-          {/* Streaming Message 区块 */}
+          {/* Streaming Message section */}
           <div className="flex flex-col gap-2">
             <h3 className="flex items-center gap-2">
               Streaming Message

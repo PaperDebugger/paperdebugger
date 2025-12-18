@@ -101,7 +101,7 @@ export const useListConversationsQuery = (
   projectId: string,
   opts?: UseQueryOptionsOverride<ListConversationsResponse>,
 ) => {
-  // 如果登录，才获取
+  // Only fetch if logged in
   const { user } = useAuthStore();
   return useQuery({
     queryKey: queryKeys.conversations.listConversations(projectId).queryKey,

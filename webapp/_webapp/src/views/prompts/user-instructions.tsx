@@ -58,7 +58,7 @@ export function UserInstructions() {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault(); // 阻止浏览器的默认保存行为
+        e.preventDefault(); // Prevent browser's default save behavior
         if (hasUserChanges && !userInstructionsMutation.isPending) {
           handleSaveUserInstructions();
         }

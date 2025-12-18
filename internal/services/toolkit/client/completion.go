@@ -93,20 +93,20 @@ func (a *AIClient) ChatCompletionStreamV1(ctx context.Context, callbackStream ch
 			return nil, nil, err
 		}
 
-		// 把 openai 的 response 记录下来，然后执行调用（如果有）
+		// Record the openai response, then execute the calls (if any)
 		for _, item := range openaiOutput {
 			if item.Type == "message" && item.Role == "assistant" {
 				appendAssistantTextResponse(&openaiChatHistory, &inappChatHistory, item)
 			}
 		}
 
-		// 执行调用（如果有），返回增量数据
+		// Execute the calls (if any), return incremental data
 		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCalls(ctx, openaiOutput, streamHandler)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		// 把工具调用结果记录下来
+		// Record the tool call results
 		if len(openaiToolHistory.OfInputItemList) > 0 {
 			openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, openaiToolHistory.OfInputItemList...)
 			inappChatHistory = append(inappChatHistory, inappToolHistory...)

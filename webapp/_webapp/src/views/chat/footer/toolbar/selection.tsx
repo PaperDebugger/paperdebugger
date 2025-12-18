@@ -36,14 +36,14 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
       const children = parent?.getElementsByClassName("prompt-selection-item");
       const child = children?.[idx] as HTMLDivElement;
       if (!parent || !child) return;
-      // 判断 child 是否在 parent 可视区域内，如果不在则滚动
+      // Check if child is visible within parent's viewport, scroll if not
       const parentRect = parent.getBoundingClientRect();
       const childRect = child.getBoundingClientRect();
       if (childRect.top < parentRect.top) {
-        // 元素在上方不可见
+        // Element is above visible area
         parent.scrollTop -= parentRect.top - childRect.top;
       } else if (childRect.bottom > parentRect.bottom) {
-        // 元素在下方不可见
+        // Element is below visible area
         parent.scrollTop += childRect.bottom - parentRect.bottom;
       }
     };

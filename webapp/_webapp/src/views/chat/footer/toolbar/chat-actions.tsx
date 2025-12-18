@@ -6,6 +6,20 @@ type ChatActionsProps = {
   onShowModelSelection: () => void;
 };
 
+// Map provider names to their respective icons
+const getProviderIcon = (provider: string | undefined): string => {
+  switch (provider) {
+    case "openai":
+      return "tabler:brand-openai";
+    case "qwen":
+      return "simple-icons:alibabadotcom";
+    case "gemini":
+      return "simple-icons:googlegemini";
+    default:
+      return "tabler:brain";
+  }
+};
+
 export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
   const { inputRef, setPrompt } = useConversationUiStore();
   const { currentModel } = useLanguageModels();
@@ -40,7 +54,7 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
       <div className="flex-1"></div>
       <ChatButton
         className="ms-auto"
-        icon="tabler:brand-openai"
+        icon={getProviderIcon(currentModel?.provider)}
         text={currentModel?.name}
         tooltip="Click to change model"
         tooltipSize="sm"

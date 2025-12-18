@@ -75,7 +75,7 @@ func getDefaultParams(modelSlug string, toolRegistry *registry.ToolRegistry) res
 		Model:           modelSlug,
 		Temperature:     openaiv2.Float(0.7),
 		MaxOutputTokens: openaiv2.Int(4000),      // DEBUG POINT: change this to test the frontend handler
-		Tools:           toolRegistry.GetTools(), // 工具注册由 registry 统一管理
+		Tools:           toolRegistry.GetTools(), // Tool registration is managed centrally by the registry
 		Store:           openaiv2.Bool(false),    // Must set to false, because we are construct our own chat history.
 	}
 }

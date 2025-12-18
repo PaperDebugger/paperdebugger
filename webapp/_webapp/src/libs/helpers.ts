@@ -193,10 +193,10 @@ export function addClickedOverleafComment(projectId: string, messageId: string) 
   if (!projectId || !messageId) return;
   const key = OVERLEAF_COMMENTS_CLICKED_PREFIX + projectId;
   let arr = getClickedOverleafComments(projectId);
-  // 去重
+  // Deduplicate
   arr = arr.filter((id) => id !== messageId);
   arr.push(messageId);
-  // 最多 200 条
+  // Maximum 200 items
   if (arr.length > MAX_CLICKED_COMMENTS) {
     arr = arr.slice(arr.length - MAX_CLICKED_COMMENTS);
   }
@@ -209,7 +209,7 @@ export function hasClickedOverleafComment(projectId: string, messageId: string):
   return arr.includes(messageId);
 }
 
-// 经典 debounce，适合事件回调
+// Classic debounce, suitable for event callbacks
 export function debounce(fn: (...args: unknown[]) => void, wait: number) {
   let timer: ReturnType<typeof setTimeout> | null = null;
   return function (this: unknown, ...args: unknown[]) {
@@ -231,6 +231,6 @@ export function blobToBase64(blob: Blob): Promise<string> {
       }
     };
     reader.onerror = reject;
-    reader.readAsDataURL(blob); // 读取为 DataURL 格式（包含 base64）
+    reader.readAsDataURL(blob); // Read as DataURL format (contains base64)
   });
 }

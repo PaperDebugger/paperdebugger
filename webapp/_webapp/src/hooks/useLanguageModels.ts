@@ -7,19 +7,28 @@ import { useListSupportedModelsQuery } from "../query";
 export type Model = {
   name: string;
   slug: string;
+  provider: string;
+};
+
+// Extract provider from model slug (e.g., "openai/gpt-4.1" -> "openai")
+const extractProvider = (slug: string): string => {
+  const parts = slug.split("/");
+  return parts.length > 1 ? parts[0] : "openai";
 };
 
 // Fallback models in case the API fails
 const fallbackModels: Model[] = [
   {
     name: "GPT-4.1",
-    slug: "gpt-4.1",
+    slug: "openai/gpt-4.1",
+    provider: "openai",
   },
 ];
 
 const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
   name: supportedModel.name,
   slug: supportedModel.slug,
+  provider: extractProvider(supportedModel.slug),
 });
 
 export const useLanguageModels = () => {

@@ -2,9 +2,11 @@ package chat
 
 import (
 	"context"
+	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
+	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 
 	"github.com/google/uuid"
@@ -24,9 +26,9 @@ func (s *ChatServerV2) sendStreamError(stream chatv2.ChatService_CreateConversat
 	})
 }
 
-// 设计理念：
-// 发送给 GPT 之前，消息列表已经构造进 Conversation 对象中（也保存在数据库里）
-// 我们发送给 GPT 的就是从数据库里拿到的 Conversation 对象里面的内容（InputItemList）
+// Design philosophy:
+// Before sending to GPT, the message list is already constructed in the Conversation object (also saved in the database)
+// What we send to GPT is the content (InputItemList) from the Conversation object retrieved from the database
 
 // buildUserMessage constructs both the user-facing message and the OpenAI input message
 func (s *ChatServerV2) buildSystemMessage(systemPrompt string) (*chatv2.Message, openai.ChatCompletionMessageParamUnion) {
@@ -96,8 +98,8 @@ func convertToBSONV2(msg *chatv2.Message) (bson.M, error) {
 	return bsonMsg, nil
 }
 
-// 创建对话并写入数据库
-// 返回 Conversation 对象
+// createConversation creates a conversation and writes it to the database
+// Returns the Conversation object
 func (s *ChatServerV2) createConversation(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -132,8 +134,8 @@ func (s *ChatServerV2) createConversation(
 	)
 }
 
-// 追加消息到对话并写入数据库
-// 返回 Conversation 对象
+// appendConversationMessage appends a message to the conversation and writes it to the database
+// Returns the Conversation object
 func (s *ChatServerV2) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -171,8 +173,8 @@ func (s *ChatServerV2) appendConversationMessage(
 	return conversation, nil
 }
 
-// 如果 conversationId 是 ""， 就创建新对话，否则就追加消息到对话
-// conversationType 可以在一次 conversation 中多次切换
+// prepare creates a new conversation if conversationId is "", otherwise appends a message to the conversation
+// conversationType can be switched multiple times within a single conversation
 func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
@@ -265,7 +267,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	// 用法跟 ChatCompletion 一样，只是传递了 stream 参数
+	// Usage is the same as ChatCompletion, just passing the stream parameter
 	llmProvider := &models.LLMProviderConfig{
 		APIKey: settings.OpenAIAPIKey,
 	}
@@ -275,7 +277,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	// 附加消息到对话
+	// Append messages to the conversation
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
 		bsonMsg, err := convertToBSONV2(&inappChatHistory[i])
@@ -290,24 +292,24 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	// if conversation.Title == services.DefaultConversationTitle {
-	// 	go func() {
-	// 		protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
-	// 		for i, bsonMsg := range conversation.InappChatHistory {
-	// 			protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
-	// 		}
-	// 		title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
-	// 		if err != nil {
-	// 			s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
-	// 			return
-	// 		}
-	// 		conversation.Title = title
-	// 		if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
-	// 			s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
-	// 			return
-	// 		}
-	// 	}()
-	// }
+	if conversation.Title == services.DefaultConversationTitle {
+		go func() {
+			protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
+			for i, bsonMsg := range conversation.InappChatHistory {
+				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
+			}
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
+			if err != nil {
+				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
+				return
+			}
+			conversation.Title = title
+			if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
+				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
+				return
+			}
+		}()
+	}
 
 	// The final conversation object is NOT returned
 	return nil

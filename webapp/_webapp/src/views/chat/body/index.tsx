@@ -31,7 +31,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const { conversationMode } = useSettingStore();
   const isDebugMode = conversationMode === "debug";
 
-  // 滚动到最后一条 user 消息顶部
+  // Scroll to the top of the last user message
   useEffect(() => {
     if (expanderRef.current) {
       expanderRef.current.style.height = "1000px";
@@ -44,7 +44,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
 
     let expanderHeight: number;
     if (expanderViewOffset < 0) {
-      expanderHeight = 0; // expander 的 positoin 是 absolute，和 stream markdown 独立渲染。当 stream markdown 渲染的时候，expander 可能会因为用户滚动滑到 chatContainer 上面，导致 expander.y < 0。这个时候我们就不需要 expander 了
+      expanderHeight = 0; // The expander's position is absolute and renders independently from stream markdown. When stream markdown renders, the expander may scroll above the chatContainer due to user scrolling, causing expander.y < 0. In this case, we don't need the expander.
     } else {
       expanderHeight = chatContainerHeight - expanderViewOffset;
     }
