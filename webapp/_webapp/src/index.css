@@ -102,7 +102,7 @@ body {
 }
 
 .tool-card-title {
-  @apply text-xs font-semibold font-sans text-primary-700 uppercase tracking-wider noselect;
+  @apply text-xs font-semibold font-sans text-primary-700 tracking-wider noselect;
 }
 
 .tool-card-title.tool-card-jsonrpc {

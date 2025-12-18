@@ -37,7 +37,10 @@ export const GeneralToolCard = ({ functionName, message, animated }: GeneralTool
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-
+  const pascalCase = (str: string) => {
+    const words = str.split("_");
+    return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+  };
   // When there is a message, show the compact card with collapsible content
   return (
     <div className={cn("tool-card noselect compact", { animated: animated })}>
@@ -57,7 +60,7 @@ export const GeneralToolCard = ({ functionName, message, animated }: GeneralTool
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+        <h3 className="tool-card-title tool-card-jsonrpc">{pascalCase(functionName)}</h3>
       </div>
 
       <div
