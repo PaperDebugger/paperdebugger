@@ -90,21 +90,21 @@ export function PromptInput() {
   );
 
   return (
-    <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel">
+    <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel relative">
+      {/* Only show one popup at a time - priority: prompts > actions > model selection */}
       {prompts.length > 0 && <PromptSelection prompts={prompts} />}
-      {actions.length > 0 && <ActionSelection actions={actions} />}
-      {showModelSelection && <ModelSelection onSelectModel={handleModelSelect} />}
+      {prompts.length === 0 && actions.length > 0 && <ActionSelection actions={actions} />}
+      {prompts.length === 0 && actions.length === 0 && showModelSelection && <ModelSelection onSelectModel={handleModelSelect} />}
 
       <div className={cn("pd-chat-toolbar noselect", heightCollapseRequired || minimalistMode ? "collapsed" : "")}>
-        {prompts.length == 0 && actions.length == 0 && !showModelSelection && (
-          <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
-        )}
+        <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
         <div className="border border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
           <textarea
             onMouseDown={(e) => e.stopPropagation()}
+            onFocus={() => setShowModelSelection(false)}
             id="pd-chat-prompt-input"
             ref={inputRef}
             className={cn(

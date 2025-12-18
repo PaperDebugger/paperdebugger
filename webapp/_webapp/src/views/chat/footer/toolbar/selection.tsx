@@ -15,9 +15,10 @@ export type SelectionItem<T> = {
 type SelectionProps<T> = {
   items: SelectionItem<T>[];
   onSelect?: (item: SelectionItem<T>) => void;
+  onClose?: () => void;
 };
 
-export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
+export function Selection<T>({ items, onSelect, onClose }: SelectionProps<T>) {
   const { heightCollapseRequired } = useConversationUiStore();
   const { minimalistMode } = useSettingStore();
   const { user } = useAuthStore();
@@ -29,6 +30,34 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
   useEffect(() => {
     setSelectedIdx(0);
   }, [itemCount]);
+
+  // Handle click outside and Escape key to close
+  useEffect(() => {
+    if (!onClose) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scrollContainerRef.current && !scrollContainerRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    // Use mousedown to capture the event before focus changes
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
 
   useEffect(() => {
     const scrollTo = (idx: number) => {
@@ -91,9 +120,9 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
     <div
       ref={scrollContainerRef}
       className={cn(
-        "transition-all duration-100",
+        "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white shadow-lg",
         items && items.length > 0 ? "rounded-lg border border-gray-200 overflow-y-auto" : "max-h-[0px]",
-        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px] mb-1" : "p-2 max-h-[200px]",
+        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
     >
       {items?.map((item, idx) => (

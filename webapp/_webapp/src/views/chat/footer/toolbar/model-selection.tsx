@@ -27,5 +27,10 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
     [setModel, onSelectModel, inputRef, models],
   );
 
-  return <Selection items={items} onSelect={onSelect} />;
+  const onClose = useCallback(() => {
+    onSelectModel();
+    inputRef.current?.focus();
+  }, [onSelectModel, inputRef]);
+
+  return <Selection items={items} onSelect={onSelect} onClose={onClose} />;
 }
