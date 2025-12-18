@@ -6,7 +6,7 @@ export const ToolCallPrepareMessageContainer = ({ functionName, stale, preparing
   if (preparing && !stale) {
     return (
       <div className="chat-message-entry">
-        <span className="text-sm text-gray-400 loading-shimmer" style={{
+        <span className="text-xs pl-2 text-gray-400 loading-shimmer" style={{
           WebkitTextFillColor: "transparent",
           animationDelay: "0.5s",
           animationDuration: "3s",
