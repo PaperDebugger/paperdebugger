@@ -13,8 +13,9 @@ type Cfg struct {
 	InferenceAPIKey  string
 	JwtSigningKey    string
 
-	MongoURI   string
-	XtraMCPURI string
+	MongoURI     string
+	XtraMCPURI   string
+	MCPServerURL string
 }
 
 var cfg *Cfg
@@ -29,6 +30,7 @@ func GetCfg() *Cfg {
 		JwtSigningKey:    os.Getenv("JWT_SIGNING_KEY"),
 		MongoURI:         mongoURI(),
 		XtraMCPURI:       xtraMCPURI(),
+		MCPServerURL:     mcpServerURL(),
 	}
 
 	return cfg
@@ -65,4 +67,12 @@ func mongoURI() string {
 	}
 
 	return "mongodb://localhost:27017"
+}
+
+func mcpServerURL() string {
+	val := os.Getenv("MCP_SERVER_URL")
+	if val != "" {
+		return val
+	}
+	return "http://paperdebugger-mcp-server:8000"
 }

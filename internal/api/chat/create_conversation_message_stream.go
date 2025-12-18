@@ -313,18 +313,18 @@ func (s *ChatServerV1) CreateConversationMessageStream(
 
 	if conversation.Title == services.DefaultConversationTitle {
 		go func() {
+			conversationID := conversation.ID
 			protoMessages := make([]*chatv1.Message, len(conversation.InappChatHistory))
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessage(bsonMsg)
 			}
 			title, err := s.aiClientV1.GetConversationTitle(ctx, protoMessages, llmProvider)
 			if err != nil {
-				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
+				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversationID.Hex())
 				return
 			}
-			conversation.Title = title
-			if err := s.chatServiceV1.UpdateConversation(conversation); err != nil {
-				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversation.ID.Hex())
+			if err := s.chatServiceV1.UpdateConversationTitle(ctx, conversationID, title); err != nil {
+				s.logger.Error("Failed to update conversation with new title", "error", err, "conversationID", conversationID.Hex())
 				return
 			}
 		}()

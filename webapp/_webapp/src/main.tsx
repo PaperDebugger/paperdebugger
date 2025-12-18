@@ -49,10 +49,13 @@ export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();
   const {
     lastSelectedText,
+    lastSurroundingText,
     lastSelectionRange,
     setLastSelectedText,
+    setLastSurroundingText,
     setLastSelectionRange,
     setSelectedText,
+    setSurroundingText,
     setSelectionRange,
     clearOverleafSelection,
   } = useSelectionStore();
@@ -89,7 +92,28 @@ export const Main = () => {
       // check if the selection is in the editor
       const editor = document.querySelector(".cm-editor");
       if (editor && editor.contains(selection?.anchorNode ?? null)) {
-        setLastSelectedText(selection?.toString() ?? null);
+        const text = selection?.toString() ?? null;
+        setLastSelectedText(text);
+
+        let surrounding = "";
+        try {
+          const cmContentElement = document.querySelector(".cm-content");
+          if (cmContentElement) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const state = (cmContentElement as any).cmView.view.state;
+            if (state) {
+              const cmSelection = state.selection.main;
+              const doc = state.doc;
+              const before = doc.sliceString(Math.max(0, cmSelection.from - 100), cmSelection.from);
+              const after = doc.sliceString(cmSelection.to, Math.min(doc.length, cmSelection.to + 100));
+              surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
+            }
+          }
+        } catch (e) {
+          // fallback
+        }
+        setLastSurroundingText(surrounding);
+
         setLastSelectionRange(selection?.getRangeAt(0) ?? null);
         return;
       } else {
@@ -107,15 +131,18 @@ export const Main = () => {
   const selectAndOpenPaperDebugger = useCallback(() => {
     setActiveTab("chat");
     setSelectedText(lastSelectedText);
+    setSurroundingText(lastSurroundingText);
     setSelectionRange(lastSelectionRange);
     setIsOpen(true);
     clearOverleafSelection();
   }, [
     setActiveTab,
     setSelectedText,
+    setSurroundingText,
     setSelectionRange,
     setIsOpen,
     lastSelectedText,
+    lastSurroundingText,
     lastSelectionRange,
     clearOverleafSelection,
   ]);

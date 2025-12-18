@@ -8,7 +8,7 @@ export const TooltipArea = ({ children }: { children: React.ReactNode }) => {
   const [tooltipPosition, setTooltipPosition] = useState<{ left: number; top: number } | null>(null);
 
   const tooltipRef = useRef<HTMLButtonElement>(null);
-  const { selectedText, setSelectedText, setSelectionRange } = useSelectionStore();
+  const { selectedText, setSelectedText, setSurroundingText, setSelectionRange, overleafCm } = useSelectionStore();
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -19,6 +19,30 @@ export const TooltipArea = ({ children }: { children: React.ReactNode }) => {
         const text = selection.toString();
         if (text.trim().length > 0) {
           setSelectedText(text);
+
+          let surrounding = "";
+          if (overleafCm) {
+            try {
+              const cmContentElement = document.querySelector(".cm-content");
+              if (cmContentElement) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const view = (cmContentElement as any).cmView.view;
+                if (view) {
+                  const state = view.state;
+                  // Let's try to get CM selection
+                  const cmSelection = state.selection.main;
+                  const doc = state.doc;
+                  const before = doc.sliceString(Math.max(0, cmSelection.from - 100), cmSelection.from);
+                  const after = doc.sliceString(cmSelection.to, Math.min(doc.length, cmSelection.to + 100));
+                  surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
+                }
+              }
+            } catch (e) {
+              // fallback
+            }
+          }
+          setSurroundingText(surrounding);
+
           setSelectionRange(range);
           setTooltipPosition({
             left: rect.left + rect.width / 2 + window.scrollX,

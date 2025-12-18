@@ -61,7 +61,7 @@ func TestGetConversationTitle_Case1(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, nil)
 	fmt.Println("Generated title:", title)
 
 	assert.NoError(t, err)
@@ -133,7 +133,7 @@ func TestGetConversationTitle_Case2(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, nil)
 	fmt.Println("Generated title:", title)
 
 	assert.NoError(t, err)
@@ -201,7 +201,7 @@ func TestGetConversationTitle_Case3(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, nil)
 	fmt.Println("Generated title:", title)
 
 	assert.NoError(t, err)

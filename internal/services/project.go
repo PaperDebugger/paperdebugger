@@ -148,7 +148,7 @@ func (s *ProjectService) fetchCategoryFromAPI(latexSource string) (*models.Class
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", "http://paperdebugger-mcp-server:8000/classify-paper", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/classify-paper", s.cfg.MCPServerURL), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

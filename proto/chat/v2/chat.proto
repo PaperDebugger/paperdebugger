@@ -57,6 +57,7 @@ message MessageTypeAssistant {
 message MessageTypeUser {
   string content = 1;
   optional string selected_text = 2;
+  optional string surrounding = 7;
 }
 
 message MessageTypeUnknown {
@@ -209,6 +210,7 @@ message CreateConversationMessageStreamRequest {
   string user_message = 4;
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
+  optional string surrounding = 8;
 }
 
 // Response for streaming a message within an existing conversation

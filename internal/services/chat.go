@@ -33,6 +33,21 @@ var userPromptDefaultTemplate string
 //go:embed user_prompt_debug.tmpl
 var userPromptDebugTemplate string
 
+// Pre-compiled templates for better performance
+var (
+	systemPromptDefaultTmpl *template.Template
+	systemPromptDebugTmpl   *template.Template
+	userPromptDefaultTmpl   *template.Template
+	userPromptDebugTmpl     *template.Template
+)
+
+func init() {
+	systemPromptDefaultTmpl = template.Must(template.New("system_default").Parse(systemPromptDefaultTemplate))
+	systemPromptDebugTmpl = template.Must(template.New("system_debug").Parse(systemPromptDebugTemplate))
+	userPromptDefaultTmpl = template.Must(template.New("user_default").Parse(userPromptDefaultTemplate))
+	userPromptDebugTmpl = template.Must(template.New("user_debug").Parse(userPromptDebugTemplate))
+}
+
 type ChatService struct {
 	BaseService
 	conversationCollection *mongo.Collection
@@ -50,15 +65,13 @@ func NewChatService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *ChatService
 }
 
 func (s *ChatService) GetSystemPrompt(ctx context.Context, fullContent string, projectInstructions string, userInstructions string, conversationType chatv1.ConversationType) (string, error) {
-	var systemPromptString string
+	var tmpl *template.Template
 	switch conversationType {
 	case chatv1.ConversationType_CONVERSATION_TYPE_DEBUG:
-		systemPromptString = systemPromptDebugTemplate
+		tmpl = systemPromptDebugTmpl
 	default:
-		systemPromptString = systemPromptDefaultTemplate
+		tmpl = systemPromptDefaultTmpl
 	}
-
-	tmpl := template.Must(template.New("system_prompt").Parse(systemPromptString))
 
 	var systemPromptBuffer bytes.Buffer
 	if err := tmpl.Execute(&systemPromptBuffer, map[string]string{
@@ -72,15 +85,13 @@ func (s *ChatService) GetSystemPrompt(ctx context.Context, fullContent string, p
 }
 
 func (s *ChatService) GetPrompt(ctx context.Context, content string, selectedText string, conversationType chatv1.ConversationType) (string, error) {
-	var userPromptString string
+	var tmpl *template.Template
 	switch conversationType {
 	case chatv1.ConversationType_CONVERSATION_TYPE_DEBUG:
-		userPromptString = userPromptDebugTemplate
+		tmpl = userPromptDebugTmpl
 	default:
-		userPromptString = userPromptDefaultTemplate
+		tmpl = userPromptDefaultTmpl
 	}
-
-	tmpl := template.Must(template.New("user_prompt").Parse(userPromptString))
 
 	var userPromptBuffer bytes.Buffer
 	if err := tmpl.Execute(&userPromptBuffer, map[string]string{
@@ -128,14 +139,10 @@ func (s *ChatService) InsertConversationToDB(ctx context.Context, userID bson.Ob
 }
 
 func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectID, projectID string) ([]*models.Conversation, error) {
-	filter := bson.M{
-		"user_id":    userID,
-		"project_id": projectID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}
+	filter := db.MergeFilters(
+		bson.M{"user_id": userID, "project_id": projectID},
+		db.NotDeleted(),
+	)
 	opts := options.Find().
 		SetProjection(bson.M{
 			"inapp_chat_history":  0,
@@ -158,14 +165,11 @@ func (s *ChatService) ListConversations(ctx context.Context, userID bson.ObjectI
 
 func (s *ChatService) GetConversation(ctx context.Context, userID bson.ObjectID, conversationID bson.ObjectID) (*models.Conversation, error) {
 	conversation := &models.Conversation{}
-	err := s.conversationCollection.FindOne(ctx, bson.M{
-		"_id":     conversationID,
-		"user_id": userID,
-		"$or": []bson.M{
-			{"deleted_at": nil},
-			{"deleted_at": bson.M{"$exists": false}},
-		},
-	}).Decode(conversation)
+	filter := db.MergeFilters(
+		bson.M{"_id": conversationID, "user_id": userID},
+		db.NotDeleted(),
+	)
+	err := s.conversationCollection.FindOne(ctx, filter).Decode(conversation)
 	if err != nil {
 		return nil, err
 	}
@@ -174,32 +178,41 @@ func (s *ChatService) GetConversation(ctx context.Context, userID bson.ObjectID,
 
 func (s *ChatService) UpdateConversation(conversation *models.Conversation) error {
 	conversation.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
+	filter := db.MergeFilters(
+		bson.M{"_id": conversation.ID},
+		db.NotDeleted(),
+	)
 	_, err := s.conversationCollection.UpdateOne(
 		context.Background(),
-		bson.M{
-			"_id": conversation.ID,
-			"$or": []bson.M{
-				{"deleted_at": nil},
-				{"deleted_at": bson.M{"$exists": false}},
-			},
-		},
+		filter,
 		bson.M{"$set": conversation},
+	)
+	return err
+}
+
+func (s *ChatService) UpdateConversationTitle(ctx context.Context, conversationID bson.ObjectID, title string) error {
+	filter := db.MergeFilters(
+		bson.M{"_id": conversationID},
+		db.NotDeleted(),
+	)
+	now := bson.NewDateTimeFromTime(time.Now())
+	_, err := s.conversationCollection.UpdateOne(
+		ctx,
+		filter,
+		bson.M{"$set": bson.M{"title": title, "updated_at": now}},
 	)
 	return err
 }
 
 func (s *ChatService) DeleteConversation(ctx context.Context, userID bson.ObjectID, conversationID bson.ObjectID) error {
 	now := bson.NewDateTimeFromTime(time.Now())
+	filter := db.MergeFilters(
+		bson.M{"_id": conversationID, "user_id": userID},
+		db.NotDeleted(),
+	)
 	_, err := s.conversationCollection.UpdateOne(
 		ctx,
-		bson.M{
-			"_id":     conversationID,
-			"user_id": userID,
-			"$or": []bson.M{
-				{"deleted_at": nil},
-				{"deleted_at": bson.M{"$exists": false}},
-			},
-		},
+		filter,
 		bson.M{"$set": bson.M{"deleted_at": now, "updated_at": now}},
 	)
 	return err

@@ -7,4 +7,11 @@
 ```
 {{ .SelectedText }}
 ```
+
+{{ if .Surrounding -}}
+# surrounding context
+```
+{{ .Surrounding }}
+```
+{{- end }}
 {{- end }}

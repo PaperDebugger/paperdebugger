@@ -48,8 +48,8 @@ func (s *ChatServerV2) buildSystemMessage(systemPrompt string) (*chatv2.Message,
 	return inappMessage, openaiMessage
 }
 
-func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSelectedText string, conversationType chatv2.ConversationType) (*chatv2.Message, openai.ChatCompletionMessageParamUnion, error) {
-	userPrompt, err := s.chatServiceV2.GetPrompt(ctx, userMessage, userSelectedText, conversationType)
+func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSelectedText, surrounding string, conversationType chatv2.ConversationType) (*chatv2.Message, openai.ChatCompletionMessageParamUnion, error) {
+	userPrompt, err := s.chatServiceV2.GetPrompt(ctx, userMessage, userSelectedText, surrounding, conversationType)
 	if err != nil {
 		return nil, openai.ChatCompletionMessageParamUnion{}, err
 	}
@@ -75,6 +75,7 @@ func (s *ChatServerV2) buildUserMessage(ctx context.Context, userMessage, userSe
 					User: &chatv2.MessageTypeUser{
 						Content:      userMessage,
 						SelectedText: &userSelectedText,
+						Surrounding:  &surrounding,
 					},
 				},
 			},
@@ -109,6 +110,7 @@ func (s *ChatServerV2) createConversation(
 	userInstructions string,
 	userMessage string,
 	userSelectedText string,
+	surrounding string,
 	modelSlug string,
 	conversationType chatv2.ConversationType,
 ) (*models.Conversation, error) {
@@ -118,7 +120,7 @@ func (s *ChatServerV2) createConversation(
 	}
 
 	_, openaiSystemMsg := s.buildSystemMessage(systemPrompt)
-	inappUserMsg, openaiUserMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, conversationType)
+	inappUserMsg, openaiUserMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, surrounding, conversationType)
 	if err != nil {
 		return nil, err
 	}
@@ -142,6 +144,7 @@ func (s *ChatServerV2) appendConversationMessage(
 	conversationId string,
 	userMessage string,
 	userSelectedText string,
+	surrounding string,
 	conversationType chatv2.ConversationType,
 ) (*models.Conversation, error) {
 	objectID, err := bson.ObjectIDFromHex(conversationId)
@@ -154,7 +157,7 @@ func (s *ChatServerV2) appendConversationMessage(
 		return nil, err
 	}
 
-	userMsg, userOaiMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, conversationType)
+	userMsg, userOaiMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, surrounding, conversationType)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +178,7 @@ func (s *ChatServerV2) appendConversationMessage(
 
 // prepare creates a new conversation if conversationId is "", otherwise appends a message to the conversation
 // conversationType can be switched multiple times within a single conversation
-func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err
@@ -218,6 +221,7 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			userInstructions,
 			userMessage,
 			userSelectedText,
+			surrounding,
 			modelSlug,
 			conversationType,
 		)
@@ -228,6 +232,7 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			conversationId,
 			userMessage,
 			userSelectedText,
+			surrounding,
 			conversationType,
 		)
 	}
@@ -260,6 +265,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
+		req.GetSurrounding(),
 		modelSlug,
 		req.GetConversationType(),
 	)

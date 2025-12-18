@@ -288,6 +288,7 @@ type MessageTypeUser struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
 	SelectedText  *string                `protobuf:"bytes,2,opt,name=selected_text,json=selectedText,proto3,oneof" json:"selected_text,omitempty"`
+	Surrounding   *string                `protobuf:"bytes,7,opt,name=surrounding,proto3,oneof" json:"surrounding,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -332,6 +333,13 @@ func (x *MessageTypeUser) GetContent() string {
 func (x *MessageTypeUser) GetSelectedText() string {
 	if x != nil && x.SelectedText != nil {
 		return *x.SelectedText
+	}
+	return ""
+}
+
+func (x *MessageTypeUser) GetSurrounding() string {
+	if x != nil && x.Surrounding != nil {
+		return *x.Surrounding
 	}
 	return ""
 }
@@ -1542,6 +1550,7 @@ type CreateConversationMessageStreamRequest struct {
 	UserMessage      string                 `protobuf:"bytes,4,opt,name=user_message,json=userMessage,proto3" json:"user_message,omitempty"`
 	UserSelectedText *string                `protobuf:"bytes,5,opt,name=user_selected_text,json=userSelectedText,proto3,oneof" json:"user_selected_text,omitempty"`
 	ConversationType *ConversationType      `protobuf:"varint,6,opt,name=conversation_type,json=conversationType,proto3,enum=chat.v2.ConversationType,oneof" json:"conversation_type,omitempty"`
+	Surrounding      *string                `protobuf:"bytes,8,opt,name=surrounding,proto3,oneof" json:"surrounding,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1616,6 +1625,13 @@ func (x *CreateConversationMessageStreamRequest) GetConversationType() Conversat
 		return *x.ConversationType
 	}
 	return ConversationType_CONVERSATION_TYPE_UNSPECIFIED
+}
+
+func (x *CreateConversationMessageStreamRequest) GetSurrounding() string {
+	if x != nil && x.Surrounding != nil {
+		return *x.Surrounding
+	}
+	return ""
 }
 
 // Response for streaming a message within an existing conversation
@@ -1806,11 +1822,13 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x14MessageTypeAssistant\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1d\n" +
 	"\n" +
-	"model_slug\x18\x02 \x01(\tR\tmodelSlug\"g\n" +
+	"model_slug\x18\x02 \x01(\tR\tmodelSlug\"\x9e\x01\n" +
 	"\x0fMessageTypeUser\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12(\n" +
-	"\rselected_text\x18\x02 \x01(\tH\x00R\fselectedText\x88\x01\x01B\x10\n" +
-	"\x0e_selected_text\"6\n" +
+	"\rselected_text\x18\x02 \x01(\tH\x00R\fselectedText\x88\x01\x01\x12%\n" +
+	"\vsurrounding\x18\a \x01(\tH\x01R\vsurrounding\x88\x01\x01B\x10\n" +
+	"\x0e_selected_textB\x0e\n" +
+	"\f_surrounding\"6\n" +
 	"\x12MessageTypeUnknown\x12 \n" +
 	"\vdescription\x18\x01 \x01(\tR\vdescription\"\xaa\x03\n" +
 	"\x0eMessagePayload\x124\n" +
@@ -1885,7 +1903,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x12StreamFinalization\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"2\n" +
 	"\vStreamError\x12#\n" +
-	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xf8\x02\n" +
+	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xaf\x03\n" +
 	"&CreateConversationMessageStreamRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12,\n" +
@@ -1894,10 +1912,12 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"model_slug\x18\x03 \x01(\tR\tmodelSlug\x12!\n" +
 	"\fuser_message\x18\x04 \x01(\tR\vuserMessage\x121\n" +
 	"\x12user_selected_text\x18\x05 \x01(\tH\x01R\x10userSelectedText\x88\x01\x01\x12K\n" +
-	"\x11conversation_type\x18\x06 \x01(\x0e2\x19.chat.v2.ConversationTypeH\x02R\x10conversationType\x88\x01\x01B\x12\n" +
+	"\x11conversation_type\x18\x06 \x01(\x0e2\x19.chat.v2.ConversationTypeH\x02R\x10conversationType\x88\x01\x01\x12%\n" +
+	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01B\x12\n" +
 	"\x10_conversation_idB\x15\n" +
 	"\x13_user_selected_textB\x14\n" +
-	"\x12_conversation_type\"\xb9\x04\n" +
+	"\x12_conversation_typeB\x0e\n" +
+	"\f_surrounding\"\xb9\x04\n" +
 	"'CreateConversationMessageStreamResponse\x12T\n" +
 	"\x15stream_initialization\x18\x01 \x01(\v2\x1d.chat.v2.StreamInitializationH\x00R\x14streamInitialization\x12F\n" +
 	"\x11stream_part_begin\x18\x02 \x01(\v2\x18.chat.v2.StreamPartBeginH\x00R\x0fstreamPartBegin\x12<\n" +

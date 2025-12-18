@@ -187,20 +187,22 @@ func TestChatCompletion_SingleRoundChat_NotCallTool(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				_oai, _inapp, err = aiClient.ChatCompletionStream(
+				_oai, _inapp, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oai, _inapp, err = aiClient.ChatCompletion(
+				_oai, _inapp, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -254,20 +256,22 @@ func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStream(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletion(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -281,20 +285,22 @@ func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 			appHistory = append(appHistory, createAppUserInputMessage(prompt))
 
 			if tc.useStream {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStream(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletion(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -348,20 +354,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing
 			var err error
 
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -424,20 +432,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -499,20 +509,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			oaiHistory = append(oaiHistory, createOpenaiUserInputMessage(prompt))
 			appHistory = append(appHistory, createAppUserInputMessage(prompt))
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)

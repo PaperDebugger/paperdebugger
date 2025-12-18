@@ -5,8 +5,10 @@ import { EditorView } from "@codemirror/view";
 
 type CoreState = {
   selectedText: string | null;
+  surroundingText: string | null;
   selectionRange: Range | null;
   lastSelectedText: string | null;
+  lastSurroundingText: string | null;
   lastSelectionRange: Range | null;
   overleafCm: OverleafCodeMirror | null;
 };
@@ -21,9 +23,17 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   setSelectedText: (selectedText) => {
     set({ selectedText });
   },
+  surroundingText: null,
+  setSurroundingText: (surroundingText) => {
+    set({ surroundingText });
+  },
   lastSelectedText: null, // There's a case where user selects text, moves paperdebugger, then clicks Add to chat. In this case lastSelectedText is needed to restore the just-selected text.
   setLastSelectedText: (lastSelectedText) => {
     set({ lastSelectedText });
+  },
+  lastSurroundingText: null,
+  setLastSurroundingText: (lastSurroundingText) => {
+    set({ lastSurroundingText });
   },
   selectionRange: null,
   setSelectionRange: (selectionRange) => {
@@ -34,7 +44,7 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
     set({ lastSelectionRange });
   },
   clear: () => {
-    set({ selectedText: null, selectionRange: null });
+    set({ selectedText: null, surroundingText: null, selectionRange: null });
   },
   clearOverleafSelection: () => {
     const cmContentElement = document.querySelector(".cm-content");

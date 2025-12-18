@@ -35,6 +35,7 @@ import { handleIncompleteIndicator } from "../stores/conversation/handlers/handl
 import { useAuthStore } from "../stores/auth-store";
 import { useDevtoolStore } from "../stores/devtool-store";
 import { getCookies } from "../intermediate";
+import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
 
 /**
@@ -59,6 +60,7 @@ export function useSendMessageStream() {
   const { currentConversation } = useConversationStore();
   const { refetch: refetchConversationList } = useListConversationsQuery(getProjectId());
   const { resetStreamingMessage, updateStreamingMessage, resetIncompleteIndicator } = useStreamingMessageStore();
+  const { surroundingText: storeSurroundingText } = useSelectionStore();
   const { alwaysSyncProject } = useDevtoolStore();
   const { conversationMode } = useSettingStore();
 
@@ -76,6 +78,7 @@ export function useSendMessageStream() {
         modelSlug: currentConversation.modelSlug,
         userMessage: message,
         userSelectedText: selectedText,
+        surrounding: storeSurroundingText ?? undefined,
         conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
       };
 
@@ -88,6 +91,7 @@ export function useSendMessageStream() {
         user: fromJson(MessageTypeUserSchema, {
           content: message,
           selectedText: selectedText,
+          surrounding: storeSurroundingText ?? null,
         }),
       };
       updateStreamingMessage((prev) => ({
