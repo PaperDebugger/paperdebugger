@@ -109,6 +109,14 @@ body {
   @apply font-medium text-gray-500;
 }
 
+.tool-card.compact {
+  @apply px-[3px] py-[1px] my-0.5 bg-transparent text-xs border-0;
+}
+
+.tool-card.compact .tool-card-title {
+  @apply text-[10px];
+}
+
 /* 相邻 tool-card 的样式处理 */
 .tool-card + .tool-card {
   /* 相邻的第二个卡片：移除上边框，调整上圆角，减少上边距，减少上 padding */
@@ -344,7 +352,7 @@ body {
   align-self: flex-start;
   @apply text-sm text-default-800 px-2 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply my-2;
+  @apply mb-2;
 }
 
 .chat-message-entry .message-box-assistant:hover {

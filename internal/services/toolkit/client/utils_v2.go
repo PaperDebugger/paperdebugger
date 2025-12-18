@@ -118,8 +118,9 @@ func initializeToolkitV2(
 	toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
 	toolRegistry.Register("read_folder", filetools.ReadFolderToolDescriptionV2, filetools.ReadFolderTool)
 	toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, filetools.SearchStringTool)
+	toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, filetools.SearchFileTool)
 
-	logger.Info("[AI Client V2] Registered static file tools", "count", 7)
+	logger.Info("[AI Client V2] Registered static file tools", "count", 8)
 
 	// Register static LaTeX tools
 	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, latextools.GetDocumentStructureTool)

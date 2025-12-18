@@ -7,6 +7,7 @@ import { AlwaysExceptionCard } from "./always-exception";
 import { JsonRpc } from "./jsonrpc";
 import { ReviewPaperCard } from "./review-paper";
 import { parseJsonRpcResult, UNKNOWN_JSONRPC_RESULT } from "./utils/common";
+import { GeneralToolCard } from "./general";
 
 type ToolsProps = {
   messageId: string;
@@ -64,6 +65,6 @@ export default function Tools({ messageId, functionName, message, error, prepari
   if (jsonRpcResult) {
     return <JsonRpc functionName={functionName} preparing={preparing} animated={animated} />;
   } else {
-    return <UnknownToolCard functionName={functionName} message={message} animated={animated} />;
+    return <GeneralToolCard functionName={functionName} message={message} animated={animated} />;
   }
 }
