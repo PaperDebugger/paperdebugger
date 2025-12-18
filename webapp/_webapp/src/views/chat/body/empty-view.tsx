@@ -7,7 +7,10 @@ export const EmptyView = () => (
       <p className="text-2xl font-semibold">Ask or Edit</p>
       <div className="block w-full"></div>
       <p className="text-sm text-center max-w-[400px]">
-        Start your conversation with PaperDebugger. You can ask for scoring paper or make revisions.
+        Start your conversation with PaperDebugger.
+      </p>
+      <p className="text-sm text-center max-w-[400px]">
+        Be careful of the generated content, PaperDebugger will never modify your content without your permission.
       </p>
     </div>
   </div>
