@@ -84,6 +84,7 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
           content={messageEntry.user?.content ?? ""}
           attachment={messageEntry.user?.selectedText ?? ""}
           stale={messageEntry.status === MessageEntryStatus.STALE}
+          messageId={messageEntry.messageId}
         />
       );
     }

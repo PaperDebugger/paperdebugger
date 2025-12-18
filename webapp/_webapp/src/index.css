@@ -324,12 +324,20 @@ body {
   @apply text-sm text-default-400 dark:text-default-50;
 }
 
+.chat-message-entry .message-box-user-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
 .chat-message-entry .message-box-user {
   max-width: 70%;
-  align-self: flex-end;
   @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply bg-gray-200 self-end my-2;
+  @apply bg-gray-200 my-2;
 }
 
 .chat-message-entry .message-box-assistant {
@@ -348,6 +356,10 @@ body {
   display: flex;
   flex-direction: row;
   @apply gap-2 text-gray-400 mt-2 -ml-2 opacity-0 transition-all duration-100;
+}
+
+.chat-message-entry .actions.actions-left {
+  @apply mt-0 ml-0 mr-0;
 }
 
 .chat-message-entry:hover .actions {

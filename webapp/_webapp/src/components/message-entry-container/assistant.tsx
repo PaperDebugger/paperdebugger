@@ -77,8 +77,10 @@ export const AssistantMessageContainer = ({
         {staleComponent}
 
         <div className="actions rnd-cancel noselect">
-          <Tooltip content="Copy" placement="bottom" size="sm">
-            <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" onClick={handleCopy} />
+          <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
+            <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
+              <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
+            </span>
           </Tooltip>
         </div>
       </div>
