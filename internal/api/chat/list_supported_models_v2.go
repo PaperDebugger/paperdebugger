@@ -28,20 +28,20 @@ func (s *ChatServerV2) ListSupportedModels(
 	if strings.TrimSpace(settings.OpenAIAPIKey) == "" {
 		models = []*chatv2.SupportedModel{
 			{
-				Name:         "GPT-4o",
-				Slug:         "openai/gpt-4o",
-				TotalContext: 128000,
-				MaxOutput:    16400,
-				InputPrice:   250,
-				OutputPrice:  1000,
-			},
-			{
 				Name:         "GPT-4.1",
 				Slug:         "openai/gpt-4.1",
 				TotalContext: 1050000,
 				MaxOutput:    32800,
 				InputPrice:   200,
 				OutputPrice:  800,
+			},
+			{
+				Name:         "GPT-4o",
+				Slug:         "openai/gpt-4o",
+				TotalContext: 128000,
+				MaxOutput:    16400,
+				InputPrice:   250,
+				OutputPrice:  1000,
 			},
 			{
 				Name:         "GPT-4.1-mini",
@@ -79,20 +79,20 @@ func (s *ChatServerV2) ListSupportedModels(
 	} else {
 		models = []*chatv2.SupportedModel{
 			{
-				Name:         "GPT-4o",
-				Slug:         openai.ChatModelGPT4o,
-				TotalContext: 128000,
-				MaxOutput:    16400,
-				InputPrice:   250,
-				OutputPrice:  1000,
-			},
-			{
 				Name:         "GPT-4.1",
 				Slug:         openai.ChatModelGPT4_1,
 				TotalContext: 1050000,
 				MaxOutput:    32800,
 				InputPrice:   200,
 				OutputPrice:  800,
+			},
+			{
+				Name:         "GPT-4o",
+				Slug:         openai.ChatModelGPT4o,
+				TotalContext: 128000,
+				MaxOutput:    16400,
+				InputPrice:   250,
+				OutputPrice:  1000,
 			},
 			{
 				Name:         "GPT-4.1-mini",

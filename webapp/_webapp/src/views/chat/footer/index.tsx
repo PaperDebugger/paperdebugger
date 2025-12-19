@@ -59,6 +59,7 @@ export function PromptInput() {
   const setIsStreaming = useConversationStore((s) => s.setIsStreaming);
 
   const selectedText = useSelectionStore((s) => s.selectedText);
+  const clearSelection = useSelectionStore((s) => s.clear);
 
   const { sendMessageStream } = useSendMessageStream();
   const minimalistMode = useSettingStore((s) => s.minimalistMode);
@@ -74,10 +75,11 @@ export function PromptInput() {
       userId: user?.id,
     });
     setPrompt("");
+    clearSelection();
     setIsStreaming(true);
     await sendMessageStream(prompt, selectedText ?? "");
     setIsStreaming(false);
-  }, [sendMessageStream, prompt, selectedText, user?.id, setIsStreaming, setPrompt]);
+  }, [sendMessageStream, prompt, selectedText, user?.id, setIsStreaming, setPrompt, clearSelection]);
   const handleKeyDown = useCallback(
     async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Check if IME composition is in progress to avoid submitting during Chinese input
