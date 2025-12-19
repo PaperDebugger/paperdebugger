@@ -15,10 +15,10 @@ import (
 	"github.com/openai/openai-go/v3/packages/param"
 )
 
-var ReadFolderToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
+var ListFolderToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	OfFunction: &openai.ChatCompletionFunctionToolParam{
 		Function: openai.FunctionDefinitionParam{
-			Name:        "read_folder",
+			Name:        "list_folder",
 			Description: param.NewOpt("Lists the contents of a folder (directory) at the specified path. Can optionally list recursively."),
 			Parameters: openai.FunctionParameters{
 				"type": "object",
@@ -46,19 +46,19 @@ var ReadFolderToolDescriptionV2 = openai.ChatCompletionToolUnionParam{
 	},
 }
 
-type ReadFolderArgs struct {
+type ListFolderArgs struct {
 	Path      string `json:"path"`
 	Recursive *bool  `json:"recursive,omitempty"`
 	MaxDepth  *int   `json:"max_depth,omitempty"`
 	Pattern   string `json:"pattern,omitempty"`
 }
 
-type ReadFolderTool struct {
+type ListFolderTool struct {
 	projectService *services.ProjectService
 }
 
-func NewReadFolderTool(projectService *services.ProjectService) *ReadFolderTool {
-	return &ReadFolderTool{
+func NewListFolderTool(projectService *services.ProjectService) *ListFolderTool {
+	return &ListFolderTool{
 		projectService: projectService,
 	}
 }
@@ -68,8 +68,8 @@ type folderEntry struct {
 	isDir bool
 }
 
-func (t *ReadFolderTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
-	var getArgs ReadFolderArgs
+func (t *ListFolderTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
+	var getArgs ListFolderArgs
 
 	if err := json.Unmarshal(args, &getArgs); err != nil {
 		return "", "", err
@@ -209,31 +209,4 @@ func (t *ReadFolderTool) Call(ctx context.Context, toolCallId string, args json.
 	}
 
 	return result.String(), "", nil
-}
-
-// ReadFolderToolLegacy for backward compatibility (standalone function)
-func ReadFolderToolLegacy(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
-	var getArgs ReadFolderArgs
-
-	if err := json.Unmarshal(args, &getArgs); err != nil {
-		return "", "", err
-	}
-
-	recursive := false
-	if getArgs.Recursive != nil {
-		recursive = *getArgs.Recursive
-	}
-
-	depthStr := "unlimited"
-	if getArgs.MaxDepth != nil {
-		depthStr = fmt.Sprintf("%d", *getArgs.MaxDepth)
-	}
-
-	pattern := "*"
-	if getArgs.Pattern != "" {
-		pattern = getArgs.Pattern
-	}
-
-	// TODO: This legacy function doesn't have access to ProjectService
-	return fmt.Sprintf("[WARNING] read_folder tool not properly initialized. Requested: %s (recursive: %v, max_depth: %s, pattern: %s)", getArgs.Path, recursive, depthStr, pattern), "", nil
 }
