@@ -3,14 +3,15 @@ package chat
 import (
 	"context"
 
-	"github.com/samber/lo"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/models"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+
+	"github.com/samber/lo"
 )
 
-func (s *ChatServer) ListConversations(
+func (s *ChatServerV1) ListConversations(
 	ctx context.Context,
 	req *chatv1.ListConversationsRequest,
 ) (*chatv1.ListConversationsResponse, error) {
@@ -19,7 +20,7 @@ func (s *ChatServer) ListConversations(
 		return nil, err
 	}
 
-	conversations, err := s.chatService.ListConversations(ctx, actor.ID, req.GetProjectId())
+	conversations, err := s.chatServiceV1.ListConversations(ctx, actor.ID, req.GetProjectId())
 	if err != nil {
 		return nil, err
 	}

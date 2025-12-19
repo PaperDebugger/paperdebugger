@@ -4,6 +4,13 @@ Here is the selected text:
 {{ .SelectedText }}
 ```
 
+{{ if .Surrounding -}}
+Context around the selection:
+```
+{{ .Surrounding }}
+```
+{{- end }}
+
 If user requests to revise the selected text, wrap the revised text in triple backticks.
 Otherwise, just answer the question.
 ---

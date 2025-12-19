@@ -26,6 +26,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
   const { user } = useAuthStore();
   const { activeTab, setActiveTab, sidebarCollapsed } = useConversationUiStore();
   const { hideAvatar } = useSettingStore();
+  const { minimalistMode } = useSettingStore();
 
   useImperativeHandle(ref, () => ({
     setSelectedTab: setActiveTab,
@@ -52,11 +53,11 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
     },
     [sidebarCollapsed],
   );
+
+  const width = sidebarCollapsed ? "w-16" : minimalistMode ? "w-[118px]" : "w-[140px]";
   return (
     <>
-      <div
-        className={cn("pd-app-tab-items noselect transition-all duration-300", sidebarCollapsed ? "w-16" : "w-[140px]")}
-      >
+      <div className={cn("pd-app-tab-items noselect transition-all duration-300", width)}>
         {!hideAvatar && <Avatar name={user?.name || "User"} src={user?.picture} className="pd-avatar" />}
 
         <NextTabs
@@ -65,7 +66,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
           variant="light"
           classNames={{
             tabList: "bg-gray-100",
-            tab: "justify-start",
+            tab: cn("justify-start", minimalistMode ? "text-xs" : ""),
           }}
           selectedKey={activeTab}
           onSelectionChange={(e) => {

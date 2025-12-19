@@ -14,10 +14,12 @@ export type SelectionItem<T> = {
 
 type SelectionProps<T> = {
   items: SelectionItem<T>[];
+  initialValue?: T;
   onSelect?: (item: SelectionItem<T>) => void;
+  onClose?: () => void;
 };
 
-export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
+export function Selection<T>({ items, initialValue, onSelect, onClose }: SelectionProps<T>) {
   const { heightCollapseRequired } = useConversationUiStore();
   const { minimalistMode } = useSettingStore();
   const { user } = useAuthStore();
@@ -27,8 +29,43 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
   const itemCount = items?.length ?? 0;
 
   useEffect(() => {
+    if (initialValue !== undefined) {
+      const idx = items.findIndex((item) => item.value === initialValue);
+      if (idx !== -1) {
+        setSelectedIdx(idx);
+        return;
+      }
+    }
     setSelectedIdx(0);
-  }, [itemCount]);
+  }, [itemCount, initialValue, items]);
+
+  // Handle click outside and Escape key to close
+  useEffect(() => {
+    if (!onClose) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scrollContainerRef.current && !scrollContainerRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    // Use mousedown to capture the event before focus changes
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
 
   useEffect(() => {
     const scrollTo = (idx: number) => {
@@ -36,14 +73,14 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
       const children = parent?.getElementsByClassName("prompt-selection-item");
       const child = children?.[idx] as HTMLDivElement;
       if (!parent || !child) return;
-      // 判断 child 是否在 parent 可视区域内，如果不在则滚动
+      // Check if child is visible within parent's viewport, scroll if not
       const parentRect = parent.getBoundingClientRect();
       const childRect = child.getBoundingClientRect();
       if (childRect.top < parentRect.top) {
-        // 元素在上方不可见
+        // Element is above visible area
         parent.scrollTop -= parentRect.top - childRect.top;
       } else if (childRect.bottom > parentRect.bottom) {
-        // 元素在下方不可见
+        // Element is below visible area
         parent.scrollTop += childRect.bottom - parentRect.bottom;
       }
     };
@@ -91,9 +128,9 @@ export function Selection<T>({ items, onSelect }: SelectionProps<T>) {
     <div
       ref={scrollContainerRef}
       className={cn(
-        "transition-all duration-100",
+        "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white shadow-lg",
         items && items.length > 0 ? "rounded-lg border border-gray-200 overflow-y-auto" : "max-h-[0px]",
-        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px] mb-1" : "p-2 max-h-[200px]",
+        heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
     >
       {items?.map((item, idx) => (

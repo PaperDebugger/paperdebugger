@@ -41,24 +41,30 @@ export const ChatButton = ({
 }: ChatButtonProps) => {
   const { user } = useAuthStore();
   const [isHovered, setIsHovered] = useState(false);
+  const [iconLoaded, setIconLoaded] = useState(false);
   const showText = alwaysShowText || isHovered;
   const { heightCollapseRequired } = useConversationUiStore();
   const { minimalistMode } = useSettingStore();
 
   const content = (
     <div
-      style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "32px" }}
+      style={{ height: heightCollapseRequired || minimalistMode ? "16px" : "24px" }}
       className={cn(
         className,
-        "rounded-full w-fit flex items-center cursor-pointer overflow-hidden",
-        heightCollapseRequired || minimalistMode ? "px-0.5" : "px-2",
+        "rounded-full w-fit flex items-center overflow-hidden",
+        disabled ? "cursor-not-allowed grayscale" : "cursor-pointer",
+        heightCollapseRequired || minimalistMode ? "px-0.5" : "px-1",
         noBorder ? "" : "border",
-        disableAnimation ? "" : "transition-all duration-500",
+        disableAnimation ? "" : "transition-all duration-100",
         showText ? "max-w-full" : "max-w-[42px]",
         isHovered ? (variant === "danger" ? "bg-danger-50" : "bg-gray-100") : "",
-        disabled ? "opacity-50" : "",
-        variant === "danger" ? "text-danger" : "text-gray-500",
-        variant === "danger" ? "border-danger-200" : "border-gray-200",
+        disabled ? "opacity-30" : "",
+        disabled
+          ? "text-gray-400 border-gray-200"
+          : variant === "danger"
+            ? "text-danger border-danger-200"
+            : "text-gray-500 border-gray-100 hover:border-gray-200",
+        iconLoaded ? "opacity-100" : "opacity-0",
       )}
       onClick={() => {
         if (disabled) return;
@@ -71,7 +77,11 @@ export const ChatButton = ({
     >
       <div className="flex items-center">
         <div className={cn("flex items-center justify-center")}>
-          <Icon icon={icon} fontSize={heightCollapseRequired || minimalistMode ? 12 : 16} />
+          <Icon
+            icon={icon}
+            fontSize={heightCollapseRequired || minimalistMode ? 12 : 16}
+            onLoad={() => setIconLoaded(true)}
+          />
         </div>
         {text && (
           <span

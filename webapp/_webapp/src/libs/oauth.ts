@@ -33,9 +33,9 @@ export function appleAuthUrl(state: string) {
   const url = new URL("https://appleid.apple.com/auth/authorize");
   url.searchParams.set("redirect_uri", REDIRECT_URI);
   url.searchParams.set("state", state);
-  url.searchParams.set("nonce", Math.random().toString(36).substring(2, 15)); // 推荐加 nonce
+  url.searchParams.set("nonce", Math.random().toString(36).substring(2, 15)); // Recommended to add nonce
   url.searchParams.set("scope", "name email");
-  url.searchParams.set("response_mode", "form_post"); // 或 "form_post"
+  url.searchParams.set("response_mode", "form_post"); // Or "form_post"
   url.searchParams.set("client_id", "dev.junyi.PaperDebugger.si");
   url.searchParams.set("response_type", "code id_token");
   return url.toString();

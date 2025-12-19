@@ -12,6 +12,7 @@ import (
 	"paperdebugger/internal/services"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
@@ -101,6 +102,7 @@ func NewGrpcServer(
 	cfg *cfg.Cfg,
 	authServer authv1.AuthServiceServer,
 	chatServer chatv1.ChatServiceServer,
+	chatServerV2 chatv2.ChatServiceServer,
 	userServer userv1.UserServiceServer,
 	projectServer projectv1.ProjectServiceServer,
 	commentServer commentv1.CommentServiceServer,
@@ -115,6 +117,7 @@ func NewGrpcServer(
 
 	authv1.RegisterAuthServiceServer(grpcServer.Server, authServer)
 	chatv1.RegisterChatServiceServer(grpcServer.Server, chatServer)
+	chatv2.RegisterChatServiceServer(grpcServer.Server, chatServerV2)
 	userv1.RegisterUserServiceServer(grpcServer.Server, userServer)
 	projectv1.RegisterProjectServiceServer(grpcServer.Server, projectServer)
 	commentv1.RegisterCommentServiceServer(grpcServer.Server, commentServer)

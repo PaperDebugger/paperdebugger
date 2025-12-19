@@ -1,12 +1,14 @@
 import { useCallback, useMemo } from "react";
 import { Action } from "../../actions/actions";
 import { Selection, SelectionItem } from "./selection";
+import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
 
 type ActionSelectionProps = {
   actions: Action[];
 };
 
 export const ActionSelection = ({ actions }: ActionSelectionProps) => {
+  const { inputRef, setPrompt } = useConversationUiStore();
   const items: SelectionItem<Action>[] = useMemo(() => {
     return actions.map((action) => ({
       title: action.description,
@@ -19,5 +21,10 @@ export const ActionSelection = ({ actions }: ActionSelectionProps) => {
     item.value.action();
   }, []);
 
-  return <Selection items={items} onSelect={onSelect} />;
+  const onClose = useCallback(() => {
+    setPrompt("");
+    inputRef.current?.focus();
+  }, [setPrompt, inputRef]);
+
+  return <Selection items={items} onSelect={onSelect} onClose={onClose} />;
 };

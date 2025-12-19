@@ -33,7 +33,7 @@ export type CommentsAcceptedRequest = Message<"comment.v1.CommentsAcceptedReques
   messageId: string;
 
   /**
-   * 被 accept 的 comment id 列表
+   * List of accepted comment IDs
    *
    * @generated from field: repeated string comment_ids = 4;
    */

@@ -5,8 +5,10 @@ import { EditorView } from "@codemirror/view";
 
 type CoreState = {
   selectedText: string | null;
+  surroundingText: string | null;
   selectionRange: Range | null;
   lastSelectedText: string | null;
+  lastSurroundingText: string | null;
   lastSelectionRange: Range | null;
   overleafCm: OverleafCodeMirror | null;
 };
@@ -21,9 +23,17 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   setSelectedText: (selectedText) => {
     set({ selectedText });
   },
-  lastSelectedText: null, // 有一种情况：用户选择了文本，移动了一下 paperdebugger，然后点击 Add to chat。这个时候需要 lastSelectedText 来恢复刚刚选中的文本。
+  surroundingText: null,
+  setSurroundingText: (surroundingText) => {
+    set({ surroundingText });
+  },
+  lastSelectedText: null, // There's a case where user selects text, moves paperdebugger, then clicks Add to chat. In this case lastSelectedText is needed to restore the just-selected text.
   setLastSelectedText: (lastSelectedText) => {
     set({ lastSelectedText });
+  },
+  lastSurroundingText: null,
+  setLastSurroundingText: (lastSurroundingText) => {
+    set({ lastSurroundingText });
   },
   selectionRange: null,
   setSelectionRange: (selectionRange) => {
@@ -34,15 +44,16 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
     set({ lastSelectionRange });
   },
   clear: () => {
-    set({ selectedText: null, selectionRange: null });
+    set({ selectedText: null, surroundingText: null, selectionRange: null });
   },
   clearOverleafSelection: () => {
-    let cmContentElement = document.querySelector(".cm-content");
+    const cmContentElement = document.querySelector(".cm-content");
     if (!cmContentElement) {
       return;
     }
 
-    let editorViewInstance = (cmContentElement as any).cmView.view as EditorView;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const editorViewInstance = (cmContentElement as any).cmView.view as EditorView;
     if (!editorViewInstance) {
       return;
     }

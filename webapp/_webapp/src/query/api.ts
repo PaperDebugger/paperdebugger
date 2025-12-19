@@ -1,4 +1,4 @@
-import apiclient, { RequestOptions } from "../libs/apiclient";
+import apiclient, { apiclientV2 } from "../libs/apiclient";
 import {
   LoginByGoogleRequest,
   LoginByGoogleResponseSchema,
@@ -10,8 +10,7 @@ import {
   RefreshTokenResponseSchema,
 } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import {
-  CreateConversationMessageRequest,
-  CreateConversationMessageResponseSchema,
+  CreateConversationMessageStreamRequest,
   CreateConversationMessageStreamResponse,
   CreateConversationMessageStreamResponseSchema,
   DeleteConversationRequest,
@@ -24,7 +23,7 @@ import {
   ListSupportedModelsResponseSchema,
   UpdateConversationRequest,
   UpdateConversationResponseSchema,
-} from "../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
   GetProjectRequest,
   GetProjectResponseSchema,
@@ -116,43 +115,35 @@ export const resetSettings = async () => {
 };
 
 export const listConversations = async (data: PlainMessage<ListConversationsRequest>) => {
-  const response = await apiclient.get("/chats/conversations", data);
+  const response = await apiclientV2.get("/chats/conversations", data);
   return fromJson(ListConversationsResponseSchema, response);
 };
 
 export const listSupportedModels = async (data: PlainMessage<ListSupportedModelsRequest>) => {
-  const response = await apiclient.get("/chats/models", data);
+  const response = await apiclientV2.get("/chats/models", data);
   return fromJson(ListSupportedModelsResponseSchema, response);
 };
 
 export const getConversation = async (data: PlainMessage<GetConversationRequest>) => {
-  const response = await apiclient.get(`/chats/conversations/${data.conversationId}`);
+  const response = await apiclientV2.get(`/chats/conversations/${data.conversationId}`);
   return fromJson(GetConversationResponseSchema, response);
 };
 
-export const createConversationMessage = async (
-  data: PlainMessage<CreateConversationMessageRequest>,
-  options?: RequestOptions,
-) => {
-  const response = await apiclient.post(`/chats/conversations/messages`, data, options);
-  return fromJson(CreateConversationMessageResponseSchema, response);
-};
-
 export const createConversationMessageStream = async (
-  data: PlainMessage<CreateConversationMessageRequest>,
+  data: PlainMessage<CreateConversationMessageStreamRequest>,
   onMessage: (chunk: CreateConversationMessageStreamResponse) => void,
 ) => {
-  const stream = await apiclient.postStream(`/chats/conversations/messages/stream`, data);
+  const stream = await apiclientV2.postStream(`/chats/conversations/messages/stream`, data);
   await processStream(stream, CreateConversationMessageStreamResponseSchema, onMessage);
 };
 
 export const deleteConversation = async (data: PlainMessage<DeleteConversationRequest>) => {
-  const response = await apiclient.delete(`/chats/conversations/${data.conversationId}`);
+  const response = await apiclientV2.delete(`/chats/conversations/${data.conversationId}`);
   return fromJson(DeleteConversationResponseSchema, response);
 };
 
 export const updateConversation = async (data: PlainMessage<UpdateConversationRequest>) => {
-  const response = await apiclient.patch(`/chats/conversations/${data.conversationId}`, data);
+  const response = await apiclientV2.patch(`/chats/conversations/${data.conversationId}`, data);
   return fromJson(UpdateConversationResponseSchema, response);
 };
 

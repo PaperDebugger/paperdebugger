@@ -1,4 +1,4 @@
-import { StreamPartBegin } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { StreamPartBegin } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
 import { logError } from "../../../libs/logger";
@@ -14,30 +14,48 @@ export function handleStreamPartBegin(
       status: MessageEntryStatus.PREPARING,
       assistant: partBegin.payload?.messageType.value,
     };
-    updateStreamingMessage((prev) => ({
-      parts: [...prev.parts, newMessageEntry],
-      sequence: prev.sequence + 1,
-    }));
+    updateStreamingMessage((prev) => {
+      // Skip if entry with same messageId already exists (prevents duplicate keys)
+      if (prev.parts.some((p) => p.messageId === partBegin.messageId)) {
+        return prev;
+      }
+      return {
+        parts: [...prev.parts, newMessageEntry],
+        sequence: prev.sequence + 1,
+      };
+    });
   } else if (role === "toolCallPrepareArguments") {
     const newMessageEntry: MessageEntry = {
       messageId: partBegin.messageId,
       status: MessageEntryStatus.PREPARING,
       toolCallPrepareArguments: partBegin.payload?.messageType.value,
     };
-    updateStreamingMessage((prev) => ({
-      parts: [...prev.parts, newMessageEntry],
-      sequence: prev.sequence + 1,
-    }));
+    updateStreamingMessage((prev) => {
+      // Skip if entry with same messageId already exists (prevents duplicate keys)
+      if (prev.parts.some((p) => p.messageId === partBegin.messageId)) {
+        return prev;
+      }
+      return {
+        parts: [...prev.parts, newMessageEntry],
+        sequence: prev.sequence + 1,
+      };
+    });
   } else if (role === "toolCall") {
     const newMessageEntry: MessageEntry = {
       messageId: partBegin.messageId,
       status: MessageEntryStatus.PREPARING,
       toolCall: partBegin.payload?.messageType.value,
     };
-    updateStreamingMessage((prev) => ({
-      parts: [...prev.parts, newMessageEntry],
-      sequence: prev.sequence + 1,
-    }));
+    updateStreamingMessage((prev) => {
+      // Skip if entry with same messageId already exists (prevents duplicate keys)
+      if (prev.parts.some((p) => p.messageId === partBegin.messageId)) {
+        return prev;
+      }
+      return {
+        parts: [...prev.parts, newMessageEntry],
+        sequence: prev.sequence + 1,
+      };
+    });
   } else if (role === "system") {
     // not possible
   } else if (role === "user") {

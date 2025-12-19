@@ -25,12 +25,12 @@ var mockConversationId = "mock-conversation-id"
 type mockCallbackStream struct {
 	chatv1.ChatService_CreateConversationMessageStreamServer
 	messages []*chatv1.CreateConversationMessageStreamResponse
-	// 用于跟踪消息状态的栈
+	// Stack to track message state
 	messageStack map[string]bool // key: message_id, value: true if begin, false if end
-	// 用于跟踪流的状态
+	// To track stream state
 	hasInitialization bool
 	hasFinalization   bool
-	// 用于跟踪当前活跃的assistant消息
+	// To track the currently active assistant message
 	activeAssistantMessageId string
 }
 
@@ -39,7 +39,7 @@ func (m *mockCallbackStream) Send(response *chatv1.CreateConversationMessageStre
 		m.messageStack = make(map[string]bool)
 	}
 
-	// 处理流初始化
+	// Handle stream initialization
 	if response.GetStreamInitialization() != nil {
 		if m.hasInitialization {
 			return fmt.Errorf("duplicate stream_initialization")
@@ -49,7 +49,7 @@ func (m *mockCallbackStream) Send(response *chatv1.CreateConversationMessageStre
 		return nil
 	}
 
-	// 处理流结束
+	// Handle stream finalization
 	if response.GetStreamFinalization() != nil {
 		if !m.hasInitialization {
 			return fmt.Errorf("stream_finalization without stream_initialization")
@@ -62,7 +62,7 @@ func (m *mockCallbackStream) Send(response *chatv1.CreateConversationMessageStre
 		return nil
 	}
 
-	// 获取消息ID
+	// Get message ID
 	var messageId string
 	switch {
 	case response.GetStreamPartBegin() != nil:
@@ -70,7 +70,7 @@ func (m *mockCallbackStream) Send(response *chatv1.CreateConversationMessageStre
 		messageId = begin.MessageId
 		m.messageStack[messageId] = true
 
-		// 如果是assistant role，记录当前活跃的assistant消息ID
+		// If it's an assistant role, record the currently active assistant message ID
 		if begin.GetPayload().GetAssistant() != nil {
 			m.activeAssistantMessageId = messageId
 		}
@@ -83,7 +83,7 @@ func (m *mockCallbackStream) Send(response *chatv1.CreateConversationMessageStre
 		}
 		delete(m.messageStack, messageId)
 
-		// 如果是结束当前活跃的assistant消息，清除活跃ID
+		// If ending the currently active assistant message, clear the active ID
 		if messageId == m.activeAssistantMessageId {
 			m.activeAssistantMessageId = ""
 		}
@@ -187,20 +187,22 @@ func TestChatCompletion_SingleRoundChat_NotCallTool(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				_oai, _inapp, err = aiClient.ChatCompletionStream(
+				_oai, _inapp, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oai, _inapp, err = aiClient.ChatCompletion(
+				_oai, _inapp, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -254,20 +256,22 @@ func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStream(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletion(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -281,20 +285,22 @@ func TestChatCompletion_TwoRoundChat_NotCallTool(t *testing.T) {
 			appHistory = append(appHistory, createAppUserInputMessage(prompt))
 
 			if tc.useStream {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStream(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				_oaiHistory, _appHistory, err = aiClient.ChatCompletion(
+				_oaiHistory, _appHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -348,20 +354,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing
 			var err error
 
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -370,7 +378,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing
 			appHistory = append(appHistory, inappHistory...)
 
 			assert.Equal(t, len(oaiHistory), 4)
-			assert.Equal(t, len(appHistory), 3) // app history 只保留 tool_call_result，不保留调用之前的那个 tool_call 请求
+			assert.Equal(t, len(appHistory), 3) // app history only keeps tool_call_result, not the tool_call request before the call
 
 			assert.NotNil(t, oaiHistory[1].OfFunctionCall)
 			assert.Equal(t, oaiHistory[1].OfFunctionCall.Name, "greeting")
@@ -384,7 +392,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_MessageAfterToolCall(t *testing
 	}
 }
 
-// 测试是否可以处理 err 的 message 添加到聊天记录中
+// Test whether error messages can be added to chat history
 func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 	os.Setenv("PD_MONGO_URI", "mongodb://localhost:27017")
 	var dbInstance, _ = db.NewDB(cfg.GetCfg(), logger.GetLogger())
@@ -424,20 +432,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			var err error
 
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)
@@ -459,7 +469,7 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			}
 
 			assert.Equal(t, 4, len(oaiHistory))
-			//pd_user, openai_call, openai_msg 或者 pd_user, openai_msg, openai_call, openai_msg
+			//pd_user, openai_call, openai_msg or pd_user, openai_msg, openai_call, openai_msg
 			assert.Condition(t, func() bool {
 				var firstMsg = appHistory[0].MessageId
 				if !strings.HasPrefix(firstMsg, "pd_user_") {
@@ -499,20 +509,22 @@ func TestChatCompletion_OneRoundChat_CallOneTool_AlwaysException(t *testing.T) {
 			oaiHistory = append(oaiHistory, createOpenaiUserInputMessage(prompt))
 			appHistory = append(appHistory, createAppUserInputMessage(prompt))
 			if tc.useStream {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletionStream(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionStreamV1(
 					context.Background(),
 					&tc.streamServer,
 					tc.conversationId,
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
-				// 验证流式消息的完整性
+				// Verify streaming message integrity
 				assert.NoError(t, tc.streamServer.ValidateMessageStack())
 			} else {
-				openaiHistory, inappHistory, err = aiClient.ChatCompletion(
+				openaiHistory, inappHistory, err = aiClient.ChatCompletionV1(
 					context.Background(),
-					models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI),
+					string(models.LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)),
 					oaiHistory,
+					nil,
 				)
 			}
 			assert.NoError(t, err)

@@ -22,6 +22,7 @@ export const UNKNOWN_JSONRPC_RESULT: JsonRpcResult = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isValidJsonRpcResult = (obj: any): obj is JsonRpcResult => {
   // Check if obj is an object and not null
   if (typeof obj !== "object" || obj === null) {
@@ -85,7 +86,8 @@ export const parseJsonRpcResult = (message: string): JsonRpcResult | undefined =
     }
 
     return undefined;
-  } catch (error) {
+  } catch {
+    // Error parsing JSONRPC result
     return undefined;
   }
 };

@@ -7,8 +7,8 @@ import { useConversationUiStore } from "../../stores/conversation/conversation-u
 import { PromptInput } from "./footer";
 
 export const Chat = () => {
-  const { currentConversation } = useConversationStore();
-  const { inputRef } = useConversationUiStore();
+  const currentConversation = useConversationStore((s) => s.currentConversation);
+  const inputRef = useConversationUiStore((s) => s.inputRef);
 
   useEffect(() => {
     if (inputRef?.current) {

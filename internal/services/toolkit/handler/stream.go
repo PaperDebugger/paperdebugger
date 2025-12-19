@@ -7,25 +7,39 @@ import (
 	"github.com/openai/openai-go/v2/responses"
 )
 
-type StreamHandler struct {
+type StreamHandler interface {
+	SendInitialization()
+	HandleAddedItem(responses.ResponseStreamEventUnion)
+	HandleDoneItem(responses.ResponseStreamEventUnion)
+	HandleTextDelta(responses.ResponseStreamEventUnion)
+	SendIncompleteIndicator(reason string, responseId string)
+	SendFinalization()
+	SendToolCallBegin(toolCall responses.ResponseFunctionToolCall)
+	SendToolCallEnd(toolCall responses.ResponseFunctionToolCall, result string, err error)
+}
+
+// Compile-time check: ensure StreamHandlerV1 implements StreamHandler interface
+var _ StreamHandler = (*StreamHandlerV1)(nil)
+
+type StreamHandlerV1 struct {
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer
 	conversationId string
 	modelSlug      string
 }
 
-func NewStreamHandler(
+func NewStreamHandlerV1(
 	callbackStream chatv1.ChatService_CreateConversationMessageStreamServer,
 	conversationId string,
 	modelSlug string,
-) *StreamHandler {
-	return &StreamHandler{
+) StreamHandler {
+	return &StreamHandlerV1{
 		callbackStream: callbackStream,
 		conversationId: conversationId,
 		modelSlug:      modelSlug,
 	}
 }
 
-func (h *StreamHandler) SendInitialization() {
+func (h *StreamHandlerV1) SendInitialization() {
 	if h.callbackStream == nil {
 		return
 	}
@@ -41,11 +55,12 @@ func (h *StreamHandler) SendInitialization() {
 	})
 }
 
-func (h *StreamHandler) HandleAddedItem(chunk responses.ResponseStreamEventUnion) {
+func (h *StreamHandlerV1) HandleAddedItem(chunk responses.ResponseStreamEventUnion) {
 	if h.callbackStream == nil {
 		return
 	}
-	if chunk.Item.Type == "message" {
+	switch chunk.Item.Type {
+	case "message":
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{
@@ -58,7 +73,7 @@ func (h *StreamHandler) HandleAddedItem(chunk responses.ResponseStreamEventUnion
 				},
 			},
 		})
-	} else if chunk.Item.Type == "function_call" {
+	case "function_call":
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{
@@ -76,7 +91,7 @@ func (h *StreamHandler) HandleAddedItem(chunk responses.ResponseStreamEventUnion
 	}
 }
 
-func (h *StreamHandler) HandleDoneItem(chunk responses.ResponseStreamEventUnion) {
+func (h *StreamHandlerV1) HandleDoneItem(chunk responses.ResponseStreamEventUnion) {
 	if h.callbackStream == nil {
 		return
 	}
@@ -131,7 +146,7 @@ func (h *StreamHandler) HandleDoneItem(chunk responses.ResponseStreamEventUnion)
 	}
 }
 
-func (h *StreamHandler) HandleTextDelta(chunk responses.ResponseStreamEventUnion) {
+func (h *StreamHandlerV1) HandleTextDelta(chunk responses.ResponseStreamEventUnion) {
 	if h.callbackStream == nil {
 		return
 	}
@@ -145,7 +160,7 @@ func (h *StreamHandler) HandleTextDelta(chunk responses.ResponseStreamEventUnion
 	})
 }
 
-func (h *StreamHandler) SendIncompleteIndicator(reason string, responseId string) {
+func (h *StreamHandlerV1) SendIncompleteIndicator(reason string, responseId string) {
 	if h.callbackStream == nil {
 		return
 	}
@@ -159,7 +174,7 @@ func (h *StreamHandler) SendIncompleteIndicator(reason string, responseId string
 	})
 }
 
-func (h *StreamHandler) SendFinalization() {
+func (h *StreamHandlerV1) SendFinalization() {
 	if h.callbackStream == nil {
 		return
 	}
@@ -172,7 +187,7 @@ func (h *StreamHandler) SendFinalization() {
 	})
 }
 
-func (h *StreamHandler) SendToolCallBegin(toolCall responses.ResponseFunctionToolCall) {
+func (h *StreamHandlerV1) SendToolCallBegin(toolCall responses.ResponseFunctionToolCall) {
 	if h.callbackStream == nil {
 		return
 	}
@@ -193,7 +208,7 @@ func (h *StreamHandler) SendToolCallBegin(toolCall responses.ResponseFunctionToo
 	})
 }
 
-func (h *StreamHandler) SendToolCallEnd(toolCall responses.ResponseFunctionToolCall, result string, err error) {
+func (h *StreamHandlerV1) SendToolCallEnd(toolCall responses.ResponseFunctionToolCall, result string, err error) {
 	if h.callbackStream == nil {
 		return
 	}

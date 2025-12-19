@@ -8,11 +8,10 @@ import (
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 )
 
-type ChatServer struct {
+type ChatServerV1 struct {
 	chatv1.UnimplementedChatServiceServer
-
-	aiClient       *aiclient.AIClient
-	chatService    *services.ChatService
+	aiClientV1     *aiclient.AIClient
+	chatServiceV1  *services.ChatService
 	projectService *services.ProjectService
 	userService    *services.UserService
 	logger         *logger.Logger
@@ -20,19 +19,19 @@ type ChatServer struct {
 }
 
 func NewChatServer(
-	aiClient *aiclient.AIClient,
+	aiClientV1 *aiclient.AIClient,
 	chatService *services.ChatService,
 	projectService *services.ProjectService,
 	userService *services.UserService,
 	logger *logger.Logger,
 	cfg *cfg.Cfg,
 ) chatv1.ChatServiceServer {
-	return &ChatServer{
-		aiClient:       aiClient,
-		chatService:    chatService,
+	return &ChatServerV1{
+		aiClientV1:     aiClientV1,
 		projectService: projectService,
 		userService:    userService,
 		logger:         logger,
+		chatServiceV1:  chatService,
 		cfg:            cfg,
 	}
 }

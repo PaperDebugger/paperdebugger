@@ -39,7 +39,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
         setValue(stringValue);
         setOriginalValue(stringValue);
       }
-    }, [settings, settingKey]);
+    }, [settings]); // settingKey is an outer scope value, not a dependency
 
     const valueChanged = value !== originalValue;
 
@@ -47,7 +47,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
       await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
       setOriginalValue(value.trim());
       setIsEditing(false);
-    }, [value, updateSettings, settingKey]);
+    }, [value, updateSettings]); // settingKey is an outer scope value, not a dependency
 
     const handleEdit = useCallback(() => {
       setIsEditing(true);
@@ -62,7 +62,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-          e.preventDefault(); // 阻止浏览器的默认保存行为
+          e.preventDefault(); // Prevent browser's default save behavior
           if (valueChanged && !isUpdating[settingKey]) {
             saveSettings();
           }
@@ -71,7 +71,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           handleCancel();
         }
       },
-      [valueChanged, isUpdating, settingKey, saveSettings, handleCancel],
+      [valueChanged, isUpdating, saveSettings, handleCancel], // settingKey is an outer scope value, not a dependency
     );
 
     const inputClassName = cn(

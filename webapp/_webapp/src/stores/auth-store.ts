@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { PlainMessage } from "../query/types";
 import { User } from "../pkg/gen/apiclient/user/v1/user_pb";
-import apiclient from "../libs/apiclient";
+import apiclient, { apiclientV2 } from "../libs/apiclient";
 import { logout as apiLogout, getUser } from "../query/api";
 import { logInfo } from "../libs/logger";
 
@@ -37,6 +37,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   login: async () => {
     const { token, refreshToken } = get();
     apiclient.setTokens(token, refreshToken);
+    apiclientV2.setTokens(token, refreshToken);
 
     getUser()
       .then((resp) => {
@@ -59,6 +60,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       // ignored
     }
     apiclient.clearTokens();
+    apiclientV2.clearTokens();
     set({ user: null, token: "", refreshToken: "" });
   },
 

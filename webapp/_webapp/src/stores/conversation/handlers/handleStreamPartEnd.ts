@@ -3,7 +3,7 @@ import {
   MessageTypeToolCall,
   MessageTypeToolCallPrepareArguments,
   StreamPartEnd,
-} from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { StreamingMessage } from "../../streaming-message-store";
 import { logError } from "../../../libs/logger";
 import { MessageEntryStatus } from "../types";

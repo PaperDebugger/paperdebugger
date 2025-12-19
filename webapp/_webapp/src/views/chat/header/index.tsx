@@ -1,11 +1,9 @@
-import { useMemo } from "react";
 import { TabHeader } from "../../../components/tab-header";
 import { ChatButton } from "./chat-button";
 import { useConversationStore } from "../../../stores/conversation/conversation-store";
 import { flushSync } from "react-dom";
 import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { Message } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
 import { ChatHistoryModal } from "./chat-history-modal";
 
 export const NewConversation = () => {
@@ -26,22 +24,12 @@ export const ShowHistory = () => {
 };
 
 export const ChatHeader = () => {
-  const { currentConversation } = useConversationStore();
-  const { showChatHistory } = useConversationUiStore();
-
+  const currentConversation = useConversationStore((s) => s.currentConversation);
+  const showChatHistory = useConversationUiStore((s) => s.showChatHistory);
   const title = currentConversation?.title ?? "New Conversation";
-  const messageCount = useMemo(() => {
-    return (
-      currentConversation.messages.filter(
-        (m: Message) => m.payload?.messageType.case === "assistant" || m.payload?.messageType.case === "user",
-      ).length ?? 0
-    );
-  }, [currentConversation]);
-
   return (
     <TabHeader
       title={title}
-      subTitle={`${messageCount} message${messageCount <= 1 ? "" : "s"}`}
       actions={
         <>
           <ChatButton

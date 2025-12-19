@@ -29,5 +29,11 @@ export function PromptSelection({ prompts }: PromptSelectionProps) {
     [inputRef, setPrompt],
   );
 
-  return <Selection items={items} onSelect={onSelect} />;
+  const onClose = useCallback(() => {
+    // Clear the prompt to hide the selection menu
+    setPrompt("");
+    inputRef.current?.focus();
+  }, [setPrompt, inputRef]);
+
+  return <Selection items={items} onSelect={onSelect} onClose={onClose} />;
 }

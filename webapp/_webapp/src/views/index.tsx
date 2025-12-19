@@ -12,6 +12,7 @@ import { PdAppContainer } from "../components/pd-app-container";
 import { PdAppControlTitleBar } from "../components/pd-app-control-title-bar";
 import { PdAppSmallControlButton } from "../components/pd-app-small-control-button";
 import { useAuthStore } from "../stores/auth-store";
+import { useSettingStore } from "../stores/setting-store";
 
 const PositionController = () => {
   const {
@@ -130,6 +131,7 @@ export const MainDrawer = () => {
   const { floatingX, floatingY, setFloatingX, setFloatingY } = useConversationUiStore();
   const { rightFixedWidth, bottomFixedHeight, setRightFixedWidth, setBottomFixedHeight, setHeightCollapseRequired } =
     useConversationUiStore();
+  const { allowOutOfBounds } = useSettingStore();
   const [dragging, setDragging] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -207,7 +209,7 @@ export const MainDrawer = () => {
         zIndex: 998,
         borderRadius: "0.75rem",
       }}
-      bounds="window"
+      bounds={allowOutOfBounds ? undefined : "window"}
       onResizeStop={(_e, _dir, ref, _delta, position) => {
         if (displayMode === "floating") {
           setFloatingX(position.x);

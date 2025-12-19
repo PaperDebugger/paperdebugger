@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { resolve } from "path";
 
-// 简化的开发配置
+// Simplified development configuration
 export default defineConfig({
   root: "src/devtool",
   plugins: [react()],
@@ -10,7 +10,7 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
-      // 代理API请求到后端
+      // Proxy API requests to the backend
       "/oauth2": {
         target: process.env.PD_API_ENDPOINT || "http://localhost:6060",
         changeOrigin: true,

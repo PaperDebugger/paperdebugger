@@ -55,14 +55,14 @@ func TestAuthServer(t *testing.T) {
 		}
 		assert.True(t, token.ExpiresAt.Before(timeNow))
 
-		// 现在 Token 有效期应该是 24 小时前
+		// Now Token expiration should be 24 hours ago
 		token, err = tokenService.GetTokenByToken(context.Background(), token.Token)
 		if err != nil {
 			t.Fatalf("Failed to get refresh token: %v", err)
 		}
 		assert.True(t, token.ExpiresAt.Before(timeNow))
 
-		// 这时候 RefreshToken 应该失效
+		// At this point RefreshToken should be invalid
 		resp, err := authServer.RefreshToken(context.Background(),
 			&authv1.RefreshTokenRequest{
 				RefreshToken: token.Token,
@@ -71,7 +71,7 @@ func TestAuthServer(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 
-		// 更新 Token 有效期 到 24 小时候
+		// Update Token expiration to 24 hours later
 		token.ExpiresAt = timeNow.Add(time.Hour * 24)
 		token, err = tokenService.UpdateToken(context.Background(), token)
 		if err != nil {
@@ -79,7 +79,7 @@ func TestAuthServer(t *testing.T) {
 		}
 		assert.True(t, token.ExpiresAt.After(timeNow))
 
-		// 这时候 RefreshToken 应该有效
+		// At this point RefreshToken should be valid
 		resp, err = authServer.RefreshToken(context.Background(),
 			&authv1.RefreshTokenRequest{
 				RefreshToken: token.Token,
@@ -88,7 +88,7 @@ func TestAuthServer(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 
-		// 刚刚 RefreshToken 之后，有效期应该刷新到一个月后
+		// After RefreshToken, expiration should be refreshed to one month later
 		token, err = tokenService.GetTokenByToken(context.Background(), resp.RefreshToken)
 		if err != nil {
 			t.Fatalf("Failed to get refresh token: %v", err)

@@ -125,7 +125,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
     <div className="indicator">
       {/* Status Text */}
       <div
-        className={`flex space-x-1 text-sm ${!isTimeout && !errorMessage ? "loading-shimmer" : ""}`}
+        className={`flex space-x-1 text-xs ${!isTimeout && !errorMessage ? "loading-shimmer" : ""}`}
         style={!isTimeout && !errorMessage ? STYLES.loading.animation : undefined}
       >
         <span className={isTimeout || errorMessage ? "text-rose-400" : ""}>{getStatusMessage()}</span>

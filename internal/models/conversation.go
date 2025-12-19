@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/openai/openai-go/v2/responses"
+	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -14,8 +15,10 @@ type Conversation struct {
 	ModelSlug        string        `bson:"model_slug"`
 	InappChatHistory []bson.M      `bson:"inapp_chat_history"` // Store as raw BSON to avoid protobuf decoding issues
 
-	OpenaiChatHistory responses.ResponseInputParam `bson:"openai_chat_history"` // 实际上发给 GPT 的聊天历史
-	OpenaiChatParams  responses.ResponseNewParams  `bson:"openai_chat_params"`  // 对话的参数，比如 temperature, etc.
+	OpenaiChatHistory           responses.ResponseInputParam             `bson:"openai_chat_history"` // The actual chat history sent to GPT
+	OpenaiChatParams            responses.ResponseNewParams              `bson:"openai_chat_params"`  // Conversation parameters, such as temperature, etc.
+	OpenaiChatHistoryCompletion []openai.ChatCompletionMessageParamUnion `bson:"openai_chat_history_completion"`
+	OpenaiChatParamsCompletion  openai.ChatCompletionNewParams           `bson:"openai_chat_params_completion"`
 }
 
 func (c Conversation) CollectionName() string {

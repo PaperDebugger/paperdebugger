@@ -38,8 +38,12 @@ if (typeof document !== "undefined") {
 }
 
 export function PromptInput() {
-  const { prompt, heightCollapseRequired, inputRef, setPrompt } = useConversationUiStore();
-  const { searchPrompts } = usePromptLibraryStore();
+  const prompt = useConversationUiStore((s) => s.prompt);
+  const heightCollapseRequired = useConversationUiStore((s) => s.heightCollapseRequired);
+  const inputRef = useConversationUiStore((s) => s.inputRef);
+  const setPrompt = useConversationUiStore((s) => s.setPrompt);
+
+  const searchPrompts = usePromptLibraryStore((s) => s.searchPrompts);
   const [showModelSelection, setShowModelSelection] = useState(false);
   const prompts = useMemo(
     () => (!prompt.startsWith("/") ? [] : searchPrompts(prompt.slice(1))),
@@ -50,11 +54,14 @@ export function PromptInput() {
     filter: prompt.startsWith(":") ? prompt.slice(1) : undefined,
   });
 
-  const { user } = useAuthStore();
-  const { isStreaming, setIsStreaming } = useConversationStore();
+  const user = useAuthStore((s) => s.user);
+  const isStreaming = useConversationStore((s) => s.isStreaming);
+  const setIsStreaming = useConversationStore((s) => s.setIsStreaming);
+
   const selectedText = useSelectionStore((s) => s.selectedText);
+
   const { sendMessageStream } = useSendMessageStream();
-  const { minimalistMode } = useSettingStore();
+  const minimalistMode = useSettingStore((s) => s.minimalistMode);
 
   const handleModelSelect = useCallback(() => {
     setShowModelSelection(false);
@@ -90,21 +97,23 @@ export function PromptInput() {
   );
 
   return (
-    <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel">
+    <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel relative">
+      {/* Only show one popup at a time - priority: prompts > actions > model selection */}
       {prompts.length > 0 && <PromptSelection prompts={prompts} />}
-      {actions.length > 0 && <ActionSelection actions={actions} />}
-      {showModelSelection && <ModelSelection onSelectModel={handleModelSelect} />}
+      {prompts.length === 0 && actions.length > 0 && <ActionSelection actions={actions} />}
+      {prompts.length === 0 && actions.length === 0 && showModelSelection && (
+        <ModelSelection onSelectModel={handleModelSelect} />
+      )}
 
       <div className={cn("pd-chat-toolbar noselect", heightCollapseRequired || minimalistMode ? "collapsed" : "")}>
-        {prompts.length == 0 && actions.length == 0 && !showModelSelection && (
-          <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
-        )}
+        <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
         <div className="border border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
           <textarea
             onMouseDown={(e) => e.stopPropagation()}
+            onFocus={() => setShowModelSelection(false)}
             id="pd-chat-prompt-input"
             ref={inputRef}
             className={cn(

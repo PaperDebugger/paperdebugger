@@ -1,5 +1,5 @@
 import { logError } from "../../../libs/logger";
-import { MessageChunk, MessageTypeAssistant } from "../../../pkg/gen/apiclient/chat/v1/chat_pb";
+import { MessageChunk, MessageTypeAssistant } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
 

@@ -27,7 +27,7 @@ type CommentsAcceptedRequest struct {
 	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	MessageId      string                 `protobuf:"bytes,3,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	CommentIds     []string               `protobuf:"bytes,4,rep,name=comment_ids,json=commentIds,proto3" json:"comment_ids,omitempty"` // 被 accept 的 comment id 列表
+	CommentIds     []string               `protobuf:"bytes,4,rep,name=comment_ids,json=commentIds,proto3" json:"comment_ids,omitempty"` // List of accepted comment IDs
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }

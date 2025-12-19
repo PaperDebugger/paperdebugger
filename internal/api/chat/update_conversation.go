@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (s *ChatServer) UpdateConversation(
+func (s *ChatServerV1) UpdateConversation(
 	ctx context.Context,
 	req *chatv1.UpdateConversationRequest,
 ) (*chatv1.UpdateConversationResponse, error) {
@@ -25,7 +25,7 @@ func (s *ChatServer) UpdateConversation(
 		return nil, err
 	}
 
-	conversation, err := s.chatService.GetConversation(ctx, actor.ID, conversationID)
+	conversation, err := s.chatServiceV1.GetConversation(ctx, actor.ID, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (s *ChatServer) UpdateConversation(
 	}
 
 	conversation.Title = req.GetTitle()
-	err = s.chatService.UpdateConversation(conversation)
+	err = s.chatServiceV1.UpdateConversation(conversation)
 	if err != nil {
 		return nil, err
 	}

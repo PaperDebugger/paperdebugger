@@ -6,7 +6,7 @@ import {
   MessageTypeToolCallPrepareArguments,
   MessageTypeUnknown,
   MessageTypeUser,
-} from "../../pkg/gen/apiclient/chat/v1/chat_pb";
+} from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
 import { useStreamingMessageStore } from "../../stores/streaming-message-store";

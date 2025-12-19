@@ -10,7 +10,7 @@ import (
 	"github.com/openai/openai-go/v2"
 )
 
-func (s *ChatServer) ListSupportedModels(
+func (s *ChatServerV1) ListSupportedModels(
 	ctx context.Context,
 	req *chatv1.ListSupportedModelsRequest,
 ) (*chatv1.ListSupportedModelsResponse, error) {

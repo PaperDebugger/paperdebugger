@@ -38,7 +38,7 @@ func NewToolCallHandler(toolRegistry *registry.ToolRegistry) *ToolCallHandler {
 //   - openaiChatHistory: The OpenAI-compatible chat history including tool call and output items.
 //   - inappChatHistory:  The in-app chat history as a slice of chatv1.Message, reflecting tool call events.
 //   - error:             Any error encountered during processing (always nil in current implementation).
-func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, outputs []responses.ResponseOutputItemUnion, streamHandler *StreamHandler) (responses.ResponseNewParamsInputUnion, []chatv1.Message, error) {
+func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, outputs []responses.ResponseOutputItemUnion, streamHandler StreamHandler) (responses.ResponseNewParamsInputUnion, []chatv1.Message, error) {
 	openaiChatHistory := responses.ResponseNewParamsInputUnion{} // Accumulates OpenAI chat history items
 	inappChatHistory := []chatv1.Message{}                       // Accumulates in-app chat history messages
 

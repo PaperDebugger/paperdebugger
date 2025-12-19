@@ -9,7 +9,8 @@ type ModelSelectionProps = {
 
 export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
   const { inputRef } = useConversationUiStore();
-  const { models, setModel } = useLanguageModels();
+  const { models, currentModel, setModel } = useLanguageModels();
+
   const items: SelectionItem<string>[] = useMemo(() => {
     return models.map((model) => ({
       title: model.name,
@@ -27,5 +28,10 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
     [setModel, onSelectModel, inputRef, models],
   );
 
-  return <Selection items={items} onSelect={onSelect} />;
+  const onClose = useCallback(() => {
+    onSelectModel();
+    inputRef.current?.focus();
+  }, [onSelectModel, inputRef]);
+
+  return <Selection items={items} initialValue={currentModel?.slug} onSelect={onSelect} onClose={onClose} />;
 }

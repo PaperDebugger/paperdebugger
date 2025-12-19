@@ -33,6 +33,7 @@ export type SwitchCellProps = Omit<SwitchProps, "color"> & {
 const SwitchCell = React.forwardRef<HTMLInputElement, SwitchCellProps>(
   ({ label, description, classNames, isLoading, ...props }, ref) => (
     <CustomSwitch
+      size="sm"
       classNames={{
         ...classNames,
         base: cn(

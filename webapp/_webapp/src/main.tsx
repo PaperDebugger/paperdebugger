@@ -9,7 +9,7 @@ import googleAnalytics from "./libs/google-analytics";
 import { generateSHA1Hash, onElementAdded, onElementAppeared } from "./libs/helpers";
 import { OverleafCodeMirror, completion, createSuggestionExtension } from "./libs/inline-suggestion";
 import { logInfo } from "./libs/logger";
-import apiclient, { getEndpointFromLocalStorage } from "./libs/apiclient";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage } from "./libs/apiclient";
 import { Providers } from "./providers";
 import { useAuthStore } from "./stores/auth-store";
 import { useConversationUiStore } from "./stores/conversation/conversation-ui-store";
@@ -49,10 +49,13 @@ export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();
   const {
     lastSelectedText,
+    lastSurroundingText,
     lastSelectionRange,
     setLastSelectedText,
+    setLastSurroundingText,
     setLastSelectionRange,
     setSelectedText,
+    setSurroundingText,
     setSelectionRange,
     clearOverleafSelection,
   } = useSelectionStore();
@@ -64,7 +67,8 @@ export const Main = () => {
   const { loadPrompts } = usePromptLibraryStore();
 
   useEffect(() => {
-    apiclient.updateBaseURL(getEndpointFromLocalStorage());
+    apiclient.updateBaseURL(getEndpointFromLocalStorage(), "v1");
+    apiclientV2.updateBaseURL(getEndpointFromLocalStorage(), "v2");
     login();
     loadSettings();
     loadPrompts();
@@ -74,12 +78,10 @@ export const Main = () => {
     if (disableLineWrap) {
       onElementAppeared(".cm-lineWrapping", (editor) => {
         editor.classList.remove("cm-lineWrapping");
-        console.log("disable line wrap");
       });
     } else {
       onElementAppeared(".cm-content", (editor) => {
         editor.classList.add("cm-lineWrapping");
-        console.log("enable line wrap");
       });
     }
   }, [disableLineWrap]);
@@ -90,7 +92,28 @@ export const Main = () => {
       // check if the selection is in the editor
       const editor = document.querySelector(".cm-editor");
       if (editor && editor.contains(selection?.anchorNode ?? null)) {
-        setLastSelectedText(selection?.toString() ?? null);
+        const text = selection?.toString() ?? null;
+        setLastSelectedText(text);
+
+        let surrounding = "";
+        try {
+          const cmContentElement = document.querySelector(".cm-content");
+          if (cmContentElement) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const state = (cmContentElement as any).cmView.view.state;
+            if (state) {
+              const cmSelection = state.selection.main;
+              const doc = state.doc;
+              const before = doc.sliceString(Math.max(0, cmSelection.from - 100), cmSelection.from);
+              const after = doc.sliceString(cmSelection.to, Math.min(doc.length, cmSelection.to + 100));
+              surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
+            }
+          }
+        } catch (e) {
+          // fallback
+        }
+        setLastSurroundingText(surrounding);
+
         setLastSelectionRange(selection?.getRangeAt(0) ?? null);
         return;
       } else {
@@ -108,10 +131,21 @@ export const Main = () => {
   const selectAndOpenPaperDebugger = useCallback(() => {
     setActiveTab("chat");
     setSelectedText(lastSelectedText);
+    setSurroundingText(lastSurroundingText);
     setSelectionRange(lastSelectionRange);
     setIsOpen(true);
     clearOverleafSelection();
-  }, [setSelectedText, setSelectionRange, setIsOpen, lastSelectedText, lastSelectionRange, clearOverleafSelection]);
+  }, [
+    setActiveTab,
+    setSelectedText,
+    setSurroundingText,
+    setSelectionRange,
+    setIsOpen,
+    lastSelectedText,
+    lastSurroundingText,
+    lastSelectionRange,
+    clearOverleafSelection,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -178,8 +212,6 @@ export const Main = () => {
     </>
   );
 };
-
-console.log("[PaperDebugger] PaperDebugger injected, find toolbar-left or ide-redesign-toolbar-menu-bar to add button");
 
 if (!import.meta.env.DEV) {
   onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {

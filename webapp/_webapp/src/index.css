@@ -102,11 +102,19 @@ body {
 }
 
 .tool-card-title {
-  @apply text-xs font-semibold font-sans text-primary-700 uppercase tracking-wider noselect;
+  @apply text-xs font-semibold font-sans text-primary-700 tracking-wider noselect;
 }
 
 .tool-card-title.tool-card-jsonrpc {
   @apply font-medium text-gray-500;
+}
+
+.tool-card.compact {
+  @apply px-[3px] py-[1px] my-0.5 bg-transparent text-xs border-0;
+}
+
+.tool-card.compact .tool-card-title {
+  @apply text-[10px];
 }
 
 /* 相邻 tool-card 的样式处理 */
@@ -250,11 +258,11 @@ body {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header {
-  @apply bg-gray-100 px-3 py-2 gap-2 items-center w-full transition-all;
+  @apply bg-gray-100 pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
-  height: 60px;
+  height: 24px;
   border-bottom: 1px solid var(--pd-border-color);
 }
 
@@ -274,6 +282,7 @@ body {
   width: 100%;
   min-width: 0;
   flex: 1;
+  overflow-anchor: none;
   @apply bg-gray-50 p-2;
 }
 
@@ -324,19 +333,27 @@ body {
   @apply text-sm text-default-400 dark:text-default-50;
 }
 
+.chat-message-entry .message-box-user-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
 .chat-message-entry .message-box-user {
   max-width: 70%;
-  align-self: flex-end;
   @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply bg-gray-200 self-end my-2;
+  @apply bg-gray-200 my-2;
 }
 
 .chat-message-entry .message-box-assistant {
   align-self: flex-start;
   @apply text-sm text-default-800 px-2 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply my-2;
+  @apply mb-2;
 }
 
 .chat-message-entry .message-box-assistant:hover {
@@ -348,6 +365,10 @@ body {
   display: flex;
   flex-direction: row;
   @apply gap-2 text-gray-400 mt-2 -ml-2 opacity-0 transition-all duration-100;
+}
+
+.chat-message-entry .actions.actions-left {
+  @apply mt-0 ml-0 mr-0;
 }
 
 .chat-message-entry:hover .actions {
