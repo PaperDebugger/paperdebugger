@@ -1,6 +1,8 @@
 namespace: paperdebugger-dev
 openai_base_url: https://api.openai.com/v1
 openai_api_key: sk-dummy-OPENAI_API_KEY
+inference_base_url: https://inference.paperdebugger.workers.dev
+inference_api_key: sk-dummy-OPEN-ROUTER
 jwt_signing_key: paperdebugger
 ghcr_docker_config: dummy-ghcr-docker-config
 cloudflare_tunnel_token: dummy-cloudflare-tunnel-token

@@ -59,6 +59,8 @@ metadata:
 data:
   OPENAI_BASE_URL: "{{ .Values.openai_base_url }}"
   OPENAI_API_KEY: "{{ .Values.openai_api_key }}"
+  INFERENCE_BASE_URL: "{{ .Values.inference_base_url }}"
+  INFERENCE_API_KEY: "{{ .Values.inference_api_key }}"
   JWT_SIGNING_KEY: "{{ .Values.jwt_signing_key }}"
   {{ if not .Values.mongo.in_cluster }}
   PD_MONGO_URI: "{{ .Values.mongo.uri }}"

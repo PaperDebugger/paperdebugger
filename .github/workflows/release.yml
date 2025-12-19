@@ -101,6 +101,8 @@ jobs:
         env:
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_PRD }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_PRD }}
+          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_PRD }}
+          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_PRD }}
           MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_PRD }}
           MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_PRD }}
           XTRAGPT_OPENAI_API_KEY: ${{ secrets.XTRAGPT_OPENAI_API_KEY_PRD }}
