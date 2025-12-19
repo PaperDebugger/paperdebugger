@@ -1,4 +1,4 @@
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../libs/protobuf-utils";
 import { Conversation, Message, MessageSchema } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../types";
 import { useStreamingMessageStore } from "../../streaming-message-store";
