@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"net/http"
 	"paperdebugger/internal/services"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,8 +59,10 @@ func (h *OAuthHandler) OAuthStatus(c *gin.Context) {
 		return
 	}
 	if cb.Used {
-		c.JSON(http.StatusGone, gin.H{"error": "used"})
-		return
+		if cb.UsedAt != nil && time.Since(cb.UsedAt.Time()) > time.Minute {
+			c.JSON(http.StatusGone, gin.H{"error": "used"})
+			return
+		}
 	}
 
 	// update used to true

@@ -105,6 +105,9 @@ func (s *OAuthService) OAuthMakeUsed(ctx context.Context, cb *models.OAuth) erro
 			"updated_at": bson.NewDateTimeFromTime(now),
 		},
 	}
+	if cb.UsedAt == nil {
+		update["$set"].(bson.M)["used_at"] = bson.NewDateTimeFromTime(now)
+	}
 	_, err := s.oauthCollection.UpdateOne(ctx, bson.M{"_id": cb.ID}, update)
 	return err
 }
