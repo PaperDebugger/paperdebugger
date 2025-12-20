@@ -36,14 +36,6 @@ func (s *ChatServerV2) ListSupportedModels(
 				OutputPrice:  800,
 			},
 			{
-				Name:         "GPT-4o",
-				Slug:         "openai/gpt-4o",
-				TotalContext: 128000,
-				MaxOutput:    16400,
-				InputPrice:   250,
-				OutputPrice:  1000,
-			},
-			{
 				Name:         "GPT-4.1-mini",
 				Slug:         "openai/gpt-4.1-mini",
 				TotalContext: 128000,
@@ -74,6 +66,14 @@ func (s *ChatServerV2) ListSupportedModels(
 				MaxOutput:    65500,
 				InputPrice:   30,
 				OutputPrice:  250,
+			},
+			{
+				Name:         "Gemini 3 Flash Preview",
+				Slug:         "google/gemini-3-flash-preview",
+				TotalContext: 1050000,
+				MaxOutput:    65500,
+				InputPrice:   50,
+				OutputPrice:  300,
 			},
 		}
 	} else {
