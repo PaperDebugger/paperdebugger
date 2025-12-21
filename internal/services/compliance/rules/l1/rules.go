@@ -126,7 +126,7 @@ func GetAllL1Rules(runner rules.AIRunner) []rules.IndicatorChecker {
 		&L1Rule{BaseAIRule: base, IDVal: "L1-03", NameVal: "Weak Research Motivation", Prompt: p03},
 		&L1Rule{BaseAIRule: base, IDVal: "L1-04", NameVal: "Contributions Not Clearly Stated", Prompt: p04},
 		&L1Rule{BaseAIRule: base, IDVal: "L1-05", NameVal: "Contributions Poorly Differentiated", Prompt: p05},
-		&L1Rule{BaseAIRule: base, IDVal: "L1-06", NameVal: "Objective–Method Misalignment", Prompt: p06},
+		&L1Rule{BaseAIRule: base, IDVal: "L1-06", NameVal: "Objective-Method Misalignment", Prompt: p06},
 		&L1Rule{BaseAIRule: base, IDVal: "L1-07", NameVal: "Claims Not Supported by Methods", Prompt: p07},
 		&L1Rule{BaseAIRule: base, IDVal: "L1-08", NameVal: "Experiments Not Aligned with Questions", Prompt: p08},
 		&L1Rule{BaseAIRule: base, IDVal: "L1-09", NameVal: "Inappropriate Evaluation Metrics", Prompt: p09},

@@ -2,6 +2,7 @@ import { Chat } from "./views/chat";
 import { Tabs } from "./components/tabs";
 import { Settings } from "./views/settings";
 import { Prompts } from "./views/prompts";
+import { Reports } from "./views/reports";
 import { PdAppBodyContainer } from "./components/pd-app-body-container";
 
 export const PaperDebugger = () => {
@@ -24,6 +25,13 @@ export const PaperDebugger = () => {
             tooltip: "Prompt Library",
           },
           {
+            key: "reports",
+            title: "Reports",
+            icon: "tabler:file-report",
+            children: <Reports />,
+            tooltip: "Compliance Reports",
+          },
+          {
             key: "settings",
             title: "Settings",
             icon: "tabler:settings",
@@ -35,3 +43,4 @@ export const PaperDebugger = () => {
     </PdAppBodyContainer>
   );
 };
+
