@@ -5,7 +5,7 @@ import { getProjectId } from "../../../libs/helpers";
 import { getCookies } from "../../../intermediate";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../../../libs/protobuf-utils";
 
 export async function handleStreamError(
   streamError: StreamError,

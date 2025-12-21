@@ -1,5 +1,5 @@
 import { PaperScoreResultSchema } from "../../../pkg/gen/apiclient/project/v1/project_pb";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../../../libs/protobuf-utils";
 import { LoadingIndicator } from "../../loading-indicator";
 import { logError } from "../../../libs/logger";
 import { cn } from "@heroui/react";

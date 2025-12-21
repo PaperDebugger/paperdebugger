@@ -25,7 +25,7 @@ import {
   StreamPartEnd,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../libs/protobuf-utils";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
 import { useSocketStore } from "../stores/socket-store";

@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { fromJson, JsonValue } from "@bufbuild/protobuf";
+import { JsonValue } from "@bufbuild/protobuf";
+import { fromJson } from "./protobuf-utils";
 import { RefreshTokenResponseSchema } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";

@@ -1,4 +1,5 @@
-import { fromJson, JsonValue } from "@bufbuild/protobuf";
+import { JsonValue } from "@bufbuild/protobuf";
+import { fromJson } from "../../../../libs/protobuf-utils";
 import { OverleafCommentSchema } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
 import { getProjectId } from "../../../../libs/helpers";
 import { useEffect, useState } from "react";
