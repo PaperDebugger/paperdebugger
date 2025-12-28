@@ -111,17 +111,17 @@ func initializeToolkit(
 	// initialize MCP session first and log session ID
 	sessionID, err := xtraMCPLoader.InitializeMCP()
 	if err != nil {
-		logger.Errorf("[AI Client] Failed to initialize XtraMCP session: %v", err)
+		logger.Errorf("[XtraMCP Client] Failed to initialize XtraMCP session: %v", err)
 		// TODO: Fallback to static tools or exit?
 	} else {
-		logger.Info("[AI Client] XtraMCP session initialized", "sessionID", sessionID)
+		logger.Info("[XtraMCP Client] XtraMCP session initialized", "sessionID", sessionID)
 
 		// dynamically load all tools from XtraMCP backend
 		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
 		if err != nil {
-			logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
+			logger.Errorf("[XtraMCP Client] Failed to load XtraMCP tools: %v", err)
 		} else {
-			logger.Info("[AI Client] Successfully loaded XtraMCP tools")
+			logger.Info("[XtraMCP Client] Successfully loaded XtraMCP tools")
 		}
 	}
 
