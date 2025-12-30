@@ -82,7 +82,7 @@ const configs: Record<string, UserConfig> = {
     draft.build.copyPublicDir = true;
     draft.plugins.push(generateManifestPlugin());
   }),
-  office: generateConfig("./src/office.tsx", "office", (draft) => {
+  office: generateConfig("./src/views/office/app.tsx", "office", (draft) => {
     draft.build.emptyOutDir = true;
     draft.build.outDir = "dist/office";
   }),
