@@ -82,6 +82,10 @@ const configs: Record<string, UserConfig> = {
     draft.build.copyPublicDir = true;
     draft.plugins.push(generateManifestPlugin());
   }),
+  office: generateConfig("./src/office.tsx", "office", (draft) => {
+    draft.build.emptyOutDir = true;
+    draft.build.outDir = "dist/office";
+  }),
   background: generateConfig("./src/background.ts", "background"),
   intermediate: generateConfig("./src/intermediate.ts", "intermediate"),
   settings: generateConfig("./src/views/extension-settings/app.tsx", "settings"),

@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "webapp",
@@ -12,6 +13,7 @@
         "@heroui/react": "^2.7.9",
         "@iconify/react": "^6.0.0",
         "@lukemorales/query-key-factory": "^1.3.4",
+        "@r2wc/react-to-web-component": "^2.1.0",
         "@tanstack/react-query": "^5.79.0",
         "@types/diff": "^8.0.0",
         "@uidotdev/usehooks": "^2.4.1",
@@ -411,6 +413,10 @@
     "@protobufjs/pool": ["@protobufjs/pool@1.1.0", "", {}, "sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw=="],
 
     "@protobufjs/utf8": ["@protobufjs/utf8@1.1.0", "", {}, "sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw=="],
+
+    "@r2wc/core": ["@r2wc/core@1.3.0", "", {}, "sha512-aPBnND92Itl+SWWbWyyxdFFF0+RqKB6dptGHEdiPB8ZvnHWHlVzOfEvbEcyUYGtB6HBdsfkVuBiaGYyBFVTzVQ=="],
+
+    "@r2wc/react-to-web-component": ["@r2wc/react-to-web-component@2.1.0", "", { "dependencies": { "@r2wc/core": "^1.3.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" } }, "sha512-m/PzgUOEiL1HxmvfP5LgBLqB7sHeRj+d1QAeZklwS4OEI2HUU+xTpT3hhJipH5DQoFInDqDTfe0lNFFKcrqk4w=="],
 
     "@react-aria/breadcrumbs": ["@react-aria/breadcrumbs@3.5.24", "", { "dependencies": { "@react-aria/i18n": "^3.12.9", "@react-aria/link": "^3.8.1", "@react-aria/utils": "^3.29.0", "@react-types/breadcrumbs": "^3.7.13", "@react-types/shared": "^3.29.1", "@swc/helpers": "^0.5.0" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1", "react-dom": "^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1" } }, "sha512-CRheGyyM8afPJvDHLXn/mmGG/WAr/z2LReK3DlPdxVKcsOn7g3NIRxAcAIAJQlDLdOiu1SXHiZe6uu2jPhHrxA=="],
 
