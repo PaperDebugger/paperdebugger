@@ -9,7 +9,7 @@ import "../../index.css";
 const PaperDebugger = () => {
   const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
   useEffect(() => {
-    setDisplayMode("right-fixed");
+    setDisplayMode("fullscreen");
     setIsOpen(true);
   }, [setIsOpen, isOpen]);
 
