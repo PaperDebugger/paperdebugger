@@ -53,7 +53,7 @@ func (loader *XtraMCPLoaderV2) LoadToolsFromBackend(toolRegistry *registry.ToolR
 
 	// Register each tool dynamically, passing the session ID
 	for _, toolSchema := range toolSchemas {
-		// some tools require secrutiy context injection e.g. user_id to authenticate
+		// some tools require security context injection e.g. user_id to authenticate
 		requiresInjection := loader.requiresSecurityInjection(toolSchema)
 
 		dynamicTool := NewDynamicToolV2(
@@ -78,7 +78,7 @@ func (loader *XtraMCPLoaderV2) LoadToolsFromBackend(toolRegistry *registry.ToolR
 	return nil
 }
 
-// checks if a tool schema contains parameters that should be inejected instead of LLM-generated
+// checks if a tool schema contains parameters that should be injected instead of LLM-generated
 func (loader *XtraMCPLoaderV2) requiresSecurityInjection(schema ToolSchemaV2) bool {
 	properties, ok := schema.InputSchema["properties"].(map[string]interface{})
 	if !ok {

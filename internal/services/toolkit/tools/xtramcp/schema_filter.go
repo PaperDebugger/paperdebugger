@@ -25,18 +25,21 @@ func filterSecurityParameters(schema map[string]interface{}) map[string]interfac
 }
 
 // creates a deep copy of the schema using JSON marshal/unmarshal
+// Uses JSON round-trip because map[string]interface{} contains nested structures
+// This ensures modifications to the copy don't affect the original schema.
 func deepCopySchema(schema map[string]interface{}) map[string]interface{} {
 	// Use JSON marshal/unmarshal for deep copy
 	jsonBytes, err := json.Marshal(schema)
 	if err != nil {
-		// If marshaling fails, return original schema
+		// Extremely unlikely with valid JSON schemas (MCP schemas are JSON-compatible)
+		// // If marshaling fails, return original schema
 		return schema
 	}
 
 	var copy map[string]interface{}
 	err = json.Unmarshal(jsonBytes, &copy)
 	if err != nil {
-		// If unmarshaling fails, return original schema
+		// Should never happen if marshal succeeded
 		return schema
 	}
 
@@ -52,7 +55,7 @@ func filterRequiredArray(required []interface{}, toRemove []string) []interface{
 		removeMap[r] = true
 	}
 
-	// filter our security params
+	// filter out security params
 	for _, item := range required {
 		if str, ok := item.(string); ok {
 			if !removeMap[str] {

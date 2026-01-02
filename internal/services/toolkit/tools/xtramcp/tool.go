@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -139,7 +140,7 @@ func (t *DynamicTool) injectSecurityContext(ctx context.Context, argsMap map[str
 	// 2. Validate user owns the project
 	_, err := t.projectService.GetProject(ctx, actor.ID, projectId)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			return fmt.Errorf("authorization failed: project not found or access denied")
 		}
 		return fmt.Errorf("authorization check failed: %w", err)
