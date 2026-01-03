@@ -214,5 +214,13 @@ func (t *DynamicToolV2) executeTool(args map[string]interface{}) (string, error)
 		return "", fmt.Errorf("failed to parse SSE response: %w", err)
 	}
 
-	return extractedJSON, nil
+	// Unwrap JSON-RPC envelope to get inner ToolResult
+	// Input: {"jsonrpc":"2.0","id":4,"result":{<ToolResult>}}
+	// Output: {<ToolResult>}
+	innerResult, err := unwrapJSONRPC(extractedJSON)
+	if err != nil {
+		return "", fmt.Errorf("JSON-RPC error: %w", err)
+	}
+
+	return innerResult, nil
 }
