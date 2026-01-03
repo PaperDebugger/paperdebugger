@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -73,12 +74,121 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 		toolResult, err := h.Registry.Call(ctx, toolCall.ID, toolCall.Name, []byte(toolCall.Arguments))
 
-		if streamHandler != nil {
-			streamHandler.SendToolCallEnd(toolCall, toolResult, err)
+		// Try to parse as XtraMCP ToolResult format
+		// This allows XtraMCP tools to use the new format while other tools continue with existing behavior
+		// NOTE: there is a bit of a coupled ugly logic here. (TODO: consider new API design later)
+		// 1. We rely on the xtramcp/tool_v2.go call method to return "" for LLM instruction
+		// 2. so in registry/registry_v2.go, the returned toolResult is the raw string from the tool execution
+		// 3. presently, it is not possible to do the parsing earlier in xtramcp/tool_v2.go because of the following branching logic
+		parsedXtraMCPResult, isXtraMCPFormat, parseErr := ParseXtraMCPToolResult(toolResult)
+
+		var llmContent string         // Content to send to LLM (OpenAI chat history)
+		var frontendToolResult string // Content to send to frontend (via stream)
+
+		if parseErr != nil || !isXtraMCPFormat {
+			// Legacy format or non-XtraMCP tool - use existing behavior unchanged
+			llmContent = toolResult
+			frontendToolResult = toolResult
+		} else {
+			// XtraMCP ToolResult format detected - apply specialized logic
+
+			// BRANCH 1: Handle errors (success=false)
+			if !parsedXtraMCPResult.Success {
+				// Send error message to LLM
+				if parsedXtraMCPResult.Error != nil {
+					llmContent = *parsedXtraMCPResult.Error
+				} else {
+					llmContent = "Tool execution failed (no error message provided)"
+				}
+
+				// Send error payload to frontend
+				frontendPayload := map[string]interface{}{
+					"display_mode": parsedXtraMCPResult.DisplayMode,
+					"success":      false,
+					"metadata":     parsedXtraMCPResult.Metadata,
+				}
+				if parsedXtraMCPResult.Error != nil {
+					frontendPayload["error"] = *parsedXtraMCPResult.Error
+				}
+				frontendBytes, _ := json.Marshal(frontendPayload)
+				frontendToolResult = string(frontendBytes)
+
+			} else if parsedXtraMCPResult.DisplayMode == "verbatim" {
+				// BRANCH 2: Verbatim mode (success=true)
+
+				// Check if metadata contains full_report for LLM context
+				var hasFullReport bool
+				var fullReport string
+				if parsedXtraMCPResult.Metadata != nil {
+					if fr, ok := parsedXtraMCPResult.Metadata["full_report"].(string); ok {
+						fullReport = fr
+						hasFullReport = true
+					}
+				}
+
+				// LLM gets full report if available, otherwise truncated content
+				if hasFullReport {
+					llmContent = fullReport
+				} else {
+					llmContent = parsedXtraMCPResult.GetContentAsString()
+				}
+
+				// Frontend gets truncated content + metadata (excluding full_report)
+				frontendMetadata := make(map[string]interface{})
+				if parsedXtraMCPResult.Metadata != nil {
+					for k, v := range parsedXtraMCPResult.Metadata {
+						if k != "full_report" { // Exclude full_report from frontend
+							frontendMetadata[k] = v
+						}
+					}
+				}
+
+				frontendPayload := map[string]interface{}{
+					"display_mode": "verbatim",
+					"content":      parsedXtraMCPResult.GetContentAsString(),
+					"success":      true,
+				}
+				if len(frontendMetadata) > 0 {
+					frontendPayload["metadata"] = frontendMetadata
+				}
+				frontendBytes, _ := json.Marshal(frontendPayload)
+				frontendToolResult = string(frontendBytes)
+
+			} else if parsedXtraMCPResult.DisplayMode == "interpret" {
+				// BRANCH 3: Interpret mode (success=true)
+
+				// LLM gets content + optional instructions for reformatting
+				llmPayload := map[string]interface{}{
+					"content": parsedXtraMCPResult.Content,
+				}
+				if parsedXtraMCPResult.Instructions != nil {
+					llmPayload["instructions"] = *parsedXtraMCPResult.Instructions
+				}
+				llmBytes, _ := json.Marshal(llmPayload)
+				llmContent = string(llmBytes)
+
+				// Frontend gets minimal display (LLM will provide formatted response)
+				frontendPayload := map[string]interface{}{
+					"display_mode": "interpret",
+					"success":      true,
+				}
+				if parsedXtraMCPResult.Metadata != nil {
+					frontendPayload["metadata"] = parsedXtraMCPResult.Metadata
+				}
+				frontendBytes, _ := json.Marshal(frontendPayload)
+				frontendToolResult = string(frontendBytes)
+			}
 		}
 
-		resultStr := toolResult
+		// Send result to stream handler (frontend)
+		if streamHandler != nil {
+			streamHandler.SendToolCallEnd(toolCall, frontendToolResult, err)
+		}
+
+		// Prepare content for LLM (OpenAI chat history)
+		resultStr := llmContent
 		if err != nil {
+			// Tool execution error (different from ToolResult.success=false)
 			resultStr = "Error: " + err.Error()
 		}
 
@@ -108,7 +218,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 		if err != nil {
 			toolCallMsg.Error = err.Error()
 		} else {
-			toolCallMsg.Result = resultStr
+			toolCallMsg.Result = frontendToolResult
 		}
 
 		inappChatHistory = append(inappChatHistory, chatv2.Message{
