@@ -62,3 +62,10 @@ func (tr *XtraMCPToolResult) GetContentAsString() string {
 	bytes, _ := json.Marshal(tr.Content)
 	return string(bytes)
 }
+
+func TruncateContent(content string, maxLen int) string {
+	if len(content) <= maxLen {
+		return content
+	}
+	return content[:maxLen] + "..."
+}

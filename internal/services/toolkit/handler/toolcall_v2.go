@@ -126,11 +126,31 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 					}
 				}
 
-				// LLM gets full report if available, otherwise truncated content
+				var contentForLLM string
+				// LLM gets full_report if available, otherwise truncated content
 				if hasFullReport {
-					llmContent = fullReport
+					contentForLLM = fullReport
 				} else {
-					llmContent = parsedXtraMCPResult.GetContentAsString()
+					contentForLLM = parsedXtraMCPResult.GetContentAsString()
+				}
+
+				//TODO better handle this: truncate if too long for LLM context
+				// this is a SAFEGUARD against extremely long tool outputs
+				// est 30k tokens, 4 chars/token = 120k chars
+				const maxLLMContentLen = 120000
+				contentForLLM = TruncateContent(contentForLLM, maxLLMContentLen)
+
+				// If instructions provided, send as structured payload
+				// Otherwise send raw content
+				if parsedXtraMCPResult.Instructions != nil {
+					llmPayload := map[string]interface{}{
+						"instructions": *parsedXtraMCPResult.Instructions,
+						"content":      contentForLLM,
+					}
+					llmBytes, _ := json.Marshal(llmPayload)
+					llmContent = string(llmBytes)
+				} else {
+					llmContent = contentForLLM
 				}
 
 				// Frontend gets truncated content + metadata (excluding full_report)
