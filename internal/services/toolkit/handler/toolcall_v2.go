@@ -118,23 +118,8 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 			} else if parsedXtraMCPResult.DisplayMode == "verbatim" {
 				// BRANCH 2: Verbatim mode (success=true)
 
-				// Check if metadata contains full_report for LLM context
-				var hasFullReport bool
-				var fullReport string
-				if parsedXtraMCPResult.Metadata != nil {
-					if fr, ok := parsedXtraMCPResult.Metadata["full_report"].(string); ok {
-						fullReport = fr
-						hasFullReport = true
-					}
-				}
-
-				var contentForLLM string
-				// LLM gets full_report if available, otherwise truncated content
-				if hasFullReport {
-					contentForLLM = fullReport
-				} else {
-					contentForLLM = parsedXtraMCPResult.GetContentAsString()
-				}
+				// check if content is truncated, use full_content if available for updating LLM context
+				contentForLLM := parsedXtraMCPResult.GetFullContentAsString()
 
 				//TODO better handle this: truncate if too long for LLM context
 				// this is a SAFEGUARD against extremely long tool outputs
@@ -145,22 +130,20 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 				// If instructions provided, send as structured payload
 				// Otherwise send raw content
 				if parsedXtraMCPResult.Instructions != nil && strings.TrimSpace(*parsedXtraMCPResult.Instructions) != "" {
-					llmContent = fmt.Sprintf(
-						"<INSTRUCTIONS>\n%s\n</INSTRUCTIONS>\n\n<RESULTS>\n%s\n</RESULTS>",
+					llmContent = FormatPrompt(
+						toolCall.Name,
 						*parsedXtraMCPResult.Instructions,
+						parsedXtraMCPResult.GetMetadataValuesAsString(),
 						contentForLLM,
 					)
 				} else {
 					llmContent = contentForLLM
 				}
 
-				// Frontend gets truncated content + metadata (excluding full_report)
 				frontendMetadata := make(map[string]interface{})
 				if parsedXtraMCPResult.Metadata != nil {
 					for k, v := range parsedXtraMCPResult.Metadata {
-						if k != "full_report" { // Exclude full_report from frontend
-							frontendMetadata[k] = v
-						}
+						frontendMetadata[k] = v
 					}
 				}
 
@@ -181,13 +164,14 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// LLM gets content + optional instructions for reformatting
 				if parsedXtraMCPResult.Instructions != nil && strings.TrimSpace(*parsedXtraMCPResult.Instructions) != "" {
-					llmContent = fmt.Sprintf(
-						"<INSTRUCTIONS>\n%s\n</INSTRUCTIONS>\n\n<RESULTS>\n%s\n</RESULTS>",
+					llmContent = FormatPrompt(
+						toolCall.Name,
 						*parsedXtraMCPResult.Instructions,
-						parsedXtraMCPResult.Content,
+						parsedXtraMCPResult.GetMetadataValuesAsString(),
+						parsedXtraMCPResult.GetFullContentAsString(),
 					)
 				} else {
-					llmContent = parsedXtraMCPResult.GetContentAsString()
+					llmContent = parsedXtraMCPResult.GetFullContentAsString()
 				}
 
 				// Frontend gets minimal display (LLM will provide formatted response)
