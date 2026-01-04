@@ -104,9 +104,10 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// Send error payload to frontend
 				frontendPayload := map[string]interface{}{
-					"display_mode": parsedXtraMCPResult.DisplayMode,
-					"success":      false,
-					"metadata":     parsedXtraMCPResult.Metadata,
+					"schema_version": parsedXtraMCPResult.Schema,
+					"display_mode":   parsedXtraMCPResult.DisplayMode,
+					"success":        false,
+					"metadata":       parsedXtraMCPResult.Metadata,
 				}
 				if parsedXtraMCPResult.Error != nil {
 					frontendPayload["error"] = *parsedXtraMCPResult.Error
@@ -164,9 +165,10 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 				}
 
 				frontendPayload := map[string]interface{}{
-					"display_mode": "verbatim",
-					"content":      parsedXtraMCPResult.GetContentAsString(),
-					"success":      true,
+					"schema_version": parsedXtraMCPResult.Schema,
+					"display_mode":   "verbatim",
+					"content":        parsedXtraMCPResult.GetContentAsString(),
+					"success":        true,
 				}
 				if len(frontendMetadata) > 0 {
 					frontendPayload["metadata"] = frontendMetadata
@@ -190,8 +192,9 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// Frontend gets minimal display (LLM will provide formatted response)
 				frontendPayload := map[string]interface{}{
-					"display_mode": "interpret",
-					"success":      true,
+					"schema_version": parsedXtraMCPResult.Schema,
+					"display_mode":   "interpret",
+					"success":        true,
 				}
 				if parsedXtraMCPResult.Metadata != nil {
 					frontendPayload["metadata"] = parsedXtraMCPResult.Metadata
