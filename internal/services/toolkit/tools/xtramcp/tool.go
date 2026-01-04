@@ -4,20 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/services"
-	"paperdebugger/internal/services/toolkit"
 	toolCallRecordDB "paperdebugger/internal/services/toolkit/db"
 	"time"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/packages/param"
 	"github.com/openai/openai-go/v2/responses"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ToolSchema represents the schema from your backend
@@ -89,80 +86,9 @@ func NewDynamicTool(db *db.DB, projectService *services.ProjectService, toolSche
 }
 
 // Call handles the tool execution (generic for any tool)
+// DEPRECATED: v1 API is no longer supported. This method should not be called.
 func (t *DynamicTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
-	// Parse arguments as generic map since we don't know the structure
-	var argsMap map[string]interface{}
-	err := json.Unmarshal(args, &argsMap)
-	if err != nil {
-		return "", "", err
-	}
-
-	// inject user/project context if required
-	if t.requiresInjection {
-		err := t.injectSecurityContext(ctx, argsMap)
-		if err != nil {
-			return "", "", fmt.Errorf("security context injection failed: %w", err)
-		}
-	}
-
-	record, err := t.toolCallRecordDB.Create(ctx, toolCallId, t.Name, argsMap)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Execute the tool via MCP
-	respStr, err := t.executeTool(argsMap)
-	if err != nil {
-		err = fmt.Errorf("failed to execute tool %s: %v", t.Name, err)
-		t.toolCallRecordDB.OnError(ctx, record, err)
-		return "", "", err
-	}
-
-	rawJson, err := json.Marshal(respStr)
-	if err != nil {
-		err = fmt.Errorf("failed to marshal tool result: %v", err)
-		t.toolCallRecordDB.OnError(ctx, record, err)
-		return "", "", err
-	}
-	t.toolCallRecordDB.OnSuccess(ctx, record, string(rawJson))
-
-	return respStr, "", nil
-}
-
-// extracts user/project from context and injects into arguments
-func (t *DynamicTool) injectSecurityContext(ctx context.Context, argsMap map[string]interface{}) error {
-	// 1. Extract from context
-	actor, projectId, _ := toolkit.GetActorProjectConversationID(ctx)
-	if actor == nil || projectId == "" {
-		return fmt.Errorf("authentication required: user context not found")
-	}
-
-	// 2. Validate user owns the project
-	_, err := t.projectService.GetProject(ctx, actor.ID, projectId)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fmt.Errorf("authorization failed: project not found or access denied")
-		}
-		return fmt.Errorf("authorization check failed: %w", err)
-	}
-
-	// 3. Check if tool schema expects these parameters
-	properties, ok := t.schema["properties"].(map[string]interface{})
-	if !ok {
-		return fmt.Errorf("invalid tool schema: properties not found")
-	}
-
-	// 4. Inject user_id if expected by tool
-	if _, hasUserId := properties["user_id"]; hasUserId {
-		argsMap["user_id"] = actor.ID.Hex()
-	}
-
-	// 5. Inject project_id if expected by tool
-	if _, hasProjectId := properties["project_id"]; hasProjectId {
-		argsMap["project_id"] = projectId
-	}
-
-	return nil
+	return "", "", fmt.Errorf("v1 API is deprecated and no longer supported. Please use v2 API instead")
 }
 
 // executeTool makes the MCP request (generic for any tool)
