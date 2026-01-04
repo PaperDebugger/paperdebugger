@@ -11,22 +11,22 @@ type XtraMcpToolResult = {
   error?: string;
 };
 
-type ReviewPaperProps = {
+type SearchRelevantPapersProps = {
   functionName: string;
   message?: string;
   preparing: boolean;
   animated: boolean;
 };
 
-// Helper function to format array to comma-separated string
-const formatArray = (arr: any): string => {
-  if (Array.isArray(arr)) {
-    return arr.join(", ");
+// Helper function to format time
+const formatTime = (time: any): string => {
+  if (typeof time === 'number') {
+    return `${time.toFixed(2)}s`;
   }
-  return String(arr);
+  return String(time);
 };
 
-export const ReviewPaperCard = ({ functionName, message, preparing, animated }: ReviewPaperProps) => {
+export const SearchRelevantPapersCard = ({ functionName, message, preparing, animated }: SearchRelevantPapersProps) => {
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(false);
 
   // Loading state (tool executing)
@@ -34,13 +34,12 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
     return (
       <div className={cn("tool-card", { animated: animated })}>
         <div className="flex items-center justify-between">
-          <h3 className="tool-card-title tool-card-jsonrpc">Reviewing your work..</h3>
+          <h3 className="tool-card-title tool-card-jsonrpc">Searching for papers..</h3>
         </div>
-        <LoadingIndicator text="Processing ..." estimatedSeconds={150} />
+        <LoadingIndicator text="Processing ..." estimatedSeconds={180} />
       </div>
     );
   }
-
   // Try to parse as XtraMCP ToolResult format
   let result: XtraMcpToolResult | null = null;
   if (message) {
@@ -49,7 +48,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
       if (parsed.display_mode === "verbatim" || parsed.display_mode === "interpret") {
         result = parsed;
       }
-    } catch {
+    } catch (e) {
       // Not ToolResult format - fall through to minimal display
     }
   }
@@ -117,28 +116,20 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
               })}
             >
               <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
-                {/* Informational note */}
-                <div className="mb-2 text-gray-600">
-                  <MarkdownComponent animated={animated}>
-                    ℹ️ Review paper is currently scaled back to balance cost. Presently it identifies issues in Title,
-                    Abstract, and Introduction. We are working to support the full review flow again.
-                  </MarkdownComponent>
-                </div>
-
                 {/* Custom metadata rendering */}
-                {result.metadata.target_venue !== undefined && (
+                {result.metadata.query && (
                   <div className="mb-2">
-                    <span className="font-medium">Checked for:</span> "{result.metadata.target_venue || "General review"}"
+                    <span className="font-medium">Query Used:</span> "{result.metadata.query}"
                   </div>
                 )}
-                {result.metadata.severity_threshold && (
+                {result.metadata.search_time !== undefined && (
                   <div className="mb-2">
-                    <span className="font-medium">Filtered:</span> "{result.metadata.severity_threshold}" and above
+                    <span className="font-medium">Time Taken:</span> {formatTime(result.metadata.search_time)}
                   </div>
                 )}
-                {result.metadata.sections_to_review && (
+                {result.metadata.total_count !== undefined && (
                   <div>
-                    <span className="font-medium">Sections reviewed:</span> {formatArray(result.metadata.sections_to_review)}
+                    <span className="font-medium">Total Results:</span> {result.metadata.total_count}
                   </div>
                 )}
               </div>
