@@ -35,6 +35,16 @@ type JSONRPCResponse struct {
 	} `json:"error,omitempty"`
 }
 
+// MCP result structs
+type MCPToolResult struct {
+	Content []MCPContentBlock `json:"content"`
+}
+
+type MCPContentBlock struct {
+	Type string `json:"type"`
+	Text string `json:"text,omitempty"`
+}
+
 // unwrapJSONRPC extracts the inner result from JSON-RPC 2.0 response
 // Input: {"jsonrpc":"2.0","id":4,"result":{<XtraMCPToolResult>}}
 // Output: {<XtraMCPToolResult>}
@@ -59,6 +69,21 @@ func unwrapJSONRPC(jsonRPCStr string) (string, error) {
 		return jsonRPCStr, nil
 	}
 
+	var toolResult MCPToolResult
+	if err := json.Unmarshal(rpcResp.Result, &toolResult); err != nil {
+		// not conventional MCP result, return raw result
+		return string(rpcResp.Result), nil
+	}
+
 	// Extract and return inner result
-	return string(rpcResp.Result), nil
+	// TODO: can consider handling multi-modality in the future
+	// presently, just return the text content of the first text block
+	for _, block := range toolResult.Content {
+		if block.Type == "text" {
+			// Return the text content of the first text block
+			return block.Text, nil
+		}
+	}
+
+	return "", fmt.Errorf("MCP result had no extractable content")
 }
