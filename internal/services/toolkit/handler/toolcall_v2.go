@@ -104,7 +104,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// Send error payload to frontend
 				frontendPayload := map[string]interface{}{
-					"schema_version": parsedXtraMCPResult.Schema,
+					"schema_version": parsedXtraMCPResult.SchemaVersion,
 					"display_mode":   parsedXtraMCPResult.DisplayMode,
 					"success":        false,
 					"metadata":       parsedXtraMCPResult.Metadata,
@@ -165,7 +165,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 				}
 
 				frontendPayload := map[string]interface{}{
-					"schema_version": parsedXtraMCPResult.Schema,
+					"schema_version": parsedXtraMCPResult.SchemaVersion,
 					"display_mode":   "verbatim",
 					"content":        parsedXtraMCPResult.GetContentAsString(),
 					"success":        true,
@@ -192,7 +192,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// Frontend gets minimal display (LLM will provide formatted response)
 				frontendPayload := map[string]interface{}{
-					"schema_version": parsedXtraMCPResult.Schema,
+					"schema_version": parsedXtraMCPResult.SchemaVersion,
 					"display_mode":   "interpret",
 					"success":        true,
 				}

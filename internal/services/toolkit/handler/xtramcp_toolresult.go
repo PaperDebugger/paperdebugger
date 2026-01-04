@@ -8,13 +8,13 @@ import (
 // XtraMCPToolResult represents the standardized response from XtraMCP tools
 // This format is specific to XtraMCP backend and not used by other MCP servers
 type XtraMCPToolResult struct {
-	Schema       string                 `json:"schema"`       // "xtramcp.tool_result_v{version}"
-	DisplayMode  string                 `json:"display_mode"` // "verbatim" or "interpret"
-	Instructions *string                `json:"instructions"` // Optional: instruction template for interpret mode
-	Content      interface{}            `json:"content"`      // Optional: string for verbatim, dict/list for interpret (can be nil on error)
-	Success      bool                   `json:"success"`      // Explicit success flag
-	Error        *string                `json:"error"`        // Optional: error message if success=false
-	Metadata     map[string]interface{} `json:"metadata"`     // Optional: tool-specific data (nil if not provided)
+	SchemaVersion string                 `json:"schema_version"` // "xtramcp.tool_result_v{version}"
+	DisplayMode   string                 `json:"display_mode"`   // "verbatim" or "interpret"
+	Instructions  *string                `json:"instructions"`   // Optional: instruction template for interpret mode
+	Content       interface{}            `json:"content"`        // Optional: string for verbatim, dict/list for interpret (can be nil on error)
+	Success       bool                   `json:"success"`        // Explicit success flag
+	Error         *string                `json:"error"`          // Optional: error message if success=false
+	Metadata      map[string]interface{} `json:"metadata"`       // Optional: tool-specific data (nil if not provided)
 }
 
 // ParseXtraMCPToolResult attempts to parse a tool response as XtraMCP ToolResult format
