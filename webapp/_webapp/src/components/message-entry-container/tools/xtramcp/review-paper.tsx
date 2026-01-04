@@ -140,9 +140,9 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                     <span className="font-medium">Filtered:</span> "{result.metadata.severity_threshold}" and above
                   </div>
                 )}
-                {result.metadata.sections_to_review && (
+                {result.metadata.sections_reviewed && (
                   <div>
-                    <span className="font-medium">Sections reviewed:</span> {formatArray(result.metadata.sections_to_review)}
+                    <span className="font-medium">Sections reviewed:</span> {formatArray(result.metadata.sections_reviewed)}
                   </div>
                 )}
               </div>
