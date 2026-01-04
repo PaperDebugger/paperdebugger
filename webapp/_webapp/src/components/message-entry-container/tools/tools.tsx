@@ -3,11 +3,11 @@ import { PaperScoreCommentCard } from "./paper-score-comment/index";
 import { GreetingCard } from "./greeting";
 import { ErrorToolCard } from "./error";
 import { AlwaysExceptionCard } from "./always-exception";
-import { XtraMcpGenericCard } from "./xtramcp-generic-card";
-import { ReviewPaperCard } from "./review-paper";
-import { SearchRelevantPapersCard } from "./search-relevant-papers";
-import { VerifyCitationsCard } from "./verify-citations";
-import { isXtraMcpTool } from "./utils/common";
+import { XtraMcpGenericCard } from "./xtramcp/xtramcp-generic-card";
+import { ReviewPaperCard } from "./xtramcp/review-paper";
+import { SearchRelevantPapersCard } from "./xtramcp/search-relevant-papers";
+import { VerifyCitationsCard } from "./xtramcp/verify-citations";
+import { isXtraMcpTool } from "./xtramcp/utils/common";
 import { GeneralToolCard } from "./general";
 
 type ToolsProps = {
