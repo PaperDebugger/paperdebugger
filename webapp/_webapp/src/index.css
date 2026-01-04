@@ -105,7 +105,7 @@ body {
   @apply text-xs font-semibold font-sans text-primary-700 tracking-wider noselect;
 }
 
-.tool-card-title.tool-card-jsonrpc {
+.tool-card-title {
   @apply font-medium text-gray-500;
 }
 

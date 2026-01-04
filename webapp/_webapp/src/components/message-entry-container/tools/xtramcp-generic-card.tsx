@@ -12,7 +12,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
     return (
       <div className={cn("tool-card", { animated: animated })}>
         <div className="flex items-center justify-between">
-          <h3 className="tool-card-title tool-card-jsonrpc">Calling {functionName}</h3>
+          <h3 className="tool-card-title">Calling {functionName}</h3>
         </div>
         <LoadingIndicator text="Processing ..." estimatedSeconds={150} />
       </div>
@@ -27,7 +27,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         <div className="flex items-center justify-between">
-          <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+          <h3 className="tool-card-title">{functionName}</h3>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
-          <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+          <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
             {/* Arrow button - controls error dropdown */}
@@ -84,7 +84,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
           <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
-            <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+            <h3 className="tool-card-title">{functionName}</h3>
             {/* Arrow button - controls metadata dropdown */}
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
@@ -163,7 +163,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
-          <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+          <h3 className="tool-card-title">{functionName}</h3>
         </div>
 
         {/* Show metadata in interpret mode */}
@@ -184,7 +184,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
   return (
     <div className={cn("tool-card noselect narrow", { animated: animated })}>
       <div className="flex items-center justify-between">
-        <h3 className="tool-card-title tool-card-jsonrpc">{functionName}</h3>
+        <h3 className="tool-card-title">{functionName}</h3>
       </div>
     </div>
   );
