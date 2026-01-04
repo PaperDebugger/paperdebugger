@@ -109,10 +109,21 @@ func (tr *XtraMCPToolResult) GetMetadataValuesAsString() string {
 }
 
 func TruncateContent(content string, maxLen int) string {
+	// If content is already within the byte limit, return as is.
 	if len(content) <= maxLen {
 		return content
 	}
-	return content[:maxLen] + "..."
+	// Find the largest rune boundary (start index) that is <= maxLen.
+	// This ensures we don't cut through a multi-byte UTF-8 character.
+	cut := 0
+	for i := range content {
+		if i > maxLen {
+			break
+		}
+		cut = i
+	}
+	// Truncate at the safe rune boundary and append ellipsis.
+	return content[:cut] + "..."
 }
 
 func FormatPrompt(toolName string, instructions string, context string, results string) string {

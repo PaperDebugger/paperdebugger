@@ -4,14 +4,6 @@ import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult } from "./utils/common";
 
-// Helper function to format time
-const formatTime = (time: any): string => {
-  if (typeof time === 'number') {
-    return `${time.toFixed(2)}s`;
-  }
-  return String(time);
-};
-
 export const OnlineSearchPapersCard = ({ functionName, message, preparing, animated }: XtraMcpToolCardProps) => {
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(false);
 
