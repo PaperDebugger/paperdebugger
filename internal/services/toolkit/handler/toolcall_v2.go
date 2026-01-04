@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"paperdebugger/internal/services/toolkit/registry"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 	"time"
 
 	"github.com/openai/openai-go/v3"
@@ -86,7 +87,7 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 		var frontendToolResult string // Content to send to frontend (via stream)
 
 		if parseErr != nil || !isXtraMCPFormat {
-			// Legacy format or non-XtraMCP tool - use existing behavior unchanged
+			// for non-XtraMCP tool - use existing behavior unchanged
 			llmContent = toolResult
 			frontendToolResult = toolResult
 		} else {
@@ -142,13 +143,12 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 
 				// If instructions provided, send as structured payload
 				// Otherwise send raw content
-				if parsedXtraMCPResult.Instructions != nil {
-					llmPayload := map[string]interface{}{
-						"instructions": *parsedXtraMCPResult.Instructions,
-						"content":      contentForLLM,
-					}
-					llmBytes, _ := json.Marshal(llmPayload)
-					llmContent = string(llmBytes)
+				if parsedXtraMCPResult.Instructions != nil && strings.TrimSpace(*parsedXtraMCPResult.Instructions) != "" {
+					llmContent = fmt.Sprintf(
+						"<INSTRUCTIONS>\n%s\n</INSTRUCTIONS>\n\n<RESULTS>\n%s\n</RESULTS>",
+						*parsedXtraMCPResult.Instructions,
+						contentForLLM,
+					)
 				} else {
 					llmContent = contentForLLM
 				}
@@ -178,14 +178,15 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 				// BRANCH 3: Interpret mode (success=true)
 
 				// LLM gets content + optional instructions for reformatting
-				llmPayload := map[string]interface{}{
-					"content": parsedXtraMCPResult.Content,
+				if parsedXtraMCPResult.Instructions != nil && strings.TrimSpace(*parsedXtraMCPResult.Instructions) != "" {
+					llmContent = fmt.Sprintf(
+						"<INSTRUCTIONS>\n%s\n</INSTRUCTIONS>\n\n<RESULTS>\n%s\n</RESULTS>",
+						*parsedXtraMCPResult.Instructions,
+						parsedXtraMCPResult.Content,
+					)
+				} else {
+					llmContent = parsedXtraMCPResult.GetContentAsString()
 				}
-				if parsedXtraMCPResult.Instructions != nil {
-					llmPayload["instructions"] = *parsedXtraMCPResult.Instructions
-				}
-				llmBytes, _ := json.Marshal(llmPayload)
-				llmContent = string(llmBytes)
 
 				// Frontend gets minimal display (LLM will provide formatted response)
 				frontendPayload := map[string]interface{}{
