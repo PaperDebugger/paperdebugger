@@ -32,7 +32,7 @@ func deepCopySchema(schema map[string]interface{}) map[string]interface{} {
 	jsonBytes, err := json.Marshal(schema)
 	if err != nil {
 		// Extremely unlikely with valid JSON schemas (MCP schemas are JSON-compatible)
-		// // If marshaling fails, return original schema
+		// If marshaling fails, return original schema
 		return schema
 	}
 

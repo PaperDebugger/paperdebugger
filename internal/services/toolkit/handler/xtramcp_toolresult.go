@@ -30,8 +30,8 @@ func ParseXtraMCPToolResult(rawResult string) (*XtraMCPToolResult, bool, error) 
 	}
 
 	// Validate that it's actually a ToolResult (has required fields)
-	// check if Schema is prefixed with xtramcp.tool_result
-	if result.Schema == "" || !strings.HasPrefix(result.Schema, "xtramcp.tool_result") {
+	// check if SchemaVersion is prefixed with xtramcp.tool_result
+	if result.SchemaVersion == "" || !strings.HasPrefix(result.SchemaVersion, "xtramcp.tool_result") {
 		// not our XtraMCP ToolResult format
 		return nil, false, nil
 	}
