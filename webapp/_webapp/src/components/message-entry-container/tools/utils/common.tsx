@@ -1,93 +1,58 @@
-export type JsonRpcResult = {
-  jsonrpc: string;
-  id: number;
-  result?: {
-    content: Array<{
-      type: string;
-      text: string;
-    }>;
-  };
-  error?: {
-    code: number;
-    message: string;
-  };
+export type XtraMcpToolResult = {
+  schema_version: string;
+  display_mode: "verbatim" | "interpret";
+  content?: string | object;
+  metadata?: Record<string, any>;
+  success?: boolean;
+  error?: string;
 };
 
-export const UNKNOWN_JSONRPC_RESULT: JsonRpcResult = {
-  jsonrpc: "2.0",
-  id: -1,
-  error: {
-    code: -1,
-    message: "Unknown JSONRPC result",
-  },
+export type XtraMcpToolCardProps = {
+  functionName: string;
+  message?: string;
+  preparing: boolean;
+  animated: boolean;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isValidJsonRpcResult = (obj: any): obj is JsonRpcResult => {
-  // Check if obj is an object and not null
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
+// we can probably handle this with a prefixed tool name check
+// for now, whitelist the tools
+const XTRA_MCP_TOOL_NAMES = [
+  // RESEARCHER TOOLS
+  "search_relevant_papers",
+  "online_search_papers",
+  "deep_research",
+  // REVIEWER TOOLS
+  "review_paper",
+  "verify_citations",
+  // ENHANCER TOOLS
+  // "enhance_academic_writing",
+  // OPENREVIEW ONLINE TOOLS
+  // "search_user",
+  // "get_user_papers"
+];
 
-  // Check required properties
-  if (typeof obj.jsonrpc !== "string" || typeof obj.id !== "number") {
-    return false;
-  }
-
-  // Check that either result or error is present (but not both required)
-  const hasResult = obj.result !== undefined;
-  const hasError = obj.error !== undefined;
-
-  // Validate result structure if present
-  if (hasResult) {
-    if (typeof obj.result !== "object" || obj.result === null) {
-      return false;
-    }
-    if (obj.result.content !== undefined) {
-      if (!Array.isArray(obj.result.content)) {
-        return false;
-      }
-      // Validate each content item
-      for (const item of obj.result.content) {
-        if (
-          typeof item !== "object" ||
-          item === null ||
-          typeof item.type !== "string" ||
-          typeof item.text !== "string"
-        ) {
-          return false;
-        }
-      }
-    }
-  }
-
-  // Validate error structure if present
-  if (hasError) {
-    if (
-      typeof obj.error !== "object" ||
-      obj.error === null ||
-      typeof obj.error.code !== "number" ||
-      typeof obj.error.message !== "string"
-    ) {
-      return false;
-    }
-  }
-
-  return true;
+export const isXtraMcpTool = (functionName: string): boolean => {
+  return XTRA_MCP_TOOL_NAMES.includes(functionName);
 };
 
-export const parseJsonRpcResult = (message: string): JsonRpcResult | undefined => {
+export const isXtraMcpToolResult = (message?: string): boolean => {
+  if (!message) return false;
+
   try {
-    const json = JSON.parse(message);
-
-    // Validate the structure before casting
-    if (isValidJsonRpcResult(json)) {
-      return json;
-    }
-
-    return undefined;
+    const parsed = JSON.parse(message);
+    return parsed.schema_version?.startsWith('xtramcp.tool_result') ?? false;
   } catch {
-    // Error parsing JSONRPC result
-    return undefined;
+    return false;
+  }
+};
+
+export const parseXtraMcpToolResult = (message?: string): XtraMcpToolResult | null => {
+  if (!isXtraMcpToolResult(message)) return null;
+
+  try {
+    const parsed = JSON.parse(message!);
+    return parsed as XtraMcpToolResult;
+  } catch {
+    return null;
   }
 };
