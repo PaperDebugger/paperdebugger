@@ -6,6 +6,7 @@ import { AlwaysExceptionCard } from "./always-exception";
 import { XtraMcpGenericCard } from "./xtramcp/xtramcp-generic-card";
 import { ReviewPaperCard } from "./xtramcp/review-paper";
 import { SearchRelevantPapersCard } from "./xtramcp/search-relevant-papers";
+import { OnlineSearchPapersCard } from "./xtramcp/online-search-papers";
 import { VerifyCitationsCard } from "./xtramcp/verify-citations";
 import { isXtraMcpTool } from "./xtramcp/utils/common";
 import { GeneralToolCard } from "./general";
@@ -52,6 +53,15 @@ export default function Tools({ messageId, functionName, message, error, prepari
     } else if (functionName === "search_relevant_papers") {
       return (
         <SearchRelevantPapersCard
+          functionName={functionName}
+          message={message}
+          preparing={preparing}
+          animated={animated}
+        />
+      );
+    } else if (functionName === "online_search_papers") {
+      return (
+        <OnlineSearchPapersCard
           functionName={functionName}
           message={message}
           preparing={preparing}
