@@ -2,7 +2,7 @@ import { cn } from "@heroui/react";
 import { LoadingIndicator } from "../../../loading-indicator";
 import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
-import { XtraMcpToolCardProps, parseXtraMcpToolResult } from "./utils/common";
+import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
 // Helper function to format time
 const formatTime = (time: any): string => {
@@ -50,36 +50,16 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            {/* Arrow button - controls error dropdown */}
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
-              aria-label={isMetadataCollapsed ? "Expand error" : "Collapse error"}
-            >
-              <svg
-                className={cn("w-4 h-4 transition-transform duration-200", {
-                  "rotate-180": !isMetadataCollapsed,
-                })}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
           </div>
         </div>
 
         {/* Error message dropdown */}
-        <div
-          className={cn("overflow-hidden transition-all duration-300 ease-in-out", {
-            "max-h-0 opacity-0": isMetadataCollapsed,
-            "max-h-[500px] opacity-100": !isMetadataCollapsed,
-          })}
-        >
+        <CollapseWrapper isCollapsed={isMetadataCollapsed}>
           <div className="text-xs text-red-600 mt-2 pt-2 border-t border-red-200">
             {result.error || "Tool execution failed"}
           </div>
-        </div>
+        </CollapseWrapper>
       </div>
     );
   }
@@ -94,32 +74,12 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
           {/* Header with arrow button */}
           <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
             <h3 className="tool-card-title">{functionName}</h3>
-            {/* Arrow button - controls metadata dropdown */}
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
-              aria-label={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
-            >
-              <svg
-                className={cn("w-4 h-4 transition-transform duration-200", {
-                  "rotate-180": !isMetadataCollapsed,
-                })}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
-            <div
-              className={cn("overflow-hidden transition-all duration-300 ease-in-out", {
-                "max-h-0 opacity-0": isMetadataCollapsed,
-                "max-h-[500px] opacity-100": !isMetadataCollapsed,
-              })}
-            >
+            <CollapseWrapper isCollapsed={isMetadataCollapsed}>
               <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
                 {/* Custom metadata rendering */}
                 {result.metadata.query && (
@@ -138,7 +98,7 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
                   </div>
                 )}
               </div>
-            </div>
+            </CollapseWrapper>
           )}
         </div>
 

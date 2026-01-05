@@ -1,3 +1,6 @@
+import { cn } from "@heroui/react";
+import { ReactNode } from "react";
+
 export type XtraMcpToolResult = {
   schema_version: string;
   display_mode: "verbatim" | "interpret";
@@ -56,3 +59,44 @@ export const parseXtraMcpToolResult = (message?: string): XtraMcpToolResult | nu
     return null;
   }
 };
+
+
+// Shared UI components
+interface CollapseArrowButtonProps {
+  isCollapsed: boolean;
+  ariaLabel?: string;
+}
+
+export const CollapseArrowButton = ({ isCollapsed, ariaLabel }: CollapseArrowButtonProps) => (
+  <button
+    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
+    aria-label={ariaLabel || (isCollapsed ? "Expand" : "Collapse")}
+  >
+    <svg
+      className={cn("w-4 h-4 transition-transform duration-200", {
+        "rotate-180": !isCollapsed,
+      })}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+);
+
+interface CollapseWrapperProps {
+  isCollapsed: boolean;
+  children: ReactNode;
+}
+
+export const CollapseWrapper = ({ isCollapsed, children }: CollapseWrapperProps) => (
+  <div
+    className={cn("overflow-hidden transition-all duration-300 ease-in-out", {
+      "max-h-0 opacity-0": isCollapsed,
+      "max-h-[500px] opacity-100": !isCollapsed,
+    })}
+  >
+    {children}
+  </div>
+);
