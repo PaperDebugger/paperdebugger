@@ -25,7 +25,7 @@ const XTRA_MCP_TOOL_NAMES = [
   // "deep_research",
   // REVIEWER TOOLS
   "review_paper",
-  // "verify_citations"
+  "verify_citations",
   // ENHANCER TOOLS
   // "enhance_academic_writing",
   // OPENREVIEW ONLINE TOOLS

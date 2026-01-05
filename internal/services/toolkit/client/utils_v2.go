@@ -144,23 +144,20 @@ func initializeToolkitV2(
 
 	logger.Info("[AI Client V2] Registered static LaTeX tools", "count", 0)
 
-	// Load tools dynamically from backend
+	// // Load tools dynamically from backend
 	// xtraMCPLoader := xtramcp.NewXtraMCPLoaderV2(db, projectService, cfg.XtraMCPURI)
 
-	// initialize MCP session first and log session ID
+	// // initialize MCP session first and log session ID
 	// sessionID, err := xtraMCPLoader.InitializeMCP()
 	// if err != nil {
-	// 	logger.Errorf("[AI Client V2] Failed to initialize XtraMCP session: %v", err)
-	// 	// TODO: Fallback to static tools or exit?
+	// 	logger.Errorf("[XtraMCP Client] Failed to initialize XtraMCP session: %v", err)
 	// } else {
-	// 	logger.Info("[AI Client V2] XtraMCP session initialized", "sessionID", sessionID)
+	// 	logger.Info("[XtraMCP Client] XtraMCP session initialized", "sessionID", sessionID)
 
 	// 	// dynamically load all tools from XtraMCP backend
 	// 	err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
 	// 	if err != nil {
-	// 		logger.Errorf("[AI Client V2] Failed to load XtraMCP tools: %v", err)
-	// 	} else {
-	// 		logger.Info("[AI Client V2] Successfully loaded XtraMCP tools")
+	// 		logger.Errorf("[XtraMCP Client] Failed to load XtraMCP tools: %v", err)
 	// 	}
 	// }
 

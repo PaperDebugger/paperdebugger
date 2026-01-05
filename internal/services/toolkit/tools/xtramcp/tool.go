@@ -41,74 +41,54 @@ type MCPParams struct {
 
 // DynamicTool represents a generic tool that can handle any schema
 type DynamicTool struct {
-	Name             string
-	Description      responses.ToolUnionParam
-	toolCallRecordDB *toolCallRecordDB.ToolCallRecordDB
-	projectService   *services.ProjectService
-	coolDownTime     time.Duration
-	baseURL          string
-	client           *http.Client
-	schema           map[string]interface{}
-	sessionID        string // Reuse the session ID from initialization
+	Name              string
+	Description       responses.ToolUnionParam
+	toolCallRecordDB  *toolCallRecordDB.ToolCallRecordDB
+	projectService    *services.ProjectService
+	coolDownTime      time.Duration
+	baseURL           string
+	client            *http.Client
+	schema            map[string]interface{}
+	sessionID         string // Reuse the session ID from initialization
+	requiresInjection bool   // Indicates if this tool needs user/project injection
 }
 
 // NewDynamicTool creates a new dynamic tool from a schema
-func NewDynamicTool(db *db.DB, projectService *services.ProjectService, toolSchema ToolSchema, baseURL string, sessionID string) *DynamicTool {
-	// Create tool description with the schema
+func NewDynamicTool(db *db.DB, projectService *services.ProjectService, toolSchema ToolSchema, baseURL string, sessionID string, requiresInjection bool) *DynamicTool {
+	// filter schema if injection is required (hide security context like user_id/project_id from LLM)
+	schemaForLLM := toolSchema.InputSchema
+	if requiresInjection {
+		schemaForLLM = filterSecurityParameters(toolSchema.InputSchema)
+	}
+
 	description := responses.ToolUnionParam{
 		OfFunction: &responses.FunctionToolParam{
 			Name:        toolSchema.Name,
 			Description: param.NewOpt(toolSchema.Description),
-			Parameters:  openai.FunctionParameters(toolSchema.InputSchema),
+			Parameters:  openai.FunctionParameters(schemaForLLM), // Use filtered schema
 		},
 	}
 
 	toolCallRecordDB := toolCallRecordDB.NewToolCallRecordDB(db)
+	//TODO: consider letting llm client know of output schema too
 	return &DynamicTool{
-		Name:             toolSchema.Name,
-		Description:      description,
-		toolCallRecordDB: toolCallRecordDB,
-		projectService:   projectService,
-		coolDownTime:     5 * time.Minute,
-		baseURL:          baseURL,
-		client:           &http.Client{},
-		schema:           toolSchema.InputSchema,
-		sessionID:        sessionID, // Store the session ID for reuse
+		Name:              toolSchema.Name,
+		Description:       description,
+		toolCallRecordDB:  toolCallRecordDB,
+		projectService:    projectService,
+		coolDownTime:      5 * time.Minute,
+		baseURL:           baseURL,
+		client:            &http.Client{},
+		schema:            toolSchema.InputSchema, // Store original schema for validation
+		sessionID:         sessionID,              // Store the session ID for reuse
+		requiresInjection: requiresInjection,
 	}
 }
 
 // Call handles the tool execution (generic for any tool)
+// DEPRECATED: v1 API is no longer supported. This method should not be called.
 func (t *DynamicTool) Call(ctx context.Context, toolCallId string, args json.RawMessage) (string, string, error) {
-	// Parse arguments as generic map since we don't know the structure
-	var argsMap map[string]interface{}
-	err := json.Unmarshal(args, &argsMap)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Create function call record
-	record, err := t.toolCallRecordDB.Create(ctx, toolCallId, t.Name, argsMap)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Execute the tool via MCP
-	respStr, err := t.executeTool(argsMap)
-	if err != nil {
-		err = fmt.Errorf("failed to execute tool %s: %v", t.Name, err)
-		t.toolCallRecordDB.OnError(ctx, record, err)
-		return "", "", err
-	}
-
-	rawJson, err := json.Marshal(respStr)
-	if err != nil {
-		err = fmt.Errorf("failed to marshal tool result: %v", err)
-		t.toolCallRecordDB.OnError(ctx, record, err)
-		return "", "", err
-	}
-	t.toolCallRecordDB.OnSuccess(ctx, record, string(rawJson))
-
-	return respStr, "", nil
+	return "", "", fmt.Errorf("v1 API is deprecated and no longer supported. Please use v2 API instead")
 }
 
 // executeTool makes the MCP request (generic for any tool)

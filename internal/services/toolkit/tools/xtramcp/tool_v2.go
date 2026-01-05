@@ -4,16 +4,19 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/services"
+	"paperdebugger/internal/services/toolkit"
 	toolCallRecordDB "paperdebugger/internal/services/toolkit/db"
 	"time"
 
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/packages/param"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ToolSchema represents the schema from your backend
@@ -40,41 +43,49 @@ type MCPParamsV2 struct {
 
 // DynamicTool represents a generic tool that can handle any schema
 type DynamicToolV2 struct {
-	Name             string
-	Description      openai.ChatCompletionToolUnionParam
-	toolCallRecordDB *toolCallRecordDB.ToolCallRecordDB
-	projectService   *services.ProjectService
-	coolDownTime     time.Duration
-	baseURL          string
-	client           *http.Client
-	schema           map[string]interface{}
-	sessionID        string // Reuse the session ID from initialization
+	Name              string
+	Description       openai.ChatCompletionToolUnionParam
+	toolCallRecordDB  *toolCallRecordDB.ToolCallRecordDB
+	projectService    *services.ProjectService
+	coolDownTime      time.Duration
+	baseURL           string
+	client            *http.Client
+	schema            map[string]interface{}
+	sessionID         string // Reuse the session ID from initialization
+	requiresInjection bool   // Indicates if this tool needs user/project injection
 }
 
 // NewDynamicTool creates a new dynamic tool from a schema
-func NewDynamicToolV2(db *db.DB, projectService *services.ProjectService, toolSchema ToolSchemaV2, baseURL string, sessionID string) *DynamicToolV2 {
-	// Create tool description with the schema
+func NewDynamicToolV2(db *db.DB, projectService *services.ProjectService, toolSchema ToolSchemaV2, baseURL string, sessionID string, requiresInjection bool) *DynamicToolV2 {
+	// filter schema if injection is required (hide security context like user_id/project_id from LLM)
+	schemaForLLM := toolSchema.InputSchema
+	if requiresInjection {
+		schemaForLLM = filterSecurityParameters(toolSchema.InputSchema)
+	}
+
 	description := openai.ChatCompletionToolUnionParam{
 		OfFunction: &openai.ChatCompletionFunctionToolParam{
 			Function: openai.FunctionDefinitionParam{
 				Name:        toolSchema.Name,
 				Description: param.NewOpt(toolSchema.Description),
-				Parameters:  openai.FunctionParameters(toolSchema.InputSchema),
+				Parameters:  openai.FunctionParameters(schemaForLLM), // Use filtered schema
 			},
 		},
 	}
 
 	toolCallRecordDB := toolCallRecordDB.NewToolCallRecordDB(db)
+	//TODO: consider letting llm client know of output schema too
 	return &DynamicToolV2{
-		Name:             toolSchema.Name,
-		Description:      description,
-		toolCallRecordDB: toolCallRecordDB,
-		projectService:   projectService,
-		coolDownTime:     5 * time.Minute,
-		baseURL:          baseURL,
-		client:           &http.Client{},
-		schema:           toolSchema.InputSchema,
-		sessionID:        sessionID, // Store the session ID for reuse
+		Name:              toolSchema.Name,
+		Description:       description,
+		toolCallRecordDB:  toolCallRecordDB,
+		projectService:    projectService,
+		coolDownTime:      5 * time.Minute,
+		baseURL:           baseURL,
+		client:            &http.Client{},
+		schema:            toolSchema.InputSchema, // Store original schema for validation
+		sessionID:         sessionID,              // Store the session ID for reuse
+		requiresInjection: requiresInjection,
 	}
 }
 
@@ -87,7 +98,14 @@ func (t *DynamicToolV2) Call(ctx context.Context, toolCallId string, args json.R
 		return "", "", err
 	}
 
-	// Create function call record
+	// inject user/project context if required
+	if t.requiresInjection {
+		err := t.injectSecurityContext(ctx, argsMap)
+		if err != nil {
+			return "", "", fmt.Errorf("security context injection failed: %w", err)
+		}
+	}
+
 	record, err := t.toolCallRecordDB.Create(ctx, toolCallId, t.Name, argsMap)
 	if err != nil {
 		return "", "", err
@@ -110,6 +128,42 @@ func (t *DynamicToolV2) Call(ctx context.Context, toolCallId string, args json.R
 	t.toolCallRecordDB.OnSuccess(ctx, record, string(rawJson))
 
 	return respStr, "", nil
+}
+
+// extracts user/project from context and injects into arguments
+func (t *DynamicToolV2) injectSecurityContext(ctx context.Context, argsMap map[string]interface{}) error {
+	// 1. Extract from context
+	actor, projectId, _ := toolkit.GetActorProjectConversationID(ctx)
+	if actor == nil || projectId == "" {
+		return fmt.Errorf("authentication required: user context not found")
+	}
+
+	// 2. Validate user owns the project
+	_, err := t.projectService.GetProject(ctx, actor.ID, projectId)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return fmt.Errorf("authorization failed: project not found or access denied")
+		}
+		return fmt.Errorf("authorization check failed: %w", err)
+	}
+
+	// 3. Check if tool schema expects these parameters
+	properties, ok := t.schema["properties"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid tool schema: properties not found")
+	}
+
+	// 4. Inject user_id if expected by tool
+	if _, hasUserId := properties["user_id"]; hasUserId {
+		argsMap["user_id"] = actor.ID.Hex()
+	}
+
+	// 5. Inject project_id if expected by tool
+	if _, hasProjectId := properties["project_id"]; hasProjectId {
+		argsMap["project_id"] = projectId
+	}
+
+	return nil
 }
 
 // executeTool makes the MCP request (generic for any tool)

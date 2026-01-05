@@ -53,15 +53,43 @@ func (loader *XtraMCPLoaderV2) LoadToolsFromBackend(toolRegistry *registry.ToolR
 
 	// Register each tool dynamically, passing the session ID
 	for _, toolSchema := range toolSchemas {
-		dynamicTool := NewDynamicToolV2(loader.db, loader.projectService, toolSchema, loader.baseURL, loader.sessionID)
+		// some tools require security context injection e.g. user_id to authenticate
+		requiresInjection := loader.requiresSecurityInjection(toolSchema)
+
+		dynamicTool := NewDynamicToolV2(
+			loader.db,
+			loader.projectService,
+			toolSchema,
+			loader.baseURL,
+			loader.sessionID,
+			requiresInjection,
+		)
 
 		// Register the tool with the registry
 		toolRegistry.Register(toolSchema.Name, dynamicTool.Description, dynamicTool.Call)
 
-		fmt.Printf("Registered dynamic tool: %s\n", toolSchema.Name)
+		if requiresInjection {
+			fmt.Printf("Registered dynamic tool with security injection: %s\n", toolSchema.Name)
+		} else {
+			fmt.Printf("Registered dynamic tool: %s\n", toolSchema.Name)
+		}
 	}
 
 	return nil
+}
+
+// checks if a tool schema contains parameters that should be injected instead of LLM-generated
+func (loader *XtraMCPLoaderV2) requiresSecurityInjection(schema ToolSchemaV2) bool {
+	properties, ok := schema.InputSchema["properties"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	// injected parameters
+	_, hasUserId := properties["user_id"]
+	_, hasProjectId := properties["project_id"]
+
+	return hasUserId || hasProjectId
 }
 
 // InitializeMCP performs the full MCP initialization handshake, stores session ID, and returns it
