@@ -120,13 +120,37 @@ class ApiClient {
         const errorData = error.response?.data;
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
-          const message = errorPayload.message.replace(/^rpc error: code = Code\(\d+\) desc = /, "");
-          errorToast(message + ` (${config.url})`, `Request Failed: ${ErrorCode[errorPayload.code]}`);
+          const message = this.cleanErrorMessage(errorPayload.message);
+          const title = this.getErrorTitle(errorPayload.code);
+          errorToast(message, title);
         }
         throw errorPayload;
       }
       throw error;
     }
+  }
+
+  private cleanErrorMessage(msg: string): string {
+    // Remove technical gRPC prefixes
+    return msg
+      .replace(/^rpc error: code = \w+ desc = /, "")
+      .replace(/^rpc error: code = Code\(\d+\) desc = /, "");
+  }
+
+  private getErrorTitle(code: ErrorCode): string {
+    const titles: Partial<Record<ErrorCode, string>> = {
+      [ErrorCode.INVALID_TOKEN]: "Authentication Required",
+      [ErrorCode.INVALID_ACTOR]: "Session Invalid",
+      [ErrorCode.INVALID_USER]: "User Not Found",
+      [ErrorCode.PERMISSION_DENIED]: "Access Denied",
+      [ErrorCode.RECORD_NOT_FOUND]: "Not Found",
+      [ErrorCode.BAD_REQUEST]: "Invalid Request",
+      [ErrorCode.INTERNAL]: "Server Error",
+      [ErrorCode.INVALID_CREDENTIAL]: "Invalid Credentials",
+      [ErrorCode.INVALID_LLM_RESPONSE]: "AI Response Error",
+      [ErrorCode.PROJECT_OUT_OF_DATE]: "Project Outdated",
+    };
+    return titles[code] || "Request Failed";
   }
 
   async get(url: string, params?: object, options?: RequestOptions): Promise<JsonValue> {

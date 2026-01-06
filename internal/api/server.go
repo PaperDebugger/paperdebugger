@@ -166,7 +166,7 @@ func (s *Server) errorHandler() func(ctx context.Context, mux *runtime.ServeMux,
 
 		err := &sharedv1.Error{
 			Code:    errCode,
-			Message: reqError.Error(),
+			Message: cleanErrorMessage(reqError),
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(shared.GetHTTPCode(reqError))
@@ -181,4 +181,16 @@ func (s *Server) errorHandler() func(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 	}
+}
+
+// cleanErrorMessage removes technical gRPC error prefixes from error messages
+func cleanErrorMessage(err error) string {
+	msg := err.Error()
+	// Remove "rpc error: code = Code(XXXX) desc = " prefix
+	if strings.HasPrefix(msg, "rpc error:") {
+		if idx := strings.Index(msg, "desc = "); idx != -1 {
+			return msg[idx+7:]
+		}
+	}
+	return msg
 }
