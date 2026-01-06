@@ -13,6 +13,7 @@ type Evidence struct {
 
 type CheckResult struct {
 	MetricID string     `json:"metric_id"`
+	Name     string     `json:"name"`
 	Score    float64    `json:"score"`
 	Level    string     `json:"level"` // "low" | "med" | "high"
 	Evidence []Evidence `json:"evidence"`

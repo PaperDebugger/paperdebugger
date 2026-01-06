@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -85,4 +86,20 @@ func NewAIClientV2(
 	}
 
 	return client
+}
+
+func (a *AIClientV2) RunAI(ctx context.Context, systemPrompt, userPrompt string) (string, error) {
+	oaiClient := a.GetOpenAIClient(&models.LLMProviderConfig{})
+	params := openai.ChatCompletionNewParams{
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(systemPrompt),
+			openai.UserMessage(userPrompt),
+		},
+		Model: openai.ChatModelGPT4o,
+	}
+	resp, err := oaiClient.Chat.Completions.New(ctx, params)
+	if err != nil {
+		return "", err
+	}
+	return resp.Choices[0].Message.Content, nil
 }

@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package compliance.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/compliance/v1;compliancev1";
+
+service ComplianceService {
+  rpc RunL0Check(RunL0CheckRequest) returns (stream RunL0CheckResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v1/projects/{project_id}/compliance/l0-check"
+      body: "*"
+    };
+  }
+}
+
+message RunL0CheckRequest {
+  string project_id = 1;
+}
+
+message RunL0CheckResponse {
+  oneof payload {
+    float progress = 1;
+    CheckResults results = 2;
+  }
+}
+
+message CheckResults {
+  repeated CheckResult results = 1;
+}
+
+message CheckResult {
+  string metric_id = 1;
+  string name = 2;
+  double score = 3;
+  string level = 4;
+  string notes = 5;
+  repeated Evidence evidence = 6;
+}
+
+message Evidence {
+  string section = 1;
+  string quote = 2;
+  string reason = 3;
+}

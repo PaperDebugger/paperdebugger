@@ -15,6 +15,7 @@ import (
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
+	compliancev1 "paperdebugger/pkg/gen/api/compliance/v1"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 	sharedv1 "paperdebugger/pkg/gen/api/shared/v1"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
@@ -103,6 +104,11 @@ func (s *Server) Run(addr string) {
 	err = commentv1.RegisterCommentServiceHandler(context.Background(), mux, client)
 	if err != nil {
 		s.logger.Fatalf("failed to register comment service grpc gateway: %v", err)
+		return
+	}
+	err = compliancev1.RegisterComplianceServiceHandler(context.Background(), mux, client)
+	if err != nil {
+		s.logger.Fatalf("failed to register compliance service grpc gateway: %v", err)
 		return
 	}
 

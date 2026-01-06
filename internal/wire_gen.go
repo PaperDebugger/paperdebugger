@@ -12,12 +12,15 @@ import (
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/api/chat"
 	"paperdebugger/internal/api/comment"
+	compliance2 "paperdebugger/internal/api/compliance"
 	"paperdebugger/internal/api/project"
 	"paperdebugger/internal/api/user"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
+	"paperdebugger/internal/services/compliance"
+	"paperdebugger/internal/services/compliance/rules"
 	"paperdebugger/internal/services/toolkit/client"
 )
 
@@ -45,7 +48,9 @@ func InitializeApp() (*api.Server, error) {
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
 	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)
 	commentServiceServer := comment.NewCommentServer(projectService, chatService, reverseCommentService, loggerLogger, cfgCfg)
-	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer)
+	complianceService := compliance.NewComplianceService(dbDB, cfgCfg, loggerLogger, aiClientV2)
+	complianceServiceServer := compliance2.NewComplianceServer(complianceService, projectService)
+	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer, complianceServiceServer)
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)
 	oAuthHandler := auth.NewOAuthHandler(oAuthService)
 	ginServer := api.NewGinServer(cfgCfg, oAuthHandler)
@@ -55,4 +60,4 @@ func InitializeApp() (*api.Server, error) {
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, compliance2.NewComplianceServer, client.NewAIClient, client.NewAIClientV2, wire.Bind(new(rules.AIRunner), new(*client.AIClientV2)), services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, compliance.NewComplianceService, cfg.GetCfg, logger.GetLogger, db.NewDB)

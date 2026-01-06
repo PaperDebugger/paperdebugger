@@ -8,12 +8,15 @@ import (
 	"paperdebugger/internal/api/auth"
 	"paperdebugger/internal/api/chat"
 	"paperdebugger/internal/api/comment"
+	complianceapi "paperdebugger/internal/api/compliance"
 	"paperdebugger/internal/api/project"
 	"paperdebugger/internal/api/user"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
+	compliancesvc "paperdebugger/internal/services/compliance"
+	"paperdebugger/internal/services/compliance/rules"
 	aiclient "paperdebugger/internal/services/toolkit/client"
 
 	"github.com/google/wire"
@@ -32,9 +35,11 @@ var Set = wire.NewSet(
 	user.NewUserServer,
 	project.NewProjectServer,
 	comment.NewCommentServer,
+	complianceapi.NewComplianceServer,
 
 	aiclient.NewAIClient,
 	aiclient.NewAIClientV2,
+	wire.Bind(new(rules.AIRunner), new(*aiclient.AIClientV2)),
 	services.NewReverseCommentService,
 	services.NewChatService,
 	services.NewChatServiceV2,
@@ -43,6 +48,7 @@ var Set = wire.NewSet(
 	services.NewProjectService,
 	services.NewPromptService,
 	services.NewOAuthService,
+	compliancesvc.NewComplianceService,
 
 	cfg.GetCfg,
 	logger.GetLogger,

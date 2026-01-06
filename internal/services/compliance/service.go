@@ -51,7 +51,7 @@ func NewComplianceService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger, runner
 	}
 }
 
-func (s *ComplianceService) Audit(ctx context.Context, project *models.Project, school, major, program string) ([]rules.CheckResult, error) {
+func (s *ComplianceService) Audit(ctx context.Context, project *models.Project, school, major, program string, onProgress func(progress float32)) ([]rules.CheckResult, error) {
 	config := GetConfig(school, major, program)
 
 	// Register all rules
@@ -82,20 +82,29 @@ func (s *ComplianceService) Audit(ctx context.Context, project *models.Project, 
 	// Add L2 Rules
 	allRules = append(allRules, &l2.InnovationCheckRule{})
 
-	var results []rules.CheckResult
+	// Filter enabled rules
+	var enabledRules []rules.IndicatorChecker
 	for _, checker := range allRules {
 		settings, ok := config.Indicators[checker.ID()]
-		if !ok || !settings.Enabled {
-			continue
+		if ok && settings.Enabled {
+			enabledRules = append(enabledRules, checker)
 		}
+	}
 
+	total := len(enabledRules)
+	var results []rules.CheckResult
+	for i, checker := range enabledRules {
+		settings := config.Indicators[checker.ID()]
 		result, err := checker.Check(ctx, project, settings)
 		if err != nil {
 			s.logger.Error("failed to run compliance check", "metric_id", checker.ID(), "error", err)
-			continue
-		}
-		if result != nil {
+		} else if result != nil {
+			result.Name = checker.Name()
 			results = append(results, *result)
+		}
+
+		if onProgress != nil {
+			onProgress(float32(i+1) / float32(total))
 		}
 	}
 
