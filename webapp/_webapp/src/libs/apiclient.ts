@@ -131,10 +131,17 @@ class ApiClient {
   }
 
   private cleanErrorMessage(msg: string): string {
-    // Remove technical gRPC prefixes
-    return msg
-      .replace(/^rpc error: code = \w+ desc = /, "")
-      .replace(/^rpc error: code = Code\(\d+\) desc = /, "");
+    // Remove technical gRPC prefixes, mirroring backend behavior:
+    // strip everything up to and including "desc = " when the message
+    // starts with "rpc error:" and contains "desc = ".
+    if (msg.startsWith("rpc error:")) {
+      const marker = "desc = ";
+      const idx = msg.indexOf(marker);
+      if (idx !== -1) {
+        return msg.slice(idx + marker.length);
+      }
+    }
+    return msg;
   }
 
   private getErrorTitle(code: ErrorCode): string {
