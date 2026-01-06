@@ -83,14 +83,6 @@ func makeErrorFunc(
 		default:
 			errorMessage = fmt.Sprintf("%v", v)
 		}
-		// Handle edge case where fmt.Sprintf might produce "<nil>"
-		if errorMessage == "<nil>" {
-			if defaultMsg, ok := errorCodeMessages[errorCode]; ok {
-				errorMessage = defaultMsg
-			} else {
-				errorMessage = "An error occurred"
-			}
-		}
 		return status.Error(codes.Code(errorCode), errorMessage)
 	}
 }
