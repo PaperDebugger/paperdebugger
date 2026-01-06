@@ -18,7 +18,7 @@ func parseUserActor(ctx context.Context, token string, userService *services.Use
 
 	claims, err := jwt.VerifyJwtToken(token)
 	if err != nil {
-		return nil, shared.ErrInvalidToken("Token verification failed")
+		return nil, shared.ErrInvalidToken(err.Error())
 	}
 
 	if len(claims.Audience) == 0 || claims.Audience[0] != "paperdebugger/user" {
@@ -32,7 +32,7 @@ func parseUserActor(ctx context.Context, token string, userService *services.Use
 
 	_, err = userService.GetUserByID(ctx, actorID)
 	if err != nil {
-		return nil, shared.ErrInvalidUser("User account not found")
+		return nil, shared.ErrInvalidUser(err.Error())
 	}
 
 	return &accesscontrol.Actor{ID: actorID}, nil

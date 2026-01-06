@@ -139,6 +139,7 @@ class ApiClient {
 
   private getErrorTitle(code: ErrorCode): string {
     const titles: Partial<Record<ErrorCode, string>> = {
+      [ErrorCode.UNSPECIFIED]: "Unknown Error",
       [ErrorCode.INVALID_TOKEN]: "Authentication Required",
       [ErrorCode.INVALID_ACTOR]: "Session Invalid",
       [ErrorCode.INVALID_USER]: "User Not Found",

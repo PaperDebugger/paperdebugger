@@ -13,6 +13,7 @@ import (
 
 // errorCodeMessages provides default user-friendly messages for each error code
 var errorCodeMessages = map[sharedv1.ErrorCode]string{
+	sharedv1.ErrorCode_ERROR_CODE_UNSPECIFIED:          "An unspecified error occurred",
 	sharedv1.ErrorCode_ERROR_CODE_UNKNOWN:              "An unknown error occurred",
 	sharedv1.ErrorCode_ERROR_CODE_INTERNAL:             "Internal server error",
 	sharedv1.ErrorCode_ERROR_CODE_BAD_REQUEST:          "Bad request",
@@ -87,8 +88,8 @@ func makeErrorFunc(
 		default:
 			errorMessage = fmt.Sprintf("%v", v)
 		}
-		// If still empty, use a generic message
-		if errorMessage == "" || errorMessage == "<nil>" {
+		// Handle edge case where fmt.Sprintf might produce "<nil>"
+		if errorMessage == "<nil>" {
 			if defaultMsg, ok := errorCodeMessages[errorCode]; ok {
 				errorMessage = defaultMsg
 			} else {
