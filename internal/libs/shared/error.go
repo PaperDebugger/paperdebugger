@@ -76,11 +76,6 @@ func makeErrorFunc(
 		detail := lo.FirstOrEmpty(details)
 		var errorMessage string
 		switch v := detail.(type) {
-		case nil:
-			// Use default message when no detail is provided
-			if defaultMsg, ok := errorCodeMessages[errorCode]; ok {
-				errorMessage = defaultMsg
-			}
 		case error:
 			errorMessage = v.Error()
 		case interface{ String() string }:
