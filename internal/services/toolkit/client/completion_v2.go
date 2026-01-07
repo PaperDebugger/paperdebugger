@@ -98,6 +98,14 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				}
 				reasoning_content += s
 				// fmt.Print(s)
+			} else if field, ok := delta.JSON.ExtraFields["reasoning"]; ok && field.Raw() != "null" {
+				var s string
+				err := json.Unmarshal([]byte(field.Raw()), &s)
+				if err != nil {
+					// fmt.Println(err)
+				}
+				reasoning_content += s
+				// fmt.Print(s)
 			} else {
 				if !is_answering {
 					is_answering = true

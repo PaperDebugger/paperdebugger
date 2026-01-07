@@ -3,13 +3,10 @@ package user
 import (
 	"context"
 	"sort"
-	"time"
 
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var defaultPrompts = []*userv1.Prompt{
@@ -21,22 +18,22 @@ var defaultPrompts = []*userv1.Prompt{
 	// 	Content:      "Suggest context-aware academic paper writing enhancements for selected text.",
 	// 	IsUserPrompt: false,
 	// },
-	{
-		Id:           "2",
-		CreatedAt:    timestamppb.New(time.Time{}),
-		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Review (Powered by XtraMCP)",
-		Content:      "Review my paper and identify issues",
-		IsUserPrompt: false,
-	},
-	{
-		Id:           "3",
-		CreatedAt:    timestamppb.New(time.Time{}),
-		UpdatedAt:    timestamppb.New(time.Time{}),
-		Title:        "Find Relevant Papers (Powered by XtraMCP)",
-		Content:      "Find me relevant papers to read",
-		IsUserPrompt: false,
-	},
+	// {
+	// 	Id:           "2",
+	// 	CreatedAt:    timestamppb.New(time.Time{}),
+	// 	UpdatedAt:    timestamppb.New(time.Time{}),
+	// 	Title:        "Review (Powered by XtraMCP)",
+	// 	Content:      "Review my paper and identify issues",
+	// 	IsUserPrompt: false,
+	// },
+	// {
+	// 	Id:           "3",
+	// 	CreatedAt:    timestamppb.New(time.Time{}),
+	// 	UpdatedAt:    timestamppb.New(time.Time{}),
+	// 	Title:        "Find Relevant Papers (Powered by XtraMCP)",
+	// 	Content:      "Find me relevant papers to read",
+	// 	IsUserPrompt: false,
+	// },
 	// {
 	// 	Id:           "4",
 	// 	CreatedAt:    timestamppb.New(time.Time{}),
