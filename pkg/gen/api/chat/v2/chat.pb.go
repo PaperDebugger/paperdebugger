@@ -236,6 +236,7 @@ type MessageTypeAssistant struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
 	ModelSlug     string                 `protobuf:"bytes,2,opt,name=model_slug,json=modelSlug,proto3" json:"model_slug,omitempty"`
+	Reasoning     *string                `protobuf:"bytes,3,opt,name=reasoning,proto3,oneof" json:"reasoning,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -280,6 +281,13 @@ func (x *MessageTypeAssistant) GetContent() string {
 func (x *MessageTypeAssistant) GetModelSlug() string {
 	if x != nil {
 		return x.ModelSlug
+	}
+	return ""
+}
+
+func (x *MessageTypeAssistant) GetReasoning() string {
+	if x != nil && x.Reasoning != nil {
+		return *x.Reasoning
 	}
 	return ""
 }
@@ -1345,6 +1353,58 @@ func (x *MessageChunk) GetDelta() string {
 	return ""
 }
 
+type ReasoningChunk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"` // The id of the message that this chunk belongs to
+	Delta         string                 `protobuf:"bytes,2,opt,name=delta,proto3" json:"delta,omitempty"`                          // The small piece of text
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReasoningChunk) Reset() {
+	*x = ReasoningChunk{}
+	mi := &file_chat_v2_chat_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReasoningChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReasoningChunk) ProtoMessage() {}
+
+func (x *ReasoningChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v2_chat_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReasoningChunk.ProtoReflect.Descriptor instead.
+func (*ReasoningChunk) Descriptor() ([]byte, []int) {
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ReasoningChunk) GetMessageId() string {
+	if x != nil {
+		return x.MessageId
+	}
+	return ""
+}
+
+func (x *ReasoningChunk) GetDelta() string {
+	if x != nil {
+		return x.Delta
+	}
+	return ""
+}
+
 type IncompleteIndicator struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Reason        string                 `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
@@ -1355,7 +1415,7 @@ type IncompleteIndicator struct {
 
 func (x *IncompleteIndicator) Reset() {
 	*x = IncompleteIndicator{}
-	mi := &file_chat_v2_chat_proto_msgTypes[23]
+	mi := &file_chat_v2_chat_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1367,7 +1427,7 @@ func (x *IncompleteIndicator) String() string {
 func (*IncompleteIndicator) ProtoMessage() {}
 
 func (x *IncompleteIndicator) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[23]
+	mi := &file_chat_v2_chat_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1380,7 +1440,7 @@ func (x *IncompleteIndicator) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IncompleteIndicator.ProtoReflect.Descriptor instead.
 func (*IncompleteIndicator) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{23}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *IncompleteIndicator) GetReason() string {
@@ -1407,7 +1467,7 @@ type StreamPartEnd struct {
 
 func (x *StreamPartEnd) Reset() {
 	*x = StreamPartEnd{}
-	mi := &file_chat_v2_chat_proto_msgTypes[24]
+	mi := &file_chat_v2_chat_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1419,7 +1479,7 @@ func (x *StreamPartEnd) String() string {
 func (*StreamPartEnd) ProtoMessage() {}
 
 func (x *StreamPartEnd) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[24]
+	mi := &file_chat_v2_chat_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1432,7 +1492,7 @@ func (x *StreamPartEnd) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamPartEnd.ProtoReflect.Descriptor instead.
 func (*StreamPartEnd) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{24}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *StreamPartEnd) GetMessageId() string {
@@ -1459,7 +1519,7 @@ type StreamFinalization struct {
 
 func (x *StreamFinalization) Reset() {
 	*x = StreamFinalization{}
-	mi := &file_chat_v2_chat_proto_msgTypes[25]
+	mi := &file_chat_v2_chat_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1471,7 +1531,7 @@ func (x *StreamFinalization) String() string {
 func (*StreamFinalization) ProtoMessage() {}
 
 func (x *StreamFinalization) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[25]
+	mi := &file_chat_v2_chat_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1484,7 +1544,7 @@ func (x *StreamFinalization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamFinalization.ProtoReflect.Descriptor instead.
 func (*StreamFinalization) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{25}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *StreamFinalization) GetConversationId() string {
@@ -1503,7 +1563,7 @@ type StreamError struct {
 
 func (x *StreamError) Reset() {
 	*x = StreamError{}
-	mi := &file_chat_v2_chat_proto_msgTypes[26]
+	mi := &file_chat_v2_chat_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1515,7 +1575,7 @@ func (x *StreamError) String() string {
 func (*StreamError) ProtoMessage() {}
 
 func (x *StreamError) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[26]
+	mi := &file_chat_v2_chat_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1528,7 +1588,7 @@ func (x *StreamError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamError.ProtoReflect.Descriptor instead.
 func (*StreamError) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{26}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *StreamError) GetErrorMessage() string {
@@ -1557,7 +1617,7 @@ type CreateConversationMessageStreamRequest struct {
 
 func (x *CreateConversationMessageStreamRequest) Reset() {
 	*x = CreateConversationMessageStreamRequest{}
-	mi := &file_chat_v2_chat_proto_msgTypes[27]
+	mi := &file_chat_v2_chat_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1569,7 +1629,7 @@ func (x *CreateConversationMessageStreamRequest) String() string {
 func (*CreateConversationMessageStreamRequest) ProtoMessage() {}
 
 func (x *CreateConversationMessageStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[27]
+	mi := &file_chat_v2_chat_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1582,7 +1642,7 @@ func (x *CreateConversationMessageStreamRequest) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use CreateConversationMessageStreamRequest.ProtoReflect.Descriptor instead.
 func (*CreateConversationMessageStreamRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{27}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CreateConversationMessageStreamRequest) GetProjectId() string {
@@ -1646,6 +1706,7 @@ type CreateConversationMessageStreamResponse struct {
 	//	*CreateConversationMessageStreamResponse_StreamPartEnd
 	//	*CreateConversationMessageStreamResponse_StreamFinalization
 	//	*CreateConversationMessageStreamResponse_StreamError
+	//	*CreateConversationMessageStreamResponse_ReasoningChunk
 	ResponsePayload isCreateConversationMessageStreamResponse_ResponsePayload `protobuf_oneof:"response_payload"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -1653,7 +1714,7 @@ type CreateConversationMessageStreamResponse struct {
 
 func (x *CreateConversationMessageStreamResponse) Reset() {
 	*x = CreateConversationMessageStreamResponse{}
-	mi := &file_chat_v2_chat_proto_msgTypes[28]
+	mi := &file_chat_v2_chat_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1665,7 +1726,7 @@ func (x *CreateConversationMessageStreamResponse) String() string {
 func (*CreateConversationMessageStreamResponse) ProtoMessage() {}
 
 func (x *CreateConversationMessageStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v2_chat_proto_msgTypes[28]
+	mi := &file_chat_v2_chat_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1678,7 +1739,7 @@ func (x *CreateConversationMessageStreamResponse) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use CreateConversationMessageStreamResponse.ProtoReflect.Descriptor instead.
 func (*CreateConversationMessageStreamResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v2_chat_proto_rawDescGZIP(), []int{28}
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CreateConversationMessageStreamResponse) GetResponsePayload() isCreateConversationMessageStreamResponse_ResponsePayload {
@@ -1751,6 +1812,15 @@ func (x *CreateConversationMessageStreamResponse) GetStreamError() *StreamError 
 	return nil
 }
 
+func (x *CreateConversationMessageStreamResponse) GetReasoningChunk() *ReasoningChunk {
+	if x != nil {
+		if x, ok := x.ResponsePayload.(*CreateConversationMessageStreamResponse_ReasoningChunk); ok {
+			return x.ReasoningChunk
+		}
+	}
+	return nil
+}
+
 type isCreateConversationMessageStreamResponse_ResponsePayload interface {
 	isCreateConversationMessageStreamResponse_ResponsePayload()
 }
@@ -1783,6 +1853,10 @@ type CreateConversationMessageStreamResponse_StreamError struct {
 	StreamError *StreamError `protobuf:"bytes,7,opt,name=stream_error,json=streamError,proto3,oneof"`
 }
 
+type CreateConversationMessageStreamResponse_ReasoningChunk struct {
+	ReasoningChunk *ReasoningChunk `protobuf:"bytes,8,opt,name=reasoning_chunk,json=reasoningChunk,proto3,oneof"`
+}
+
 func (*CreateConversationMessageStreamResponse_StreamInitialization) isCreateConversationMessageStreamResponse_ResponsePayload() {
 }
 
@@ -1804,6 +1878,9 @@ func (*CreateConversationMessageStreamResponse_StreamFinalization) isCreateConve
 func (*CreateConversationMessageStreamResponse_StreamError) isCreateConversationMessageStreamResponse_ResponsePayload() {
 }
 
+func (*CreateConversationMessageStreamResponse_ReasoningChunk) isCreateConversationMessageStreamResponse_ResponsePayload() {
+}
+
 var File_chat_v2_chat_proto protoreflect.FileDescriptor
 
 const file_chat_v2_chat_proto_rawDesc = "" +
@@ -1818,11 +1895,14 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04args\x18\x02 \x01(\tR\x04args\"-\n" +
 	"\x11MessageTypeSystem\x12\x18\n" +
-	"\acontent\x18\x01 \x01(\tR\acontent\"O\n" +
+	"\acontent\x18\x01 \x01(\tR\acontent\"\x80\x01\n" +
 	"\x14MessageTypeAssistant\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1d\n" +
 	"\n" +
-	"model_slug\x18\x02 \x01(\tR\tmodelSlug\"\x9e\x01\n" +
+	"model_slug\x18\x02 \x01(\tR\tmodelSlug\x12!\n" +
+	"\treasoning\x18\x03 \x01(\tH\x00R\treasoning\x88\x01\x01B\f\n" +
+	"\n" +
+	"_reasoning\"\x9e\x01\n" +
 	"\x0fMessageTypeUser\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12(\n" +
 	"\rselected_text\x18\x02 \x01(\tH\x00R\fselectedText\x88\x01\x01\x12%\n" +
@@ -1891,6 +1971,10 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fMessageChunk\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x14\n" +
+	"\x05delta\x18\x02 \x01(\tR\x05delta\"E\n" +
+	"\x0eReasoningChunk\x12\x1d\n" +
+	"\n" +
+	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\"N\n" +
 	"\x13IncompleteIndicator\x12\x16\n" +
 	"\x06reason\x18\x01 \x01(\tR\x06reason\x12\x1f\n" +
@@ -1917,7 +2001,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x10_conversation_idB\x15\n" +
 	"\x13_user_selected_textB\x14\n" +
 	"\x12_conversation_typeB\x0e\n" +
-	"\f_surrounding\"\xb9\x04\n" +
+	"\f_surrounding\"\xfd\x04\n" +
 	"'CreateConversationMessageStreamResponse\x12T\n" +
 	"\x15stream_initialization\x18\x01 \x01(\v2\x1d.chat.v2.StreamInitializationH\x00R\x14streamInitialization\x12F\n" +
 	"\x11stream_part_begin\x18\x02 \x01(\v2\x18.chat.v2.StreamPartBeginH\x00R\x0fstreamPartBegin\x12<\n" +
@@ -1925,7 +2009,8 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x14incomplete_indicator\x18\x04 \x01(\v2\x1c.chat.v2.IncompleteIndicatorH\x00R\x13incompleteIndicator\x12@\n" +
 	"\x0fstream_part_end\x18\x05 \x01(\v2\x16.chat.v2.StreamPartEndH\x00R\rstreamPartEnd\x12N\n" +
 	"\x13stream_finalization\x18\x06 \x01(\v2\x1b.chat.v2.StreamFinalizationH\x00R\x12streamFinalization\x129\n" +
-	"\fstream_error\x18\a \x01(\v2\x14.chat.v2.StreamErrorH\x00R\vstreamErrorB\x12\n" +
+	"\fstream_error\x18\a \x01(\v2\x14.chat.v2.StreamErrorH\x00R\vstreamError\x12B\n" +
+	"\x0freasoning_chunk\x18\b \x01(\v2\x17.chat.v2.ReasoningChunkH\x00R\x0ereasoningChunkB\x12\n" +
 	"\x10response_payload*R\n" +
 	"\x10ConversationType\x12!\n" +
 	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -1952,7 +2037,7 @@ func file_chat_v2_chat_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v2_chat_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v2_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_chat_v2_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_chat_v2_chat_proto_goTypes = []any{
 	(ConversationType)(0),                           // 0: chat.v2.ConversationType
 	(*MessageTypeToolCall)(nil),                     // 1: chat.v2.MessageTypeToolCall
@@ -1978,12 +2063,13 @@ var file_chat_v2_chat_proto_goTypes = []any{
 	(*StreamInitialization)(nil),                    // 21: chat.v2.StreamInitialization
 	(*StreamPartBegin)(nil),                         // 22: chat.v2.StreamPartBegin
 	(*MessageChunk)(nil),                            // 23: chat.v2.MessageChunk
-	(*IncompleteIndicator)(nil),                     // 24: chat.v2.IncompleteIndicator
-	(*StreamPartEnd)(nil),                           // 25: chat.v2.StreamPartEnd
-	(*StreamFinalization)(nil),                      // 26: chat.v2.StreamFinalization
-	(*StreamError)(nil),                             // 27: chat.v2.StreamError
-	(*CreateConversationMessageStreamRequest)(nil),  // 28: chat.v2.CreateConversationMessageStreamRequest
-	(*CreateConversationMessageStreamResponse)(nil), // 29: chat.v2.CreateConversationMessageStreamResponse
+	(*ReasoningChunk)(nil),                          // 24: chat.v2.ReasoningChunk
+	(*IncompleteIndicator)(nil),                     // 25: chat.v2.IncompleteIndicator
+	(*StreamPartEnd)(nil),                           // 26: chat.v2.StreamPartEnd
+	(*StreamFinalization)(nil),                      // 27: chat.v2.StreamFinalization
+	(*StreamError)(nil),                             // 28: chat.v2.StreamError
+	(*CreateConversationMessageStreamRequest)(nil),  // 29: chat.v2.CreateConversationMessageStreamRequest
+	(*CreateConversationMessageStreamResponse)(nil), // 30: chat.v2.CreateConversationMessageStreamResponse
 }
 var file_chat_v2_chat_proto_depIdxs = []int32{
 	3,  // 0: chat.v2.MessagePayload.system:type_name -> chat.v2.MessageTypeSystem
@@ -2004,27 +2090,28 @@ var file_chat_v2_chat_proto_depIdxs = []int32{
 	21, // 15: chat.v2.CreateConversationMessageStreamResponse.stream_initialization:type_name -> chat.v2.StreamInitialization
 	22, // 16: chat.v2.CreateConversationMessageStreamResponse.stream_part_begin:type_name -> chat.v2.StreamPartBegin
 	23, // 17: chat.v2.CreateConversationMessageStreamResponse.message_chunk:type_name -> chat.v2.MessageChunk
-	24, // 18: chat.v2.CreateConversationMessageStreamResponse.incomplete_indicator:type_name -> chat.v2.IncompleteIndicator
-	25, // 19: chat.v2.CreateConversationMessageStreamResponse.stream_part_end:type_name -> chat.v2.StreamPartEnd
-	26, // 20: chat.v2.CreateConversationMessageStreamResponse.stream_finalization:type_name -> chat.v2.StreamFinalization
-	27, // 21: chat.v2.CreateConversationMessageStreamResponse.stream_error:type_name -> chat.v2.StreamError
-	10, // 22: chat.v2.ChatService.ListConversations:input_type -> chat.v2.ListConversationsRequest
-	12, // 23: chat.v2.ChatService.GetConversation:input_type -> chat.v2.GetConversationRequest
-	28, // 24: chat.v2.ChatService.CreateConversationMessageStream:input_type -> chat.v2.CreateConversationMessageStreamRequest
-	14, // 25: chat.v2.ChatService.UpdateConversation:input_type -> chat.v2.UpdateConversationRequest
-	16, // 26: chat.v2.ChatService.DeleteConversation:input_type -> chat.v2.DeleteConversationRequest
-	19, // 27: chat.v2.ChatService.ListSupportedModels:input_type -> chat.v2.ListSupportedModelsRequest
-	11, // 28: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
-	13, // 29: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
-	29, // 30: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
-	15, // 31: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
-	17, // 32: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
-	20, // 33: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
-	28, // [28:34] is the sub-list for method output_type
-	22, // [22:28] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	25, // 18: chat.v2.CreateConversationMessageStreamResponse.incomplete_indicator:type_name -> chat.v2.IncompleteIndicator
+	26, // 19: chat.v2.CreateConversationMessageStreamResponse.stream_part_end:type_name -> chat.v2.StreamPartEnd
+	27, // 20: chat.v2.CreateConversationMessageStreamResponse.stream_finalization:type_name -> chat.v2.StreamFinalization
+	28, // 21: chat.v2.CreateConversationMessageStreamResponse.stream_error:type_name -> chat.v2.StreamError
+	24, // 22: chat.v2.CreateConversationMessageStreamResponse.reasoning_chunk:type_name -> chat.v2.ReasoningChunk
+	10, // 23: chat.v2.ChatService.ListConversations:input_type -> chat.v2.ListConversationsRequest
+	12, // 24: chat.v2.ChatService.GetConversation:input_type -> chat.v2.GetConversationRequest
+	29, // 25: chat.v2.ChatService.CreateConversationMessageStream:input_type -> chat.v2.CreateConversationMessageStreamRequest
+	14, // 26: chat.v2.ChatService.UpdateConversation:input_type -> chat.v2.UpdateConversationRequest
+	16, // 27: chat.v2.ChatService.DeleteConversation:input_type -> chat.v2.DeleteConversationRequest
+	19, // 28: chat.v2.ChatService.ListSupportedModels:input_type -> chat.v2.ListSupportedModelsRequest
+	11, // 29: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
+	13, // 30: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
+	30, // 31: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
+	15, // 32: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
+	17, // 33: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
+	20, // 34: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
+	29, // [29:35] is the sub-list for method output_type
+	23, // [23:29] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_chat_v2_chat_proto_init() }
@@ -2032,6 +2119,7 @@ func file_chat_v2_chat_proto_init() {
 	if File_chat_v2_chat_proto != nil {
 		return
 	}
+	file_chat_v2_chat_proto_msgTypes[3].OneofWrappers = []any{}
 	file_chat_v2_chat_proto_msgTypes[4].OneofWrappers = []any{}
 	file_chat_v2_chat_proto_msgTypes[6].OneofWrappers = []any{
 		(*MessagePayload_System)(nil),
@@ -2042,8 +2130,8 @@ func file_chat_v2_chat_proto_init() {
 		(*MessagePayload_Unknown)(nil),
 	}
 	file_chat_v2_chat_proto_msgTypes[9].OneofWrappers = []any{}
-	file_chat_v2_chat_proto_msgTypes[27].OneofWrappers = []any{}
-	file_chat_v2_chat_proto_msgTypes[28].OneofWrappers = []any{
+	file_chat_v2_chat_proto_msgTypes[28].OneofWrappers = []any{}
+	file_chat_v2_chat_proto_msgTypes[29].OneofWrappers = []any{
 		(*CreateConversationMessageStreamResponse_StreamInitialization)(nil),
 		(*CreateConversationMessageStreamResponse_StreamPartBegin)(nil),
 		(*CreateConversationMessageStreamResponse_MessageChunk)(nil),
@@ -2051,6 +2139,7 @@ func file_chat_v2_chat_proto_init() {
 		(*CreateConversationMessageStreamResponse_StreamPartEnd)(nil),
 		(*CreateConversationMessageStreamResponse_StreamFinalization)(nil),
 		(*CreateConversationMessageStreamResponse_StreamError)(nil),
+		(*CreateConversationMessageStreamResponse_ReasoningChunk)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2058,7 +2147,7 @@ func file_chat_v2_chat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v2_chat_proto_rawDesc), len(file_chat_v2_chat_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   29,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

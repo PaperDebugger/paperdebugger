@@ -13,12 +13,14 @@ import { createConversationMessageStream } from "../query/api";
 import { handleStreamInitialization } from "../stores/conversation/handlers/handleStreamInitialization";
 import { handleStreamPartBegin } from "../stores/conversation/handlers/handleStreamPartBegin";
 import { handleMessageChunk } from "../stores/conversation/handlers/handleMessageChunk";
+import { handleReasoningChunk } from "../stores/conversation/handlers/handleReasoningChunk";
 import { handleStreamPartEnd } from "../stores/conversation/handlers/handleStreamPartEnd";
 import { handleStreamFinalization } from "../stores/conversation/handlers/handleStreamFinalization";
 import { handleStreamError } from "../stores/conversation/handlers/handleStreamError";
 import {
   MessageChunk,
   MessageTypeUserSchema,
+  ReasoningChunk,
   StreamError,
   StreamInitialization,
   StreamPartBegin,
@@ -143,6 +145,9 @@ export function useSendMessageStream() {
                 break;
               case "incompleteIndicator":
                 handleIncompleteIndicator(response.responsePayload.value as IncompleteIndicator);
+                break;
+              case "reasoningChunk":
+                handleReasoningChunk(response.responsePayload.value as ReasoningChunk, updateStreamingMessage);
                 break;
               default: {
                 if (response.responsePayload.value !== undefined) {
