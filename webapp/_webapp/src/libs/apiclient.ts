@@ -144,20 +144,21 @@ class ApiClient {
     return msg;
   }
 
+  // Error titles aligned with backend errorCodeMessages (error.go) for consistency
   private getErrorTitle(code: ErrorCode): string {
     const titles: Record<ErrorCode, string> = {
-      [ErrorCode.UNSPECIFIED]: "Unspecified Error",
-      [ErrorCode.UNKNOWN]: "Unknown Error",
-      [ErrorCode.INVALID_TOKEN]: "Authentication Required",
-      [ErrorCode.INVALID_ACTOR]: "Session Invalid",
-      [ErrorCode.INVALID_USER]: "User Not Found",
-      [ErrorCode.PERMISSION_DENIED]: "Access Denied",
-      [ErrorCode.RECORD_NOT_FOUND]: "Not Found",
-      [ErrorCode.BAD_REQUEST]: "Invalid Request",
-      [ErrorCode.INTERNAL]: "Server Error",
-      [ErrorCode.INVALID_CREDENTIAL]: "Invalid Credentials",
-      [ErrorCode.INVALID_LLM_RESPONSE]: "AI Response Error",
-      [ErrorCode.PROJECT_OUT_OF_DATE]: "Project Outdated",
+      [ErrorCode.UNSPECIFIED]: "An unspecified error occurred",
+      [ErrorCode.UNKNOWN]: "An unknown error occurred",
+      [ErrorCode.INVALID_TOKEN]: "Invalid or missing authentication token",
+      [ErrorCode.INVALID_ACTOR]: "Invalid actor or session",
+      [ErrorCode.INVALID_USER]: "User not found or invalid",
+      [ErrorCode.PERMISSION_DENIED]: "Permission denied",
+      [ErrorCode.RECORD_NOT_FOUND]: "Record not found",
+      [ErrorCode.BAD_REQUEST]: "Bad request",
+      [ErrorCode.INTERNAL]: "Internal server error",
+      [ErrorCode.INVALID_CREDENTIAL]: "Invalid credentials",
+      [ErrorCode.INVALID_LLM_RESPONSE]: "Invalid LLM response",
+      [ErrorCode.PROJECT_OUT_OF_DATE]: "Project is out of date",
     };
     return titles[code] || "Request Failed";
   }

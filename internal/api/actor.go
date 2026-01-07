@@ -3,12 +3,12 @@ package api
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
+
 	"paperdebugger/internal/accesscontrol"
 	"paperdebugger/internal/libs/jwt"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/services"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func parseUserActor(ctx context.Context, token string, userService *services.UserService) (*accesscontrol.Actor, error) {
