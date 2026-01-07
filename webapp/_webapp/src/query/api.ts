@@ -6,8 +6,6 @@ import {
   LoginByOverleafResponseSchema,
   LogoutRequest,
   LogoutResponseSchema,
-  RefreshTokenRequest,
-  RefreshTokenResponseSchema,
 } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import {
   CreateConversationMessageStreamRequest,
@@ -69,11 +67,6 @@ export const loginByOverleaf = async (data: PlainMessage<LoginByOverleafRequest>
 export const loginByGoogle = async (data: PlainMessage<LoginByGoogleRequest>) => {
   const response = await apiclient.post("/auth/login/google", data);
   return fromJson(LoginByGoogleResponseSchema, response);
-};
-
-export const refreshToken = async (data: PlainMessage<RefreshTokenRequest>) => {
-  const response = await apiclient.post("/auth/refresh", data);
-  return fromJson(RefreshTokenResponseSchema, response);
 };
 
 export const logout = async (data: PlainMessage<LogoutRequest>) => {
