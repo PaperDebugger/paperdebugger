@@ -37,7 +37,7 @@ export const TooltipArea = ({ children }: { children: React.ReactNode }) => {
                   surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
                 }
               }
-            } catch (e) {
+            } catch {
               // fallback
             }
           }
@@ -58,7 +58,7 @@ export const TooltipArea = ({ children }: { children: React.ReactNode }) => {
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, [selectedText, setSelectedText, setSelectionRange]);
+  }, [selectedText, setSelectedText, setSelectionRange, overleafCm, setSurroundingText]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

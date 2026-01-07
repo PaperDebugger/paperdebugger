@@ -4,7 +4,7 @@ import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
-// Helper function to format array to comma-separated string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const formatArray = (arr: any): string => {
   if (Array.isArray(arr)) {
     return arr.join(", ");
@@ -46,11 +46,17 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+        >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
+            />
           </div>
         </div>
 
@@ -72,9 +78,15 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
         {/* COMPACT TOOL CARD - Just title + metadata dropdown */}
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          >
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
+            />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
@@ -92,7 +104,8 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                 {/* Custom metadata rendering */}
                 {result.metadata.target_venue !== undefined && (
                   <div className="mb-2">
-                    <span className="font-medium">Checked for:</span> "{result.metadata.target_venue || "General review"}"
+                    <span className="font-medium">Checked for:</span> "
+                    {result.metadata.target_venue || "General review"}"
                   </div>
                 )}
                 {result.metadata.severity_threshold && (
@@ -102,7 +115,8 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                 )}
                 {result.metadata.sections_to_review && (
                   <div>
-                    <span className="font-medium">Sections reviewed:</span> {formatArray(result.metadata.sections_to_review)}
+                    <span className="font-medium">Sections reviewed:</span>{" "}
+                    {formatArray(result.metadata.sections_to_review)}
                   </div>
                 )}
               </div>
@@ -112,9 +126,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
         <div className="canselect text-sm mt-2">
-          <MarkdownComponent animated={animated}>
-            {result.content}
-          </MarkdownComponent>
+          <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>
     );

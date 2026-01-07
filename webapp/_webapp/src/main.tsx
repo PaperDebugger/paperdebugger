@@ -109,7 +109,7 @@ export const Main = () => {
               surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
             }
           }
-        } catch (e) {
+        } catch {
           // fallback
         }
         setLastSurroundingText(surrounding);
@@ -124,7 +124,7 @@ export const Main = () => {
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, [setLastSelectedText, setLastSelectionRange]);
+  }, [setLastSelectedText, setLastSelectionRange, setLastSurroundingText]);
 
   // Add effect to close context menu when clicking outside
 

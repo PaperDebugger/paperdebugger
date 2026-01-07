@@ -38,11 +38,17 @@ export const OnlineSearchPapersCard = ({ functionName, message, preparing, anima
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+        >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
+            />
           </div>
         </div>
 
@@ -64,9 +70,15 @@ export const OnlineSearchPapersCard = ({ functionName, message, preparing, anima
         {/* COMPACT TOOL CARD - Just title + metadata dropdown */}
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          >
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
+            />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
@@ -91,9 +103,7 @@ export const OnlineSearchPapersCard = ({ functionName, message, preparing, anima
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
         <div className="canselect text-sm mt-2">
-          <MarkdownComponent animated={animated}>
-            {result.content}
-          </MarkdownComponent>
+          <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>
     );

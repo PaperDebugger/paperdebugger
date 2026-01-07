@@ -43,12 +43,7 @@ export default function Tools({ messageId, functionName, message, error, prepari
   if (isXtraMcp) {
     if (functionName === "review_paper") {
       return (
-        <ReviewPaperCard
-          functionName={functionName}
-          message={message}
-          preparing={preparing}
-          animated={animated}
-        />
+        <ReviewPaperCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
       );
     } else if (functionName === "search_relevant_papers") {
       return (
@@ -70,17 +65,14 @@ export default function Tools({ messageId, functionName, message, error, prepari
       );
     } else if (functionName === "verify_citations") {
       return (
-        <VerifyCitationsCard
-          functionName={functionName}
-          message={message}
-          preparing={preparing}
-          animated={animated}
-        />
+        <VerifyCitationsCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
       );
     }
 
     // Generic XtraMCP tool (not specialized)
-    return <XtraMcpGenericCard functionName={functionName} message={message} preparing={preparing} animated={animated} />;
+    return (
+      <XtraMcpGenericCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
+    );
   }
 
   // Fallback to general tool card (non-XtraMCP tools)

@@ -7,10 +7,7 @@ import { DescMessage, fromJson as bufFromJson, JsonValue, MessageShape } from "@
  * This allows forward compatibility - older webapp versions can work with
  * newer backend versions that introduce new fields.
  */
-export function fromJson<Desc extends DescMessage>(
-  schema: Desc,
-  json: JsonValue,
-): MessageShape<Desc> {
+export function fromJson<Desc extends DescMessage>(schema: Desc, json: JsonValue): MessageShape<Desc> {
   return bufFromJson(schema, json, {
     ignoreUnknownFields: true,
   });

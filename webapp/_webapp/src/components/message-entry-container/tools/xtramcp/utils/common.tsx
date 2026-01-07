@@ -5,7 +5,7 @@ export type XtraMcpToolResult = {
   schema_version: string;
   display_mode: "verbatim" | "interpret";
   content?: string | object;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   success?: boolean;
   error?: string;
 };
@@ -43,7 +43,7 @@ export const isXtraMcpToolResult = (message?: string): boolean => {
 
   try {
     const parsed = JSON.parse(message);
-    return parsed.schema_version?.startsWith('xtramcp.tool_result') ?? false;
+    return parsed.schema_version?.startsWith("xtramcp.tool_result") ?? false;
   } catch {
     return false;
   }
@@ -59,7 +59,6 @@ export const parseXtraMcpToolResult = (message?: string): XtraMcpToolResult | nu
     return null;
   }
 };
-
 
 // Shared UI components
 interface CollapseArrowButtonProps {

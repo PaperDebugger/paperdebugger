@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { useSendMessageStream } from "../../../hooks/useSendMessageStream";
 import { NewConversation, ShowHistory } from "../header";
 
 export type Action = {
@@ -15,8 +14,7 @@ type useActionsProps = {
 };
 
 export const useActions = ({ enabled, filter }: useActionsProps) => {
-  const { sendMessageStream } = useSendMessageStream();
-  const { inputRef, setPrompt } = useConversationUiStore();
+  const { setPrompt } = useConversationUiStore();
   const actions: Action[] = useMemo(() => {
     const items = [
       {
@@ -44,7 +42,7 @@ export const useActions = ({ enabled, filter }: useActionsProps) => {
           item.name.toLowerCase().includes(filter.toLowerCase()) ||
           item.description.toLowerCase().includes(filter.toLowerCase())),
     );
-  }, [inputRef, enabled, filter, sendMessageStream, setPrompt]);
+  }, [enabled, filter, setPrompt]);
 
   return actions;
 };

@@ -38,11 +38,17 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+        >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
+            />
           </div>
         </div>
 
@@ -63,9 +69,15 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
         {/* COMPACT TOOL CARD - Just title + metadata dropdown */}
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          >
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
+            />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
@@ -78,17 +90,20 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
 
                   // Format value based on type
                   let formattedValue;
-                  if (typeof value === 'object') {
+                  if (typeof value === "object") {
                     formattedValue = JSON.stringify(value);
-                  } else if (typeof value === 'string') {
+                  } else if (typeof value === "string") {
                     // Check if it's a file path (contains a dot extension)
-                    const isFilePath = value.includes('.') && (value.endsWith('.bib') || value.endsWith('.tex') || value.endsWith('.pdf') || value.includes('/'));
+                    const isFilePath =
+                      value.includes(".") &&
+                      (value.endsWith(".bib") ||
+                        value.endsWith(".tex") ||
+                        value.endsWith(".pdf") ||
+                        value.includes("/"));
 
                     if (isFilePath) {
                       formattedValue = (
-                        <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">
-                          {value}
-                        </code>
+                        <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">{value}</code>
                       );
                     } else {
                       formattedValue = `"${value}"`;
@@ -110,9 +125,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
         <div className="canselect text-sm mt-2">
-          <MarkdownComponent animated={animated}>
-            {result.content}
-          </MarkdownComponent>
+          <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>
     );
@@ -122,7 +135,10 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
   if (result.display_mode === "interpret") {
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+        >
           <h3 className="tool-card-title">{functionName}</h3>
         </div>
 
@@ -131,7 +147,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
           <div className="text-xs text-gray-600 mt-1">
             {Object.entries(result.metadata).map(([key, value]) => (
               <span key={key} className="mr-2">
-                {key}: {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                {key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}
               </span>
             ))}
           </div>

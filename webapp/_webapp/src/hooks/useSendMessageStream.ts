@@ -192,6 +192,7 @@ export function useSendMessageStream() {
       user?.id,
       alwaysSyncProject,
       conversationMode,
+      storeSurroundingText,
     ],
   );
 

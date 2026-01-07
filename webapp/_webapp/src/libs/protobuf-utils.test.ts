@@ -24,7 +24,7 @@ describe("protobuf-utils", () => {
 
       // This should NOT throw an error even though "newFieldThatDoesntExistYet" doesn't exist in the schema
       const message = fromJson(MessageSchema, jsonWithUnknownField);
-      
+
       expect(message.messageId).toBe("test-123");
       expect(message.payload?.messageType.case).toBe("user");
       if (message.payload?.messageType.case === "user") {
@@ -40,7 +40,7 @@ describe("protobuf-utils", () => {
       };
 
       const message = fromJson(MessageSchema, minimalJson);
-      
+
       expect(message.messageId).toBe("minimal-test");
       expect(message.payload).toBeUndefined();
     });
@@ -56,7 +56,7 @@ describe("protobuf-utils", () => {
       };
 
       const message = fromJson(MessageSchema, jsonWithoutMessageId);
-      
+
       // Proto3 defaults string fields to empty string
       expect(message.messageId).toBe("");
     });
