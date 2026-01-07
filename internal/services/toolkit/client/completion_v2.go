@@ -93,19 +93,17 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
 				var s string
 				err := json.Unmarshal([]byte(field.Raw()), &s)
-				if err != nil {
-					// fmt.Println(err)
+				if err == nil {
+					reasoning_content += s
+					streamHandler.HandleReasoningDelta(chunk.ID, s)
 				}
-				reasoning_content += s
-				// fmt.Print(s)
 			} else if field, ok := delta.JSON.ExtraFields["reasoning"]; ok && field.Raw() != "null" {
 				var s string
 				err := json.Unmarshal([]byte(field.Raw()), &s)
-				if err != nil {
-					// fmt.Println(err)
+				if err == nil {
+					reasoning_content += s
+					streamHandler.HandleReasoningDelta(chunk.ID, s)
 				}
-				reasoning_content += s
-				// fmt.Print(s)
 			} else {
 				if !is_answering {
 					is_answering = true
@@ -163,7 +161,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
 				// answer_content += chunk.Choices[0].Delta.Content
 				// fmt.Printf("answer_content: %s\n", answer_content)
-				streamHandler.HandleTextDoneItem(chunk, answer_content)
+				streamHandler.HandleTextDoneItem(chunk, answer_content, reasoning_content)
 				break
 			}
 		}

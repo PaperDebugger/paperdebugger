@@ -60,6 +60,7 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
       return (
         <AssistantMessageContainer
           message={messageEntry.assistant?.content}
+          reasoning={messageEntry.assistant?.reasoning}
           messageId={messageEntry.messageId}
           animated={animated ?? false}
           prevAttachment={prevAttachment ?? ""}
