@@ -217,6 +217,7 @@ message CreateConversationMessageStreamRequest {
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
   optional string surrounding = 8;
+  optional string parent_message_id = 9;
 }
 
 // Response for streaming a message within an existing conversation

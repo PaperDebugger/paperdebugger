@@ -70,7 +70,7 @@ export function useSendMessageStream() {
   const { conversationMode } = useSettingStore();
 
   const sendMessageStream = useCallback(
-    async (message: string, selectedText: string) => {
+    async (message: string, selectedText: string, parentMessageId?: string) => {
       if (!message || !message.trim()) {
         logWarn("No message to send");
         return;
@@ -85,6 +85,7 @@ export function useSendMessageStream() {
         userSelectedText: selectedText,
         surrounding: storeSurroundingText ?? undefined,
         conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
+        parentMessageId,
       };
 
       resetStreamingMessage(); // ensure no stale message in the streaming messages

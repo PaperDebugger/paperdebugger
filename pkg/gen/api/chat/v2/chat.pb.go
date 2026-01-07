@@ -1611,6 +1611,7 @@ type CreateConversationMessageStreamRequest struct {
 	UserSelectedText *string                `protobuf:"bytes,5,opt,name=user_selected_text,json=userSelectedText,proto3,oneof" json:"user_selected_text,omitempty"`
 	ConversationType *ConversationType      `protobuf:"varint,6,opt,name=conversation_type,json=conversationType,proto3,enum=chat.v2.ConversationType,oneof" json:"conversation_type,omitempty"`
 	Surrounding      *string                `protobuf:"bytes,8,opt,name=surrounding,proto3,oneof" json:"surrounding,omitempty"`
+	ParentMessageId  *string                `protobuf:"bytes,9,opt,name=parent_message_id,json=parentMessageId,proto3,oneof" json:"parent_message_id,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1690,6 +1691,13 @@ func (x *CreateConversationMessageStreamRequest) GetConversationType() Conversat
 func (x *CreateConversationMessageStreamRequest) GetSurrounding() string {
 	if x != nil && x.Surrounding != nil {
 		return *x.Surrounding
+	}
+	return ""
+}
+
+func (x *CreateConversationMessageStreamRequest) GetParentMessageId() string {
+	if x != nil && x.ParentMessageId != nil {
+		return *x.ParentMessageId
 	}
 	return ""
 }
@@ -1987,7 +1995,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x12StreamFinalization\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"2\n" +
 	"\vStreamError\x12#\n" +
-	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xaf\x03\n" +
+	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xf6\x03\n" +
 	"&CreateConversationMessageStreamRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12,\n" +
@@ -1997,11 +2005,13 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fuser_message\x18\x04 \x01(\tR\vuserMessage\x121\n" +
 	"\x12user_selected_text\x18\x05 \x01(\tH\x01R\x10userSelectedText\x88\x01\x01\x12K\n" +
 	"\x11conversation_type\x18\x06 \x01(\x0e2\x19.chat.v2.ConversationTypeH\x02R\x10conversationType\x88\x01\x01\x12%\n" +
-	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01B\x12\n" +
+	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01\x12/\n" +
+	"\x11parent_message_id\x18\t \x01(\tH\x04R\x0fparentMessageId\x88\x01\x01B\x12\n" +
 	"\x10_conversation_idB\x15\n" +
 	"\x13_user_selected_textB\x14\n" +
 	"\x12_conversation_typeB\x0e\n" +
-	"\f_surrounding\"\xfd\x04\n" +
+	"\f_surroundingB\x14\n" +
+	"\x12_parent_message_id\"\xfd\x04\n" +
 	"'CreateConversationMessageStreamResponse\x12T\n" +
 	"\x15stream_initialization\x18\x01 \x01(\v2\x1d.chat.v2.StreamInitializationH\x00R\x14streamInitialization\x12F\n" +
 	"\x11stream_part_begin\x18\x02 \x01(\v2\x18.chat.v2.StreamPartBeginH\x00R\x0fstreamPartBegin\x12<\n" +

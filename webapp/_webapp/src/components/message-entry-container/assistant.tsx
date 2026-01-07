@@ -69,7 +69,10 @@ export const AssistantMessageContainer = ({
     );
 
   const reasoningComponent = reasoning && (
-    <div key="reasoning" className="reasoning-container mb-3 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div
+      key="reasoning"
+      className={cn("reasoning-container mb-3", animated && "animate-in fade-in slide-in-from-top-2 duration-300")}
+    >
       <GeneralToolCard functionName="reasoning" message={reasoning} animated={animated} />
     </div>
   );

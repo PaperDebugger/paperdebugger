@@ -36,10 +36,11 @@ export const STYLES = {
 interface MessageCardProps {
   messageEntry: MessageEntry;
   prevAttachment?: string;
+  previousMessageId?: string;
   animated?: boolean;
 }
 
-export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: MessageCardProps) => {
+export const MessageCard = memo(({ messageEntry, prevAttachment, previousMessageId, animated }: MessageCardProps) => {
   const returnComponent = () => {
     if (messageEntry.toolCall !== undefined) {
       return (
@@ -86,7 +87,9 @@ export const MessageCard = memo(({ messageEntry, prevAttachment, animated }: Mes
           content={messageEntry.user?.content ?? ""}
           attachment={messageEntry.user?.selectedText ?? ""}
           stale={messageEntry.status === MessageEntryStatus.STALE}
+
           messageId={messageEntry.messageId}
+          previousMessageId={previousMessageId}
         />
       );
     }
