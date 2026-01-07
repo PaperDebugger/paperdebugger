@@ -1,74 +1,64 @@
 /**
- * Test file to demonstrate that the protobuf-utils wrapper handles unknown fields gracefully.
- * 
- * This test can be run manually to verify the fix. Since the project doesn't have
- * a test runner configured, this serves as documentation of the expected behavior.
- * 
- * To test manually:
- * 1. Add a new field to a protobuf schema on the backend
- * 2. Deploy the backend
- * 3. Use an older version of the webapp (without regenerating protobuf files)
- * 4. Verify that the webapp doesn't crash when receiving the new field
+ * Test file to verify that the protobuf-utils wrapper handles unknown fields gracefully.
  */
 
+import { describe, it, expect } from "bun:test";
 import { fromJson } from "./protobuf-utils";
 import { MessageSchema } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 
-/**
- * Example: Testing that fromJson ignores unknown fields
- * 
- * This would simulate a backend returning a message with a new field
- * that doesn't exist in the current schema.
- */
-function testIgnoreUnknownFields() {
-  // Simulate JSON response from backend with an extra field "newField"
-  const jsonWithUnknownField = {
-    messageId: "test-123",
-    payload: {
-      user: {
-        content: "Hello",
-        selectedText: "",
-        newFieldThatDoesntExistYet: "This is a new field from a newer backend version",
-      },
-    },
-    timestamp: "0",
-  };
+describe("protobuf-utils", () => {
+  describe("fromJson", () => {
+    it("should ignore unknown fields from newer backend versions", () => {
+      // Simulate JSON response from backend with an extra field "newFieldThatDoesntExistYet"
+      const jsonWithUnknownField = {
+        messageId: "test-123",
+        payload: {
+          user: {
+            content: "Hello",
+            selectedText: "",
+            newFieldThatDoesntExistYet: "This is a new field from a newer backend version",
+          },
+        },
+        timestamp: "0",
+      };
 
-  try {
-    // This should NOT throw an error even though "newFieldThatDoesntExistYet" doesn't exist in the schema
-    const message = fromJson(MessageSchema, jsonWithUnknownField);
-    console.log("✓ Successfully parsed message with unknown field");
-    console.log("  Message ID:", message.messageId);
-    console.log("  User content:", message.payload.user?.content);
-    return true;
-  } catch (error) {
-    console.error("✗ Failed to parse message with unknown field:", error);
-    return false;
-  }
-}
+      // This should NOT throw an error even though "newFieldThatDoesntExistYet" doesn't exist in the schema
+      const message = fromJson(MessageSchema, jsonWithUnknownField);
+      
+      expect(message.messageId).toBe("test-123");
+      expect(message.payload?.messageType.case).toBe("user");
+      if (message.payload?.messageType.case === "user") {
+        expect(message.payload.messageType.value.content).toBe("Hello");
+      }
+    });
 
-/**
- * Example: Testing that fromJson still validates required fields
- */
-function testRequiredFieldsStillValidated() {
-  // Missing required messageId field
-  const invalidJson = {
-    payload: {
-      user: {
-        content: "Hello",
-      },
-    },
-  };
+    it("should handle missing optional fields gracefully", () => {
+      // Missing optional fields should not cause errors
+      const minimalJson = {
+        messageId: "minimal-test",
+        timestamp: "0",
+      };
 
-  try {
-    const message = fromJson(MessageSchema, invalidJson);
-    console.log("✓ Parsed message (messageId will be empty string):", message.messageId);
-    return true;
-  } catch (error) {
-    console.error("✗ Failed to parse message:", error);
-    return false;
-  }
-}
+      const message = fromJson(MessageSchema, minimalJson);
+      
+      expect(message.messageId).toBe("minimal-test");
+      expect(message.payload).toBeUndefined();
+    });
 
-// Export test functions for manual testing
-export { testIgnoreUnknownFields, testRequiredFieldsStillValidated };
+    it("should use empty string for missing messageId", () => {
+      // Missing messageId field (proto3 defaults to empty string)
+      const jsonWithoutMessageId = {
+        payload: {
+          user: {
+            content: "Hello",
+          },
+        },
+      };
+
+      const message = fromJson(MessageSchema, jsonWithoutMessageId);
+      
+      // Proto3 defaults string fields to empty string
+      expect(message.messageId).toBe("");
+    });
+  });
+});

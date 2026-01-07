@@ -74,7 +74,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
               <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
                 {/* Generic metadata rendering - display all fields */}
                 {Object.entries(result.metadata).map(([key, value], index) => {
-                  const isLastItem = index === Object.entries(result.metadata).length - 1;
+                  const isLastItem = index === Object.entries(result.metadata!).length - 1;
 
                   // Format value based on type
                   let formattedValue;

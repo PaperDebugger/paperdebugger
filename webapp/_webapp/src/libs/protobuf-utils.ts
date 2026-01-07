@@ -1,4 +1,4 @@
-import { DescMessage, fromJson as bufFromJson, JsonValue } from "@bufbuild/protobuf";
+import { DescMessage, fromJson as bufFromJson, JsonValue, MessageShape } from "@bufbuild/protobuf";
 
 /**
  * Wrapper around fromJson that ignores unknown fields to prevent crashes
@@ -10,7 +10,7 @@ import { DescMessage, fromJson as bufFromJson, JsonValue } from "@bufbuild/proto
 export function fromJson<Desc extends DescMessage>(
   schema: Desc,
   json: JsonValue,
-): InstanceType<Desc["message"]> {
+): MessageShape<Desc> {
   return bufFromJson(schema, json, {
     ignoreUnknownFields: true,
   });

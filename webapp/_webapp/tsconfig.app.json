@@ -16,7 +16,7 @@
     "jsx": "react-jsx",
 
     /* Type resolution */
-    "types": ["vite/client", "node", "chrome", "react"],
+    "types": ["bun", "vite/client", "node", "chrome", "react"],
     "typeRoots": ["./node_modules/@types"],
 
     /* Linting */
