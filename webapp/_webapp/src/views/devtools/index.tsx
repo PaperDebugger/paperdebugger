@@ -4,7 +4,7 @@ import { Button, Input } from "@heroui/react";
 import { useStreamingMessageStore } from "../../stores/streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../../libs/protobuf-utils";
 import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
