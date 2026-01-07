@@ -146,6 +146,7 @@ func (s *ChatServerV2) appendConversationMessage(
 	userSelectedText string,
 	surrounding string,
 	conversationType chatv2.ConversationType,
+	parentMessageId string,
 ) (*models.Conversation, error) {
 	objectID, err := bson.ObjectIDFromHex(conversationId)
 	if err != nil {
@@ -155,6 +156,50 @@ func (s *ChatServerV2) appendConversationMessage(
 	conversation, err := s.chatServiceV2.GetConversationV2(ctx, userId, objectID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Handle branching / edit mode
+	if parentMessageId != "" {
+		if parentMessageId == "root" {
+			// Clear all history, keep only the system message (first element) of OpenaiChatHistoryCompletion
+			conversation.InappChatHistory = []bson.M{}
+			if len(conversation.OpenaiChatHistoryCompletion) > 0 {
+				conversation.OpenaiChatHistoryCompletion = conversation.OpenaiChatHistoryCompletion[:1]
+			} else {
+				// Should not happen, but safe fallback
+				conversation.OpenaiChatHistoryCompletion = []openai.ChatCompletionMessageParamUnion{}
+			}
+		} else {
+			// Find parent message and truncate after it
+			foundIndex := -1
+			for i, msg := range conversation.InappChatHistory {
+				// msg["message_id"] matches parentMessageId
+				// BSON M maps to map[string]interface{}, message_id should be string
+				if id, ok := msg["message_id"].(string); ok && id == parentMessageId {
+					foundIndex = i
+					break
+				}
+			}
+
+			if foundIndex != -1 {
+				// Truncate InappChatHistory to include the parent message
+				conversation.InappChatHistory = conversation.InappChatHistory[:foundIndex+1]
+
+				// Truncate OpenaiChatHistoryCompletion
+				// Map index: Inapp[i] -> Openai[i+1] (because Openai[0] is system)
+				// So we want to keep up to foundIndex + 1 (which corresponds to foundIndex in Inapp)
+				// The slice end is exclusive, so we slice up to (foundIndex + 1) + 1 = foundIndex + 2
+				if len(conversation.OpenaiChatHistoryCompletion) > foundIndex+1 {
+					conversation.OpenaiChatHistoryCompletion = conversation.OpenaiChatHistoryCompletion[:foundIndex+2]
+				}
+			} else {
+				// Parent message not found, maybe ignore or error?
+				// For now, let's log a warning and append (linear behavior fallback) or maybe error is better.
+				// s.logger.Warn("Parent message not found during edit", "parentMessageId", parentMessageId)
+				// Actually, throwing error is safer to avoid confusing state
+				return nil, shared.ErrBadRequest("Parent message not found")
+			}
+		}
 	}
 
 	userMsg, userOaiMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, surrounding, conversationType)
@@ -178,7 +223,7 @@ func (s *ChatServerV2) appendConversationMessage(
 
 // prepare creates a new conversation if conversationId is "", otherwise appends a message to the conversation
 // conversationType can be switched multiple times within a single conversation
-func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType, parentMessageId string) (context.Context, *models.Conversation, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
 		return ctx, nil, nil, err
@@ -234,6 +279,7 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			userSelectedText,
 			surrounding,
 			conversationType,
+			parentMessageId,
 		)
 	}
 
@@ -265,9 +311,11 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
+
 		req.GetSurrounding(),
 		modelSlug,
 		req.GetConversationType(),
+		req.GetParentMessageId(),
 	)
 	if err != nil {
 		return s.sendStreamError(stream, err)
