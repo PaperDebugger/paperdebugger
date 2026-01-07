@@ -61,23 +61,23 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
         // },
         h1: {
           component: ({ children, ...props }: ComponentProps) => (
-            <div {...props} className="text-lg font-bold mt-2">
+            <h1 {...props} className="text-lg font-bold mt-2">
               {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </div>
+            </h1>
           ),
         },
         h2: {
           component: ({ children, ...props }: ComponentProps) => (
-            <div {...props} className="text-base font-bold mt-2">
+            <h2 {...props} className="text-base font-bold mt-2">
               {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </div>
+            </h2>
           ),
         },
         h3: {
           component: ({ children, ...props }: ComponentProps) => (
-            <div {...props} className="text-sm font-bold mt-2">
+            <h3 {...props} className="text-sm font-bold mt-2">
               {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </div>
+            </h3>
           ),
         },
         code: {
