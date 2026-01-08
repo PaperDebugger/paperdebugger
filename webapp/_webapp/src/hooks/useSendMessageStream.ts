@@ -88,6 +88,27 @@ export function useSendMessageStream() {
       resetStreamingMessage(); // ensure no stale message in the streaming messages
       resetIncompleteIndicator();
 
+      // When editing a message (parentMessageId is provided), truncate the conversation
+      // to only include messages up to and including the parent message
+      if (parentMessageId && currentConversation.messages.length > 0) {
+        const parentIndex = currentConversation.messages.findIndex(
+          (m) => m.messageId === parentMessageId
+        );
+        if (parentIndex !== -1) {
+          // Truncate messages to include only up to parentMessage
+          useConversationStore.getState().updateCurrentConversation((prev) => ({
+            ...prev,
+            messages: prev.messages.slice(0, parentIndex + 1),
+          }));
+        } else if (parentMessageId === "root") {
+          // Clear all messages for "root" edit
+          useConversationStore.getState().updateCurrentConversation((prev) => ({
+            ...prev,
+            messages: [],
+          }));
+        }
+      }
+
       const newMessageEntry: MessageEntry = {
         messageId: "dummy",
         status: MessageEntryStatus.PREPARING,
