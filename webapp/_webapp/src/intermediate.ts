@@ -107,6 +107,13 @@ function makeFunction<A, T>(handlerName: string, opts?: MakeFunctionOpts): (args
   return fn;
 }
 
+// Check if running in browser extension environment
+const isExtensionEnvironment = !!getBrowserAPI()?.runtime?.id;
+
+// ============================================================================
+// getCookies - Get Overleaf session cookies
+// Office Add-in: Not needed, return empty values
+// ============================================================================
 let getCookies: (domain: string) => Promise<{ session: string; gclb: string }>;
 if (import.meta.env.DEV) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -116,12 +123,98 @@ if (import.meta.env.DEV) {
       gclb: localStorage.getItem("pd.auth.gclb") ?? "",
     };
   };
-} else {
+} else if (isExtensionEnvironment) {
   getCookies = makeFunction<string, { session: string; gclb: string }>(HANDLER_NAMES.GET_COOKIES);
+} else {
+  // Office Add-in: Overleaf cookies not available/needed
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getCookies = async (_domain: string) => ({ session: "", gclb: "" });
 }
-
 export { getCookies };
-export const getUrl = makeFunction<string, string>(HANDLER_NAMES.GET_URL);
-export const getOrCreateSessionId = makeFunction<void, string>(HANDLER_NAMES.GET_OR_CREATE_SESSION_ID);
-export const fetchImage = makeFunction<string, string>(HANDLER_NAMES.FETCH_IMAGE);
-export const requestHostPermission = makeFunction<string, boolean>(HANDLER_NAMES.REQUEST_HOST_PERMISSION);
+
+// ============================================================================
+// getUrl - Get extension resource URL
+// Office Add-in: Return the path as-is (relative URL)
+// ============================================================================
+let getUrl: (path: string) => Promise<string>;
+if (isExtensionEnvironment) {
+  getUrl = makeFunction<string, string>(HANDLER_NAMES.GET_URL);
+} else {
+  // Office Add-in: Return path directly, resources are bundled with the add-in
+  getUrl = async (path: string) => path;
+}
+export { getUrl };
+
+// ============================================================================
+// getOrCreateSessionId - Get or create analytics session ID
+// Office Add-in: Use sessionStorage instead of chrome.storage.session
+// ============================================================================
+let getOrCreateSessionId: () => Promise<string>;
+if (isExtensionEnvironment) {
+  getOrCreateSessionId = makeFunction<void, string>(HANDLER_NAMES.GET_OR_CREATE_SESSION_ID);
+} else {
+  const SESSION_EXPIRATION_IN_MIN = 30;
+  const SESSION_STORAGE_KEY = "pd.sessionData";
+  getOrCreateSessionId = async () => {
+    const currentTimeInMs = Date.now();
+    const storedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    let sessionData: { session_id: string; timestamp: number } | null = storedData
+      ? JSON.parse(storedData)
+      : null;
+
+    if (sessionData && sessionData.timestamp) {
+      const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
+      if (durationInMin > SESSION_EXPIRATION_IN_MIN) {
+        sessionData = null;
+      } else {
+        sessionData.timestamp = currentTimeInMs;
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+      }
+    }
+    if (!sessionData) {
+      sessionData = {
+        session_id: currentTimeInMs.toString(),
+        timestamp: currentTimeInMs,
+      };
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+    }
+    return sessionData.session_id;
+  };
+}
+export { getOrCreateSessionId };
+
+// ============================================================================
+// fetchImage - Fetch image and convert to base64
+// Office Add-in: Use standard fetch API (no CORS issues in add-in context)
+// ============================================================================
+let fetchImage: (url: string) => Promise<string>;
+if (isExtensionEnvironment) {
+  fetchImage = makeFunction<string, string>(HANDLER_NAMES.FETCH_IMAGE);
+} else {
+  // Office Add-in: Direct fetch with base64 conversion
+  fetchImage = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+}
+export { fetchImage };
+
+// ============================================================================
+// requestHostPermission - Request browser extension host permissions
+// Office Add-in: Not supported, always return false
+// ============================================================================
+let requestHostPermission: (origin: string) => Promise<boolean>;
+if (isExtensionEnvironment) {
+  requestHostPermission = makeFunction<string, boolean>(HANDLER_NAMES.REQUEST_HOST_PERMISSION);
+} else {
+  // Office Add-in: Permission requests not supported
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  requestHostPermission = async (_origin: string) => false;
+}
+export { requestHostPermission };
