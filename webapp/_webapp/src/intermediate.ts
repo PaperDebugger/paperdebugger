@@ -21,14 +21,33 @@ export type MakeFunctionOpts = {
   wait?: boolean;
 };
 
+/**
+ * Get the browser extension API (chrome or browser).
+ * Returns undefined if not running in an extension context.
+ */
+function getBrowserAPI(): typeof chrome | undefined {
+  try {
+    // @ts-expect-error: browser may not be defined in all environments
+    if (typeof browser !== "undefined" && browser?.runtime?.id) {
+      // @ts-expect-error: browser may not be defined in all environments
+      return browser;
+    }
+    if (typeof chrome !== "undefined" && chrome?.runtime?.id) {
+      return chrome;
+    }
+  } catch {
+    // Not in extension context
+  }
+  return undefined;
+}
+
 function makeFunction<A, T>(handlerName: string, opts?: MakeFunctionOpts): (args: A) => Promise<T> {
   const reqEvtName = `paperdebugger:req:${handlerName}`;
   const resEvtName = `paperdebugger:res:${handlerName}`;
   const errEvtName = `paperdebugger:err:${handlerName}`;
 
   const eventHandler = (evt: Event) => {
-    // @ts-expect-error: browser may not be defined in all environments
-    const browserAPI = typeof browser !== "undefined" ? browser : chrome;
+    const browserAPI = getBrowserAPI();
     const customEvt = evt as CustomEvent;
     const { seq, req } = customEvt.detail;
     if (!seq) return;

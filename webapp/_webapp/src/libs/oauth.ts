@@ -41,15 +41,49 @@ export function appleAuthUrl(state: string) {
   return url.toString();
 }
 
+/**
+ * Check if running in Office Add-in environment
+ */
+function isOfficeEnvironment(): boolean {
+  try {
+    return (
+      typeof window !== "undefined" &&
+      "Office" in window &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      typeof (window as any).Office?.context?.ui?.openBrowserWindow === "function"
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Open URL in browser - uses system browser in Office, new tab in browser/extension
+ */
+function openInBrowser(url: string): void {
+  if (isOfficeEnvironment()) {
+    // Office Add-in: open in system browser (not Office built-in browser)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).Office.context.ui.openBrowserWindow(url);
+  } else {
+    // Browser/Extension: open in new tab
+    const wnd = window.open(url, "_blank");
+    if (!wnd) {
+      throw new Error("failed opening auth window");
+    }
+  }
+}
+
+/**
+ * Get Google OAuth token using browser window and backend polling.
+ * Works in both browser/extension and Office Add-in environments.
+ */
 export async function getGoogleAuthToken(): Promise<string | null> {
   const sleepMs = 3000;
   const maxRetries = (120 * 1000) / sleepMs; // 120 seconds retry
   const randomState = Math.random().toString(36).substring(2, 15);
 
-  const wnd = window.open(googleAuthUrl(randomState), "_blank");
-  if (!wnd) {
-    throw new Error("failed opening auth window");
-  }
+  openInBrowser(googleAuthUrl(randomState));
 
   const endpoint = `${process.env.PD_API_ENDPOINT || ""}/oauth2/status?state=${randomState}`;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -67,13 +101,6 @@ export async function getGoogleAuthToken(): Promise<string | null> {
 }
 
 export function getAppleAuthToken() {
-  // const sleepMs = 3000;
-  // const maxRetries = 120 * 1000 / sleepMs; // 120 seconds retry
   const randomState = Math.random().toString(36).substring(2, 15);
-
-  // const endpoint = `${process.env.PD_API_ENDPOINT || ""}/oauth2/status?state=${randomState}`;
-  const wnd = window.open(appleAuthUrl(randomState), "_blank");
-  if (!wnd) {
-    throw new Error("failed opening auth window");
-  }
+  openInBrowser(appleAuthUrl(randomState));
 }
