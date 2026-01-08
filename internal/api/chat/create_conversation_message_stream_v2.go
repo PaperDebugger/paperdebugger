@@ -137,7 +137,7 @@ func (s *ChatServerV2) createConversation(
 }
 
 // appendConversationMessage appends a message to the conversation and writes it to the database
-// Returns the Conversation object
+// Returns the Conversation object and the active branch
 func (s *ChatServerV2) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -147,96 +147,77 @@ func (s *ChatServerV2) appendConversationMessage(
 	surrounding string,
 	conversationType chatv2.ConversationType,
 	parentMessageId string,
-) (*models.Conversation, error) {
+) (*models.Conversation, *models.Branch, error) {
 	objectID, err := bson.ObjectIDFromHex(conversationId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	conversation, err := s.chatServiceV2.GetConversationV2(ctx, userId, objectID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	// Ensure branches are initialized (migrate legacy data if needed)
+	conversation.EnsureBranches()
+
+	var activeBranch *models.Branch
 
 	// Handle branching / edit mode
 	if parentMessageId != "" {
-		if parentMessageId == "root" {
-			// Clear all history, keep only the system message (first element) of OpenaiChatHistoryCompletion
-			conversation.InappChatHistory = []bson.M{}
-			if len(conversation.OpenaiChatHistoryCompletion) > 0 {
-				conversation.OpenaiChatHistoryCompletion = conversation.OpenaiChatHistoryCompletion[:1]
-			} else {
-				// Should not happen, but safe fallback
-				conversation.OpenaiChatHistoryCompletion = []openai.ChatCompletionMessageParamUnion{}
-			}
-		} else {
-			// Find parent message and truncate after it
-			foundIndex := -1
-			for i, msg := range conversation.InappChatHistory {
-				// msg["message_id"] matches parentMessageId
-				// BSON M maps to map[string]interface{}, message_id should be string
-				if id, ok := msg["message_id"].(string); ok && id == parentMessageId {
-					foundIndex = i
-					break
-				}
-			}
-
-			if foundIndex != -1 {
-				// Truncate InappChatHistory to include the parent message
-				conversation.InappChatHistory = conversation.InappChatHistory[:foundIndex+1]
-
-				// Truncate OpenaiChatHistoryCompletion
-				// Map index: Inapp[i] -> Openai[i+1] (because Openai[0] is system)
-				// So we want to keep up to foundIndex + 1 (which corresponds to foundIndex in Inapp)
-				// The slice end is exclusive, so we slice up to (foundIndex + 1) + 1 = foundIndex + 2
-				if len(conversation.OpenaiChatHistoryCompletion) > foundIndex+1 {
-					conversation.OpenaiChatHistoryCompletion = conversation.OpenaiChatHistoryCompletion[:foundIndex+2]
-				}
-			} else {
-				// Parent message not found, maybe ignore or error?
-				// For now, let's log a warning and append (linear behavior fallback) or maybe error is better.
-				// s.logger.Warn("Parent message not found during edit", "parentMessageId", parentMessageId)
-				// Actually, throwing error is safer to avoid confusing state
-				return nil, shared.ErrBadRequest("Parent message not found")
-			}
+		// Create a new branch for the edit
+		activeBranch = conversation.CreateNewBranch("", parentMessageId)
+		if activeBranch == nil {
+			return nil, nil, shared.ErrBadRequest("Failed to create new branch")
+		}
+	} else {
+		// Normal append - use active (latest) branch
+		activeBranch = conversation.GetActiveBranch()
+		if activeBranch == nil {
+			// This shouldn't happen after EnsureBranches, but handle it
+			return nil, nil, shared.ErrBadRequest("No active branch found")
 		}
 	}
 
+	// Now we get the branch, we can append the message to the branch.
 	userMsg, userOaiMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, surrounding, conversationType)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	bsonMsg, err := convertToBSONV2(userMsg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
-	conversation.OpenaiChatHistoryCompletion = append(conversation.OpenaiChatHistoryCompletion, userOaiMsg)
+
+	// Append to the active branch
+	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMsg)
+	activeBranch.OpenaiChatHistoryCompletion = append(activeBranch.OpenaiChatHistoryCompletion, userOaiMsg)
 
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return conversation, nil
+	return conversation, activeBranch, nil
 }
 
 // prepare creates a new conversation if conversationId is "", otherwise appends a message to the conversation
 // conversationType can be switched multiple times within a single conversation
-func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType, parentMessageId string) (context.Context, *models.Conversation, *models.Settings, error) {
+// Returns: context, conversation, activeBranch, settings, error
+func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType, parentMessageId string) (context.Context, *models.Conversation, *models.Branch, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	project, err := s.projectService.GetProject(ctx, actor.ID, projectId)
 	if err != nil && err != mongo.ErrNoDocuments {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	userInstructions, err := s.userService.GetUserInstructions(ctx, actor.ID)
 	if err != nil {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	var latexFullSource string
@@ -245,18 +226,20 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 		latexFullSource = "latex_full_source is not available in debug mode"
 	default:
 		if project == nil || project.IsOutOfDate() {
-			return ctx, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
+			return ctx, nil, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
 		}
 
 		latexFullSource, err = project.GetFullContent()
 		if err != nil {
-			return ctx, nil, nil, err
+			return ctx, nil, nil, nil, err
 		}
 	}
 
 	var conversation *models.Conversation
+	var activeBranch *models.Branch
 
 	if conversationId == "" {
+		// Create a new conversation
 		conversation, err = s.createConversation(
 			ctx,
 			actor.ID,
@@ -270,8 +253,15 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			modelSlug,
 			conversationType,
 		)
+		if err != nil {
+			return ctx, nil, nil, nil, err
+		}
+		// For new conversations, ensure branches and get the active one
+		conversation.EnsureBranches()
+		activeBranch = conversation.GetActiveBranch()
 	} else {
-		conversation, err = s.appendConversationMessage(
+		// Append to an existing conversation
+		conversation, activeBranch, err = s.appendConversationMessage(
 			ctx,
 			actor.ID,
 			conversationId,
@@ -281,10 +271,9 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			conversationType,
 			parentMessageId,
 		)
-	}
-
-	if err != nil {
-		return ctx, nil, nil, err
+		if err != nil {
+			return ctx, nil, nil, nil, err
+		}
 	}
 
 	ctx = contextutil.SetProjectID(ctx, conversation.ProjectID)
@@ -292,10 +281,10 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 
 	settings, err := s.userService.GetUserSettings(ctx, actor.ID)
 	if err != nil {
-		return ctx, conversation, nil, err
+		return ctx, conversation, activeBranch, nil, err
 	}
 
-	return ctx, conversation, settings, nil
+	return ctx, conversation, activeBranch, settings, nil
 }
 
 func (s *ChatServerV2) CreateConversationMessageStream(
@@ -305,7 +294,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	ctx := stream.Context()
 
 	modelSlug := req.GetModelSlug()
-	ctx, conversation, settings, err := s.prepare(
+	ctx, conversation, activeBranch, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
@@ -326,12 +315,13 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		APIKey: settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
+	// Use active branch's history for the LLM call
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, activeBranch.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
-	// Append messages to the conversation
+	// Append messages to the active branch
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
 		bsonMsg, err := convertToBSONV2(&inappChatHistory[i])
@@ -340,16 +330,16 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		}
 		bsonMessages[i] = bsonMsg
 	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistoryCompletion = openaiChatHistory
+	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMessages...)
+	activeBranch.OpenaiChatHistoryCompletion = openaiChatHistory
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
 	if conversation.Title == services.DefaultConversationTitle {
 		go func() {
-			protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
-			for i, bsonMsg := range conversation.InappChatHistory {
+			protoMessages := make([]*chatv2.Message, len(activeBranch.InappChatHistory))
+			for i, bsonMsg := range activeBranch.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
 			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
