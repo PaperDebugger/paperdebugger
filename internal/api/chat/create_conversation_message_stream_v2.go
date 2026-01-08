@@ -8,6 +8,7 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
@@ -193,6 +194,7 @@ func (s *ChatServerV2) appendConversationMessage(
 	// Append to the active branch
 	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMsg)
 	activeBranch.OpenaiChatHistoryCompletion = append(activeBranch.OpenaiChatHistoryCompletion, userOaiMsg)
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return nil, nil, err
@@ -332,6 +334,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	}
 	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMessages...)
 	activeBranch.OpenaiChatHistoryCompletion = openaiChatHistory
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
