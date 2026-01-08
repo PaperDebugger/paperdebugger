@@ -50,7 +50,7 @@ var defaultPrompts = []*userv1.Prompt{
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
 		Title:        "Deep Research (Powered by XtraMCP)",
-		Content:      "First, understand my paper and extract the key ideas into an optimized query. Do deep research and compare my papers against others.",
+		Content:      "First, understand my paper and extract the key ideas into an optimized query. Do deep research and compare my paper against others.",
 		IsUserPrompt: false,
 	},
 	{
