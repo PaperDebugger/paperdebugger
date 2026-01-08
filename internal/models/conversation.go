@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -135,7 +136,7 @@ func (c *Conversation) CreateNewBranch(baseBranchID string, truncateAfterMsgID s
 		// Find parent message and truncate after it
 		foundIndex := -1
 		for i, msg := range sourceInappHistory {
-			if id, ok := msg["messageId"].(string); ok && id == truncateAfterMsgID {
+			if id, ok := msg["messageId"].(string); ok && strings.Contains(id, truncateAfterMsgID) {
 				foundIndex = i
 				break
 			}

@@ -4,6 +4,7 @@ import { MessageEntry, MessageEntryStatus } from "../types";
 import { useStreamingMessageStore } from "../../streaming-message-store";
 import { flushSync } from "react-dom";
 import { useConversationStore } from "../conversation-store";
+import { getConversation } from "../../../query/api";
 
 export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Message | undefined => {
   if (messageEntry.assistant) {
@@ -70,4 +71,31 @@ export const flushStreamingMessageToConversation = (conversationId?: string, mod
 
   useStreamingMessageStore.getState().resetStreamingMessage();
   // Do not reset incomplete indicator here, it will be reset in useSendMessageStream
+
+  // Async update branch info (doesn't block, doesn't overwrite messages)
+  if (conversationId) {
+    updateBranchInfoAsync(conversationId);
+  }
+};
+
+// Fetch branch info from server and update only branch-related fields
+// This preserves the messages (including reasoning) while updating branch info
+const updateBranchInfoAsync = async (conversationId: string) => {
+  try {
+    const response = await getConversation({ conversationId });
+    if (response.conversation) {
+      const branchInfo = response.conversation;
+      useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
+        ...prev,
+        // Only update branch-related fields, keep messages intact
+        currentBranchId: branchInfo.currentBranchId,
+        branches: branchInfo.branches,
+        currentBranchIndex: branchInfo.currentBranchIndex,
+        totalBranches: branchInfo.totalBranches,
+      }));
+    }
+  } catch (error) {
+    console.error("Failed to update branch info:", error);
+    // Non-critical error, branch switcher just won't show
+  }
 };
