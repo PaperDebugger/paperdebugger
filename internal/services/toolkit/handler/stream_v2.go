@@ -103,17 +103,23 @@ func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, c
 		return
 	}
 
+	assistant := &chatv2.MessageTypeAssistant{
+		Content:   content,
+		ModelSlug: h.modelSlug,
+	}
+
+	// Only send Reasoning if it's not empty
+	if reasoning != "" {
+		assistant.Reasoning = &reasoning
+	}
+
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv2.StreamPartEnd{
 				MessageId: chunk.ID,
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_Assistant{
-						Assistant: &chatv2.MessageTypeAssistant{
-							Content:   content,
-							ModelSlug: h.modelSlug,
-							Reasoning: &reasoning,
-						},
+						Assistant: assistant,
 					},
 				},
 			},
