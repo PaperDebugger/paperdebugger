@@ -22,9 +22,45 @@ func BSONToChatMessageV2(msg bson.M) *chatv2.Message {
 	return m
 }
 
+// MapModelConversationToProtoV2 converts a conversation model to proto.
+// Uses the active branch by default, or the specified branchID if provided.
 func MapModelConversationToProtoV2(conversation *models.Conversation) *chatv2.Conversation {
+	return MapModelConversationToProtoV2WithBranch(conversation, "")
+}
+
+// MapModelConversationToProtoV2WithBranch converts a conversation model to proto
+// with explicit branch selection. If branchID is empty, uses the active branch.
+func MapModelConversationToProtoV2WithBranch(conversation *models.Conversation, branchID string) *chatv2.Conversation {
+	// Ensure branches are initialized (migrate legacy data if needed)
+	conversation.EnsureBranches()
+
+	// Determine which branch to use
+	var selectedBranch *models.Branch
+	var currentBranchID string
+	var currentBranchIndex int32
+
+	if branchID != "" {
+		selectedBranch = conversation.GetBranchByID(branchID)
+	}
+	if selectedBranch == nil {
+		selectedBranch = conversation.GetActiveBranch()
+	}
+
+	// Get messages from the selected branch or use legacy fallback
+	var inappHistory []bson.M
+	if selectedBranch != nil {
+		inappHistory = selectedBranch.InappChatHistory
+		currentBranchID = selectedBranch.ID
+		currentBranchIndex = int32(conversation.GetBranchIndex(selectedBranch.ID))
+	} else {
+		// Fallback to legacy fields (should not happen after EnsureBranches)
+		inappHistory = conversation.InappChatHistory
+		currentBranchID = ""
+		currentBranchIndex = 1
+	}
+
 	// Convert BSON messages back to protobuf messages
-	filteredMessages := lo.Map(conversation.InappChatHistory, func(msg bson.M, _ int) *chatv2.Message {
+	filteredMessages := lo.Map(inappHistory, func(msg bson.M, _ int) *chatv2.Message {
 		return BSONToChatMessageV2(msg)
 	})
 
@@ -37,10 +73,23 @@ func MapModelConversationToProtoV2(conversation *models.Conversation) *chatv2.Co
 		modelSlug = models.SlugFromLanguageModel(models.LanguageModel(conversation.LanguageModel))
 	}
 
+	// Build branch info list
+	branches := lo.Map(conversation.Branches, func(b models.Branch, _ int) *chatv2.BranchInfo {
+		return &chatv2.BranchInfo{
+			Id:        b.ID,
+			CreatedAt: int64(b.CreatedAt),
+			UpdatedAt: int64(b.UpdatedAt),
+		}
+	})
+
 	return &chatv2.Conversation{
-		Id:        conversation.ID.Hex(),
-		Title:     conversation.Title,
-		ModelSlug: modelSlug,
-		Messages:  filteredMessages,
+		Id:                 conversation.ID.Hex(),
+		Title:              conversation.Title,
+		ModelSlug:          modelSlug,
+		Messages:           filteredMessages,
+		CurrentBranchId:    currentBranchID,
+		Branches:           branches,
+		CurrentBranchIndex: currentBranchIndex,
+		TotalBranches:      int32(len(conversation.Branches)),
 	}
 }
