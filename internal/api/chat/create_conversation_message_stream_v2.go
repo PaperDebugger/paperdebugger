@@ -2,13 +2,14 @@ package chat
 
 import (
 	"context"
+	"time"
+
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
