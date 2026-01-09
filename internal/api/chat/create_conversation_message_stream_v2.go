@@ -2,6 +2,8 @@ package chat
 
 import (
 	"context"
+	"time"
+
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
@@ -193,6 +195,7 @@ func (s *ChatServerV2) appendConversationMessage(
 	// Append to the active branch
 	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMsg)
 	activeBranch.OpenaiChatHistoryCompletion = append(activeBranch.OpenaiChatHistoryCompletion, userOaiMsg)
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return nil, nil, err
@@ -332,6 +335,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	}
 	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMessages...)
 	activeBranch.OpenaiChatHistoryCompletion = openaiChatHistory
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
