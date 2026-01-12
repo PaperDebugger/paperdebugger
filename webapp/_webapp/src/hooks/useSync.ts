@@ -100,12 +100,6 @@ async function syncWordDocument(
   const fullText = await adapter.getFullText();
   options?.onProgress?.(50);
 
-  if (!fullText || fullText.trim() === "") {
-    logInfo("[Word Sync] Document is empty, skipping sync");
-    options?.onProgress?.(100);
-    return { success: true };
-  }
-
   // Create project snapshot with single document
   const projectSnapshot: PlainMessage<UpsertProjectRequest> = {
     projectId,
@@ -114,7 +108,7 @@ async function syncWordDocument(
     docs: [
       {
         id: "main",
-        version: Date.now(), // Use timestamp as version for Word
+        version: Math.floor(Date.now() / 1000), // Use seconds timestamp (int32 safe)
         filepath: "document.docx",
         lines: fullText.split("\n"),
       } as PlainMessage<ProjectDoc>,
@@ -150,11 +144,6 @@ async function syncGenericDocument(
     const fullText = await adapter.getFullText();
     options?.onProgress?.(50);
 
-    if (!fullText || fullText.trim() === "") {
-      options?.onProgress?.(100);
-      return { success: true };
-    }
-
     const projectSnapshot: PlainMessage<UpsertProjectRequest> = {
       projectId,
       name: "Document",
@@ -162,7 +151,7 @@ async function syncGenericDocument(
       docs: [
         {
           id: "main",
-          version: Date.now(),
+          version: Math.floor(Date.now() / 1000),
           filepath: "document.txt",
           lines: fullText.split("\n"),
         } as PlainMessage<ProjectDoc>,

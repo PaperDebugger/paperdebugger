@@ -6,8 +6,6 @@ import { Providers } from "./providers";
 import {
   AdapterProvider,
   type DocumentAdapter,
-  WordAdapter,
-  createWordAdapter,
 } from "../../adapters";
 
 import "../../index.css";
@@ -56,17 +54,29 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     setIsOpen(true);
   }, [setIsOpen, isOpen, setDisplayMode, displayMode]);
 
-  // Get adapter from registry or create a default WordAdapter
-  const adapter = useMemo<DocumentAdapter>(() => {
+  // Get adapter from registry (must be registered by the host application)
+  const adapter = useMemo<DocumentAdapter | null>(() => {
     if (adapterId) {
       const registeredAdapter = adapterRegistry.get(adapterId);
       if (registeredAdapter) {
         return registeredAdapter;
       }
     }
-    // Default to WordAdapter for Office environment
-    return createWordAdapter();
+    // No adapter registered - host application must register one
+    console.error(
+      "[PaperDebugger] No adapter registered. " +
+      "The host application (e.g., Office Add-in) must register an adapter using __pdRegisterAdapter() before loading this component."
+    );
+    return null;
   }, [adapterId]);
+
+  if (!adapter) {
+    return (
+      <div style={{ padding: 16, color: "red" }}>
+        Error: No document adapter registered. Please ensure the host application registers an adapter.
+      </div>
+    );
+  }
 
   return (
     <Providers>
@@ -88,4 +98,4 @@ const PaperdebuggerOffice = r2wc(PaperDebugger, {
 customElements.define("paperdebugger-office", PaperdebuggerOffice);
 
 // Export for direct module usage
-export { PaperDebugger, WordAdapter, createWordAdapter };
+export { PaperDebugger };
