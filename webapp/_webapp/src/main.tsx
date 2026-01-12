@@ -43,6 +43,13 @@ initializeFaro({
     // Tracing package to get end-to-end visibility for HTTP requests.
     new TracingInstrumentation(),
   ],
+  ignoreUrls:[
+    /overleaf\.com/,
+    /compiles\.overleafusercontent\.com/,
+    /writefull\.ai/,
+    /bugsnag\.com/,
+    /google-analytics\.com/,
+  ]
 });
 
 export const Main = () => {
