@@ -22,6 +22,22 @@ declare const Word: {
   };
 };
 
+declare const Office: {
+  context: {
+    document: {
+      url?: string;
+      settings: {
+        get(name: string): unknown;
+        set(name: string, value: unknown): void;
+        saveAsync(callback?: (result: { status: string; error?: Error }) => void): void;
+      };
+    };
+  };
+  AsyncResultStatus: {
+    Succeeded: string;
+  };
+};
+
 interface WordContext {
   document: {
     body: WordBody;
@@ -42,14 +58,88 @@ interface WordRange {
   load(properties: string): void;
 }
 
+const DOCUMENT_ID_SETTINGS_KEY = "pd.documentId";
+
 export class WordAdapter implements DocumentAdapter {
   readonly platform = "word" as const;
 
   private _ready = false;
+  private _documentId: string | null = null;
 
   constructor() {
     // Check if Office is available
     this._ready = typeof Word !== "undefined";
+    // Initialize document ID from settings
+    this._initDocumentId();
+  }
+
+  /**
+   * Initialize document ID from Office settings or generate a new one.
+   * Uses Office.context.document.settings to persist the ID with the document.
+   */
+  private _initDocumentId(): void {
+    if (!this._ready || typeof Office === "undefined") {
+      this._documentId = this._generateUUID();
+      return;
+    }
+
+    try {
+      const settings = Office.context.document.settings;
+
+      // Try to get existing document ID from settings
+      const existingId = settings.get(DOCUMENT_ID_SETTINGS_KEY) as string | null;
+      if (existingId) {
+        this._documentId = existingId;
+        return;
+      }
+
+      // Try to use document URL for OneDrive/SharePoint documents
+      let newId: string;
+      if (Office.context?.document?.url) {
+        // Use URL hash for cloud documents - more stable than raw URL
+        newId = "word-" + this._hashString(Office.context.document.url);
+      } else {
+        // Generate new UUID for local documents
+        newId = "word-" + this._generateUUID();
+      }
+
+      // Save to settings and persist
+      settings.set(DOCUMENT_ID_SETTINGS_KEY, newId);
+      settings.saveAsync((result) => {
+        if (result.status !== Office.AsyncResultStatus.Succeeded) {
+          console.warn("Failed to save document ID to settings:", result.error);
+        }
+      });
+
+      this._documentId = newId;
+    } catch (error) {
+      console.warn("Error initializing document ID:", error);
+      this._documentId = "word-" + this._generateUUID();
+    }
+  }
+
+  /**
+   * Generate a UUID v4 string
+   */
+  private _generateUUID(): string {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  /**
+   * Generate a hash string from input (for stable IDs from URLs)
+   */
+  private _hashString(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, "0");
   }
 
   isReady(): boolean {
@@ -164,10 +254,14 @@ export class WordAdapter implements DocumentAdapter {
     };
   }
 
+  /**
+   * Get unique document identifier.
+   * Returns a persistent ID stored in document settings.
+   * The ID is generated once and saved with the document.
+   */
   getDocumentId(): string {
-    // Word documents don't have a simple project ID like Overleaf
-    // Could potentially use Office.context.document.url or similar
-    return "word-document";
+    // Return cached ID (initialized in constructor)
+    return this._documentId ?? "word-document";
   }
 }
 

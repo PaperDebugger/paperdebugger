@@ -28,15 +28,15 @@ import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
 import { fromJson } from "@bufbuild/protobuf";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
-import { useSocketStore } from "../stores/socket-store";
 import { logError, logWarn } from "../libs/logger";
 import { handleError } from "../stores/conversation/handlers/handleError";
 import { handleIncompleteIndicator } from "../stores/conversation/handlers/handleIncompleteIndicator";
 import { useAuthStore } from "../stores/auth-store";
 import { useDevtoolStore } from "../stores/devtool-store";
-import { getCookies } from "../intermediate";
 import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
+import { useSync } from "./useSync";
+import { useAdapter } from "../adapters";
 
 /**
  * Custom React hook to handle sending a message as a stream in a conversation.
@@ -54,11 +54,14 @@ import { useSettingStore } from "../stores/setting-store";
  * @returns {Function} sendMessageStream - Function to send a message as a stream. Accepts (message: string, selectedText: string) and returns a Promise.
  */
 export function useSendMessageStream() {
-  const { sync } = useSocketStore();
+  const { sync } = useSync();
   const { user } = useAuthStore();
+  const adapter = useAdapter();
 
   const { currentConversation } = useConversationStore();
-  const { refetch: refetchConversationList } = useListConversationsQuery(getProjectId());
+  // Get project ID from adapter (supports both Overleaf URL and Word document ID)
+  const projectId = adapter.getDocumentId?.() || getProjectId();
+  const { refetch: refetchConversationList } = useListConversationsQuery(projectId);
   const { resetStreamingMessage, updateStreamingMessage, resetIncompleteIndicator } = useStreamingMessageStore();
   const { surroundingText: storeSurroundingText } = useSelectionStore();
   const { alwaysSyncProject } = useDevtoolStore();
@@ -73,7 +76,7 @@ export function useSendMessageStream() {
       message = message.trim();
 
       const request: PlainMessage<CreateConversationMessageStreamRequest> = {
-        projectId: getProjectId(),
+        projectId: projectId,
         conversationId: currentConversation.id,
         modelSlug: currentConversation.modelSlug,
         userMessage: message,
@@ -101,16 +104,8 @@ export function useSendMessageStream() {
       }));
 
       if (import.meta.env.DEV && alwaysSyncProject) {
-        const { session, gclb } = await getCookies(window.location.hostname);
-        await sync(
-          user?.id || "",
-          getProjectId(),
-          {
-            cookieOverleafSession2: session,
-            cookieGCLB: gclb,
-          },
-          "unused",
-        );
+        // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
+        await sync();
       }
 
       await withRetrySync(
@@ -162,16 +157,11 @@ export function useSendMessageStream() {
         {
           sync: async () => {
             try {
-              const { session, gclb } = await getCookies(window.location.hostname);
-              await sync(
-                user?.id || "",
-                getProjectId(),
-                {
-                  cookieOverleafSession2: session,
-                  cookieGCLB: gclb,
-                },
-                "unused",
-              );
+              // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
+              const result = await sync();
+              if (!result.success) {
+                logError("Failed to sync project", result.error);
+              }
             } catch (e) {
               logError("Failed to sync project", e);
             }
@@ -192,6 +182,7 @@ export function useSendMessageStream() {
       user?.id,
       alwaysSyncProject,
       conversationMode,
+      projectId,
     ],
   );
 

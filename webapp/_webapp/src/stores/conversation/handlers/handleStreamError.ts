@@ -1,23 +1,20 @@
 import { MessageTypeAssistantSchema, StreamError } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { errorToast } from "../../../libs/toasts";
-import { OverleafAuthentication, OverleafVersionedDoc } from "../../../libs/overleaf-socket";
-import { getProjectId } from "../../../libs/helpers";
-import { getCookies } from "../../../intermediate";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
 import { fromJson } from "@bufbuild/protobuf";
 
+interface SyncResult {
+  success: boolean;
+  error?: Error;
+}
+
 export async function handleStreamError(
   streamError: StreamError,
-  userId: string,
+  _userId: string, // Kept for API compatibility, sync handles user internally
   currentPrompt: string,
   currentSelectedText: string,
-  sync: (
-    userId: string,
-    projectId: string,
-    overleafAuth: OverleafAuthentication,
-    csrfToken: string,
-  ) => Promise<Map<string, OverleafVersionedDoc>>,
+  sync: () => Promise<SyncResult>,
   sendMessageStream: (message: string, selectedText: string) => Promise<void>,
   updateStreamingMessage: (updater: (prev: StreamingMessage) => StreamingMessage) => void,
 ) {
@@ -37,18 +34,12 @@ export async function handleStreamError(
   };
 
   try {
-    const { session, gclb } = await getCookies(window.location.hostname);
     if (streamError.errorMessage.includes("project is out of date")) {
-      // TODO: replace this into a shared variable for both backend and frontend
-      await sync(
-        userId,
-        getProjectId(),
-        {
-          cookieOverleafSession2: session,
-          cookieGCLB: gclb,
-        },
-        "unused",
-      );
+      // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
+      const result = await sync();
+      if (!result.success) {
+        throw result.error || new Error("Sync failed");
+      }
       // Retry sending the message after sync
       await sendMessageStream(currentPrompt, currentSelectedText);
     } else {
