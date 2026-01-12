@@ -8,11 +8,22 @@
  */
 
 // Types
-export type { DocumentAdapter, SelectionInfo, AdapterProps } from "./types";
+export type {
+  DocumentAdapter,
+  SelectionInfo,
+  AdapterProps,
+  StorageAdapter,
+} from "./types";
 
 // Context and hooks
 export { AdapterProvider, useAdapter, useAdapterOptional } from "./context";
 
-// Implementations
-export { OverleafAdapter, getOverleafAdapter } from "./overleaf-adapter";
+// Document Adapter Implementations
+export { OverleafAdapter, getOverleafAdapter } from "./document-adapter";
 
+// Storage Adapter Implementations
+export {
+  LocalStorageAdapter,
+  MemoryStorageAdapter,
+  createStorageAdapter,
+} from "./storage-adapter";

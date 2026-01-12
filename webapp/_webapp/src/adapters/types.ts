@@ -1,13 +1,28 @@
 /**
- * DocumentAdapter Interface
+ * Adapter Type Definitions
  *
- * Platform-agnostic interface for document operations.
- * Implementations:
- * - OverleafAdapter: For Overleaf/browser environment
- * - WordAdapter: For Microsoft Word Office Add-in
+ * Platform-agnostic interfaces for document and storage operations.
  *
- * The React UI should only depend on this interface, never on platform-specific APIs.
+ * ⚠️  SOURCE OF TRUTH - This file is synced to office-addin
+ *
+ * When modifying this file, run the sync script in office-addin:
+ *   cd ../paperdebugger-office-addin && ./scripts/sync-types.sh
+ *
+ * Document Adapter Implementations:
+ * - OverleafAdapter: For Overleaf/browser environment (webapp)
+ * - WordAdapter: For Microsoft Word Office Add-in (office-addin)
+ *
+ * Storage Adapter Implementations:
+ * - LocalStorageAdapter: For browser localStorage (webapp)
+ * - MemoryStorageAdapter: For in-memory fallback (webapp)
+ * - OfficeRoamingAdapter: For Office roaming settings (office-addin)
+ *
+ * The React UI should only depend on these interfaces, never on platform-specific APIs.
  */
+
+// ============================================================================
+// Document Adapter Types
+// ============================================================================
 
 export interface SelectionInfo {
   /** The selected text content */
@@ -74,3 +89,15 @@ export interface AdapterProps {
   displayMode?: "floating" | "bottom-fixed" | "right-fixed" | "fullscreen";
 }
 
+// ============================================================================
+// Storage Adapter Types
+// ============================================================================
+
+export interface StorageAdapter {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+  clear(): void;
+  /** Get all keys in storage */
+  keys(): string[];
+}

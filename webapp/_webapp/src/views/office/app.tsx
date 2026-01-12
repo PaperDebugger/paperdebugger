@@ -1,12 +1,15 @@
 import r2wc from "@r2wc/react-to-web-component";
 import { MainDrawer } from "..";
 import { useConversationUiStore } from "../../stores/conversation/conversation-ui-store";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Providers } from "./providers";
 import {
   AdapterProvider,
   type DocumentAdapter,
+  type StorageAdapter,
 } from "../../adapters";
+import { setStorage as setGlobalStorage } from "../../libs/storage";
+import { useAuthStore } from "../../stores/auth-store";
 
 import "../../index.css";
 
@@ -36,6 +39,15 @@ export function unregisterAdapter(id: string): void {
   adapterRegistry.delete(id);
 }
 
+/**
+ * Set the storage adapter to be used by PaperDebugger
+ * This MUST be called before the component mounts to ensure auth state is properly loaded
+ * @param adapter - A StorageAdapter implementation (e.g., OfficeRoamingAdapter)
+ */
+export function setStorage(adapter: StorageAdapter): void {
+  setGlobalStorage(adapter);
+}
+
 // Expose registration functions globally for cross-bundle access
 if (typeof window !== "undefined") {
   (window as unknown as { __pdAdapterRegistry: typeof adapterRegistry }).
@@ -44,10 +56,24 @@ if (typeof window !== "undefined") {
     __pdRegisterAdapter = registerAdapter;
   (window as unknown as { __pdUnregisterAdapter: typeof unregisterAdapter }).
     __pdUnregisterAdapter = unregisterAdapter;
+  (window as unknown as { __pdSetStorage: typeof setStorage }).
+    __pdSetStorage = setStorage;
 }
 
 const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerProps) => {
   const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
+  const { initFromStorage, login } = useAuthStore();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize auth from storage on mount
+  // This must happen before the main UI renders to restore login state
+  useEffect(() => {
+    // Re-initialize auth store from storage (storage adapter should be set by host before component mounts)
+    initFromStorage();
+    // Attempt to login with restored tokens
+    login();
+    setIsInitialized(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setDisplayMode(displayMode);
@@ -74,6 +100,15 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     return (
       <div style={{ padding: 16, color: "red" }}>
         Error: No document adapter registered. Please ensure the host application registers an adapter.
+      </div>
+    );
+  }
+
+  // Wait for initialization to complete before rendering main UI
+  if (!isInitialized) {
+    return (
+      <div style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        Loading...
       </div>
     );
   }

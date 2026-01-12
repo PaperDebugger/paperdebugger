@@ -4,6 +4,7 @@ import { User } from "../pkg/gen/apiclient/user/v1/user_pb";
 import apiclient, { apiclientV2 } from "../libs/apiclient";
 import { logout as apiLogout, getUser } from "../query/api";
 import { logInfo } from "../libs/logger";
+import { storage } from "../libs/storage";
 
 const LOCAL_STORAGE_KEY = {
   TOKEN: "pd.auth.token",
@@ -25,6 +26,13 @@ export interface AuthStore {
 
   refreshToken: string;
   setRefreshToken: (refreshToken: string) => void;
+
+  /**
+   * Initialize store from storage.
+   * Must be called after storage adapter is set (e.g., after Office.onReady).
+   * This reloads token/refreshToken from the configured storage adapter.
+   */
+  initFromStorage: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -50,9 +58,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   logout: async () => {
     const { refreshToken } = get();
-    localStorage.removeItem(LOCAL_STORAGE_KEY.USER);
-    localStorage.removeItem(LOCAL_STORAGE_KEY.TOKEN);
-    localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
+    storage.removeItem(LOCAL_STORAGE_KEY.USER);
+    storage.removeItem(LOCAL_STORAGE_KEY.TOKEN);
+    storage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
     try {
       await Promise.all([apiLogout({ refreshToken })]);
       logInfo("logged out");
@@ -64,15 +72,28 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ user: null, token: "", refreshToken: "" });
   },
 
-  token: localStorage.getItem(LOCAL_STORAGE_KEY.TOKEN) ?? "",
+  // Initial values are empty - will be populated by initFromStorage()
+  // This ensures we don't read from storage before the adapter is set
+  token: "",
   setToken: (token) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY.TOKEN, token);
+    storage.setItem(LOCAL_STORAGE_KEY.TOKEN, token);
     set({ token });
   },
 
-  refreshToken: localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) ?? "",
+  refreshToken: "",
   setRefreshToken: (refreshToken) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, refreshToken ?? "");
+    storage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, refreshToken ?? "");
     set({ refreshToken });
+  },
+
+  initFromStorage: () => {
+    const token = storage.getItem(LOCAL_STORAGE_KEY.TOKEN) ?? "";
+    const refreshToken = storage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) ?? "";
+    console.log("[AuthStore] initFromStorage:", { 
+      hasToken: !!token, 
+      tokenLength: token.length,
+      hasRefreshToken: !!refreshToken 
+    });
+    set({ token, refreshToken });
   },
 }));
