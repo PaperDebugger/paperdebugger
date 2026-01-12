@@ -14,6 +14,7 @@
  */
 import { HANDLER_NAMES } from "./shared/constants";
 import { v4 as uuidv4 } from "uuid";
+import { storage } from "./libs/storage";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
@@ -119,8 +120,8 @@ if (import.meta.env.DEV) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCookies = async (_domain: string) => {
     return {
-      session: localStorage.getItem("pd.auth.overleafSession") ?? "",
-      gclb: localStorage.getItem("pd.auth.gclb") ?? "",
+      session: storage.getItem("pd.auth.overleafSession") ?? "",
+      gclb: storage.getItem("pd.auth.gclb") ?? "",
     };
   };
 } else if (isExtensionEnvironment) {
@@ -147,7 +148,7 @@ export { getUrl };
 
 // ============================================================================
 // getOrCreateSessionId - Get or create analytics session ID
-// Office Add-in: Use sessionStorage instead of chrome.storage.session
+// Office Add-in: Use sessionStorage with in-memory fallback
 // ============================================================================
 let getOrCreateSessionId: () => Promise<string>;
 if (isExtensionEnvironment) {
@@ -155,12 +156,33 @@ if (isExtensionEnvironment) {
 } else {
   const SESSION_EXPIRATION_IN_MIN = 30;
   const SESSION_STORAGE_KEY = "pd.sessionData";
+  
+  // In-memory fallback for environments where sessionStorage is not available
+  let inMemorySessionData: { session_id: string; timestamp: number } | null = null;
+  
+  // Helper to safely access sessionStorage
+  const getSessionStorageItem = (key: string): string | null => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+  
+  const setSessionStorageItem = (key: string, value: string): void => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // Ignore errors - we have in-memory fallback
+    }
+  };
+  
   getOrCreateSessionId = async () => {
     const currentTimeInMs = Date.now();
-    const storedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const storedData = getSessionStorageItem(SESSION_STORAGE_KEY);
     let sessionData: { session_id: string; timestamp: number } | null = storedData
       ? JSON.parse(storedData)
-      : null;
+      : inMemorySessionData;
 
     if (sessionData && sessionData.timestamp) {
       const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
@@ -168,7 +190,8 @@ if (isExtensionEnvironment) {
         sessionData = null;
       } else {
         sessionData.timestamp = currentTimeInMs;
-        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+        setSessionStorageItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+        inMemorySessionData = sessionData;
       }
     }
     if (!sessionData) {
@@ -176,7 +199,8 @@ if (isExtensionEnvironment) {
         session_id: currentTimeInMs.toString(),
         timestamp: currentTimeInMs,
       };
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+      setSessionStorageItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+      inMemorySessionData = sessionData;
     }
     return sessionData.session_id;
   };

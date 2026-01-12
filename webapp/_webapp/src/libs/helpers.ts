@@ -1,4 +1,6 @@
 import { EditorView } from "@codemirror/view";
+import { storage } from "./storage";
+import { storage } from "./storage";
 
 export async function onElementAppeared(selector: string, callback: (element: Element) => void) {
   const element = document.querySelector(selector);
@@ -54,7 +56,7 @@ export function applyChanges(changes: string, range: Range): boolean {
 
 export function getProjectId() {
   if (import.meta.env.DEV) {
-    return localStorage.getItem("pd.projectId") ?? "";
+    return storage.getItem("pd.projectId") ?? "";
   }
   const match = window.location.pathname.match(/\/project\/([a-zA-Z0-9]+)/);
   return match ? match[1] : "";
@@ -171,7 +173,7 @@ export function generateSHA1Hash(inputString: string): string {
   return result.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// --- Overleaf Comments Clicked LocalStorage ---
+// --- Overleaf Comments Clicked Storage ---
 const OVERLEAF_COMMENTS_CLICKED_PREFIX = "pd.overleaf_comments_clicked.";
 const MAX_CLICKED_COMMENTS = 200;
 
@@ -179,7 +181,7 @@ export function getClickedOverleafComments(projectId: string): string[] {
   if (!projectId) return [];
   const key = OVERLEAF_COMMENTS_CLICKED_PREFIX + projectId;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (!raw) return [];
     const arr = JSON.parse(raw);
     if (Array.isArray(arr)) return arr;
@@ -200,7 +202,7 @@ export function addClickedOverleafComment(projectId: string, messageId: string) 
   if (arr.length > MAX_CLICKED_COMMENTS) {
     arr = arr.slice(arr.length - MAX_CLICKED_COMMENTS);
   }
-  localStorage.setItem(key, JSON.stringify(arr));
+  storage.setItem(key, JSON.stringify(arr));
 }
 
 export function hasClickedOverleafComment(projectId: string, messageId: string): boolean {

@@ -12,6 +12,8 @@ import {
 import { setStorage as setGlobalStorage } from "../../libs/storage";
 import { useAuthStore } from "../../stores/auth-store";
 import { useSelectionStore } from "../../stores/selection-store";
+import { useSettingStore } from "../../stores/setting-store";
+import { useDevtoolStore } from "../../stores/devtool-store";
 
 import "../../index.css";
 
@@ -85,14 +87,20 @@ if (typeof window !== "undefined") {
 
 const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerProps) => {
   const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
-  const { initFromStorage, login } = useAuthStore();
+  const { initFromStorage: initAuthFromStorage, login } = useAuthStore();
+  const { initLocalSettings } = useSettingStore();
+  const { initFromStorage: initDevtoolFromStorage } = useDevtoolStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth from storage on mount
-  // This must happen before the main UI renders to restore login state
+  // Initialize stores from storage on mount
+  // This must happen before the main UI renders to restore login state and settings
   useEffect(() => {
     // Re-initialize auth store from storage (storage adapter should be set by host before component mounts)
-    initFromStorage();
+    initAuthFromStorage();
+    // Re-initialize local UI settings from storage
+    initLocalSettings();
+    // Re-initialize devtool settings from storage
+    initDevtoolFromStorage();
     // Attempt to login with restored tokens
     login();
     setIsInitialized(true);

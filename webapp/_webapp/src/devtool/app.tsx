@@ -3,32 +3,33 @@ import { useAuthStore } from "../stores/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
+import { storage } from "../libs/storage";
 
 const App = () => {
   const { token, refreshToken, setToken, setRefreshToken } = useAuthStore();
-  const [projectId, setProjectId] = useState(localStorage.getItem("pd.projectId") ?? "");
-  const [overleafSession, setOverleafSession] = useState(localStorage.getItem("pd.auth.overleafSession") ?? "");
-  const [gclb, setGclb] = useState(localStorage.getItem("pd.auth.gclb") ?? "");
+  const [projectId, setProjectId] = useState(storage.getItem("pd.projectId") ?? "");
+  const [overleafSession, setOverleafSession] = useState(storage.getItem("pd.auth.overleafSession") ?? "");
+  const [gclb, setGclb] = useState(storage.getItem("pd.auth.gclb") ?? "");
 
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
-      setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
-      setGclb(cookies.gclb ?? localStorage.getItem("pd.auth.gclb") ?? "");
+      setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
+      setGclb(cookies.gclb ?? storage.getItem("pd.auth.gclb") ?? "");
     });
   }, []);
 
   const setProjectId_ = useCallback((projectId: string) => {
-    localStorage.setItem("pd.projectId", projectId);
+    storage.setItem("pd.projectId", projectId);
     setProjectId(projectId);
   }, []);
 
   const setOverleafSession_ = useCallback((overleafSession: string) => {
-    localStorage.setItem("pd.auth.overleafSession", overleafSession);
+    storage.setItem("pd.auth.overleafSession", overleafSession);
     setOverleafSession(overleafSession);
   }, []);
 
   const setGclb_ = useCallback((gclb: string) => {
-    localStorage.setItem("pd.auth.gclb", gclb);
+    storage.setItem("pd.auth.gclb", gclb);
     setGclb(gclb);
   }, []);
 
