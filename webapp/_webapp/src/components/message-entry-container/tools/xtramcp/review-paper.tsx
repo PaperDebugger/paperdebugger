@@ -4,12 +4,43 @@ import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const formatArray = (arr: any): string => {
-  if (Array.isArray(arr)) {
-    return arr.join(", ");
-  }
-  return String(arr);
+// Helper function to render severity levels with strikethrough
+const renderSeverityLevels = (threshold: string) => {
+  const levels = ['nit', 'minor', 'major', 'blocker'];
+  const thresholdIndex = levels.indexOf(threshold.toLowerCase());
+  
+  return (
+    <div className="inline-flex items-center gap-1 flex-wrap">
+      {levels.map((level, index) => (
+        <span key={level}>
+          <code
+            className={cn(
+              "text-xs px-1.5 py-0.5 rounded",
+              index < thresholdIndex ? "line-through text-gray-400 bg-gray-100" : "text-gray-700 bg-gray-100"
+            )}
+          >
+            {level}
+          </code>
+          {index < levels.length - 1 && <span className="text-gray-400 mx-1">|</span>}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const renderSections = (sections: Array<string>) => {
+  return (
+    <span>
+      {sections.map((section, index) => (
+        <span key={section}>
+          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 bg-gray-100">
+            {section}
+          </code>
+          {index < sections.length - 1 && ", "}
+        </span>
+      ))}
+    </span>
+  );
 };
 
 export const ReviewPaperCard = ({ functionName, message, preparing, animated }: XtraMcpToolCardProps) => {
@@ -46,17 +77,11 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
-        <div
-          className="flex items-center justify-between cursor-pointer"
-          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-        >
+        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton
-              isCollapsed={isMetadataCollapsed}
-              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
-            />
+            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
           </div>
         </div>
 
@@ -78,15 +103,9 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
         {/* COMPACT TOOL CARD - Just title + metadata dropdown */}
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
-          <div
-            className="flex items-center justify-between cursor-pointer"
-            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-          >
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton
-              isCollapsed={isMetadataCollapsed}
-              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
-            />
+            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
@@ -104,19 +123,17 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                 {/* Custom metadata rendering */}
                 {result.metadata.target_venue !== undefined && (
                   <div className="mb-2">
-                    <span className="font-medium">Checked for:</span> "
-                    {result.metadata.target_venue || "General review"}"
+                    <span className="font-medium">Checked for:</span> "{result.metadata.target_venue || "General review"}"
                   </div>
                 )}
                 {result.metadata.severity_threshold && (
                   <div className="mb-2">
-                    <span className="font-medium">Filtered:</span> "{result.metadata.severity_threshold}" and above
+                    <span className="font-medium">Filtered:</span> {renderSeverityLevels(result.metadata.severity_threshold)}
                   </div>
                 )}
-                {result.metadata.sections_to_review && (
+                {result.metadata.sections_reviewed && (
                   <div>
-                    <span className="font-medium">Sections reviewed:</span>{" "}
-                    {formatArray(result.metadata.sections_to_review)}
+                    <span className="font-medium">Sections reviewed:</span> {renderSections(result.metadata.sections_reviewed)}
                   </div>
                 )}
               </div>
@@ -126,7 +143,9 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
         <div className="canselect text-sm mt-2">
-          <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
+          <MarkdownComponent animated={animated}>
+            {result.content}
+          </MarkdownComponent>
         </div>
       </>
     );

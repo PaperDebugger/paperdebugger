@@ -86,14 +86,31 @@ export const VerifyCitationsCard = ({ functionName, message, preparing, animated
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
               <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
                 {/* Custom metadata rendering */}
-                {result.metadata.bibliography_file && (
-                  <div className="mb-2">
-                    <span className="font-medium">Bib source file:</span>{" "}
-                    <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">
-                      {result.metadata.bibliography_file}
-                    </code>
-                  </div>
-                )}
+                {result.metadata.bibliography_files && (() => {
+                  const files = result.metadata.bibliography_files;
+                  const isArray = Array.isArray(files);
+                  return (
+                    <div className="mb-2">
+                      <span className="font-medium">Bib Source File{isArray && files.length > 1 ? 's' : ''}:</span>{" "}
+                      {isArray ? (
+                        <span>
+                          {files.map((file, index) => (
+                            <span key={file}>
+                              <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">
+                                {file}
+                              </code>
+                              {index < files.length - 1 && ", "}
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">
+                          {files}
+                        </code>
+                      )}
+                    </div>
+                  );
+                })()}
                 {result.metadata.total_citations !== undefined && (
                   <div>
                     <span className="font-medium">Total Citations:</span> {result.metadata.total_citations}
