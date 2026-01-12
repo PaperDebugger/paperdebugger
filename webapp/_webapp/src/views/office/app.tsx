@@ -7,9 +7,11 @@ import {
   AdapterProvider,
   type DocumentAdapter,
   type StorageAdapter,
+  type SelectionInfo,
 } from "../../adapters";
 import { setStorage as setGlobalStorage } from "../../libs/storage";
 import { useAuthStore } from "../../stores/auth-store";
+import { useSelectionStore } from "../../stores/selection-store";
 
 import "../../index.css";
 
@@ -48,6 +50,25 @@ export function setStorage(adapter: StorageAdapter): void {
   setGlobalStorage(adapter);
 }
 
+/**
+ * Set the current selection from external host (e.g., Office Add-in)
+ * @param selection - The selection info, or null to clear
+ */
+export function setSelection(selection: SelectionInfo | null): void {
+  const store = useSelectionStore.getState();
+  if (selection) {
+    store.setLastSelectedText(selection.text);
+    store.setLastSurroundingText(selection.surroundingText ?? null);
+    store.setSelectedText(selection.text);
+    store.setSurroundingText(selection.surroundingText ?? null);
+  } else {
+    store.setLastSelectedText(null);
+    store.setLastSurroundingText(null);
+    store.setSelectedText(null);
+    store.setSurroundingText(null);
+  }
+}
+
 // Expose registration functions globally for cross-bundle access
 if (typeof window !== "undefined") {
   (window as unknown as { __pdAdapterRegistry: typeof adapterRegistry }).
@@ -58,6 +79,8 @@ if (typeof window !== "undefined") {
     __pdUnregisterAdapter = unregisterAdapter;
   (window as unknown as { __pdSetStorage: typeof setStorage }).
     __pdSetStorage = setStorage;
+  (window as unknown as { __pdSetSelection: typeof setSelection }).
+    __pdSetSelection = setSelection;
 }
 
 const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerProps) => {
