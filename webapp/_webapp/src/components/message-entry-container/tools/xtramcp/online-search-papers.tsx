@@ -14,7 +14,7 @@ export const OnlineSearchPapersCard = ({ functionName, message, preparing, anima
         <div className="flex items-center justify-between">
           <h3 className="tool-card-title">Searching online..</h3>
         </div>
-        <LoadingIndicator text="Processing ..." estimatedSeconds={180} />
+        <LoadingIndicator text="Processing ..." estimatedSeconds={35} />
       </div>
     );
   }

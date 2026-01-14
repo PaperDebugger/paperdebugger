@@ -53,7 +53,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
         <div className="flex items-center justify-between">
           <h3 className="tool-card-title">Reviewing your work..</h3>
         </div>
-        <LoadingIndicator text="Processing ..." estimatedSeconds={150} />
+        <LoadingIndicator text="Processing ..." estimatedSeconds={80} />
       </div>
     );
   }

@@ -22,7 +22,7 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
         <div className="flex items-center justify-between">
           <h3 className="tool-card-title">Searching for papers..</h3>
         </div>
-        <LoadingIndicator text="Processing ..." estimatedSeconds={180} />
+        <LoadingIndicator text="Processing ..." estimatedSeconds={35} />
       </div>
     );
   }
