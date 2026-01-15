@@ -60,7 +60,7 @@ export const Login = () => {
       <div className="text-xs text-gray-500 mt-4 text-center max-w-xs">
         By login-in, you agree to PaperDebugger's <br />
         <a
-          href="https://www.paperdebugger.com/terms/"
+          href="https://www.paperdebugger.com/blog/terms/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary-600 underline"
@@ -69,7 +69,7 @@ export const Login = () => {
         </a>{" "}
         and its{" "}
         <a
-          href="https://www.paperdebugger.com/privacy"
+          href="https://www.paperdebugger.com/blog/privacy/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary-600 underline"
