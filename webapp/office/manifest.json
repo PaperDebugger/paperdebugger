@@ -4,18 +4,18 @@
     "manifestVersion": "1.17",
     "version": "1.0.0",
     "name": {
-      "short": "Contoso Task Pane Add-in",
-      "full": "Contoso Task Pane Add-in"
+      "short": "PaperDebugger",
+      "full": "PaperDebugger"
     },
     "description": {
-      "short": "A template to get started.",
-      "full": "This is the template to get started."
+      "short": "PaperDebugger is a tool that helps you debug your code.",
+      "full": "PaperDebugger is a tool that helps you debug your code."
     },
     "developer": {
-      "name": "Contoso",
-      "websiteUrl": "https://www.contoso.com",
-      "privacyUrl": "https://www.contoso.com/privacy",
-      "termsOfUseUrl": "https://www.contoso.com/servicesagreement"
+      "name": "PaperDebugger",
+      "websiteUrl": "https://www.paperdebugger.com",
+      "privacyUrl": "https://www.paperdebugger.com/blog/privacy",
+      "termsOfUseUrl": "https://www.paperdebugger.com/blog/terms"
     },
     "icons": {
       "outline": "assets/outline.png",
@@ -36,7 +36,7 @@
         ]
       }
     },
-    "validDomains": ["contoso.com"],
+    "validDomains": ["app.paperdebugger.com", "stg-app.paperdebugger.com", "localhost:3000", "localhost:6060"],
     "extensions": [
       {
         "requirements": {
@@ -104,14 +104,14 @@
                       {
                         "id": "msgComposeOpenPaneButton",
                         "type": "button",
-                        "label": "Show Task Pane",
+                        "label": "Show PaperDebugger",
                         "icons": [
                           { "size": 16, "url": "https://localhost:3000/assets/icon-16.png" },
                           { "size": 32, "url": "https://localhost:3000/assets/icon-32.png" },
                           { "size": 80, "url": "https://localhost:3000/assets/icon-80.png" }
                         ],
                         "supertip": {
-                          "title": "Show Task Pane",
+                          "title": "Show PaperDebugger",
                           "description": "Opens a task pane."
                         },
                         "actionId": "TaskPaneRuntimeShow"
