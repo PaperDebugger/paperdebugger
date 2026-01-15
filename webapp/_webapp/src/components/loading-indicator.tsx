@@ -63,12 +63,23 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
     let lastUpdateTime = Date.now();
     let currentProgress = 0;
 
+    // If we want it to go faster, we multiply the increment.
+    // 1x = standard duration. 2x = half duration.
+    const getSpeedMultiplier = (currentPhase: Phase) => {
+      switch (currentPhase) {
+        case "green": return 1;   // Takes full duration
+        case "orange": return 2;  // Takes half duration (50%)
+        case "red": return 2;     // Takes half duration (50%)
+        default: return 1;
+      }
+    };
+
     const updateProgress = () => {
       const now = Date.now();
       const deltaTime = now - lastUpdateTime;
 
       // Add random delay to make animation more natural
-      if (deltaTime < Math.random() * 500) {
+      if (deltaTime < Math.random() * 300) {
         animationFrameId = requestAnimationFrame(updateProgress);
         return;
       }
@@ -76,13 +87,17 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
       lastUpdateTime = now;
 
       // Calculate progress with natural fluctuation
-      const baseIncrement = (deltaTime / (estimatedSeconds * 1000)) * 100;
-      const fluctuation = (Math.random() - 0.5) * 4;
+      const speedMultiplier = getSpeedMultiplier(phase);
+      // the math 
+      const baseIncrement = (deltaTime / (estimatedSeconds * 1000)) * 100 * speedMultiplier;
+      const fluctuation = baseIncrement * (Math.random() - 0.5);
       const increment = Math.max(0, baseIncrement + fluctuation);
       currentProgress = Math.max(currentProgress, currentProgress + increment);
 
       // Handle phase transitions
       if (currentProgress >= 100) {
+        // we spend 100% of estimatedDuration in green,
+        // 50% in orange, and 50% in red before warning.
         if (phase === "green") {
           setPhase("orange");
           currentProgress = 0;
@@ -114,7 +129,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
   // Get status message based on phase
   const getStatusMessage = () => {
     if (isTimeout)
-      return "Sorry — this request took too long to complete. We're working on improving reliability. You can try waiting a bit longer or refreshing the page. Thanks for your patience.";
+      return "Sorry! This request took too long to complete. We're working on improving reliability. You can try waiting a bit longer or refreshing the page. Thank you for your patience.";
     if (phase === "orange") return "Synthesizing...";
     if (phase === "red") return "Just a moment...";
     if (errorMessage && errorMessage.length > 0) return errorMessage;
