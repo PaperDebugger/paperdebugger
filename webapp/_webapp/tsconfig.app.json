@@ -16,7 +16,7 @@
     "jsx": "react-jsx",
 
     /* Type resolution */
-    "types": ["bun", "vite/client", "node", "chrome", "react"],
+    "types": ["vite/client", "node", "chrome", "react"],
     "typeRoots": ["./node_modules/@types"],
 
     /* Linting */
@@ -26,5 +26,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }
