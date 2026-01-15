@@ -77,6 +77,22 @@ function generateManifestPlugin(): Plugin {
   };
 }
 
+function generateOfficeBundleCopyPlugin(targetPath: string): Plugin {
+  let outDir: string;
+
+  return {
+    name: "copy-office-bundle",
+    configResolved(config) {
+      outDir = config.build.outDir;
+    },
+    closeBundle() {
+      const sourcePath = path.join(outDir, "office.js");
+      fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+      fs.copyFileSync(sourcePath, targetPath);
+    },
+  };
+}
+
 const configs: Record<string, UserConfig> = {
   default: generateConfig("./src/main.tsx", "paperdebugger", (draft) => {
     draft.build.copyPublicDir = true;
@@ -85,6 +101,11 @@ const configs: Record<string, UserConfig> = {
   office: generateConfig("./src/views/office/app.tsx", "office", (draft) => {
     draft.build.emptyOutDir = true;
     draft.build.outDir = "dist/office";
+    draft.plugins.push(
+      generateOfficeBundleCopyPlugin(
+        path.resolve(process.cwd(), "../office/src/paperdebugger/office.js"),
+      ),
+    );
   }),
   background: generateConfig("./src/background.ts", "background"),
   intermediate: generateConfig("./src/intermediate.ts", "intermediate"),
