@@ -63,10 +63,10 @@ export function useSync() {
           return { success: true };
         } else if (adapter.platform === "word") {
           // Word: Get full text directly and upload to server
-          return await syncWordDocument(projectId, userId, adapter, options);
+          return await syncWordDocument(projectId, adapter, options);
         } else {
           // Browser or other platforms: Try to use adapter's getFullText
-          return await syncGenericDocument(projectId, userId, adapter, options);
+          return await syncGenericDocument(projectId, adapter, options);
         }
       } catch (error) {
         logError("Sync failed:", error);
@@ -89,13 +89,12 @@ export function useSync() {
  */
 async function syncWordDocument(
   projectId: string,
-  userId: string,
   adapter: ReturnType<typeof useAdapter>,
   options?: SyncOptions
 ): Promise<SyncResult> {
   logInfo(`[Word Sync] Starting sync for project: ${projectId}`);
   options?.onProgress?.(10);
-
+  
   // Get full document content
   const fullText = await adapter.getFullText();
   options?.onProgress?.(50);
@@ -133,7 +132,6 @@ async function syncWordDocument(
  */
 async function syncGenericDocument(
   projectId: string,
-  userId: string,
   adapter: ReturnType<typeof useAdapter>,
   options?: SyncOptions
 ): Promise<SyncResult> {

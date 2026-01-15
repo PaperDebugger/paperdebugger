@@ -1,6 +1,5 @@
 import { EditorView } from "@codemirror/view";
 import { storage } from "./storage";
-import { storage } from "./storage";
 
 export async function onElementAppeared(selector: string, callback: (element: Element) => void) {
   const element = document.querySelector(selector);
