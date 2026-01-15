@@ -4,11 +4,28 @@ import (
 	"fmt"
 	"net/http"
 
+	sharedv1 "paperdebugger/pkg/gen/api/shared/v1"
+
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	sharedv1 "paperdebugger/pkg/gen/api/shared/v1"
 )
+
+// errorCodeMessages provides default user-friendly messages for each error code
+var errorCodeMessages = map[sharedv1.ErrorCode]string{
+	sharedv1.ErrorCode_ERROR_CODE_UNSPECIFIED:          "An unspecified error occurred",
+	sharedv1.ErrorCode_ERROR_CODE_UNKNOWN:              "An unknown error occurred",
+	sharedv1.ErrorCode_ERROR_CODE_INTERNAL:             "Internal server error",
+	sharedv1.ErrorCode_ERROR_CODE_BAD_REQUEST:          "Bad request",
+	sharedv1.ErrorCode_ERROR_CODE_INVALID_LLM_RESPONSE: "Invalid LLM response",
+	sharedv1.ErrorCode_ERROR_CODE_RECORD_NOT_FOUND:     "Record not found",
+	sharedv1.ErrorCode_ERROR_CODE_INVALID_CREDENTIAL:   "Invalid credentials",
+	sharedv1.ErrorCode_ERROR_CODE_INVALID_TOKEN:        "Invalid or missing authentication token",
+	sharedv1.ErrorCode_ERROR_CODE_INVALID_ACTOR:        "Invalid actor or session",
+	sharedv1.ErrorCode_ERROR_CODE_PERMISSION_DENIED:    "Permission denied",
+	sharedv1.ErrorCode_ERROR_CODE_INVALID_USER:         "User not found or invalid",
+	sharedv1.ErrorCode_ERROR_CODE_PROJECT_OUT_OF_DATE:  "Project is out of date",
+}
 
 var (
 	ErrUnknown            = makeErrorFunc(sharedv1.ErrorCode_ERROR_CODE_UNKNOWN)
@@ -59,6 +76,13 @@ func makeErrorFunc(
 		detail := lo.FirstOrEmpty(details)
 		var errorMessage string
 		switch v := detail.(type) {
+		case nil:
+			// Use default message from errorCodeMessages when no details provided
+			if msg, ok := errorCodeMessages[errorCode]; ok {
+				errorMessage = msg
+			} else {
+				errorMessage = "An error occurred"
+			}
 		case error:
 			errorMessage = v.Error()
 		case interface{ String() string }:

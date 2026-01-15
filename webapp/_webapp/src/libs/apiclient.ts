@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { fromJson, JsonValue } from "@bufbuild/protobuf";
+import { JsonValue } from "@bufbuild/protobuf";
+import { fromJson } from "./protobuf-utils";
 import { RefreshTokenResponseSchema } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";
@@ -121,13 +122,47 @@ class ApiClient {
         const errorData = error.response?.data;
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
-          const message = errorPayload.message.replace(/^rpc error: code = Code\(\d+\) desc = /, "");
-          errorToast(message + ` (${config.url})`, `Request Failed: ${ErrorCode[errorPayload.code]}`);
+          const message = this.cleanErrorMessage(errorPayload.message);
+          const title = this.getErrorTitle(errorPayload.code);
+          errorToast(message, title);
         }
         throw errorPayload;
       }
       throw error;
     }
+  }
+
+  private cleanErrorMessage(msg: string): string {
+    // Remove technical gRPC prefixes, mirroring backend behavior:
+    // strip everything up to and including "desc = " when the message
+    // starts with "rpc error:" and contains "desc = ".
+    if (msg.startsWith("rpc error:")) {
+      const marker = "desc = ";
+      const idx = msg.indexOf(marker);
+      if (idx !== -1) {
+        return msg.slice(idx + marker.length);
+      }
+    }
+    return msg;
+  }
+
+  // Error titles aligned with backend errorCodeMessages (error.go) for consistency
+  private getErrorTitle(code: ErrorCode): string {
+    const titles: Record<ErrorCode, string> = {
+      [ErrorCode.UNSPECIFIED]: "An unspecified error occurred",
+      [ErrorCode.UNKNOWN]: "An unknown error occurred",
+      [ErrorCode.INVALID_TOKEN]: "Invalid or missing authentication token",
+      [ErrorCode.INVALID_ACTOR]: "Invalid actor or session",
+      [ErrorCode.INVALID_USER]: "User not found or invalid",
+      [ErrorCode.PERMISSION_DENIED]: "Permission denied",
+      [ErrorCode.RECORD_NOT_FOUND]: "Record not found",
+      [ErrorCode.BAD_REQUEST]: "Bad request",
+      [ErrorCode.INTERNAL]: "Internal server error",
+      [ErrorCode.INVALID_CREDENTIAL]: "Invalid credentials",
+      [ErrorCode.INVALID_LLM_RESPONSE]: "Invalid LLM response",
+      [ErrorCode.PROJECT_OUT_OF_DATE]: "Project is out of date",
+    };
+    return titles[code] || "Request Failed";
   }
 
   async get(url: string, params?: object, options?: RequestOptions): Promise<JsonValue> {

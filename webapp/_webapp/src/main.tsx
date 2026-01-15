@@ -44,6 +44,13 @@ initializeFaro({
     // Tracing package to get end-to-end visibility for HTTP requests.
     new TracingInstrumentation(),
   ],
+  ignoreUrls:[
+    /overleaf\.com/,
+    /compiles\.overleafusercontent\.com/,
+    /writefull\.ai/,
+    /bugsnag\.com/,
+    /google-analytics\.com/,
+  ]
 });
 
 export const Main = () => {
@@ -110,7 +117,7 @@ export const Main = () => {
               surrounding = `${before}[SELECTED_TEXT_START]${text}[SELECTED_TEXT_END]${after}`;
             }
           }
-        } catch (e) {
+        } catch {
           // fallback
         }
         setLastSurroundingText(surrounding);
@@ -125,7 +132,7 @@ export const Main = () => {
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, [setLastSelectedText, setLastSelectionRange]);
+  }, [setLastSelectedText, setLastSelectionRange, setLastSurroundingText]);
 
   // Add effect to close context menu when clicking outside
 

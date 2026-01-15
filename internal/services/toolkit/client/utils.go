@@ -12,7 +12,6 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
-	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 
 	"github.com/openai/openai-go/v2"
@@ -105,25 +104,25 @@ func initializeToolkit(
 ) *registry.ToolRegistry {
 	toolRegistry := registry.NewToolRegistry()
 
-	// Load tools dynamically from backend
-	xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, cfg.XtraMCPURI)
+	// // Load tools dynamically from backend
+	// xtraMCPLoader := xtramcp.NewXtraMCPLoader(db, projectService, cfg.XtraMCPURI)
 
-	// initialize MCP session first and log session ID
-	sessionID, err := xtraMCPLoader.InitializeMCP()
-	if err != nil {
-		logger.Errorf("[AI Client] Failed to initialize XtraMCP session: %v", err)
-		// TODO: Fallback to static tools or exit?
-	} else {
-		logger.Info("[AI Client] XtraMCP session initialized", "sessionID", sessionID)
+	// // initialize MCP session first and log session ID
+	// sessionID, err := xtraMCPLoader.InitializeMCP()
+	// if err != nil {
+	// 	logger.Errorf("[XtraMCP Client] Failed to initialize XtraMCP session: %v", err)
+	// 	// TODO: Fallback to static tools or exit?
+	// } else {
+	// 	logger.Info("[XtraMCP Client] XtraMCP session initialized", "sessionID", sessionID)
 
-		// dynamically load all tools from XtraMCP backend
-		err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
-		if err != nil {
-			logger.Errorf("[AI Client] Failed to load XtraMCP tools: %v", err)
-		} else {
-			logger.Info("[AI Client] Successfully loaded XtraMCP tools")
-		}
-	}
+	// 	// dynamically load all tools from XtraMCP backend
+	// 	err = xtraMCPLoader.LoadToolsFromBackend(toolRegistry)
+	// 	if err != nil {
+	// 		logger.Errorf("[XtraMCP Client] Failed to load XtraMCP tools: %v", err)
+	// 	} else {
+	// 		logger.Info("[XtraMCP Client] Successfully loaded XtraMCP tools")
+	// 	}
+	// }
 
 	return toolRegistry
 }

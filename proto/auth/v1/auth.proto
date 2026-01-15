@@ -23,6 +23,10 @@ service AuthService {
     option (google.api.http) = {
       post: "/_pd/api/v1/auth/refresh"
       body: "*"
+      additional_bindings: {
+        post: "/_pd/api/v2/auth/refresh"
+        body: "*"
+      }
     };
   }
   rpc Logout(LogoutRequest) returns (LogoutResponse) {

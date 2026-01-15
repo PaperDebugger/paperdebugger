@@ -6,8 +6,6 @@ import {
   LoginByOverleafResponseSchema,
   LogoutRequest,
   LogoutResponseSchema,
-  RefreshTokenRequest,
-  RefreshTokenResponseSchema,
 } from "../pkg/gen/apiclient/auth/v1/auth_pb";
 import {
   CreateConversationMessageStreamRequest,
@@ -57,7 +55,7 @@ import {
   GetUserInstructionsRequest,
 } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "./types";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../libs/protobuf-utils";
 import { processStream } from "./utils";
 import { CommentsAcceptedRequest, CommentsAcceptedResponseSchema } from "../pkg/gen/apiclient/comment/v1/comment_pb";
 
@@ -69,11 +67,6 @@ export const loginByOverleaf = async (data: PlainMessage<LoginByOverleafRequest>
 export const loginByGoogle = async (data: PlainMessage<LoginByGoogleRequest>) => {
   const response = await apiclient.post("/auth/login/google", data);
   return fromJson(LoginByGoogleResponseSchema, response);
-};
-
-export const refreshToken = async (data: PlainMessage<RefreshTokenRequest>) => {
-  const response = await apiclient.post("/auth/refresh", data);
-  return fromJson(RefreshTokenResponseSchema, response);
 };
 
 export const logout = async (data: PlainMessage<LogoutRequest>) => {

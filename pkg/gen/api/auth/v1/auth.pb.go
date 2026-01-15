@@ -412,11 +412,11 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"4\n" +
 	"\rLogoutRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\x10\n" +
-	"\x0eLogoutResponse2\xdb\x03\n" +
+	"\x0eLogoutResponse2\xfb\x03\n" +
 	"\vAuthService\x12x\n" +
 	"\rLoginByGoogle\x12\x1d.auth.v1.LoginByGoogleRequest\x1a\x1e.auth.v1.LoginByGoogleResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/_pd/api/v1/auth/login/google\x12\x80\x01\n" +
-	"\x0fLoginByOverleaf\x12\x1f.auth.v1.LoginByOverleafRequest\x1a .auth.v1.LoginByOverleafResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/_pd/api/v1/auth/login/overleaf\x12p\n" +
-	"\fRefreshToken\x12\x1c.auth.v1.RefreshTokenRequest\x1a\x1d.auth.v1.RefreshTokenResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/_pd/api/v1/auth/refresh\x12]\n" +
+	"\x0fLoginByOverleaf\x12\x1f.auth.v1.LoginByOverleafRequest\x1a .auth.v1.LoginByOverleafResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/_pd/api/v1/auth/login/overleaf\x12\x8f\x01\n" +
+	"\fRefreshToken\x12\x1c.auth.v1.RefreshTokenRequest\x1a\x1d.auth.v1.RefreshTokenResponse\"B\x82\xd3\xe4\x93\x02<:\x01*Z\x1d:\x01*\"\x18/_pd/api/v2/auth/refresh\"\x18/_pd/api/v1/auth/refresh\x12]\n" +
 	"\x06Logout\x12\x16.auth.v1.LogoutRequest\x1a\x17.auth.v1.LogoutResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/_pd/api/v1/auth/logoutB\x7f\n" +
 	"\vcom.auth.v1B\tAuthProtoP\x01Z(paperdebugger/pkg/gen/api/auth/v1;authv1\xa2\x02\x03AXX\xaa\x02\aAuth.V1\xca\x02\aAuth\\V1\xe2\x02\x13Auth\\V1\\GPBMetadata\xea\x02\bAuth::V1b\x06proto3"
 

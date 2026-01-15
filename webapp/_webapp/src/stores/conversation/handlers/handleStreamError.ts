@@ -2,7 +2,7 @@ import { MessageTypeAssistantSchema, StreamError } from "../../../pkg/gen/apicli
 import { errorToast } from "../../../libs/toasts";
 import { StreamingMessage } from "../../streaming-message-store";
 import { MessageEntry, MessageEntryStatus } from "../types";
-import { fromJson } from "@bufbuild/protobuf";
+import { fromJson } from "../../../libs/protobuf-utils";
 
 interface SyncResult {
   success: boolean;
