@@ -48,7 +48,15 @@ metadata:
   name: paperdebugger-xtramcp-server
   namespace: {{ .Values.namespace }}
 data:
-  OPENAI_API_KEY: "{{ .Values.xtragpt_openai_api_key }}"
-  OPENREVIEW_BASE_URL: "{{ .Values.xtragpt_openreview_base_url }}"
-  OPENREVIEW_USERNAME: "{{ .Values.xtragpt_openreview_username }}"
-  OPENREVIEW_PASSWORD: "{{ .Values.xtragpt_openreview_password }}"
+  OPENAI_BASE_URL: "{{ .Values.xtramcp_openai_base_url }}"
+  OPENAI_API_KEY: "{{ .Values.xtramcp_openai_api_key }}"
+  OPENAI_MAX_RETRIES: 2
+  OPENAI_TIMEOOUT: 90
+  OPENREVIEW_BASE_URL: "{{ .Values.xtramcp_openreview_base_url }}"
+  OPENREVIEW_USERNAME: "{{ .Values.xtramcp_openreview_username }}"
+  OPENREVIEW_PASSWORD: "{{ .Values.xtramcp_openreview_password }}"
+  DOI_EMAIL_ADDRESS: "{{ .Values.xtramcp_doi_email_address }}"
+  CROSSREF_EMAIL_ADDRESS: "{{ .Values.xtramcp_crossref_email_address }}"
+  MONGODB_CONNECTION_STRING: "{{ .Values.xtramcp_mongo_uri }}"
+  MONGODB_DATABASE: "paperdebugger"
+  ARXIV_METADATA_DB_URL: "{{ .Values.xtramcp_arxiv_metadata_db_url }}"
