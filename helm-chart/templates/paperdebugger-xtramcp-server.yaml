@@ -51,7 +51,7 @@ data:
   OPENAI_BASE_URL: "{{ .Values.xtramcp_openai_base_url }}"
   OPENAI_API_KEY: "{{ .Values.xtramcp_openai_api_key }}"
   OPENAI_MAX_RETRIES: 2
-  OPENAI_TIMEOOUT: 90
+  OPENAI_TIMEOUT: 90
   OPENREVIEW_BASE_URL: "{{ .Values.xtramcp_openreview_base_url }}"
   OPENREVIEW_USERNAME: "{{ .Values.xtramcp_openreview_username }}"
   OPENREVIEW_PASSWORD: "{{ .Values.xtramcp_openreview_password }}"
