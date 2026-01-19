@@ -2,7 +2,7 @@ import { LoadingIndicator } from "../../../components/loading-indicator";
 import { UnknownEntryMessageContainer } from "../../../components/message-entry-container/unknown-entry";
 import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useSocketStore } from "../../../stores/socket-store";
-import { useStreamingStateMachine, MessageEntryStatus } from "../../../stores/streaming";
+import { useStreamingStateMachine } from "../../../stores/streaming";
 
 export const StatusIndicator = ({ conversation }: { conversation?: Conversation }) => {
   const { syncing, syncingProgress } = useSocketStore();
@@ -10,9 +10,9 @@ export const StatusIndicator = ({ conversation }: { conversation?: Conversation 
   const incompleteIndicator = useStreamingStateMachine((s) => s.incompleteIndicator);
 
   const isWaitingForResponse =
-    streamingMessage.parts.at(-1)?.user !== undefined ||
+    streamingMessage.parts.at(-1)?.role === "user" ||
     (conversation?.messages.at(-1)?.payload?.messageType.case === "user" && streamingMessage.parts.length === 0);
-  const hasStaleMessage = streamingMessage.parts.some((part) => part.status === MessageEntryStatus.STALE);
+  const hasStaleMessage = streamingMessage.parts.some((part) => part.status === "stale");
   const incompleteReason = incompleteIndicator?.reason;
 
   if (isWaitingForResponse) {

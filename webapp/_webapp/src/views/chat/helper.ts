@@ -1,15 +1,12 @@
 import {
   Conversation,
   Message,
-  MessageTypeAssistant,
-  MessageTypeToolCall,
-  MessageTypeToolCallPrepareArguments,
-  MessageTypeUnknown,
   MessageTypeUser,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { MessageEntry, MessageEntryStatus } from "../../stores/streaming";
 import { useMessageStore } from "../../stores/message-store";
 import { DisplayMessage } from "../../stores/types";
+import { fromApiMessage } from "../../utils/message-converters";
+import { InternalMessage } from "../../stores/streaming";
 
 // ============================================================================
 // Message-based helpers (existing, for backward compatibility)
@@ -57,31 +54,12 @@ export function filterVisibleMessages(conversation?: Conversation): Message[] {
   );
 }
 
-export function messageToMessageEntry(message: Message): MessageEntry {
-  return {
-    messageId: message.messageId,
-    status: MessageEntryStatus.FINALIZED,
-    assistant:
-      message.payload?.messageType.case === "assistant"
-        ? (message.payload?.messageType.value as MessageTypeAssistant)
-        : undefined,
-    user:
-      message.payload?.messageType.case === "user"
-        ? (message.payload?.messageType.value as MessageTypeUser)
-        : undefined,
-    toolCall:
-      message.payload?.messageType.case === "toolCall"
-        ? (message.payload?.messageType.value as MessageTypeToolCall)
-        : undefined,
-    toolCallPrepareArguments:
-      message.payload?.messageType.case === "toolCallPrepareArguments"
-        ? (message.payload?.messageType.value as MessageTypeToolCallPrepareArguments)
-        : undefined,
-    unknown:
-      message.payload?.messageType.case === "unknown"
-        ? (message.payload?.messageType.value as MessageTypeUnknown)
-        : undefined,
-  } as MessageEntry;
+/**
+ * Convert a protobuf Message to InternalMessage.
+ * This is a convenience function that uses the unified converter.
+ */
+export function messageToInternalMessage(message: Message): InternalMessage | null {
+  return fromApiMessage(message);
 }
 
 // ============================================================================
@@ -132,64 +110,5 @@ export function findLastUserMessageIndex(messages: DisplayMessage[]): number {
     }
   }
   return -1;
-}
-
-/**
- * Convert DisplayMessage back to MessageEntry for backward compatibility with MessageCard.
- * This is a temporary bridge until MessageCard is updated to use DisplayMessage directly.
- */
-export function displayMessageToMessageEntry(msg: DisplayMessage): MessageEntry {
-  const status = displayStatusToEntryStatus(msg.status);
-  
-  const entry: MessageEntry = {
-    messageId: msg.id,
-    status,
-  };
-  
-  if (msg.type === "user") {
-    entry.user = {
-      content: msg.content,
-      selectedText: msg.selectedText ?? "",
-      surrounding: undefined,
-      $typeName: "chat.v2.MessageTypeUser",
-    } as MessageTypeUser;
-  } else if (msg.type === "assistant") {
-    entry.assistant = {
-      content: msg.content,
-      reasoning: msg.reasoning,
-      $typeName: "chat.v2.MessageTypeAssistant",
-    } as MessageTypeAssistant;
-  } else if (msg.type === "toolCall") {
-    entry.toolCall = {
-      name: msg.toolName ?? "",
-      args: msg.toolArgs ?? "",
-      result: msg.toolResult ?? "",
-      error: msg.toolError ?? "",
-      $typeName: "chat.v2.MessageTypeToolCall",
-    } as MessageTypeToolCall;
-  } else if (msg.type === "toolCallPrepare") {
-    entry.toolCallPrepareArguments = {
-      name: msg.toolName ?? "",
-      args: msg.toolArgs ?? "",
-      $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
-    } as MessageTypeToolCallPrepareArguments;
-  }
-  
-  return entry;
-}
-
-function displayStatusToEntryStatus(status: DisplayMessage["status"]): MessageEntryStatus {
-  switch (status) {
-    case "streaming":
-      return MessageEntryStatus.PREPARING;
-    case "complete":
-      return MessageEntryStatus.FINALIZED;
-    case "stale":
-      return MessageEntryStatus.STALE;
-    case "error":
-      return MessageEntryStatus.INCOMPLETE;
-    default:
-      return MessageEntryStatus.FINALIZED;
-  }
 }
 

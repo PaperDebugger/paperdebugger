@@ -20,11 +20,11 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { Message, Conversation, BranchInfo } from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { MessageEntry, MessageEntryStatus } from "./streaming/types";
+import { InternalMessage } from "./streaming/types";
 import { DisplayMessage } from "./types";
 import {
   messageToDisplayMessage,
-  messageEntryToDisplayMessage,
+  internalMessageToDisplayMessage,
   filterDisplayMessages,
 } from "./converters";
 import { useConversationStore } from "./conversation/conversation-store";
@@ -39,7 +39,7 @@ interface MessageStoreState {
   messages: Message[];
 
   // Currently streaming entries (synced from streaming-state-machine)
-  streamingEntries: MessageEntry[];
+  streamingEntries: InternalMessage[];
 
   // Conversation metadata (synced from conversation-store)
   conversationId: string;
@@ -65,7 +65,7 @@ interface MessageStoreActions {
   setConversation: (conversation: Conversation) => void;
 
   // Streaming entry management (used by subscriptions)
-  setStreamingEntries: (entries: MessageEntry[]) => void;
+  setStreamingEntries: (entries: InternalMessage[]) => void;
 
   // Initialize subscriptions to source stores
   initializeSubscriptions: () => void;
@@ -112,7 +112,7 @@ const initialState: MessageStoreState = {
 
 function computeDisplayMessages(
   messages: Message[],
-  streamingEntries: MessageEntry[]
+  streamingEntries: InternalMessage[]
 ): { all: DisplayMessage[]; visible: DisplayMessage[] } {
   // Convert finalized messages
   const finalizedDisplayMessages = messages
@@ -121,7 +121,7 @@ function computeDisplayMessages(
 
   // Convert streaming entries
   const streamingDisplayMessages = streamingEntries
-    .map(messageEntryToDisplayMessage)
+    .map(internalMessageToDisplayMessage)
     .filter((m): m is DisplayMessage => m !== null);
 
   // Combine: finalized first, then streaming
@@ -171,7 +171,7 @@ export const useMessageStore = create<MessageStore>()(
     // Streaming Entry Management (synced from streaming-state-machine)
     // ========================================================================
 
-    setStreamingEntries: (entries: MessageEntry[]) => {
+    setStreamingEntries: (entries: InternalMessage[]) => {
       const { all, visible } = computeDisplayMessages(get().messages, entries);
       set({
         streamingEntries: entries,
@@ -259,7 +259,7 @@ export const useMessageStore = create<MessageStore>()(
       const lastFinalized = state.messages.at(-1);
 
       // Waiting if last streaming entry is a user message
-      if (lastStreaming?.user !== undefined) {
+      if (lastStreaming?.role === "user") {
         return true;
       }
 
@@ -276,7 +276,7 @@ export const useMessageStore = create<MessageStore>()(
 
     hasStaleMessages: () => {
       return get().streamingEntries.some(
-        (entry) => entry.status === MessageEntryStatus.STALE
+        (entry) => entry.status === "stale"
       );
     },
   }))

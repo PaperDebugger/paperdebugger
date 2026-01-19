@@ -5,7 +5,6 @@ import {
   isEmptyConversation,
   getPrevUserSelectedText,
   findLastUserMessageIndex,
-  displayMessageToMessageEntry,
 } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
@@ -106,7 +105,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
           >
             <MessageCard
               animated={isStreaming}
-              messageEntry={displayMessageToMessageEntry(msg)}
+              message={msg}
               prevAttachment={getPrevUserSelectedText(visibleMessages, index)}
               previousMessageId={index > 0 ? visibleMessages[index - 1].id : undefined}
             />

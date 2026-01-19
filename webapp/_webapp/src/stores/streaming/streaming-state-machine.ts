@@ -16,26 +16,22 @@ import { subscribeWithSelector } from "zustand/middleware";
 import {
   IncompleteIndicator,
   Message,
-  MessageSchema,
-  MessageTypeAssistant,
-  MessageTypeAssistantSchema,
   Conversation,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { fromJson } from "../../libs/protobuf-utils";
 import { logError, logWarn } from "../../libs/logger";
 import { errorToast } from "../../libs/toasts";
 import { useConversationStore } from "../conversation/conversation-store";
 import { getConversation } from "../../query/api";
 import { getMessageTypeHandler, isValidMessageRole } from "./message-type-handlers";
 import {
-  MessageEntry,
-  MessageEntryStatus,
+  InternalMessage,
   MessageRole,
   StreamEvent,
   StreamHandlerContext,
   StreamingMessage,
   StreamState,
 } from "./types";
+import { toApiMessage, createAssistantMessage } from "../../utils/message-converters";
 
 // ============================================================================
 // Store State Interface
@@ -73,49 +69,6 @@ const initialState = {
 // ============================================================================
 
 /**
- * Convert a MessageEntry to a Message for the conversation store.
- */
-function convertMessageEntryToMessage(messageEntry: MessageEntry): Message | undefined {
-  if (messageEntry.assistant) {
-    const assistantPayload: { content: string; reasoning?: string } = {
-      content: messageEntry.assistant.content,
-    };
-    if (messageEntry.assistant.reasoning) {
-      assistantPayload.reasoning = messageEntry.assistant.reasoning;
-    }
-    return fromJson(MessageSchema, {
-      messageId: messageEntry.messageId,
-      payload: {
-        assistant: assistantPayload,
-      },
-    });
-  } else if (messageEntry.toolCall) {
-    return fromJson(MessageSchema, {
-      messageId: messageEntry.messageId,
-      payload: {
-        toolCall: {
-          name: messageEntry.toolCall.name,
-          args: messageEntry.toolCall.args,
-          result: messageEntry.toolCall.result,
-          error: messageEntry.toolCall.error,
-        },
-      },
-    });
-  } else if (messageEntry.user) {
-    return fromJson(MessageSchema, {
-      messageId: messageEntry.messageId,
-      payload: {
-        user: {
-          content: messageEntry.user.content,
-          selectedText: messageEntry.user.selectedText ?? "",
-        },
-      },
-    });
-  }
-  return undefined;
-}
-
-/**
  * Flush finalized streaming messages to the conversation store.
  */
 function flushStreamingMessageToConversation(
@@ -124,8 +77,8 @@ function flushStreamingMessageToConversation(
   modelSlug?: string,
 ) {
   const flushMessages = streamingMessage.parts
-    .filter((part) => part.status === MessageEntryStatus.FINALIZED)
-    .map((part) => convertMessageEntryToMessage(part))
+    .filter((part) => part.status === "complete")
+    .map((part) => toApiMessage(part))
     .filter((part): part is Message => part !== null && part !== undefined);
 
   useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
@@ -188,8 +141,8 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
           streamingMessage: {
             ...state.streamingMessage,
             parts: state.streamingMessage.parts.map((part) => {
-              if (part.status === MessageEntryStatus.PREPARING && part.user) {
-                return { ...part, status: MessageEntryStatus.FINALIZED };
+              if (part.status === "streaming" && part.role === "user") {
+                return { ...part, status: "complete" as const };
               }
               return part;
             }),
@@ -227,18 +180,18 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
         }
 
         const handler = getMessageTypeHandler(role);
-        const newEntry = handler.onPartBegin(event.payload);
+        const newMessage = handler.onPartBegin(event.payload);
 
-        if (newEntry) {
+        if (newMessage) {
           set((state) => {
-            // Skip if entry with same messageId already exists
-            if (state.streamingMessage.parts.some((p) => p.messageId === newEntry.messageId)) {
+            // Skip if entry with same id already exists
+            if (state.streamingMessage.parts.some((p) => p.id === newMessage.id)) {
               return state;
             }
             return {
               state: "receiving",
               streamingMessage: {
-                parts: [...state.streamingMessage.parts, newEntry],
+                parts: [...state.streamingMessage.parts, newMessage],
                 sequence: state.streamingMessage.sequence + 1,
               },
             };
@@ -254,20 +207,23 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
         set((state) => {
           const updatedParts = state.streamingMessage.parts.map((part) => {
             const isTargetPart =
-              part.messageId === event.payload.messageId && part.assistant;
+              part.id === event.payload.messageId && part.role === "assistant";
 
             if (!isTargetPart) return part;
 
-            if (part.status !== MessageEntryStatus.PREPARING) {
-              logError("Message chunk received for non-preparing part");
+            if (part.status !== "streaming") {
+              logError("Message chunk received for non-streaming part");
             }
 
-            const updatedAssistant: MessageTypeAssistant = {
-              ...part.assistant!,
-              content: part.assistant!.content + event.payload.delta,
-            };
+            if (part.role !== "assistant") return part;
 
-            return { ...part, assistant: updatedAssistant };
+            return {
+              ...part,
+              data: {
+                ...part.data,
+                content: part.data.content + event.payload.delta,
+              },
+            };
           });
 
           return {
@@ -287,21 +243,24 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
         set((state) => {
           const updatedParts = state.streamingMessage.parts.map((part) => {
             const isTargetPart =
-              part.messageId === event.payload.messageId && part.assistant;
+              part.id === event.payload.messageId && part.role === "assistant";
 
             if (!isTargetPart) return part;
 
-            if (part.status !== MessageEntryStatus.PREPARING) {
-              logError("Reasoning chunk received for non-preparing part");
+            if (part.status !== "streaming") {
+              logError("Reasoning chunk received for non-streaming part");
             }
 
-            const currentReasoning = part.assistant!.reasoning ?? "";
-            const updatedAssistant: MessageTypeAssistant = {
-              ...part.assistant!,
-              reasoning: currentReasoning + event.payload.delta,
-            };
+            if (part.role !== "assistant") return part;
 
-            return { ...part, assistant: updatedAssistant };
+            const currentReasoning = part.data.reasoning ?? "";
+            return {
+              ...part,
+              data: {
+                ...part.data,
+                reasoning: currentReasoning + event.payload.delta,
+              },
+            };
           });
 
           return {
@@ -329,14 +288,14 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
 
         set((state) => {
           const updatedParts = state.streamingMessage.parts.map((part) => {
-            if (part.messageId !== event.payload.messageId) {
+            if (part.id !== event.payload.messageId) {
               return part;
             }
 
-            const updates = handler.onPartEnd(event.payload, part);
-            if (!updates) return part;
+            const updatedMessage = handler.onPartEnd(event.payload, part);
+            if (!updatedMessage) return part;
 
-            return { ...part, ...updates };
+            return updatedMessage;
           });
 
           return {
@@ -394,13 +353,11 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
         }
 
         // Add error message to streaming parts
-        const errorEntry: MessageEntry = {
-          messageId: "error-" + Date.now(),
-          status: MessageEntryStatus.STALE,
-          assistant: fromJson(MessageTypeAssistantSchema, {
-            content: errorMessage,
-          }),
-        };
+        const errorEntry: InternalMessage = createAssistantMessage(
+          "error-" + Date.now(),
+          errorMessage,
+          { status: "stale" }
+        );
 
         set((state) => ({
           state: "error",
@@ -418,16 +375,13 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
       // CONNECTION_ERROR - Network/connection error
       // ========================================================================
       case "CONNECTION_ERROR": {
-        // Mark all preparing messages as stale
+        // Mark all streaming messages as stale
         set((state) => ({
           state: "error",
           streamingMessage: {
             parts: state.streamingMessage.parts.map((part) => ({
               ...part,
-              status:
-                part.status === MessageEntryStatus.PREPARING
-                  ? MessageEntryStatus.STALE
-                  : part.status,
+              status: part.status === "streaming" ? "stale" as const : part.status,
             })),
             sequence: state.streamingMessage.sequence + 1,
           },

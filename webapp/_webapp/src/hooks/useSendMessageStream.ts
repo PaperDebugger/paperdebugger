@@ -5,7 +5,6 @@ import {
   CreateConversationMessageStreamResponse,
   IncompleteIndicator,
   MessageChunk,
-  MessageTypeUserSchema,
   ReasoningChunk,
   StreamError,
   StreamFinalization,
@@ -17,7 +16,6 @@ import { PlainMessage } from "../query/types";
 import { getProjectId } from "../libs/helpers";
 import { withRetrySync } from "../libs/with-retry-sync";
 import { createConversationMessageStream } from "../query/api";
-import { fromJson } from "../libs/protobuf-utils";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
 import { logError, logWarn } from "../libs/logger";
@@ -29,10 +27,10 @@ import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
 import {
   useStreamingStateMachine,
-  MessageEntryStatus,
   StreamEvent,
-  MessageEntry,
+  InternalMessage,
 } from "../stores/streaming";
+import { createUserMessage } from "../types/message";
 
 /**
  * Custom React hook to handle sending a message as a stream in a conversation.
@@ -112,20 +110,20 @@ export function useSendMessageStream() {
       }
 
       // Add the user message to the streaming state
-      const newMessageEntry: MessageEntry = {
-        messageId: `pending-${crypto.randomUUID()}`,
-        status: MessageEntryStatus.PREPARING,
-        user: fromJson(MessageTypeUserSchema, {
-          content: message,
+      const newUserMessage: InternalMessage = createUserMessage(
+        `pending-${crypto.randomUUID()}`,
+        message,
+        {
           selectedText: selectedText,
-          surrounding: storeSurroundingText ?? null,
-        }),
-      };
+          surrounding: storeSurroundingText ?? undefined,
+          status: "streaming",
+        }
+      );
 
       // Directly update the state machine's streaming message
       useStreamingStateMachine.setState((state) => ({
         streamingMessage: {
-          parts: [...state.streamingMessage.parts, newMessageEntry],
+          parts: [...state.streamingMessage.parts, newUserMessage],
           sequence: state.streamingMessage.sequence + 1,
         },
       }));

@@ -100,7 +100,7 @@ The unified message store architecture:
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                           useMessageStore                                   │
 │  - messages: Message[] (finalized)                                         │
-│  - streamingEntries: MessageEntry[] (streaming)                            │
+│  - streamingEntries: InternalMessage[] (streaming)                         │
 │  - getAllDisplayMessages(): DisplayMessage[]                               │
 └─────────────────────────────┬───────────────────────────────┬──────────────┘
                               │                               │
@@ -110,7 +110,7 @@ The unified message store architecture:
 ┌───────────────────────────────┐           │  ┌───────────────────────────┐
 │    useConversationStore       │           │  │ useStreamingStateMachine  │
 │  - currentConversation        │           │  │ - streamingMessage        │
-│  (finalized messages)         │           │  │ (streaming entries)       │
+│  (finalized messages)         │           │  │ (streaming InternalMessage) │
 └───────────────────────────────┘           │  └───────────────────────────┘
                                             │
                                             ▼
@@ -122,45 +122,78 @@ The unified message store architecture:
 
 ---
 
-## Phase 3: Simplify Data Transformations
+## Phase 3: Simplify Data Transformations ✅ COMPLETED
 
 ### Goal
 Reduce the number of data transformations from 5+ to 2 maximum.
 
 ### Tasks
 
-- [ ] **3.1 Define canonical internal message format**
-  ```typescript
-  // Internal format used throughout the app
-  interface InternalMessage {
-    id: string;
-    role: MessageRole;
-    content: string;
-    status: MessageStatus;
-    toolCall?: ToolCallData;
-    attachments?: Attachment[];
-    timestamp: number;
-  }
-  ```
+- [x] **3.1 Define canonical internal message format**
   - Location: `types/message.ts`
-  - Benefit: Single format reduces confusion
+  - Implemented `InternalMessage` union type with role-specific subtypes:
+    - `UserMessage`, `AssistantMessage`, `ToolCallMessage`, `ToolCallPrepareMessage`, `SystemMessage`, `UnknownMessage`
+  - Added type guards: `isUserMessage()`, `isAssistantMessage()`, etc.
+  - Added factory functions: `createUserMessage()`, `createAssistantMessage()`, etc.
+  - Benefit: Single format with type-safe role-specific data access
 
-- [ ] **3.2 Create bidirectional converters**
-  ```typescript
-  // Only two conversions needed:
-  // 1. API response → Internal format
-  const fromApiMessage = (msg: ApiMessage): InternalMessage => { ... };
-  
-  // 2. Internal format → API request  
-  const toApiMessage = (msg: InternalMessage): ApiMessage => { ... };
-  ```
+- [x] **3.2 Create bidirectional converters**
   - Location: `utils/message-converters.ts`
+  - Implemented converters:
+    - `fromApiMessage()` - API Message → InternalMessage
+    - `toApiMessage()` - InternalMessage → API Message
+    - `fromStreamPartBegin()` - Stream event → InternalMessage
+    - `applyStreamPartEnd()` - Update InternalMessage from stream end event
+    - `toDisplayMessage()` / `fromDisplayMessage()` - InternalMessage ↔ DisplayMessage
   - Benefit: Clear boundary between API types and internal types
 
-- [ ] **3.3 Remove MessageEntry type**
-  - Replace `MessageEntry` with `InternalMessage`
-  - Update all components to use new type
-  - Delete `stores/conversation/types.ts` (after migrating MessageEntryStatus)
+- [x] **3.3 Update MessageCard to use DisplayMessage directly**
+  - MessageCard now accepts `message: DisplayMessage` prop instead of `messageEntry: MessageEntry`
+  - Removed `displayMessageToMessageEntry()` bridge function from helper.ts
+  - ChatBody passes DisplayMessage directly to MessageCard
+  - Benefit: Eliminated unnecessary data transformation at render time
+
+- [x] **3.4 Remove legacy MessageEntry type**
+  - Streaming state machine now uses `InternalMessage` directly instead of `MessageEntry`
+  - Removed `MessageEntry` and `MessageEntryStatus` enum from `streaming/types.ts`
+  - Updated message-store.ts to use `streamingEntries: InternalMessage[]`
+  - Removed legacy converters (`fromMessageEntry`, `toMessageEntry`)
+  - Updated all consumers (hooks, views, devtools) to use `InternalMessage` and `MessageStatus`
+
+### New File Structure
+
+```
+types/
+├── index.ts                      # Module exports for types
+├── message.ts                    # InternalMessage type definitions
+└── global.d.ts                   # (existing)
+
+utils/
+├── index.ts                      # Module exports for utilities
+└── message-converters.ts         # All message converters in one place
+```
+
+### Data Flow After Phase 3
+
+```
+API Response (Message)
+    │
+    ▼ fromApiMessage()
+InternalMessage
+    │
+    ▼ toDisplayMessage()
+DisplayMessage ─────────────────────────► MessageCard
+    ▲
+    │ (streaming state uses InternalMessage directly)              
+InternalMessage (streaming state)
+```
+
+### Migration Notes
+
+- Legacy `MessageEntry` type has been removed - all code uses `InternalMessage`
+- `MessageEntryStatus` enum replaced with `MessageStatus` string union: `"streaming" | "complete" | "error" | "stale"`
+- `stores/converters.ts` simplified to only bridge between API types and display types
+- Factory functions (`createUserMessage`, etc.) used for creating new messages
 
 ---
 
@@ -284,7 +317,7 @@ Ensure the refactored code is well-tested and documented.
 |-------|----------|--------|--------|--------|
 | 1. Consolidate Handlers | High | Medium | High | ✅ COMPLETED |
 | 2. Unify Stores | High | High | High | ✅ COMPLETED |
-| 3. Simplify Transformations | Medium | Medium | Medium | Not Started |
+| 3. Simplify Transformations | Medium | Medium | Medium | ✅ COMPLETED |
 | 4. Error Handling | Medium | Low | Medium | Not Started |
 | 5. Refactor Hook | Low | Low | Medium | Not Started |
 | 6. Testing & Docs | Low | Medium | High | Not Started |
@@ -299,14 +332,6 @@ After completing all phases:
 - [x] No `flushSync` calls required (Phase 2)
 - [x] All state transitions documented and validated (Phase 1)
 - [x] Adding a new message type requires changes to only 1-2 files (Phase 1)
-- [ ] Total files related to streaming reduced from 15+ to ~6
-- [ ] Unit test coverage > 80% for streaming logic
-- [ ] Clear error handling with explicit recovery strategies
-
----
-
-## Notes
-
-- Implement phases incrementally; each phase should leave the codebase in a working state
-- Consider feature flags for gradual rollout
-- Performance testing recommended after Phase 2 (store unification)
+- [x] Canonical internal message format defined (Phase 3)
+- [x] Bidirectional converters centralized in one file (Phase 3)
+- [x] MessageCard uses DisplayMessage directly (Phase 3)

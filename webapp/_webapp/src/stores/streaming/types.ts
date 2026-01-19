@@ -14,12 +14,11 @@ import {
   StreamInitialization,
   StreamPartBegin,
   StreamPartEnd,
-  MessageTypeAssistant,
-  MessageTypeToolCall,
-  MessageTypeToolCallPrepareArguments,
-  MessageTypeUnknown,
-  MessageTypeUser,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
+import { InternalMessage, MessageStatus } from "../../types/message";
+
+// Re-export InternalMessage for convenience
+export type { InternalMessage, MessageStatus };
 
 // ============================================================================
 // Stream State
@@ -31,39 +30,15 @@ import {
 export type StreamState = "idle" | "receiving" | "finalizing" | "error";
 
 // ============================================================================
-// Message Entry Types
+// Streaming Message State
 // ============================================================================
 
 /**
- * Status of a message entry during the streaming lifecycle.
- */
-export enum MessageEntryStatus {
-  PREPARING = "PREPARING",
-  FINALIZED = "FINALIZED",
-  INCOMPLETE = "INCOMPLETE",
-  STALE = "STALE",
-}
-
-/**
- * Represents a message entry in the streaming state.
- * Uses a discriminated union pattern for type safety.
- */
-export type MessageEntry = {
-  messageId: string;
-  status: MessageEntryStatus;
-  // Role-specific content (only one will be present)
-  user?: MessageTypeUser;
-  assistant?: MessageTypeAssistant;
-  toolCallPrepareArguments?: MessageTypeToolCallPrepareArguments;
-  toolCall?: MessageTypeToolCall;
-  unknown?: MessageTypeUnknown;
-};
-
-/**
  * The current streaming message state.
+ * Now uses InternalMessage instead of the legacy MessageEntry.
  */
 export type StreamingMessage = {
-  parts: MessageEntry[];
+  parts: InternalMessage[];
   sequence: number;
 };
 
@@ -138,15 +113,15 @@ export interface StreamHandlerContext {
 export interface MessageTypeHandler {
   /**
    * Called when a stream part begins for this message type.
-   * @returns A new MessageEntry or null if this type should be ignored.
+   * @returns A new InternalMessage or null if this type should be ignored.
    */
-  onPartBegin(partBegin: StreamPartBegin): MessageEntry | null;
+  onPartBegin(partBegin: StreamPartBegin): InternalMessage | null;
 
   /**
    * Called when a stream part ends for this message type.
-   * @returns Updated fields to merge into the existing entry, or null to skip.
+   * @returns Updated InternalMessage or null to skip.
    */
-  onPartEnd(partEnd: StreamPartEnd, existingEntry: MessageEntry): Partial<MessageEntry> | null;
+  onPartEnd(partEnd: StreamPartEnd, existingMessage: InternalMessage): InternalMessage | null;
 }
 
 /**

@@ -18,12 +18,16 @@ import {
   StreamPartEnd,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
-  MessageEntry,
-  MessageEntryStatus,
+  InternalMessage,
   MessageRole,
   MessageTypeHandler,
   MessageTypeHandlerRegistry,
 } from "./types";
+import {
+  createAssistantMessage,
+  createToolCallMessage,
+  createToolCallPrepareMessage,
+} from "../../types/message";
 
 // ============================================================================
 // Handler Implementations
@@ -33,19 +37,26 @@ import {
  * Handler for assistant messages.
  */
 class AssistantHandler implements MessageTypeHandler {
-  onPartBegin(partBegin: StreamPartBegin): MessageEntry | null {
-    return {
-      messageId: partBegin.messageId,
-      status: MessageEntryStatus.PREPARING,
-      assistant: partBegin.payload?.messageType.value as MessageTypeAssistant,
-    };
+  onPartBegin(partBegin: StreamPartBegin): InternalMessage | null {
+    const assistant = partBegin.payload?.messageType.value as MessageTypeAssistant;
+    return createAssistantMessage(partBegin.messageId, assistant.content, {
+      reasoning: assistant.reasoning,
+      modelSlug: assistant.modelSlug,
+      status: "streaming",
+    });
   }
 
-  onPartEnd(partEnd: StreamPartEnd, _existingEntry: MessageEntry): Partial<MessageEntry> | null {
-    const assistantMessage = partEnd.payload?.messageType.value as MessageTypeAssistant;
+  onPartEnd(partEnd: StreamPartEnd, existingMessage: InternalMessage): InternalMessage | null {
+    if (existingMessage.role !== "assistant") return null;
+    const assistant = partEnd.payload?.messageType.value as MessageTypeAssistant;
     return {
-      status: MessageEntryStatus.FINALIZED,
-      assistant: assistantMessage,
+      ...existingMessage,
+      status: "complete",
+      data: {
+        content: assistant.content,
+        reasoning: assistant.reasoning,
+        modelSlug: assistant.modelSlug,
+      },
     };
   }
 }
@@ -54,21 +65,23 @@ class AssistantHandler implements MessageTypeHandler {
  * Handler for tool call preparation (arguments streaming).
  */
 class ToolCallPrepareHandler implements MessageTypeHandler {
-  onPartBegin(partBegin: StreamPartBegin): MessageEntry | null {
-    return {
-      messageId: partBegin.messageId,
-      status: MessageEntryStatus.PREPARING,
-      toolCallPrepareArguments: partBegin.payload?.messageType
-        .value as MessageTypeToolCallPrepareArguments,
-    };
+  onPartBegin(partBegin: StreamPartBegin): InternalMessage | null {
+    const toolCallPrepare = partBegin.payload?.messageType.value as MessageTypeToolCallPrepareArguments;
+    return createToolCallPrepareMessage(partBegin.messageId, toolCallPrepare.name, toolCallPrepare.args, {
+      status: "streaming",
+    });
   }
 
-  onPartEnd(partEnd: StreamPartEnd, _existingEntry: MessageEntry): Partial<MessageEntry> | null {
-    const toolCallPrepareArguments = partEnd.payload?.messageType
-      .value as MessageTypeToolCallPrepareArguments;
+  onPartEnd(partEnd: StreamPartEnd, existingMessage: InternalMessage): InternalMessage | null {
+    if (existingMessage.role !== "toolCallPrepare") return null;
+    const toolCallPrepare = partEnd.payload?.messageType.value as MessageTypeToolCallPrepareArguments;
     return {
-      status: MessageEntryStatus.FINALIZED,
-      toolCallPrepareArguments,
+      ...existingMessage,
+      status: "complete",
+      data: {
+        name: toolCallPrepare.name,
+        args: toolCallPrepare.args,
+      },
     };
   }
 }
@@ -77,19 +90,27 @@ class ToolCallPrepareHandler implements MessageTypeHandler {
  * Handler for completed tool calls.
  */
 class ToolCallHandler implements MessageTypeHandler {
-  onPartBegin(partBegin: StreamPartBegin): MessageEntry | null {
-    return {
-      messageId: partBegin.messageId,
-      status: MessageEntryStatus.PREPARING,
-      toolCall: partBegin.payload?.messageType.value as MessageTypeToolCall,
-    };
+  onPartBegin(partBegin: StreamPartBegin): InternalMessage | null {
+    const toolCall = partBegin.payload?.messageType.value as MessageTypeToolCall;
+    return createToolCallMessage(partBegin.messageId, toolCall.name, toolCall.args, {
+      result: toolCall.result,
+      error: toolCall.error,
+      status: "streaming",
+    });
   }
 
-  onPartEnd(partEnd: StreamPartEnd, _existingEntry: MessageEntry): Partial<MessageEntry> | null {
+  onPartEnd(partEnd: StreamPartEnd, existingMessage: InternalMessage): InternalMessage | null {
+    if (existingMessage.role !== "toolCall") return null;
     const toolCall = partEnd.payload?.messageType.value as MessageTypeToolCall;
     return {
-      status: MessageEntryStatus.FINALIZED,
-      toolCall,
+      ...existingMessage,
+      status: "complete",
+      data: {
+        name: toolCall.name,
+        args: toolCall.args,
+        result: toolCall.result,
+        error: toolCall.error,
+      },
     };
   }
 }
@@ -99,11 +120,11 @@ class ToolCallHandler implements MessageTypeHandler {
  * Used for system, user, and unknown message types.
  */
 class NoOpHandler implements MessageTypeHandler {
-  onPartBegin(_partBegin: StreamPartBegin): MessageEntry | null {
+  onPartBegin(_partBegin: StreamPartBegin): InternalMessage | null {
     return null;
   }
 
-  onPartEnd(_partEnd: StreamPartEnd, _existingEntry: MessageEntry): Partial<MessageEntry> | null {
+  onPartEnd(_partEnd: StreamPartEnd, _existingMessage: InternalMessage): InternalMessage | null {
     return null;
   }
 }
