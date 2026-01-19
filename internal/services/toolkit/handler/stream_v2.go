@@ -41,6 +41,27 @@ func (h *StreamHandlerV2) SendInitialization() {
 	})
 }
 
+// HandleAssistantPartBegin sends a StreamPartBegin message for an assistant message.
+// Unlike HandleAddedItem, this doesn't check the delta.Role field, which is important
+// because reasoning models may send reasoning_content before the role field is set.
+func (h *StreamHandlerV2) HandleAssistantPartBegin(messageId string) {
+	if h.callbackStream == nil {
+		return
+	}
+	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_StreamPartBegin{
+			StreamPartBegin: &chatv2.StreamPartBegin{
+				MessageId: messageId,
+				Payload: &chatv2.MessagePayload{
+					MessageType: &chatv2.MessagePayload_Assistant{
+						Assistant: &chatv2.MessageTypeAssistant{},
+					},
+				},
+			},
+		},
+	})
+}
+
 func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
 	if h.callbackStream == nil {
 		return

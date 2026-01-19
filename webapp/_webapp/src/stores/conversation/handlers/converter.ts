@@ -85,16 +85,24 @@ const updateBranchInfoAsync = async (conversationId: string) => {
     const response = await getConversation({ conversationId });
     if (response.conversation) {
       const branchInfo = response.conversation;
-      useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
-        ...prev,
-        // Only update branch-related fields, keep messages intact
-        currentBranchId: branchInfo.currentBranchId,
-        branches: branchInfo.branches,
-        currentBranchIndex: branchInfo.currentBranchIndex,
-        totalBranches: branchInfo.totalBranches,
-      }));
+      useConversationStore.getState().updateCurrentConversation((prev: Conversation) => {
+        // Guard against race condition: if user navigated to a different conversation
+        // while the fetch was in progress, don't apply the stale branch info
+        if (prev.id !== conversationId) {
+          return prev;
+        }
+        return {
+          ...prev,
+          // Only update branch-related fields, keep messages intact
+          currentBranchId: branchInfo.currentBranchId,
+          branches: branchInfo.branches,
+          currentBranchIndex: branchInfo.currentBranchIndex,
+          totalBranches: branchInfo.totalBranches,
+        };
+      });
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Failed to update branch info:", error);
     // Non-critical error, branch switcher just won't show
   }

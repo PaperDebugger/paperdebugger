@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -86,8 +87,9 @@ func (c *Conversation) GetBranchIndex(branchID string) int {
 // CreateNewBranch creates a new branch based on an existing branch,
 // truncated after the specified message ID.
 // If baseBranchID is empty and there are no branches, uses legacy fields.
-// Returns the new branch (already appended to c.Branches).
-func (c *Conversation) CreateNewBranch(baseBranchID string, truncateAfterMsgID string) *Branch {
+// Returns the new branch (already appended to c.Branches) and an error if
+// truncateAfterMsgID is provided but the message is not found in the history.
+func (c *Conversation) CreateNewBranch(baseBranchID string, truncateAfterMsgID string) (*Branch, error) {
 	now := bson.NewDateTimeFromTime(time.Now())
 	newBranch := Branch{
 		ID:        uuid.New().String(),
@@ -142,23 +144,20 @@ func (c *Conversation) CreateNewBranch(baseBranchID string, truncateAfterMsgID s
 			}
 		}
 
-		if foundIndex != -1 {
-			// Copy up to and including the parent message
-			newBranch.InappChatHistory = make([]bson.M, foundIndex+1)
-			copy(newBranch.InappChatHistory, sourceInappHistory[:foundIndex+1])
+		if foundIndex == -1 {
+			// Parent message not found - return error instead of silently copying entire history
+			return nil, fmt.Errorf("parent message with ID %q not found in conversation history", truncateAfterMsgID)
+		}
 
-			// Map index: Inapp[i] -> Openai[i+1] (because Openai[0] is system)
-			if len(sourceOpenaiHistory) > foundIndex+1 {
-				newBranch.OpenaiChatHistoryCompletion = make([]openai.ChatCompletionMessageParamUnion, foundIndex+2)
-				copy(newBranch.OpenaiChatHistoryCompletion, sourceOpenaiHistory[:foundIndex+2])
-			} else {
-				newBranch.OpenaiChatHistoryCompletion = make([]openai.ChatCompletionMessageParamUnion, len(sourceOpenaiHistory))
-				copy(newBranch.OpenaiChatHistoryCompletion, sourceOpenaiHistory)
-			}
+		// Copy up to and including the parent message
+		newBranch.InappChatHistory = make([]bson.M, foundIndex+1)
+		copy(newBranch.InappChatHistory, sourceInappHistory[:foundIndex+1])
+
+		// Map index: Inapp[i] -> Openai[i+1] (because Openai[0] is system)
+		if len(sourceOpenaiHistory) > foundIndex+1 {
+			newBranch.OpenaiChatHistoryCompletion = make([]openai.ChatCompletionMessageParamUnion, foundIndex+2)
+			copy(newBranch.OpenaiChatHistoryCompletion, sourceOpenaiHistory[:foundIndex+2])
 		} else {
-			// Parent not found, copy entire history
-			newBranch.InappChatHistory = make([]bson.M, len(sourceInappHistory))
-			copy(newBranch.InappChatHistory, sourceInappHistory)
 			newBranch.OpenaiChatHistoryCompletion = make([]openai.ChatCompletionMessageParamUnion, len(sourceOpenaiHistory))
 			copy(newBranch.OpenaiChatHistoryCompletion, sourceOpenaiHistory)
 		}
@@ -171,12 +170,13 @@ func (c *Conversation) CreateNewBranch(baseBranchID string, truncateAfterMsgID s
 	}
 
 	c.Branches = append(c.Branches, newBranch)
-	return &c.Branches[len(c.Branches)-1]
+	return &c.Branches[len(c.Branches)-1], nil
 }
 
 // EnsureBranches migrates legacy data to branch structure if needed.
 // Call this when loading a conversation that might have old data format.
-func (c *Conversation) EnsureBranches() {
+// Returns true if migration occurred (caller should persist the conversation).
+func (c *Conversation) EnsureBranches() bool {
 	if len(c.Branches) == 0 && len(c.InappChatHistory) > 0 {
 		// Migrate legacy data to first branch
 		now := bson.NewDateTimeFromTime(time.Now())
@@ -187,5 +187,7 @@ func (c *Conversation) EnsureBranches() {
 			InappChatHistory:            c.InappChatHistory,
 			OpenaiChatHistoryCompletion: c.OpenaiChatHistoryCompletion,
 		}}
+		return true
 	}
+	return false
 }
