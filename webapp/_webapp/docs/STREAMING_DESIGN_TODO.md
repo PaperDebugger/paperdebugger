@@ -57,65 +57,68 @@ stores/streaming/
 
 ---
 
-## Phase 2: Unify Store Architecture
+## Phase 2: Unify Store Architecture ✅ COMPLETED
 
 ### Goal
 Consolidate `streaming-message-store` and `conversation-store` message handling into a single coherent store.
 
 ### Tasks
 
-- [ ] **2.1 Create unified message store**
-  ```typescript
-  // stores/message-store.ts
-  interface MessageStore {
-    // Finalized messages from server
-    messages: Message[];
-    
-    // Currently streaming messages (separate from finalized)
-    streamingEntries: MessageEntry[];
-    
-    // Computed: all displayable messages
-    get allMessages(): DisplayMessage[];
-    
-    // Actions
-    appendStreamingEntry(entry: MessageEntry): void;
-    updateStreamingEntry(id: string, update: Partial<MessageEntry>): void;
-    finalizeStreaming(): void;
-    reset(): void;
-  }
-  ```
+- [x] **2.1 Create unified message store**
   - Location: `stores/message-store.ts`
+  - Implemented with automatic subscriptions to `conversation-store` and `streaming-state-machine`
+  - Provides `getAllDisplayMessages()` and `getVisibleDisplayMessages()` selectors
+  - Auto-initializes subscriptions on module import
   - Benefit: Single source of truth with clear streaming vs finalized separation
 
-- [ ] **2.2 Create DisplayMessage type**
-  ```typescript
-  // Single type used by UI components
-  interface DisplayMessage {
-    id: string;
-    type: 'user' | 'assistant' | 'toolCall' | 'error';
-    content: string;
-    status: 'streaming' | 'complete' | 'error';
-    metadata?: MessageMetadata;
-  }
-  ```
+- [x] **2.2 Create DisplayMessage type**
   - Location: `stores/types.ts`
+  - Implemented with types: `user`, `assistant`, `toolCall`, `toolCallPrepare`, `error`
+  - Status types: `streaming`, `complete`, `error`, `stale`
+  - Includes support for reasoning, tool args/results, and selected text
   - Benefit: UI components work with one consistent type
 
-- [ ] **2.3 Remove flushSync calls**
-  - Restructure update flow so React batching works naturally
-  - Replace `flushSync` with proper `useSyncExternalStore` or subscription pattern
-  - Files affected: `streaming-message-store.ts`, `converter.ts`
+- [x] **2.3 Remove flushSync calls**
+  - No `flushSync` calls exist in the codebase
+  - Update flow uses Zustand's `subscribeWithSelector` middleware for reactive subscriptions
+  - `conversation-store` and `streaming-state-machine` now both use `subscribeWithSelector`
+  - `message-store` subscribes to both stores and updates automatically
 
-- [ ] **2.4 Migrate ChatBody to use unified store**
-  - Replace:
+- [x] **2.4 Migrate ChatBody to use unified store**
+  - ChatBody now uses:
     ```typescript
-    const visibleMessages = useMemo(() => filterVisibleMessages(conversation), [conversation]);
-    const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
+    const allDisplayMessages = useMessageStore((s) => s.getAllDisplayMessages());
     ```
-  - With:
-    ```typescript
-    const displayMessages = useMessageStore((s) => s.allMessages);
-    ```
+  - Helper functions updated to use unified store (e.g., `isEmptyConversation`)
+  - Converters in `stores/converters.ts` provide bidirectional conversion
+
+### Architecture Notes
+
+The unified message store architecture:
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                           useMessageStore                                   │
+│  - messages: Message[] (finalized)                                         │
+│  - streamingEntries: MessageEntry[] (streaming)                            │
+│  - getAllDisplayMessages(): DisplayMessage[]                               │
+└─────────────────────────────┬───────────────────────────────┬──────────────┘
+                              │                               │
+            ┌─────────────────┴─────────────┐   ┌─────────────┴─────────────┐
+            │      subscribes to            │   │      subscribes to        │
+            ▼                               │   ▼                           │
+┌───────────────────────────────┐           │  ┌───────────────────────────┐
+│    useConversationStore       │           │  │ useStreamingStateMachine  │
+│  - currentConversation        │           │  │ - streamingMessage        │
+│  (finalized messages)         │           │  │ (streaming entries)       │
+└───────────────────────────────┘           │  └───────────────────────────┘
+                                            │
+                                            ▼
+                              ┌─────────────────────────────────┐
+                              │        ChatBody Component       │
+                              │  Uses useMessageStore directly  │
+                              └─────────────────────────────────┘
+```
 
 ---
 
@@ -277,14 +280,14 @@ Ensure the refactored code is well-tested and documented.
 
 ## Implementation Priority
 
-| Phase | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| 1. Consolidate Handlers | High | Medium | High |
-| 2. Unify Stores | High | High | High |
-| 3. Simplify Transformations | Medium | Medium | Medium |
-| 4. Error Handling | Medium | Low | Medium |
-| 5. Refactor Hook | Low | Low | Medium |
-| 6. Testing & Docs | Low | Medium | High |
+| Phase | Priority | Effort | Impact | Status |
+|-------|----------|--------|--------|--------|
+| 1. Consolidate Handlers | High | Medium | High | ✅ COMPLETED |
+| 2. Unify Stores | High | High | High | ✅ COMPLETED |
+| 3. Simplify Transformations | Medium | Medium | Medium | Not Started |
+| 4. Error Handling | Medium | Low | Medium | Not Started |
+| 5. Refactor Hook | Low | Low | Medium | Not Started |
+| 6. Testing & Docs | Low | Medium | High | Not Started |
 
 ---
 
@@ -292,11 +295,11 @@ Ensure the refactored code is well-tested and documented.
 
 After completing all phases:
 
+- [x] Single source of truth for message state (Phase 2)
+- [x] No `flushSync` calls required (Phase 2)
+- [x] All state transitions documented and validated (Phase 1)
+- [x] Adding a new message type requires changes to only 1-2 files (Phase 1)
 - [ ] Total files related to streaming reduced from 15+ to ~6
-- [ ] Single source of truth for message state
-- [ ] No `flushSync` calls required
-- [ ] All state transitions documented and validated
-- [ ] Adding a new message type requires changes to only 1-2 files
 - [ ] Unit test coverage > 80% for streaming logic
 - [ ] Clear error handling with explicit recovery strategies
 

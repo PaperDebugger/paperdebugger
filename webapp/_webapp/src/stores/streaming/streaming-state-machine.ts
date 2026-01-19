@@ -12,7 +12,7 @@
  */
 
 import { create } from "zustand";
-import { flushSync } from "react-dom";
+import { subscribeWithSelector } from "zustand/middleware";
 import {
   IncompleteIndicator,
   Message,
@@ -128,14 +128,12 @@ function flushStreamingMessageToConversation(
     .map((part) => convertMessageEntryToMessage(part))
     .filter((part): part is Message => part !== null && part !== undefined);
 
-  flushSync(() => {
-    useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
-      ...prev,
-      id: conversationId ?? prev.id,
-      modelSlug: modelSlug ?? prev.modelSlug,
-      messages: [...prev.messages, ...flushMessages],
-    }));
-  });
+  useConversationStore.getState().updateCurrentConversation((prev: Conversation) => ({
+    ...prev,
+    id: conversationId ?? prev.id,
+    modelSlug: modelSlug ?? prev.modelSlug,
+    messages: [...prev.messages, ...flushMessages],
+  }));
 
   // Async update branch info (doesn't block, doesn't overwrite messages)
   if (conversationId) {
@@ -174,7 +172,8 @@ async function updateBranchInfoAsync(conversationId: string) {
 // State Machine Store
 // ============================================================================
 
-export const useStreamingStateMachine = create<StreamingStateMachineState>((set, get) => ({
+export const useStreamingStateMachine = create<StreamingStateMachineState>()(
+  subscribeWithSelector((set, get) => ({
   ...initialState,
 
   handleEvent: async (event: StreamEvent, context?: Partial<StreamHandlerContext>) => {
@@ -231,21 +230,18 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
         const newEntry = handler.onPartBegin(event.payload);
 
         if (newEntry) {
-          // Use flushSync to force synchronous update
-          flushSync(() => {
-            set((state) => {
-              // Skip if entry with same messageId already exists
-              if (state.streamingMessage.parts.some((p) => p.messageId === newEntry.messageId)) {
-                return state;
-              }
-              return {
-                state: "receiving",
-                streamingMessage: {
-                  parts: [...state.streamingMessage.parts, newEntry],
-                  sequence: state.streamingMessage.sequence + 1,
-                },
-              };
-            });
+          set((state) => {
+            // Skip if entry with same messageId already exists
+            if (state.streamingMessage.parts.some((p) => p.messageId === newEntry.messageId)) {
+              return state;
+            }
+            return {
+              state: "receiving",
+              streamingMessage: {
+                parts: [...state.streamingMessage.parts, newEntry],
+                sequence: state.streamingMessage.sequence + 1,
+              },
+            };
           });
         }
         break;
@@ -255,33 +251,31 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
       // CHUNK - Message content chunk received
       // ========================================================================
       case "CHUNK": {
-        flushSync(() => {
-          set((state) => {
-            const updatedParts = state.streamingMessage.parts.map((part) => {
-              const isTargetPart =
-                part.messageId === event.payload.messageId && part.assistant;
+        set((state) => {
+          const updatedParts = state.streamingMessage.parts.map((part) => {
+            const isTargetPart =
+              part.messageId === event.payload.messageId && part.assistant;
 
-              if (!isTargetPart) return part;
+            if (!isTargetPart) return part;
 
-              if (part.status !== MessageEntryStatus.PREPARING) {
-                logError("Message chunk received for non-preparing part");
-              }
+            if (part.status !== MessageEntryStatus.PREPARING) {
+              logError("Message chunk received for non-preparing part");
+            }
 
-              const updatedAssistant: MessageTypeAssistant = {
-                ...part.assistant!,
-                content: part.assistant!.content + event.payload.delta,
-              };
-
-              return { ...part, assistant: updatedAssistant };
-            });
-
-            return {
-              streamingMessage: {
-                parts: updatedParts,
-                sequence: state.streamingMessage.sequence + 1,
-              },
+            const updatedAssistant: MessageTypeAssistant = {
+              ...part.assistant!,
+              content: part.assistant!.content + event.payload.delta,
             };
+
+            return { ...part, assistant: updatedAssistant };
           });
+
+          return {
+            streamingMessage: {
+              parts: updatedParts,
+              sequence: state.streamingMessage.sequence + 1,
+            },
+          };
         });
         break;
       }
@@ -290,34 +284,32 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
       // REASONING_CHUNK - Reasoning content chunk received
       // ========================================================================
       case "REASONING_CHUNK": {
-        flushSync(() => {
-          set((state) => {
-            const updatedParts = state.streamingMessage.parts.map((part) => {
-              const isTargetPart =
-                part.messageId === event.payload.messageId && part.assistant;
+        set((state) => {
+          const updatedParts = state.streamingMessage.parts.map((part) => {
+            const isTargetPart =
+              part.messageId === event.payload.messageId && part.assistant;
 
-              if (!isTargetPart) return part;
+            if (!isTargetPart) return part;
 
-              if (part.status !== MessageEntryStatus.PREPARING) {
-                logError("Reasoning chunk received for non-preparing part");
-              }
+            if (part.status !== MessageEntryStatus.PREPARING) {
+              logError("Reasoning chunk received for non-preparing part");
+            }
 
-              const currentReasoning = part.assistant!.reasoning ?? "";
-              const updatedAssistant: MessageTypeAssistant = {
-                ...part.assistant!,
-                reasoning: currentReasoning + event.payload.delta,
-              };
-
-              return { ...part, assistant: updatedAssistant };
-            });
-
-            return {
-              streamingMessage: {
-                parts: updatedParts,
-                sequence: state.streamingMessage.sequence + 1,
-              },
+            const currentReasoning = part.assistant!.reasoning ?? "";
+            const updatedAssistant: MessageTypeAssistant = {
+              ...part.assistant!,
+              reasoning: currentReasoning + event.payload.delta,
             };
+
+            return { ...part, assistant: updatedAssistant };
           });
+
+          return {
+            streamingMessage: {
+              parts: updatedParts,
+              sequence: state.streamingMessage.sequence + 1,
+            },
+          };
         });
         break;
       }
@@ -335,26 +327,24 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
 
         const handler = getMessageTypeHandler(role);
 
-        flushSync(() => {
-          set((state) => {
-            const updatedParts = state.streamingMessage.parts.map((part) => {
-              if (part.messageId !== event.payload.messageId) {
-                return part;
-              }
+        set((state) => {
+          const updatedParts = state.streamingMessage.parts.map((part) => {
+            if (part.messageId !== event.payload.messageId) {
+              return part;
+            }
 
-              const updates = handler.onPartEnd(event.payload, part);
-              if (!updates) return part;
+            const updates = handler.onPartEnd(event.payload, part);
+            if (!updates) return part;
 
-              return { ...part, ...updates };
-            });
-
-            return {
-              streamingMessage: {
-                parts: updatedParts,
-                sequence: state.streamingMessage.sequence + 1,
-              },
-            };
+            return { ...part, ...updates };
           });
+
+          return {
+            streamingMessage: {
+              parts: updatedParts,
+              sequence: state.streamingMessage.sequence + 1,
+            },
+          };
         });
         break;
       }
@@ -412,15 +402,13 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
           }),
         };
 
-        flushSync(() => {
-          set((state) => ({
-            state: "error",
-            streamingMessage: {
-              ...state.streamingMessage,
-              parts: [...state.streamingMessage.parts, errorEntry],
-            },
-          }));
-        });
+        set((state) => ({
+          state: "error",
+          streamingMessage: {
+            ...state.streamingMessage,
+            parts: [...state.streamingMessage.parts, errorEntry],
+          },
+        }));
 
         errorToast(errorMessage, "Chat Stream Error");
         break;
@@ -431,21 +419,19 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
       // ========================================================================
       case "CONNECTION_ERROR": {
         // Mark all preparing messages as stale
-        flushSync(() => {
-          set((state) => ({
-            state: "error",
-            streamingMessage: {
-              parts: state.streamingMessage.parts.map((part) => ({
-                ...part,
-                status:
-                  part.status === MessageEntryStatus.PREPARING
-                    ? MessageEntryStatus.STALE
-                    : part.status,
-              })),
-              sequence: state.streamingMessage.sequence + 1,
-            },
-          }));
-        });
+        set((state) => ({
+          state: "error",
+          streamingMessage: {
+            parts: state.streamingMessage.parts.map((part) => ({
+              ...part,
+              status:
+                part.status === MessageEntryStatus.PREPARING
+                  ? MessageEntryStatus.STALE
+                  : part.status,
+            })),
+            sequence: state.streamingMessage.sequence + 1,
+          },
+        }));
 
         logError("Connection error:", event.payload);
         break;
@@ -474,7 +460,8 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>((set,
   getStreamingMessage: () => get().streamingMessage,
 
   getIncompleteIndicator: () => get().incompleteIndicator,
-}));
+}))
+);
 
 // ============================================================================
 // Convenience Selectors

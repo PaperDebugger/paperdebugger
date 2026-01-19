@@ -9,7 +9,7 @@
  * @deprecated Use useStreamingStateMachine from '../stores/streaming' instead
  */
 
-import { flushSync } from "react-dom";
+
 import { IncompleteIndicator } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
   useStreamingStateMachine,
@@ -52,11 +52,9 @@ export const useStreamingMessageStore = Object.assign(
         });
       },
       updateStreamingMessage: (updater: (prev: StreamingMessage) => StreamingMessage) => {
-        flushSync(() => {
-          useStreamingStateMachine.setState((state) => ({
-            streamingMessage: updater(state.streamingMessage),
-          }));
-        });
+        useStreamingStateMachine.setState((state) => ({
+          streamingMessage: updater(state.streamingMessage),
+        }));
       },
       setIncompleteIndicator: (indicator: IncompleteIndicator | null) => {
         useStreamingStateMachine.setState({ incompleteIndicator: indicator });
