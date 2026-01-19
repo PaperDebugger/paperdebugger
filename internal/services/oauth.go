@@ -56,6 +56,21 @@ func NewOAuthService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *OAuthServi
 }
 
 func (s *OAuthService) CreateOAuthRecord(ctx context.Context, code, state, accessToken string) error {
+	// Check if state already exists
+	var existing models.OAuth
+	err := s.oauthCollection.FindOne(ctx, bson.M{"state": state}).Decode(&existing)
+	if err == nil {
+		// Record exists - allow if within 10s window (idempotent callback)
+		if time.Since(existing.CreatedAt.Time()) <= OAuthReuseWindow {
+			return nil
+		}
+		return errors.New("state already exists, please restart the login process")
+	}
+	if !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+
+	// Create new record
 	now := time.Now()
 	callback := &models.OAuth{
 		BaseModel: models.BaseModel{
@@ -69,23 +84,15 @@ func (s *OAuthService) CreateOAuthRecord(ctx context.Context, code, state, acces
 		Used:        false,
 	}
 
-	// count if state is already exist
-	count, err := s.oauthCollection.CountDocuments(ctx, bson.M{"state": state})
-	if err != nil {
-		return err
-	}
-	if count > 0 {
-		return errors.New("state already exists, please restart the login process")
-	}
-
 	_, err = s.oauthCollection.InsertOne(ctx, callback)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return errors.New("code already exists, please do not refresh the page")
+			// Race condition: another request just created it, treat as success
+			return nil
 		}
 		return err
 	}
-	return err
+	return nil
 }
 
 func (s *OAuthService) GetOAuthRecordByState(ctx context.Context, state string) (*models.OAuth, error) {
