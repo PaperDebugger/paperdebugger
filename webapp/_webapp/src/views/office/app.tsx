@@ -13,7 +13,6 @@ import { setStorage as setGlobalStorage } from "../../libs/storage";
 import { useAuthStore } from "../../stores/auth-store";
 import { useSelectionStore } from "../../stores/selection-store";
 import { useSettingStore } from "../../stores/setting-store";
-import { useDevtoolStore } from "../../stores/devtool-store";
 
 import "../../index.css";
 
@@ -89,7 +88,6 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
   const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
   const { initFromStorage: initAuthFromStorage, login } = useAuthStore();
   const { initLocalSettings } = useSettingStore();
-  const { initFromStorage: initDevtoolFromStorage } = useDevtoolStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize stores from storage on mount
@@ -99,8 +97,6 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     initAuthFromStorage();
     // Re-initialize local UI settings from storage
     initLocalSettings();
-    // Re-initialize devtool settings from storage
-    initDevtoolFromStorage();
     // Attempt to login with restored tokens
     login();
     setIsInitialized(true);

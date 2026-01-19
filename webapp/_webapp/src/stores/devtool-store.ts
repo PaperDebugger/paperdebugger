@@ -8,12 +8,6 @@ export const localStorageKey = {
 } as const;
 
 interface DevtoolStore {
-  /**
-   * Initialize devtool settings from storage.
-   * Must be called after storage adapter is set (e.g., after Office.onReady).
-   */
-  initFromStorage: () => void;
-
   showTool: boolean;
   setShowTool: (showTool: boolean) => void;
 
@@ -25,27 +19,19 @@ interface DevtoolStore {
 }
 
 export const useDevtoolStore = create<DevtoolStore>((set) => ({
-  initFromStorage: () => {
-    const showTool = JSON.parse(storage.getItem(localStorageKey.showTool) || "false");
-    const slowStreamingMode = JSON.parse(storage.getItem(localStorageKey.slowStreamingMode) || "false");
-    const alwaysSyncProject = JSON.parse(storage.getItem(localStorageKey.alwaysSyncProject) || "false");
-    set({ showTool, slowStreamingMode, alwaysSyncProject });
-  },
-
-  // Initial values are defaults - will be populated by initFromStorage()
-  showTool: false,
+  showTool: storage.getItem(localStorageKey.showTool) === "true",
   setShowTool: (showTool: boolean) => {
     storage.setItem(localStorageKey.showTool, JSON.stringify(showTool));
     set({ showTool });
   },
 
-  slowStreamingMode: false,
+  slowStreamingMode: storage.getItem(localStorageKey.slowStreamingMode) === "true",
   setSlowStreamingMode: (slowStreamingMode: boolean) => {
     storage.setItem(localStorageKey.slowStreamingMode, JSON.stringify(slowStreamingMode));
     set({ slowStreamingMode });
   },
 
-  alwaysSyncProject: false,
+  alwaysSyncProject: storage.getItem(localStorageKey.alwaysSyncProject) === "true",
   setAlwaysSyncProject: (alwaysSyncProject: boolean) => {
     storage.setItem(localStorageKey.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
     set({ alwaysSyncProject });
