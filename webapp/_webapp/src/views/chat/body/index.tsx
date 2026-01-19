@@ -37,7 +37,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const isDebugMode = conversationMode === "debug";
 
   // Use the unified message store to get all display messages
-  const allDisplayMessages = useMessageStore((s) => s.getAllDisplayMessages());
+  const allDisplayMessages = useMessageStore((s) => s.allDisplayMessages);
   
   // Filter visible messages (non-empty user/assistant, all tool calls)
   const visibleMessages = useMemo(() => {

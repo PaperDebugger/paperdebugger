@@ -30,7 +30,7 @@ export function getPrevUserMessage(messages: Message[], currentIndex: number): M
  */
 export function isEmptyConversation(): boolean {
   const state = useMessageStore.getState();
-  const allMessages = state.getAllDisplayMessages();
+  const allMessages = state.allDisplayMessages;
   const visibleMessages = allMessages.filter((msg) => {
     if (msg.type === "user") return msg.content.length > 0;
     if (msg.type === "assistant") return msg.content.length > 0;

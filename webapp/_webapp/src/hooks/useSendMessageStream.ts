@@ -113,7 +113,7 @@ export function useSendMessageStream() {
 
       // Add the user message to the streaming state
       const newMessageEntry: MessageEntry = {
-        messageId: "dummy",
+        messageId: `pending-${crypto.randomUUID()}`,
         status: MessageEntryStatus.PREPARING,
         user: fromJson(MessageTypeUserSchema, {
           content: message,

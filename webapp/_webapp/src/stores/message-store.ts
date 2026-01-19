@@ -51,6 +51,10 @@ interface MessageStoreState {
   currentBranchIndex: number;
   totalBranches: number;
 
+  // Computed display messages (updated when messages or streamingEntries change)
+  allDisplayMessages: DisplayMessage[];
+  visibleDisplayMessages: DisplayMessage[];
+
   // Flag to track if subscriptions are initialized
   _subscriptionsInitialized: boolean;
 }
@@ -97,8 +101,35 @@ const initialState: MessageStoreState = {
   branches: [],
   currentBranchIndex: 0,
   totalBranches: 0,
+  allDisplayMessages: [],
+  visibleDisplayMessages: [],
   _subscriptionsInitialized: false,
 };
+
+// ============================================================================
+// Helper: Compute Display Messages
+// ============================================================================
+
+function computeDisplayMessages(
+  messages: Message[],
+  streamingEntries: MessageEntry[]
+): { all: DisplayMessage[]; visible: DisplayMessage[] } {
+  // Convert finalized messages
+  const finalizedDisplayMessages = messages
+    .map(messageToDisplayMessage)
+    .filter((m): m is DisplayMessage => m !== null);
+
+  // Convert streaming entries
+  const streamingDisplayMessages = streamingEntries
+    .map(messageEntryToDisplayMessage)
+    .filter((m): m is DisplayMessage => m !== null);
+
+  // Combine: finalized first, then streaming
+  const all = [...finalizedDisplayMessages, ...streamingDisplayMessages];
+  const visible = filterDisplayMessages(all);
+
+  return { all, visible };
+}
 
 // ============================================================================
 // Store Implementation
@@ -113,10 +144,16 @@ export const useMessageStore = create<MessageStore>()(
     // ========================================================================
 
     setMessages: (messages: Message[]) => {
-      set({ messages });
+      const { all, visible } = computeDisplayMessages(messages, get().streamingEntries);
+      set({
+        messages,
+        allDisplayMessages: all,
+        visibleDisplayMessages: visible,
+      });
     },
 
     setConversation: (conversation: Conversation) => {
+      const { all, visible } = computeDisplayMessages(conversation.messages, get().streamingEntries);
       set({
         messages: conversation.messages,
         conversationId: conversation.id,
@@ -125,6 +162,8 @@ export const useMessageStore = create<MessageStore>()(
         branches: [...conversation.branches],
         currentBranchIndex: conversation.currentBranchIndex,
         totalBranches: conversation.totalBranches,
+        allDisplayMessages: all,
+        visibleDisplayMessages: visible,
       });
     },
 
@@ -133,7 +172,12 @@ export const useMessageStore = create<MessageStore>()(
     // ========================================================================
 
     setStreamingEntries: (entries: MessageEntry[]) => {
-      set({ streamingEntries: entries });
+      const { all, visible } = computeDisplayMessages(get().messages, entries);
+      set({
+        streamingEntries: entries,
+        allDisplayMessages: all,
+        visibleDisplayMessages: visible,
+      });
     },
 
     // ========================================================================
@@ -147,15 +191,7 @@ export const useMessageStore = create<MessageStore>()(
       useConversationStore.subscribe(
         (state) => state.currentConversation,
         (conversation) => {
-          set({
-            messages: conversation.messages,
-            conversationId: conversation.id,
-            modelSlug: conversation.modelSlug,
-            currentBranchId: conversation.currentBranchId,
-            branches: [...conversation.branches],
-            currentBranchIndex: conversation.currentBranchIndex,
-            totalBranches: conversation.totalBranches,
-          });
+          get().setConversation(conversation);
         },
         { fireImmediately: true }
       );
@@ -164,7 +200,7 @@ export const useMessageStore = create<MessageStore>()(
       useStreamingStateMachine.subscribe(
         (state) => state.streamingMessage,
         (streamingMessage) => {
-          set({ streamingEntries: streamingMessage.parts });
+          get().setStreamingEntries(streamingMessage.parts);
         },
         { fireImmediately: true }
       );
@@ -186,37 +222,31 @@ export const useMessageStore = create<MessageStore>()(
         branches: [],
         currentBranchIndex: 0,
         totalBranches: 0,
+        allDisplayMessages: [],
+        visibleDisplayMessages: [],
         // Keep subscriptions initialized
       });
     },
 
     resetStreaming: () => {
-      set({ streamingEntries: [] });
+      const { all, visible } = computeDisplayMessages(get().messages, []);
+      set({
+        streamingEntries: [],
+        allDisplayMessages: all,
+        visibleDisplayMessages: visible,
+      });
     },
 
     // ========================================================================
-    // Computed Selectors
+    // Computed Selectors (return cached values)
     // ========================================================================
 
     getAllDisplayMessages: () => {
-      const state = get();
-
-      // Convert finalized messages
-      const finalizedDisplayMessages = state.messages
-        .map(messageToDisplayMessage)
-        .filter((m): m is DisplayMessage => m !== null);
-
-      // Convert streaming entries
-      const streamingDisplayMessages = state.streamingEntries
-        .map(messageEntryToDisplayMessage)
-        .filter((m): m is DisplayMessage => m !== null);
-
-      // Combine: finalized first, then streaming
-      return [...finalizedDisplayMessages, ...streamingDisplayMessages];
+      return get().allDisplayMessages;
     },
 
     getVisibleDisplayMessages: () => {
-      return filterDisplayMessages(get().getAllDisplayMessages());
+      return get().visibleDisplayMessages;
     },
 
     hasStreamingMessages: () => {
@@ -257,10 +287,10 @@ export const useMessageStore = create<MessageStore>()(
 // ============================================================================
 
 export const selectAllDisplayMessages = (state: MessageStore) =>
-  state.getAllDisplayMessages();
+  state.allDisplayMessages;
 
 export const selectVisibleDisplayMessages = (state: MessageStore) =>
-  state.getVisibleDisplayMessages();
+  state.visibleDisplayMessages;
 
 export const selectHasStreamingMessages = (state: MessageStore) =>
   state.hasStreamingMessages();
