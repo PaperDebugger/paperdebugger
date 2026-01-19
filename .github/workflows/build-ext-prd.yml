@@ -1,4 +1,4 @@
-name: Build Beta Chrome Extension
+name: build chrome extension for prd
 
 on:
   workflow_run:
@@ -23,14 +23,15 @@ jobs:
 
       - name: Build
         run: |
+          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
           cd webapp/_webapp
           npm install
-          npm run build:stg:chrome
+          npm run build:prd:chrome
 
       - name: 👉 Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: paperdebugger-chrome-extension-stg
+          name: paperdebugger-chrome-extension-prd
           path: webapp/_webapp/dist
 
   push-to-chrome-web-store:
@@ -44,7 +45,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: paperdebugger-chrome-extension-stg
+          name: paperdebugger-chrome-extension-prd
           path: dist
 
       - name: Zip extension files
@@ -58,6 +59,5 @@ jobs:
           client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
           client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
           refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
-          extension_id: 'gjkgbnnlfophcfffoinfgdnhjnfankbn'
+          extension_id: 'dfkedikhakpapbfcnbpmfhpklndgiaog'
           zip_file: 'dist.zip'
-        continue-on-error: true

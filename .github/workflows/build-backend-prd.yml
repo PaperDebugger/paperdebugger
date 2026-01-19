@@ -1,4 +1,4 @@
-name: Release
+name: build backend for prd
 on:
   push:
     tags:
@@ -7,56 +7,6 @@ on:
     types: [release]
 
 jobs:
-  build-chrome-extension:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.tag }}
-
-      - name: Setup env
-        run: |
-          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
-          echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
-          echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
-
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Build
-        run: |
-          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
-          cd webapp/_webapp
-          npm install
-          npm run build:prd:chrome
-
-      - name: 👉 Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: paperdebugger-chrome-extension-prd
-          path: webapp/_webapp/dist
-
-      - name: Install zip
-        run: |
-          sudo apt-get update && sudo apt-get install -y zip
-
-      - name: Zip extension files
-        run: |
-          zip -r dist.zip webapp/_webapp/dist/*
-
-      - name: Upload to Chrome Web Store (upload only)
-        uses: mobilefirstllc/cws-publish@latest
-        with:
-          action: 'upload'  # one of: upload, publish, testers
-          client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
-          client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
-          refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
-          extension_id: 'dfkedikhakpapbfcnbpmfhpklndgiaog'
-          zip_file: 'dist.zip'
-
   build-backend-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -89,7 +39,7 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
-  deploy:
+  deploy-backend:
     needs: build-backend-and-push
     runs-on: ubuntu-latest
     permissions:
