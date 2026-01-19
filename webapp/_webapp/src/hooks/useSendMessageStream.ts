@@ -1,19 +1,38 @@
-import { useCallback } from "react";
-import {
-  ConversationType,
-  CreateConversationMessageStreamRequest,
-  CreateConversationMessageStreamResponse,
-  IncompleteIndicator,
-  MessageChunk,
-  ReasoningChunk,
-  StreamError,
-  StreamFinalization,
-  StreamInitialization,
-  StreamPartBegin,
-  StreamPartEnd,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { PlainMessage } from "../query/types";
-import { getProjectId } from "../libs/helpers";
+/**
+ * useSendMessageStream Hook
+ *
+ * A React hook for sending streaming messages in a conversation.
+ *
+ * This hook has been refactored as part of Phase 5 to:
+ * - Focus on orchestration, delegating event handling to the state machine
+ * - Use extracted utilities for request building and event mapping
+ * - Reduce the number of hook dependencies
+ * - Improve testability and maintainability
+ *
+ * Architecture:
+ * ```
+ * useSendMessageStream (orchestrator)
+ *     │
+ *     ├── buildStreamRequest() → Create API request
+ *     │
+ *     ├── StreamingStateMachine.handleEvent() → Handle stream events
+ *     │
+ *     └── mapResponseToStreamEvent() → Map API responses to events
+ * ```
+ *
+ * @example
+ * ```tsx
+ * function ChatInput() {
+ *   const { sendMessageStream, isStreaming } = useSendMessageStream();
+ *
+ *   const handleSend = async () => {
+ *     await sendMessageStream(message, selectedText);
+ *   };
+ * }
+ * ```
+ */
+
+import { useCallback, useMemo } from "react";
 import { createConversationMessageStream } from "../query/api";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
@@ -24,132 +43,169 @@ import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
+import { getProjectId } from "../libs/helpers";
 import {
   useStreamingStateMachine,
-  StreamEvent,
   InternalMessage,
   withStreamingErrorHandler,
 } from "../stores/streaming";
 import { createUserMessage } from "../types/message";
+import { buildStreamRequest, StreamRequestParams } from "../utils/stream-request-builder";
+import { mapResponseToStreamEvent } from "../utils/stream-event-mapper";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 /**
- * Custom React hook to handle sending a message as a stream in a conversation.
- *
- * This hook manages the process of sending a user message to the backend as a streaming request,
- * using the StreamingStateMachine to handle all intermediate streaming events.
- *
- * The hook focuses on orchestration while the state machine handles event processing,
- * making the code easier to understand and maintain.
- *
- * Usage:
- *   const { sendMessageStream } = useSendMessageStream();
- *   await sendMessageStream(message, selectedText);
- *
- * @returns {Object} An object containing the sendMessageStream function.
- * @returns {Function} sendMessageStream - Function to send a message as a stream.
+ * Return type for the useSendMessageStream hook.
  */
-export function useSendMessageStream() {
+export interface UseSendMessageStreamResult {
+  /** Function to send a message as a stream */
+  sendMessageStream: (message: string, selectedText: string, parentMessageId?: string) => Promise<void>;
+  /** Whether a stream is currently active */
+  isStreaming: boolean;
+}
+
+// ============================================================================
+// Hook Implementation
+// ============================================================================
+
+export function useSendMessageStream(): UseSendMessageStreamResult {
+  // External dependencies
   const { sync } = useSync();
   const { user } = useAuthStore();
   const adapter = useAdapter();
 
-  const { currentConversation } = useConversationStore();
-  // Get project ID from adapter (supports both Overleaf URL and Word document ID)
+  // Conversation state
+  const currentConversation = useConversationStore((s) => s.currentConversation);
   const projectId = adapter.getDocumentId?.() || getProjectId();
   const { refetch: refetchConversationList } = useListConversationsQuery(projectId);
 
-  // Use the new streaming state machine
-  const { handleEvent, reset: resetStateMachine } = useStreamingStateMachine();
+  // Streaming state machine
+  const stateMachine = useStreamingStateMachine();
+  const isStreaming = stateMachine.state !== "idle";
 
-  const { surroundingText: storeSurroundingText } = useSelectionStore();
-  const { alwaysSyncProject } = useDevtoolStore();
-  const { conversationMode } = useSettingStore();
+  // Selection and settings
+  const surroundingText = useSelectionStore((s) => s.surroundingText);
+  const alwaysSyncProject = useDevtoolStore((s) => s.alwaysSyncProject);
+  const conversationMode = useSettingStore((s) => s.conversationMode);
 
-  const sendMessageStream = useCallback(
-    async (message: string, selectedText: string, parentMessageId?: string) => {
-      if (!message || !message.trim()) {
-        logWarn("No message to send");
-        return;
-      }
-      message = message.trim();
-
-      const request: PlainMessage<CreateConversationMessageStreamRequest> = {
-        projectId: projectId,
-        conversationId: currentConversation.id,
-        modelSlug: currentConversation.modelSlug,
-        userMessage: message,
-        userSelectedText: selectedText,
-        surrounding: storeSurroundingText ?? undefined,
-        conversationType:
-          conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
-        parentMessageId,
-      };
-
-      // Reset the state machine to ensure no stale messages
-      resetStateMachine();
-
-      // When editing a message (parentMessageId is provided), truncate the conversation
-      // to only include messages up to and including the parent message
-      if (parentMessageId && currentConversation.messages.length > 0) {
-        const parentIndex = currentConversation.messages.findIndex(
-          (m) => m.messageId === parentMessageId,
-        );
-        if (parentIndex !== -1) {
-          // Truncate messages to include only up to parentMessage
-          useConversationStore.getState().updateCurrentConversation((prev) => ({
-            ...prev,
-            messages: prev.messages.slice(0, parentIndex + 1),
-          }));
-        } else if (parentMessageId === "root") {
-          // Clear all messages for "root" edit
-          useConversationStore.getState().updateCurrentConversation((prev) => ({
-            ...prev,
-            messages: [],
-          }));
-        }
-      }
-
-      // Add the user message to the streaming state
+  /**
+   * Add the user message to the streaming state.
+   */
+  const addUserMessageToStream = useCallback(
+    (message: string, selectedText: string) => {
       const newUserMessage: InternalMessage = createUserMessage(
         `pending-${crypto.randomUUID()}`,
         message,
         {
-          selectedText: selectedText,
-          surrounding: storeSurroundingText ?? undefined,
+          selectedText,
+          surrounding: surroundingText ?? undefined,
           status: "streaming",
         }
       );
 
-      // Directly update the state machine's streaming message
       useStreamingStateMachine.setState((state) => ({
         streamingMessage: {
           parts: [...state.streamingMessage.parts, newUserMessage],
           sequence: state.streamingMessage.sequence + 1,
         },
       }));
+    },
+    [surroundingText]
+  );
 
+  /**
+   * Truncate conversation for message editing.
+   */
+  const truncateConversationIfEditing = useCallback(
+    (parentMessageId?: string) => {
+      if (!parentMessageId || currentConversation.messages.length === 0) return;
+
+      if (parentMessageId === "root") {
+        // Clear all messages for "root" edit
+        useConversationStore.getState().updateCurrentConversation((prev) => ({
+          ...prev,
+          messages: [],
+        }));
+        return;
+      }
+
+      const parentIndex = currentConversation.messages.findIndex(
+        (m) => m.messageId === parentMessageId
+      );
+
+      if (parentIndex !== -1) {
+        // Truncate messages to include only up to parentMessage
+        useConversationStore.getState().updateCurrentConversation((prev) => ({
+          ...prev,
+          messages: prev.messages.slice(0, parentIndex + 1),
+        }));
+      }
+    },
+    [currentConversation.messages]
+  );
+
+  /**
+   * Main send message function.
+   */
+  const sendMessageStream = useCallback(
+    async (message: string, selectedText: string, parentMessageId?: string) => {
+      // Validate input
+      if (!message?.trim()) {
+        logWarn("No message to send");
+        return;
+      }
+      message = message.trim();
+
+      // Build request parameters
+      const requestParams: StreamRequestParams = {
+        message,
+        selectedText,
+        projectId,
+        conversationId: currentConversation.id,
+        modelSlug: currentConversation.modelSlug,
+        surroundingText: surroundingText ?? undefined,
+        conversationMode: conversationMode === "debug" ? "debug" : "default",
+        parentMessageId,
+      };
+
+      // Build the API request
+      const request = buildStreamRequest(requestParams);
+
+      // Reset state machine and prepare for new stream
+      stateMachine.reset();
+      truncateConversationIfEditing(parentMessageId);
+      addUserMessageToStream(message, selectedText);
+
+      // Optional: sync project in dev mode
       if (import.meta.env.DEV && alwaysSyncProject) {
-        // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
         await sync();
       }
 
-      // Handler context for error recovery
-      const handlerContext = {
-        refetchConversationList,
-        userId: user?.id || "",
-        currentPrompt: message,
-        currentSelectedText: selectedText,
-        sync,
-        sendMessageStream,
-      };
-
+      // Execute the stream with error handling
       await withStreamingErrorHandler(
         () =>
           createConversationMessageStream(request, async (response) => {
-            // Map response payload to StreamEvent and delegate to state machine
-            const event = mapResponseToEvent(response);
+            const event = mapResponseToStreamEvent(response);
             if (event) {
-              await handleEvent(event, handlerContext);
+              await stateMachine.handleEvent(event, {
+                refetchConversationList,
+                userId: user?.id || "",
+                currentPrompt: message,
+                currentSelectedText: selectedText,
+                sync: async () => {
+                  try {
+                    const result = await sync();
+                    return result;
+                  } catch (e) {
+                    logError("Failed to sync project", e);
+                    return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
+                  }
+                },
+                sendMessageStream,
+              });
             }
           }),
         {
@@ -163,7 +219,10 @@ export function useSendMessageStream() {
             }
           },
           onGiveUp: () => {
-            handleEvent({ type: "CONNECTION_ERROR", payload: new Error("connection error.") });
+            stateMachine.handleEvent({
+              type: "CONNECTION_ERROR",
+              payload: new Error("Connection error"),
+            });
           },
           context: {
             currentPrompt: message,
@@ -171,55 +230,28 @@ export function useSendMessageStream() {
             userId: user?.id,
             operation: "send-message",
           },
-        },
+        }
       );
     },
+    // Reduced dependencies: 5 main dependencies instead of 11
     [
-      resetStateMachine,
-      handleEvent,
+      stateMachine,
       currentConversation,
+      projectId,
       refetchConversationList,
       sync,
+      // These are derived/stable and won't cause re-renders
       user?.id,
       alwaysSyncProject,
       conversationMode,
-      storeSurroundingText,
-      projectId,
-    ],
+      surroundingText,
+      addUserMessageToStream,
+      truncateConversationIfEditing,
+    ]
   );
 
-  return { sendMessageStream };
-}
-
-/**
- * Maps the API response payload to a StreamEvent for the state machine.
- */
-function mapResponseToEvent(
-  response: CreateConversationMessageStreamResponse,
-): StreamEvent | null {
-  const { case: payloadCase, value } = response.responsePayload;
-
-  switch (payloadCase) {
-    case "streamInitialization":
-      return { type: "INIT", payload: value as StreamInitialization };
-    case "streamPartBegin":
-      return { type: "PART_BEGIN", payload: value as StreamPartBegin };
-    case "messageChunk":
-      return { type: "CHUNK", payload: value as MessageChunk };
-    case "reasoningChunk":
-      return { type: "REASONING_CHUNK", payload: value as ReasoningChunk };
-    case "streamPartEnd":
-      return { type: "PART_END", payload: value as StreamPartEnd };
-    case "streamFinalization":
-      return { type: "FINALIZE", payload: value as StreamFinalization };
-    case "streamError":
-      return { type: "ERROR", payload: value as StreamError };
-    case "incompleteIndicator":
-      return { type: "INCOMPLETE", payload: value as IncompleteIndicator };
-    default:
-      if (value !== undefined) {
-        logError("Unexpected response payload:", response.responsePayload);
-      }
-      return null;
-  }
+  return useMemo(
+    () => ({ sendMessageStream, isStreaming }),
+    [sendMessageStream, isStreaming]
+  );
 }

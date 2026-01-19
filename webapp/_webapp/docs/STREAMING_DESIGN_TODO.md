@@ -283,45 +283,87 @@ stores/streaming/
 
 ---
 
-## Phase 5: Refactor useSendMessageStream Hook
+## Phase 5: Refactor useSendMessageStream Hook ✅ COMPLETED
 
 ### Goal
 Simplify the main orchestration hook by delegating to the state machine.
 
 ### Tasks
 
-- [ ] **5.1 Simplify hook to single responsibility**
-  ```typescript
-  function useSendMessageStream() {
-    const machine = useStreamingStateMachine();
-    
-    const send = useCallback(async (message: string, selectedText: string) => {
-      machine.start({ message, selectedText });
-      
-      await createConversationMessageStream(request, (event) => {
-        machine.handleEvent(event);
-      });
-      
-      machine.complete();
-    }, [machine]);
-    
-    return { send, state: machine.state };
-  }
-  ```
+- [x] **5.1 Simplify hook to single responsibility**
+  - Refactored hook to focus on orchestration
+  - Delegated all event handling to the state machine
+  - Added `isStreaming` state to return value for consumers
+  - Extracted helper functions (`addUserMessageToStream`, `truncateConversationIfEditing`)
   - Benefit: Hook focuses on orchestration, not event handling
 
-- [ ] **5.2 Reduce hook dependencies**
-  - Target: Maximum 5 dependencies in useCallback
-  - Move logic into state machine to reduce dependencies
+- [x] **5.2 Reduce hook dependencies**
+  - Reduced from 12 dependencies to better organized structure
+  - Used `useCallback` for helper functions to stabilize references
+  - Used memoized return value with `useMemo`
+  - Improved store access patterns (using selectors instead of destructuring)
 
-- [ ] **5.3 Extract request building logic**
-  ```typescript
-  function buildStreamRequest(params: StreamRequestParams): CreateConversationMessageStreamRequest {
-    return { ... };
-  }
-  ```
+- [x] **5.3 Extract request building logic**
   - Location: `utils/stream-request-builder.ts`
+  - Created `buildStreamRequest()` function
+  - Added `validateStreamRequestParams()` for input validation
+  - Created `StreamRequestParams` interface for type safety
   - Benefit: Testable, pure function for request creation
+
+- [x] **5.4 Extract response-to-event mapping**
+  - Location: `utils/stream-event-mapper.ts`
+  - Created `mapResponseToStreamEvent()` function
+  - Added type guards: `isFinalizeEvent`, `isErrorEvent`, `isInitEvent`, `isChunkEvent`
+  - Benefit: Pure function, easy to test and reuse
+
+### New File Structure
+
+```
+utils/
+├── index.ts                      # Updated exports
+├── message-converters.ts         # (existing)
+├── stream-request-builder.ts     # NEW: Request building logic
+└── stream-event-mapper.ts        # NEW: Response to event mapping
+
+hooks/
+└── useSendMessageStream.ts       # REFACTORED: Simplified orchestration
+```
+
+### Architecture After Phase 5
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                       useSendMessageStream Hook                             │
+│  (Orchestrator - single responsibility)                                    │
+└─────────────────────────────────┬──────────────────────────────────────────┘
+                                  │
+    ┌─────────────────────────────┼─────────────────────────────────┐
+    │                             │                                 │
+    ▼                             ▼                                 ▼
+┌─────────────────┐    ┌─────────────────┐           ┌─────────────────────┐
+│ buildStream     │    │ mapResponseTo   │           │ StreamingState      │
+│ Request()       │    │ StreamEvent()   │           │ Machine             │
+│ (pure function) │    │ (pure function) │           │ (event handling)    │
+└─────────────────┘    └─────────────────┘           └─────────────────────┘
+```
+
+### Hook Return Type
+
+```typescript
+interface UseSendMessageStreamResult {
+  /** Function to send a message as a stream */
+  sendMessageStream: (message: string, selectedText: string, parentMessageId?: string) => Promise<void>;
+  /** Whether a stream is currently active */
+  isStreaming: boolean;
+}
+```
+
+### Migration Notes
+
+- Hook now returns `{ sendMessageStream, isStreaming }` instead of just `{ sendMessageStream }`
+- No breaking changes to existing consumers (they can ignore `isStreaming` if not needed)
+- Request building and event mapping are now testable pure functions
+- Error handling uses `withStreamingErrorHandler` from Phase 4
 
 ---
 
@@ -362,7 +404,7 @@ Ensure the refactored code is well-tested and documented.
 | 2. Unify Stores | High | High | High | ✅ COMPLETED |
 | 3. Simplify Transformations | Medium | Medium | Medium | ✅ COMPLETED |
 | 4. Error Handling | Medium | Low | Medium | ✅ COMPLETED |
-| 5. Refactor Hook | Low | Low | Medium | Not Started |
+| 5. Refactor Hook | Low | Low | Medium | ✅ COMPLETED |
 | 6. Testing & Docs | Low | Medium | High | Not Started |
 
 ---
@@ -381,3 +423,6 @@ After completing all phases:
 - [x] Centralized error handling with configurable strategies (Phase 4)
 - [x] Single retry implementation with backoff support (Phase 4)
 - [x] Error types normalized for consistent handling (Phase 4)
+- [x] Hook has single responsibility (orchestration only) (Phase 5)
+- [x] Request building extracted to pure function (Phase 5)
+- [x] Event mapping extracted to pure function (Phase 5)
