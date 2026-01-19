@@ -35,21 +35,6 @@ export function getStorage(): StorageAdapter {
 }
 
 /**
- * Override the global storage instance
- * Useful for testing or when host environment provides a custom adapter
- */
-export function setStorage(adapter: StorageAdapter): void {
-  _storageInstance = adapter;
-}
-
-/**
- * Reset the storage instance
- */
-export function resetStorage(): void {
-  _storageInstance = null;
-}
-
-/**
  * Default export: the global storage instance
  * Can be used directly: storage.getItem('key')
  */

@@ -13,9 +13,8 @@
  * - WordAdapter: For Microsoft Word Office Add-in (office-addin)
  *
  * Storage Adapter Implementations:
- * - LocalStorageAdapter: For browser localStorage (webapp)
- * - MemoryStorageAdapter: For in-memory fallback (webapp)
- * - OfficeRoamingAdapter: For Office roaming settings (office-addin)
+ * - LocalStorageAdapter: For browser localStorage
+ * - MemoryStorageAdapter: For in-memory fallback
  *
  * The React UI should only depend on these interfaces, never on platform-specific APIs.
  */

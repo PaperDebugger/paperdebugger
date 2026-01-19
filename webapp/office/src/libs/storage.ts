@@ -4,8 +4,7 @@
  * Provides a unified interface for storage using the adapter pattern.
  * Adapter implementations are in src/adapters/storage-adapter.ts
  *
- * Uses Office.context.roamingSettings for persistent storage that follows the user.
- * Falls back to localStorage when Office API is not available.
+ * Uses localStorage for persistence in Office Add-in taskpane.
  *
  * Usage:
  *   import { storage } from './storage';
@@ -16,43 +15,25 @@
 // Re-export types and implementations from adapters
 export type { StorageAdapter } from "../adapters/types";
 export {
-  OfficeRoamingAdapter,
   LocalStorageAdapter,
   MemoryStorageAdapter,
-  detectPlatform,
   createStorageAdapter,
 } from "../adapters/storage-adapter";
 
 import type { StorageAdapter } from "../adapters/types";
 import { createStorageAdapter } from "../adapters/storage-adapter";
 
-// Global storage instance - auto-detects platform
+// Global storage instance
 let _storageInstance: StorageAdapter | null = null;
 
 /**
  * Get the global storage instance (singleton)
- * Auto-detects platform on first call
  */
 export function getStorage(): StorageAdapter {
   if (!_storageInstance) {
     _storageInstance = createStorageAdapter();
   }
   return _storageInstance;
-}
-
-/**
- * Override the global storage instance
- * Useful for testing or when you need to explicitly set the adapter
- */
-export function setStorage(adapter: StorageAdapter): void {
-  _storageInstance = adapter;
-}
-
-/**
- * Reset the storage instance (useful for reinitializing after Office.onReady)
- */
-export function resetStorage(): void {
-  _storageInstance = null;
 }
 
 /**

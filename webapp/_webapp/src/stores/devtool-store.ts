@@ -1,11 +1,30 @@
 import { create } from "zustand";
-import { storage } from "../libs/storage";
 
-export const localStorageKey = {
+/**
+ * Devtool settings use localStorage directly (not the storage adapter).
+ * These settings are local to each device and don't need cross-device sync.
+ */
+const STORAGE_KEY = {
   showTool: "pd.devtool.showTool",
   slowStreamingMode: "pd.devtool.slowStreamingMode",
   alwaysSyncProject: "pd.devtool.alwaysSyncProject",
 } as const;
+
+function getLocalStorageItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setLocalStorageItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 interface DevtoolStore {
   showTool: boolean;
@@ -19,21 +38,21 @@ interface DevtoolStore {
 }
 
 export const useDevtoolStore = create<DevtoolStore>((set) => ({
-  showTool: storage.getItem(localStorageKey.showTool) === "true",
+  showTool: getLocalStorageItem(STORAGE_KEY.showTool) === "true",
   setShowTool: (showTool: boolean) => {
-    storage.setItem(localStorageKey.showTool, JSON.stringify(showTool));
+    setLocalStorageItem(STORAGE_KEY.showTool, JSON.stringify(showTool));
     set({ showTool });
   },
 
-  slowStreamingMode: storage.getItem(localStorageKey.slowStreamingMode) === "true",
+  slowStreamingMode: getLocalStorageItem(STORAGE_KEY.slowStreamingMode) === "true",
   setSlowStreamingMode: (slowStreamingMode: boolean) => {
-    storage.setItem(localStorageKey.slowStreamingMode, JSON.stringify(slowStreamingMode));
+    setLocalStorageItem(STORAGE_KEY.slowStreamingMode, JSON.stringify(slowStreamingMode));
     set({ slowStreamingMode });
   },
 
-  alwaysSyncProject: storage.getItem(localStorageKey.alwaysSyncProject) === "true",
+  alwaysSyncProject: getLocalStorageItem(STORAGE_KEY.alwaysSyncProject) === "true",
   setAlwaysSyncProject: (alwaysSyncProject: boolean) => {
-    storage.setItem(localStorageKey.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
+    setLocalStorageItem(STORAGE_KEY.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
     set({ alwaysSyncProject });
   },
 }));
