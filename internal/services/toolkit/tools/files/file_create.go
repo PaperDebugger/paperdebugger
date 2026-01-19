@@ -45,5 +45,5 @@ func CreateFileTool(ctx context.Context, toolCallId string, args json.RawMessage
 	}
 
 	// TODO: Implement actual file creation logic
-	return fmt.Sprintf("[DUMMY] File created at: %s (content length: %d bytes)", getArgs.Path, len(getArgs.Content)), "", nil
+	return "", "", fmt.Errorf("create_file tool is not yet implemented: cannot create file at %s", getArgs.Path)
 }

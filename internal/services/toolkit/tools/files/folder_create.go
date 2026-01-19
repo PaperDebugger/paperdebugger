@@ -40,5 +40,5 @@ func CreateFolderTool(ctx context.Context, toolCallId string, args json.RawMessa
 	}
 
 	// TODO: Implement actual folder creation logic
-	return fmt.Sprintf("[DUMMY] Folder created at: %s", getArgs.Path), "", nil
+	return "", "", fmt.Errorf("create_folder tool is not yet implemented: cannot create folder at %s", getArgs.Path)
 }
