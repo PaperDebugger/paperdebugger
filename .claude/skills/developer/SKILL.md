@@ -21,7 +21,7 @@ Detailed instructions for the agent.
 ### webapp/_webapp Developing Notes
 
 - Use `bun` as package manager
-- Use `bun run _build:office` to build the latest office add-in. it will save the `office.js` file in the `webapp/office/src/paperdebugger/office.js` directory.
+- Use `PD_API_ENDPOINT="https://app.paperdebugger.com" npm run _build:office` to build the latest office add-in. it will save the `office.js` file in the `webapp/office/src/paperdebugger/office.js` directory.
 
 ### webapp/office Developing Notes
 
