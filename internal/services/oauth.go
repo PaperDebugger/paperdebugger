@@ -102,9 +102,22 @@ func (s *OAuthService) OAuthMakeUsed(ctx context.Context, cb *models.OAuth) erro
 	update := bson.M{
 		"$set": bson.M{
 			"used":       true,
+			"used_at":    bson.NewDateTimeFromTime(now),
 			"updated_at": bson.NewDateTimeFromTime(now),
 		},
 	}
 	_, err := s.oauthCollection.UpdateOne(ctx, bson.M{"_id": cb.ID}, update)
 	return err
+}
+
+// OAuthReuseWindow is the time window (10 seconds) during which a used OAuth record can still be reused
+const OAuthReuseWindow = 10 * time.Second
+
+// IsWithinReuseWindow checks if the OAuth record was used within the reuse window
+func (s *OAuthService) IsWithinReuseWindow(cb *models.OAuth) bool {
+	if !cb.Used || cb.UsedAt == 0 {
+		return false
+	}
+	usedAt := cb.UsedAt.Time()
+	return time.Since(usedAt) <= OAuthReuseWindow
 }
