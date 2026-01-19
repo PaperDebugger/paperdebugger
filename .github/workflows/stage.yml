@@ -1,10 +1,10 @@
-name: build backend for prd
+name: Release
 on:
   push:
     tags:
       - 'v*'
   repository_dispatch:
-    types: [prd]
+    types: [release]
 
 jobs:
   build-chrome-extension:
@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.tag }}
-
+      
       - name: Setup env
         run: |
           echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
@@ -31,12 +31,12 @@ jobs:
           export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
           cd webapp/_webapp
           npm install
-          npm run build:prd:chrome
+          npm run build:stg:chrome
 
       - name: 👉 Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: paperdebugger-chrome-extension-prd
+          name: paperdebugger-chrome-extension-stg
           path: webapp/_webapp/dist
 
       - name: Install zip
@@ -54,8 +54,9 @@ jobs:
           client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
           client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
           refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
-          extension_id: 'dfkedikhakpapbfcnbpmfhpklndgiaog'
+          extension_id: 'gjkgbnnlfophcfffoinfgdnhjnfankbn'
           zip_file: 'dist.zip'
+        continue-on-error: true
 
   build-backend-and-push:
     runs-on: ubuntu-latest
@@ -68,8 +69,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: main
       - name: Setup env
         run: |
           echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
@@ -91,7 +90,7 @@ jobs:
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
-  deploy-backend:
+  deploy-stg:
     needs: build-backend-and-push
     runs-on: ubuntu-latest
     permissions:
@@ -99,42 +98,39 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: main
       - name: Clone deploy repo
         run: |
           git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
       - name: Generate kubernetes manifests
         env:
-          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_PRD }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_PRD }}
-          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_PRD }}
-          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_PRD }}
-          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_PRD }}
-          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_PRD }}
-          XTRAMCP_OPENAI_BASE_URL: ${{ secrets.XTRAMCP_OPENAI_BASE_URL_PRD }}
-          XTRAMCP_OPENAI_API_KEY: ${{ secrets.XTRAMCP_OPENAI_API_KEY_PRD }}
-          XTRAMCP_OPENREVIEW_BASE_URL: ${{ secrets.XTRAMCP_OPENREVIEW_BASE_URL_PRD }}
-          XTRAMCP_OPENREVIEW_USERNAME: ${{ secrets.XTRAMCP_OPENREVIEW_USERNAME_PRD }}
-          XTRAMCP_OPENREVIEW_PASSWORD: ${{ secrets.XTRAMCP_OPENREVIEW_PASSWORD_PRD }}
-          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_PRD }}
-          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_DOI_EMAIL_ADDRESS_PRD }}
-          XTRAMCP_ACL_METADATA_DB_URL: ${{ secrets.XTRAMCP_ACL_METADATA_DB_URL_PRD }}
-          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ secrets.XTRAMCP_ARXIV_METADATA_DB_URL_PRD }}
-          XTRAMCP_MONGO_URI: ${{ secrets.XTRAMCP_MONGO_URI_PRD }}
-          MONGO_URI: ${{ secrets.MONGO_URI_PRD }}
-          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_PRD }}
-          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_PRD }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_STG }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_STG }}
+          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_STG }}
+          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_STG }}
+          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_STG }}
+          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_STG }}
+          XTRAMCP_OPENAI_BASE_URL: ${{ secrets.XTRAMCP_OPENAI_BASE_URL_STG }}
+          XTRAMCP_OPENAI_API_KEY: ${{ secrets.XTRAMCP_OPENAI_API_KEY_STG }}
+          XTRAMCP_OPENREVIEW_BASE_URL: ${{ secrets.XTRAMCP_OPENREVIEW_BASE_URL_STG }}
+          XTRAMCP_OPENREVIEW_USERNAME: ${{ secrets.XTRAMCP_OPENREVIEW_USERNAME_STG }}
+          XTRAMCP_OPENREVIEW_PASSWORD: ${{ secrets.XTRAMCP_OPENREVIEW_PASSWORD_STG }}
+          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_STG }}
+          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_DOI_EMAIL_ADDRESS_STG }}
+          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ secrets.XTRAMCP_ARXIV_METADATA_DB_URL_STG }}
+          XTRAMCP_MONGO_URI: ${{ secrets.XTRAMCP_MONGO_URI_STG }}
+          MONGO_URI: ${{ secrets.MONGO_URI_STG }}
+          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_STG }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_STG }}
         run: |
           export PAPERDEBUGGER_IMAGE=${{ needs.build-backend-and-push.outputs.PAPERDEBUGGER_IMAGE }}
-          mkdir -p ../deploy/prd
-          ./hack/prd.sh > ../deploy/prd/paperdebugger.yaml
+          mkdir -p ../deploy/stg
+          ./hack/stg.sh > ../deploy/stg/paperdebugger.yaml
       - name: Push changes to deploy repo
         run: |
           export IMAGE_TAG=${{ needs.build-backend-and-push.outputs.IMAGE_TAG }}
           cd ../deploy
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add prd/paperdebugger.yaml
-          git diff --staged --quiet || git commit -m "chore: update paperdebugger prd, revision ${IMAGE_TAG}"
+          git add stg/paperdebugger.yaml
+          git diff --staged --quiet || git commit -m "chore: update paperdebugger stg, revision ${IMAGE_TAG}"
           git push
