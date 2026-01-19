@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 import { Conversation } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { getConversation } from "../query/api";
 import { useConversationStore } from "../stores/conversation/conversation-store";
-import { useStreamingMessageStore } from "../stores/streaming-message-store";
+import { useStreamingStateMachine } from "../stores/streaming";
 import { useState } from "react";
 
 interface BranchSwitcherProps {
@@ -34,10 +34,10 @@ export const BranchSwitcher = ({ conversation }: BranchSwitcherProps) => {
       });
       if (response.conversation) {
         setCurrentConversation(response.conversation);
-        useStreamingMessageStore.getState().resetStreamingMessage();
-        useStreamingMessageStore.getState().resetIncompleteIndicator();
+        useStreamingStateMachine.getState().reset();
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to switch branch:", error);
     } finally {
       setIsLoading(false);

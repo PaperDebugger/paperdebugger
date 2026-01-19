@@ -1,13 +1,18 @@
 import { Rnd } from "react-rnd";
 import { useSelectionStore } from "../../stores/selection-store";
 import { Button, Input } from "@heroui/react";
-import { useStreamingMessageStore } from "../../stores/streaming-message-store";
-import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
+import { useStreamingStateMachine, InternalMessage } from "../../stores/streaming";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { fromJson } from "../../libs/protobuf-utils";
 import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
+import {
+  createUserMessage,
+  createAssistantMessage,
+  createToolCallMessage,
+  createToolCallPrepareMessage,
+} from "../../types/message";
 
 // --- Utility functions ---
 const loremIpsum =
@@ -28,9 +33,19 @@ const randomUUID = () => {
 export const DevTools = () => {
   // State management
   const { selectedText, setSelectedText, setSelectionRange } = useSelectionStore();
-  const { streamingMessage, setStreamingMessage, updateStreamingMessage } = useStreamingMessageStore();
+  const streamingMessage = useStreamingStateMachine((s) => s.streamingMessage);
   const { startFromScratch, currentConversation, setCurrentConversation } = useConversationStore();
   const [preparingDelay, setPreparingDelay] = useState(2);
+
+  // Helper functions to update streaming message
+  const setStreamingMessage = (message: typeof streamingMessage) => {
+    useStreamingStateMachine.setState({ streamingMessage: message });
+  };
+  const updateStreamingMessage = (updater: (prev: typeof streamingMessage) => typeof streamingMessage) => {
+    useStreamingStateMachine.setState((state) => ({
+      streamingMessage: updater(state.streamingMessage),
+    }));
+  };
 
   // --- Event handlers ---
   // Conversation related
@@ -79,7 +94,7 @@ export const DevTools = () => {
     });
   const handleStaleLastConversationMessage = () => {
     const newMessages = currentConversation.messages.map((msg, _, arr) =>
-      msg.messageId === arr[arr.length - 1]?.messageId ? { ...msg, status: MessageEntryStatus.STALE } : msg,
+      msg.messageId === arr[arr.length - 1]?.messageId ? { ...msg, status: "stale" } : msg,
     );
     setCurrentConversation({ ...currentConversation, messages: newMessages });
   };
@@ -97,10 +112,10 @@ export const DevTools = () => {
   // StreamingMessage related
   const handleClearStreamingMessage = () => setStreamingMessage({ ...streamingMessage, parts: [] });
   const handleStaleLastStreamingMessage = () => {
-    const newParts = useStreamingMessageStore
+    const newParts = useStreamingStateMachine
       .getState()
       .streamingMessage.parts.map((part, _, arr) =>
-        part.messageId === arr[arr.length - 1]?.messageId ? { ...part, status: MessageEntryStatus.STALE } : part,
+        part.id === arr[arr.length - 1]?.id ? { ...part, status: "stale" as const } : part,
       );
     setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
   };
@@ -111,120 +126,91 @@ export const DevTools = () => {
   };
   // StreamingMessage add various message types
   const handleAddStreamingUserMessage = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      user: {
-        content: "User Message Preparing",
-        selectedText: selectedText ?? "",
-        $typeName: "chat.v2.MessageTypeUser",
-      },
-    };
-    setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, messageEntry] });
+    const newMessage = createUserMessage(randomUUID(), "User Message Preparing", {
+      selectedText: selectedText ?? "",
+      status: "streaming",
+    });
+    setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, newMessage] });
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
+        part.id === newMessage.id
           ? {
               ...part,
-              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v2.MessageTypeUser" },
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+              data: { ...part.data, content: "User Message Prepared" },
+              status: part.status === "streaming" ? "complete" as const : part.status,
             }
           : part,
-      ) as MessageEntry[];
+      ) as InternalMessage[];
       setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
     });
   };
   const handleAddStreamingToolPrepare = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      toolCallPrepareArguments: {
-        name: "paper_score",
-        args: JSON.stringify({ paper_id: "123" }),
-        $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
-      },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = createToolCallPrepareMessage(
+      randomUUID(),
+      "paper_score",
+      JSON.stringify({ paper_id: "123" }),
+      { status: "streaming" }
+    );
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
+        part.id === newMessage.id
           ? {
               ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCallPrepareArguments: {
-                name: "paper_score",
-                args: JSON.stringify({ paper_id: "123" }),
-                $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
-              },
+              status: part.status === "streaming" ? "complete" as const : part.status,
             }
           : part,
-      ) as MessageEntry[];
+      ) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
   const handleAddStreamingToolCall = (type: "greeting" | "paper_score") => {
     const isGreeting = type === "greeting";
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      toolCall: isGreeting
-        ? {
-            name: "greeting",
-            args: JSON.stringify({ name: "Junyi" }),
-            result: "preparing",
-            error: "",
-            $typeName: "chat.v2.MessageTypeToolCall",
-          }
-        : {
-            name: "paper_score",
-            args: JSON.stringify({ paper_id: "123" }),
-            result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
-            error: "",
-            $typeName: "chat.v2.MessageTypeToolCall",
-          },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = isGreeting
+      ? createToolCallMessage(randomUUID(), "greeting", JSON.stringify({ name: "Junyi" }), {
+          result: "preparing",
+          status: "streaming",
+        })
+      : createToolCallMessage(randomUUID(), "paper_score", JSON.stringify({ paper_id: "123" }), {
+          result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
+          status: "streaming",
+        });
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
-          ? {
-              ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCall: isGreeting
-                ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v2.MessageTypeToolCall" }
-                : { ...part.toolCall, $typeName: "chat.v2.MessageTypeToolCall" },
-            }
-          : part,
-      ) as MessageEntry[];
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) => {
+        if (part.id !== newMessage.id) return part;
+        if (part.role !== "toolCall") return part;
+        return {
+          ...part,
+          status: "complete" as const,
+          data: isGreeting
+            ? { ...part.data, result: "Hello, Junyi!" }
+            : part.data,
+        };
+      }) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
   const handleAddStreamingAssistant = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      assistant: {
-        content: "Assistant Response Preparing " + randomText(),
-        modelSlug: "gpt-4.1",
-        $typeName: "chat.v2.MessageTypeAssistant",
-      },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = createAssistantMessage(
+      randomUUID(),
+      "Assistant Response Preparing " + randomText(),
+      { modelSlug: "gpt-4.1", status: "streaming" }
+    );
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
-          ? {
-              ...part,
-              status: MessageEntryStatus.FINALIZED,
-              assistant: {
-                ...part.assistant,
-                content: "Assistant Response Finalized " + randomText(),
-                modelSlug: "gpt-4.1",
-                $typeName: "chat.v2.MessageTypeAssistant",
-              },
-            }
-          : part,
-      ) as MessageEntry[];
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) => {
+        if (part.id !== newMessage.id) return part;
+        if (part.role !== "assistant") return part;
+        return {
+          ...part,
+          status: "complete" as const,
+          data: {
+            ...part.data,
+            content: "Assistant Response Finalized " + randomText(),
+          },
+        };
+      }) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
@@ -295,13 +281,13 @@ export const DevTools = () => {
               Streaming Message
               <div>
                 ({streamingMessage.parts.length} total,
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.PREPARING).length}{" "}
-                preparing,
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.FINALIZED).length}{" "}
-                finalized,
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.INCOMPLETE).length}{" "}
-                incomplete,
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.STALE).length} stale )
+                {streamingMessage.parts.filter((part) => part.status === "streaming").length}{" "}
+                streaming,
+                {streamingMessage.parts.filter((part) => part.status === "complete").length}{" "}
+                complete,
+                {streamingMessage.parts.filter((part) => part.status === "error").length}{" "}
+                error,
+                {streamingMessage.parts.filter((part) => part.status === "stale").length} stale )
               </div>
               <Button className="h-8 w-8" onPress={handleClearStreamingMessage}>
                 clear

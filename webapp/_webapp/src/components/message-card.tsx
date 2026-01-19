@@ -1,7 +1,7 @@
 import { cn } from "@heroui/react";
 import { memo } from "react";
 import Tools from "./message-entry-container/tools/tools";
-import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
+import { DisplayMessage } from "../stores/types";
 import { AssistantMessageContainer } from "./message-entry-container/assistant";
 import { UserMessageContainer } from "./message-entry-container/user";
 import { ToolCallPrepareMessageContainer } from "./message-entry-container/toolcall-prepare";
@@ -34,67 +34,77 @@ export const STYLES = {
 
 // Types
 interface MessageCardProps {
-  messageEntry: MessageEntry;
+  /** The display message to render (unified format) */
+  message: DisplayMessage;
+  /** Selected text from the previous user message */
   prevAttachment?: string;
+  /** ID of the previous message (for branching) */
   previousMessageId?: string;
+  /** Whether to animate the message (for streaming) */
   animated?: boolean;
 }
 
-export const MessageCard = memo(({ messageEntry, prevAttachment, previousMessageId, animated }: MessageCardProps) => {
+/**
+ * MessageCard component renders a single message in the chat.
+ * Now accepts DisplayMessage directly instead of MessageEntry.
+ */
+export const MessageCard = memo(({ message, prevAttachment, previousMessageId, animated }: MessageCardProps) => {
+  const isStale = message.status === "stale";
+  const isPreparing = message.status === "streaming";
+
   const returnComponent = () => {
-    if (messageEntry.toolCall !== undefined) {
+    if (message.type === "toolCall") {
       return (
         <div className="chat-message-entry rnd-cancel">
           <Tools
-            messageId={messageEntry.messageId}
-            functionName={messageEntry.toolCall?.name || "MessageEntry.toolCall.name is undefined"}
-            message={messageEntry.toolCall?.result}
-            error={messageEntry.toolCall?.error}
-            preparing={messageEntry.status === MessageEntryStatus.PREPARING}
+            messageId={message.id}
+            functionName={message.toolName || "Unknown tool"}
+            message={message.toolResult ?? ""}
+            error={message.toolError ?? ""}
+            preparing={isPreparing}
             animated={animated ?? false}
           />
         </div>
       );
     }
 
-    if (messageEntry.assistant !== undefined) {
+    if (message.type === "assistant") {
       return (
         <AssistantMessageContainer
-          message={messageEntry.assistant?.content}
-          reasoning={messageEntry.assistant?.reasoning}
-          messageId={messageEntry.messageId}
+          message={message.content}
+          reasoning={message.reasoning}
+          messageId={message.id}
           animated={animated ?? false}
           prevAttachment={prevAttachment ?? ""}
-          stale={messageEntry.status === MessageEntryStatus.STALE}
-          preparing={messageEntry.status === MessageEntryStatus.PREPARING}
+          stale={isStale}
+          preparing={isPreparing}
         />
       );
     }
 
-    if (messageEntry.toolCallPrepareArguments !== undefined) {
+    if (message.type === "toolCallPrepare") {
       return (
         <ToolCallPrepareMessageContainer
-          functionName={messageEntry.toolCallPrepareArguments?.name || "undefined"}
-          stale={messageEntry.status === MessageEntryStatus.STALE}
-          preparing={messageEntry.status === MessageEntryStatus.PREPARING}
+          functionName={message.toolName || "Unknown tool"}
+          stale={isStale}
+          preparing={isPreparing}
         />
       );
     }
 
-    if (messageEntry.user !== undefined) {
+    if (message.type === "user") {
       return (
         <UserMessageContainer
-          content={messageEntry.user?.content ?? ""}
-          attachment={messageEntry.user?.selectedText ?? ""}
-          stale={messageEntry.status === MessageEntryStatus.STALE}
-
-          messageId={messageEntry.messageId}
+          content={message.content ?? ""}
+          attachment={message.selectedText ?? ""}
+          stale={isStale}
+          messageId={message.id}
           previousMessageId={previousMessageId}
         />
       );
     }
 
-    return <UnknownEntryMessageContainer message={`Error: Unknown message: ${JSON.stringify(messageEntry)}`} />;
+    return <UnknownEntryMessageContainer message={`Error: Unknown message type: ${message.type}`} />;
   };
 
   return <>{returnComponent()}</>;
