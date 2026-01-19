@@ -13,6 +13,259 @@ import { StreamEvent, StreamState } from "../types";
 import { InternalMessage } from "../../../types/message";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Test Visualization & Logging System
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Set to true to enable detailed test logging */
+const VERBOSE_LOGGING = process.env.VERBOSE_TEST === "1" || process.env.VERBOSE_TEST === "true";
+
+/** ANSI color codes for terminal output */
+const colors = {
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  dim: "\x1b[2m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  bgRed: "\x1b[41m",
+  bgGreen: "\x1b[42m",
+  bgYellow: "\x1b[43m",
+  bgBlue: "\x1b[44m",
+};
+
+/** State colors for visualization */
+const stateColors: Record<string, string> = {
+  idle: colors.green,
+  receiving: colors.blue,
+  finalizing: colors.yellow,
+  error: colors.red,
+};
+
+/** Event type icons */
+const eventIcons: Record<string, string> = {
+  INIT: "🚀",
+  PART_BEGIN: "📝",
+  CHUNK: "📦",
+  REASONING_CHUNK: "🧠",
+  PART_END: "✅",
+  FINALIZE: "🏁",
+  ERROR: "❌",
+  INCOMPLETE: "⚠️",
+  CONNECTION_ERROR: "🔌",
+};
+
+/**
+ * Test Logger for visualizing test execution
+ */
+class TestLogger {
+  private logs: string[] = [];
+  private testName: string = "";
+  private stepCount: number = 0;
+  private enabled: boolean;
+
+  constructor(enabled = VERBOSE_LOGGING) {
+    this.enabled = enabled;
+  }
+
+  startTest(name: string): void {
+    this.testName = name;
+    this.stepCount = 0;
+    this.logs = [];
+    if (this.enabled) {
+      this.log(`\n${"═".repeat(80)}`);
+      this.log(`${colors.bright}${colors.cyan}🧪 TEST: ${name}${colors.reset}`);
+      this.log(`${"─".repeat(80)}`);
+    }
+  }
+
+  endTest(passed: boolean): void {
+    if (this.enabled) {
+      this.log(`${"─".repeat(80)}`);
+      const status = passed
+        ? `${colors.bgGreen}${colors.white} PASS ${colors.reset}`
+        : `${colors.bgRed}${colors.white} FAIL ${colors.reset}`;
+      this.log(`${status} ${this.testName} (${this.stepCount} steps)`);
+      this.log(`${"═".repeat(80)}\n`);
+    }
+  }
+
+  logEvent(event: StreamEvent): void {
+    if (!this.enabled) return;
+    this.stepCount++;
+    const icon = eventIcons[event.type] || "📨";
+    const eventInfo = this.formatEvent(event);
+    this.log(`  ${colors.dim}[${this.stepCount}]${colors.reset} ${icon} ${colors.yellow}EVENT${colors.reset}: ${colors.bright}${event.type}${colors.reset}`);
+    this.log(`      ${colors.dim}${eventInfo}${colors.reset}`);
+  }
+
+  logStateTransition(from: StreamState, to: StreamState): void {
+    if (!this.enabled) return;
+    const fromColor = stateColors[from] || colors.white;
+    const toColor = stateColors[to] || colors.white;
+    if (from !== to) {
+      this.log(`      ${colors.magenta}STATE${colors.reset}: ${fromColor}${from}${colors.reset} → ${toColor}${to}${colors.reset}`);
+    }
+  }
+
+  logAssertion(description: string, expected: any, received: any, passed: boolean): void {
+    if (!this.enabled) return;
+    const icon = passed ? "✓" : "✗";
+    const color = passed ? colors.green : colors.red;
+    this.log(`      ${color}${icon}${colors.reset} ${description}`);
+    if (!passed) {
+      this.log(`        ${colors.dim}Expected: ${JSON.stringify(expected)}${colors.reset}`);
+      this.log(`        ${colors.dim}Received: ${JSON.stringify(received)}${colors.reset}`);
+    }
+  }
+
+  logStreamingState(): void {
+    if (!this.enabled) return;
+    const state = useStreamingStateMachine.getState();
+    this.log(`      ${colors.cyan}STREAMING STATE${colors.reset}:`);
+    this.log(`        state: ${stateColors[state.state]}${state.state}${colors.reset}`);
+    this.log(`        sequence: ${state.streamingMessage.sequence}`);
+    this.log(`        parts: [${state.streamingMessage.parts.map(p => 
+      `${p.role}(${p.id.substring(0, 8)}..., ${p.status})`
+    ).join(", ")}]`);
+  }
+
+  logSection(title: string): void {
+    if (!this.enabled) return;
+    this.log(`\n    ${colors.bright}${colors.blue}▸ ${title}${colors.reset}`);
+  }
+
+  logInfo(message: string): void {
+    if (!this.enabled) return;
+    this.log(`      ${colors.dim}ℹ ${message}${colors.reset}`);
+  }
+
+  logError(message: string): void {
+    if (!this.enabled) return;
+    this.log(`      ${colors.red}⚠ ${message}${colors.reset}`);
+  }
+
+  private formatEvent(event: StreamEvent): string {
+    switch (event.type) {
+      case "INIT":
+        return `conversationId: ${(event.payload as any).conversationId}`;
+      case "PART_BEGIN":
+        return `messageId: ${(event.payload as any).messageId}, role: ${(event.payload as any).payload?.messageType?.case}`;
+      case "CHUNK":
+        const delta = (event.payload as any).delta || "";
+        return `messageId: ${(event.payload as any).messageId}, delta: "${delta.substring(0, 30)}${delta.length > 30 ? "..." : ""}"`;
+      case "REASONING_CHUNK":
+        const rDelta = (event.payload as any).delta || "";
+        return `messageId: ${(event.payload as any).messageId}, delta: "${rDelta.substring(0, 30)}${rDelta.length > 30 ? "..." : ""}"`;
+      case "PART_END":
+        return `messageId: ${(event.payload as any).messageId}`;
+      case "FINALIZE":
+        return `conversationId: ${(event.payload as any).conversationId}`;
+      case "CONNECTION_ERROR":
+        return `error: ${(event.payload as Error).message}`;
+      case "INCOMPLETE":
+        return `reason: ${(event.payload as any).reason || "unknown"}`;
+      default:
+        return JSON.stringify(event.payload).substring(0, 50);
+    }
+  }
+
+  private log(message: string): void {
+    if (this.enabled) {
+      console.log(message);
+    }
+    this.logs.push(message);
+  }
+
+  getLogs(): string[] {
+    return this.logs;
+  }
+}
+
+/** Global test logger instance */
+const testLogger = new TestLogger();
+
+/**
+ * Wrapper for handleEvent that logs the event and state transition
+ */
+async function handleEventWithLogging(event: StreamEvent): Promise<void> {
+  const stateBefore = useStreamingStateMachine.getState().state;
+  testLogger.logEvent(event);
+  await useStreamingStateMachine.getState().handleEvent(event);
+  const stateAfter = useStreamingStateMachine.getState().state;
+  testLogger.logStateTransition(stateBefore, stateAfter);
+}
+
+/**
+ * Enhanced expect wrapper that logs assertions
+ */
+function expectWithLogging<T>(received: T, description: string) {
+  return {
+    toBe(expected: T) {
+      const passed = received === expected;
+      testLogger.logAssertion(description, expected, received, passed);
+      expect(received).toBe(expected);
+    },
+    toEqual(expected: T) {
+      const passed = JSON.stringify(received) === JSON.stringify(expected);
+      testLogger.logAssertion(description, expected, received, passed);
+      expect(received).toEqual(expected);
+    },
+    toBeGreaterThan(expected: number) {
+      const passed = (received as number) > expected;
+      testLogger.logAssertion(`${description} > ${expected}`, `> ${expected}`, received, passed);
+      expect(received).toBeGreaterThan(expected);
+    },
+    toBeGreaterThanOrEqual(expected: number) {
+      const passed = (received as number) >= expected;
+      testLogger.logAssertion(`${description} >= ${expected}`, `>= ${expected}`, received, passed);
+      expect(received).toBeGreaterThanOrEqual(expected);
+    },
+    toBeLessThan(expected: number) {
+      const passed = (received as number) < expected;
+      testLogger.logAssertion(`${description} < ${expected}`, `< ${expected}`, received, passed);
+      expect(received).toBeLessThan(expected);
+    },
+    toHaveLength(expected: number) {
+      const arr = received as any[];
+      const passed = arr.length === expected;
+      testLogger.logAssertion(`${description}.length`, expected, arr.length, passed);
+      expect(received).toHaveLength(expected);
+    },
+    toBeNull() {
+      const passed = received === null;
+      testLogger.logAssertion(`${description} is null`, null, received, passed);
+      expect(received).toBeNull();
+    },
+    not: {
+      toBeNull() {
+        const passed = received !== null;
+        testLogger.logAssertion(`${description} is not null`, "not null", received, passed);
+        expect(received).not.toBeNull();
+      },
+    },
+    toContain(expected: any) {
+      const passed = received != null && ((received as any[]).includes?.(expected) || (received as string).includes?.(expected));
+      testLogger.logAssertion(`${description} contains ${JSON.stringify(expected)}`, expected, received, passed ?? false);
+      expect(received).toContain(expected);
+    },
+    toBeTruthy() {
+      const passed = !!received;
+      testLogger.logAssertion(`${description} is truthy`, true, received, passed);
+      expect(received).toBeTruthy();
+    },
+    toBeInstanceOf(expected: any) {
+      const passed = received instanceof expected;
+      testLogger.logAssertion(`${description} instanceof ${expected.name}`, expected.name, typeof received, passed);
+      expect(received).toBeInstanceOf(expected);
+    },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Test Fixtures & Mocks
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2472,6 +2725,251 @@ describe("🔄 StreamingStateMachine", () => {
 
       expect(log1).toEqual(log2);
       expect(events1.length).toBe(events2.length);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 📋 VERBOSE LOGGING DEMO TESTS (run with VERBOSE_TEST=1)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  describe("📋 Verbose Logging Demo", () => {
+    /**
+     * This section demonstrates the test visualization system.
+     * Run with VERBOSE_TEST=1 to see detailed output:
+     * 
+     *   VERBOSE_TEST=1 bun test streaming-state-machine.test.ts
+     * 
+     * The output shows:
+     * - 🧪 Test name and boundaries
+     * - 📨 Each event processed with payload details
+     * - STATE: State transitions (idle → receiving, etc.)
+     * - ✓/✗ Assertion results with expected/received values
+     */
+
+    it("demonstrates full conversation flow with logging", async () => {
+      testLogger.startTest("Full Conversation Flow Demo");
+      
+      try {
+        testLogger.logSection("Step 1: Initialize conversation");
+        testLogger.logInfo("Starting a new conversation stream");
+        await handleEventWithLogging(createInitEvent("conv-demo-001"));
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().state, "state").toBe("receiving");
+
+        testLogger.logSection("Step 2: Begin assistant message");
+        testLogger.logInfo("AI starts responding");
+        await handleEventWithLogging(createAssistantBeginEvent("msg-assistant-001"));
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().streamingMessage.parts.length, "parts count").toBe(1);
+        expectWithLogging(
+          useStreamingStateMachine.getState().streamingMessage.parts[0].status,
+          "message status"
+        ).toBe("streaming");
+
+        testLogger.logSection("Step 3: Stream content chunks");
+        testLogger.logInfo("Receiving AI response in chunks");
+        await handleEventWithLogging(createChunkEvent("msg-assistant-001", "Hello! "));
+        await handleEventWithLogging(createChunkEvent("msg-assistant-001", "I'm your AI assistant. "));
+        await handleEventWithLogging(createChunkEvent("msg-assistant-001", "How can I help you today?"));
+        testLogger.logStreamingState();
+        
+        const content1 = (useStreamingStateMachine.getState().streamingMessage.parts[0] as any).data.content;
+        expectWithLogging(content1, "accumulated content").toContain("Hello!");
+        expectWithLogging(content1, "accumulated content").toContain("How can I help");
+
+        testLogger.logSection("Step 4: Add reasoning chunks (thinking)");
+        testLogger.logInfo("AI shares reasoning process");
+        await handleEventWithLogging(createReasoningChunkEvent("msg-assistant-001", "[Thinking: Let me analyze the user's request...]"));
+        testLogger.logStreamingState();
+        
+        const reasoning = (useStreamingStateMachine.getState().streamingMessage.parts[0] as any).data.reasoning;
+        expectWithLogging(reasoning, "reasoning").toContain("Thinking");
+
+        testLogger.logSection("Step 5: End assistant message");
+        testLogger.logInfo("AI finishes response");
+        await handleEventWithLogging(createPartEndEvent("msg-assistant-001", "assistant"));
+        testLogger.logStreamingState();
+        expectWithLogging(
+          useStreamingStateMachine.getState().streamingMessage.parts[0].status,
+          "message status"
+        ).toBe("complete");
+
+        testLogger.logSection("Step 6: Tool call sequence");
+        testLogger.logInfo("AI decides to use a tool");
+        await handleEventWithLogging(createToolPrepareBeginEvent("tool-prepare-001", { name: "search_web" }));
+        await handleEventWithLogging(createToolCallBeginEvent("tool-call-001", "search_web"));
+        await handleEventWithLogging(createChunkEvent("tool-call-001", '{"query": "weather today"}'));
+        await handleEventWithLogging(createPartEndEvent("tool-call-001", "toolCall"));
+        testLogger.logStreamingState();
+        
+        const parts = useStreamingStateMachine.getState().streamingMessage.parts;
+        expectWithLogging(parts.length, "total parts").toBe(3);
+        expectWithLogging(parts.filter(p => p.role === "toolCall").length, "tool call parts").toBe(1);
+
+        testLogger.logSection("Step 7: Finalize conversation");
+        testLogger.logInfo("Stream completes successfully");
+        await handleEventWithLogging(createFinalizeEvent("conv-demo-001"));
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().state, "final state").toBe("idle");
+
+        testLogger.endTest(true);
+      } catch (error) {
+        testLogger.logError(`Test failed: ${error}`);
+        testLogger.endTest(false);
+        throw error;
+      }
+    });
+
+    it("demonstrates error handling with logging", async () => {
+      testLogger.startTest("Error Handling Demo");
+      
+      try {
+        testLogger.logSection("Setup: Start normal streaming");
+        await handleEventWithLogging(createInitEvent("conv-error-demo"));
+        await handleEventWithLogging(createAssistantBeginEvent("msg-001"));
+        await handleEventWithLogging(createChunkEvent("msg-001", "Starting to respond..."));
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().state, "state").toBe("receiving");
+
+        testLogger.logSection("Simulate: Connection error occurs");
+        testLogger.logInfo("Network connection lost!");
+        await handleEventWithLogging({
+          type: "CONNECTION_ERROR",
+          payload: new Error("WebSocket disconnected unexpectedly"),
+        });
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().state, "state after error").toBe("error");
+
+        testLogger.logSection("Recovery: Reset and restart");
+        testLogger.logInfo("Resetting state machine");
+        useStreamingStateMachine.getState().reset();
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().state, "state after reset").toBe("idle");
+
+        testLogger.endTest(true);
+      } catch (error) {
+        testLogger.logError(`Test failed: ${error}`);
+        testLogger.endTest(false);
+        throw error;
+      }
+    });
+
+    it("demonstrates incomplete stream with logging", async () => {
+      testLogger.startTest("Incomplete Stream Demo");
+      
+      try {
+        testLogger.logSection("Setup: Normal streaming");
+        await handleEventWithLogging(createInitEvent("conv-incomplete"));
+        await handleEventWithLogging(createAssistantBeginEvent("msg-001"));
+        await handleEventWithLogging(createChunkEvent("msg-001", "Here's a partial resp"));
+        testLogger.logStreamingState();
+
+        testLogger.logSection("Issue: Stream truncated");
+        testLogger.logInfo("Server indicates incomplete response due to max tokens");
+        await handleEventWithLogging({
+          type: "INCOMPLETE",
+          payload: { reason: "max_tokens_reached" } as any,
+        });
+        testLogger.logStreamingState();
+        
+        const indicator = useStreamingStateMachine.getState().incompleteIndicator;
+        expectWithLogging(indicator, "incomplete indicator").not.toBeNull();
+
+        testLogger.endTest(true);
+      } catch (error) {
+        testLogger.logError(`Test failed: ${error}`);
+        testLogger.endTest(false);
+        throw error;
+      }
+    });
+
+    it("demonstrates random sequence with logging", async () => {
+      testLogger.startTest("Random Sequence Demo (seed: 777)");
+      
+      try {
+        const generator = new RandomEventGenerator(777);
+        const events = generator.generateEventSequence(8, 12);
+        
+        testLogger.logSection("Event Sequence Generated");
+        testLogger.logInfo(`Generated ${events.length} events with seed 777`);
+        testLogger.logInfo(`Event types: ${events.map(e => e.type).join(" → ")}`);
+        
+        testLogger.logSection("Processing Events");
+        for (let i = 0; i < events.length; i++) {
+          testLogger.logInfo(`Processing event ${i + 1}/${events.length}`);
+          await handleEventWithLogging(events[i]);
+        }
+        
+        testLogger.logSection("Final State Check");
+        testLogger.logStreamingState();
+        
+        const state = useStreamingStateMachine.getState();
+        expectWithLogging(state.streamingMessage.parts.length, "parts count").toBeGreaterThan(0);
+        
+        // All non-toolPrepare parts should be complete
+        const nonPrepare = state.streamingMessage.parts.filter(p => p.role !== "toolCallPrepare");
+        const allComplete = nonPrepare.every(p => p.status === "complete");
+        expectWithLogging(allComplete, "all messages complete").toBe(true);
+
+        testLogger.endTest(true);
+      } catch (error) {
+        testLogger.logError(`Test failed: ${error}`);
+        testLogger.endTest(false);
+        throw error;
+      }
+    });
+
+    it("demonstrates multi-message interleaving with logging", async () => {
+      testLogger.startTest("Multi-Message Interleaving Demo");
+      
+      try {
+        testLogger.logSection("Phase 1: Initialize");
+        await handleEventWithLogging(createInitEvent("conv-multi"));
+        testLogger.logStreamingState();
+
+        testLogger.logSection("Phase 2: Start multiple messages");
+        testLogger.logInfo("Opening 3 parallel message streams");
+        await handleEventWithLogging(createAssistantBeginEvent("assistant-1"));
+        await handleEventWithLogging(createToolPrepareBeginEvent("prepare-1", { name: "calculate" }));
+        await handleEventWithLogging(createToolCallBeginEvent("tool-1", "calculate"));
+        testLogger.logStreamingState();
+        expectWithLogging(useStreamingStateMachine.getState().streamingMessage.parts.length, "open parts").toBe(3);
+
+        testLogger.logSection("Phase 3: Interleaved chunks");
+        testLogger.logInfo("Chunks arriving out of order from different streams");
+        await handleEventWithLogging(createChunkEvent("assistant-1", "Let me "));
+        await handleEventWithLogging(createChunkEvent("tool-1", '{"x":'));
+        await handleEventWithLogging(createChunkEvent("assistant-1", "help you "));
+        await handleEventWithLogging(createChunkEvent("tool-1", ' 42}'));
+        await handleEventWithLogging(createChunkEvent("assistant-1", "with that!"));
+        testLogger.logStreamingState();
+
+        testLogger.logSection("Phase 4: Close messages");
+        testLogger.logInfo("Ending all open streams");
+        // Provide final content that matches what was streamed (PART_END can update content)
+        await handleEventWithLogging(createPartEndEvent("assistant-1", "assistant", { 
+          content: "Let me help you with that!" 
+        }));
+        await handleEventWithLogging(createPartEndEvent("tool-1", "toolCall", {
+          args: '{"x": 42}'
+        }));
+        testLogger.logStreamingState();
+
+        const parts = useStreamingStateMachine.getState().streamingMessage.parts;
+        const assistantPart = parts.find(p => p.id === "assistant-1") as any;
+        const toolPart = parts.find(p => p.id === "tool-1") as any;
+        
+        expectWithLogging(assistantPart.data.content, "assistant content").toContain("help you");
+        expectWithLogging(toolPart.data.args, "tool args").toContain("42");
+        expectWithLogging(assistantPart.status, "assistant status").toBe("complete");
+        expectWithLogging(toolPart.status, "tool status").toBe("complete");
+
+        testLogger.endTest(true);
+      } catch (error) {
+        testLogger.logError(`Test failed: ${error}`);
+        testLogger.endTest(false);
+        throw error;
+      }
     });
   });
 });
