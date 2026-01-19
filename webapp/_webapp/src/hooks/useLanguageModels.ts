@@ -12,6 +12,8 @@ export type Model = {
   maxOutput: number;
   inputPrice: number;
   outputPrice: number;
+  disabled?: boolean;
+  disabledReason?: string;
 };
 
 // Extract provider from model slug (e.g., "openai/gpt-4.1" -> "openai")
@@ -41,6 +43,8 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
   maxOutput: Number(supportedModel.maxOutput),
   inputPrice: Number(supportedModel.inputPrice),
   outputPrice: Number(supportedModel.outputPrice),
+  disabled: supportedModel.disabled,
+  disabledReason: supportedModel.disabledReason,
 });
 
 export const useLanguageModels = () => {

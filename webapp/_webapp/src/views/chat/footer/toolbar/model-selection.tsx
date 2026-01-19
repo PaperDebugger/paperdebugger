@@ -16,11 +16,14 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
       title: model.name,
       subtitle: model.slug,
       value: model.slug,
+      disabled: model.disabled,
+      disabledReason: model.disabledReason,
     }));
   }, [models]);
 
   const onSelect = useCallback(
     (item: SelectionItem<string>) => {
+      if (item.disabled) return; // Safety check
       setModel(models.find((m) => m.slug === item.value)!);
       onSelectModel();
       inputRef.current?.focus();
