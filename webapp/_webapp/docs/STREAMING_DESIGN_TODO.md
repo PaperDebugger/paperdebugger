@@ -367,32 +367,104 @@ interface UseSendMessageStreamResult {
 
 ---
 
-## Phase 6: Testing & Documentation
+## Phase 6: Testing & Documentation ✅ COMPLETED
 
 ### Goal
 Ensure the refactored code is well-tested and documented.
 
 ### Tasks
 
-- [ ] **6.1 Add unit tests for state machine**
-  - Test all state transitions
-  - Test error handling
-  - Test message type handlers
+- [x] **6.1 Add unit tests for state machine**
+  - Location: `stores/streaming/__tests__/streaming-state-machine.test.ts`
+  - Tests all state transitions: idle → receiving → finalizing → idle
+  - Tests error handling: ERROR, CONNECTION_ERROR events
+  - Tests all event types: INIT, PART_BEGIN, CHUNK, REASONING_CHUNK, PART_END, FINALIZE, INCOMPLETE
+  - Tests message type handlers via state machine integration
 
-- [ ] **6.2 Add integration tests for streaming flow**
-  - Mock streaming API
-  - Test complete happy path
-  - Test error scenarios
+- [x] **6.2 Add unit tests for message type handlers**
+  - Location: `stores/streaming/__tests__/message-type-handlers.test.ts`
+  - Tests handler registry and `getMessageTypeHandler()`
+  - Tests `isValidMessageRole()` type guard
+  - Tests AssistantHandler: onPartBegin, onPartEnd
+  - Tests ToolCallPrepareHandler: onPartBegin, onPartEnd
+  - Tests ToolCallHandler: onPartBegin, onPartEnd
+  - Tests NoOpHandler for user, system, unknown roles
 
-- [ ] **6.3 Document the new architecture**
-  - Update architecture diagram
-  - Document state machine states and transitions
-  - Add inline code comments for complex logic
+- [x] **6.3 Add unit tests for error handler**
+  - Location: `stores/streaming/__tests__/error-handler.test.ts`
+  - Tests `createStreamingError()` for all error sources
+  - Tests `getRecoveryStrategy()` for all error codes
+  - Tests `isRetryableError()` helper
+  - Tests `StreamingErrorHandler` class with retry, sync-and-retry, show-error strategies
+  - Tests `withStreamingErrorHandler()` wrapper function
+  - Tests backoff calculation (exponential and linear)
 
-- [ ] **6.4 Create migration guide**
-  - Document changes for other developers
-  - List breaking changes
-  - Provide code migration examples
+- [x] **6.4 Add unit tests for message converters**
+  - Location: `utils/__tests__/message-converters.test.ts`
+  - Tests `fromApiMessage()` for all message types
+  - Tests `toApiMessage()` for all message types
+  - Tests `fromStreamPartBegin()` and `applyStreamPartEnd()`
+  - Tests `toDisplayMessage()` and `fromDisplayMessage()`
+  - Tests round-trip conversion integrity
+
+- [x] **6.5 Add integration tests for streaming flow**
+  - Location: `src/__tests__/streaming-flow.integration.test.ts`
+  - Tests stream request building and validation
+  - Tests stream event mapping for all response types
+  - Tests complete happy path: INIT → PART_BEGIN → CHUNK → PART_END → FINALIZE
+  - Tests tool call flow with prepare and result messages
+  - Tests reasoning chunk handling
+  - Tests error scenarios: stream error, connection error
+  - Tests state transitions and sequence number management
+
+- [x] **6.6 Document the new architecture**
+  - Location: `docs/STREAMING_ARCHITECTURE.md`
+  - Complete architecture diagram with all components
+  - Core components documentation (StreamingStateMachine, MessageTypeHandlers, ErrorHandler, MessageStore)
+  - Data types documentation (InternalMessage, DisplayMessage)
+  - Data flow diagrams (happy path, error recovery)
+  - File structure overview
+  - Extension points for adding new message types and error types
+  - Testing instructions
+  - Performance considerations
+  - Troubleshooting guide
+
+- [x] **6.7 Create migration guide**
+  - Location: `docs/STREAMING_MIGRATION_GUIDE.md`
+  - Summary of breaking changes
+  - MessageEntry → InternalMessage migration
+  - Handler files → State machine migration
+  - withRetrySync → withStreamingErrorHandler migration
+  - Dual store access → MessageStore migration
+  - MessageCard props migration
+  - File changes (removed/added)
+  - Import updates
+  - Common migration patterns with code examples
+  - Migration checklist
+
+### Test File Structure
+
+```
+src/
+├── stores/streaming/__tests__/
+│   ├── streaming-state-machine.test.ts    # State machine unit tests
+│   ├── message-type-handlers.test.ts      # Handler registry tests
+│   └── error-handler.test.ts              # Error handling tests
+├── utils/__tests__/
+│   └── message-converters.test.ts         # Converter tests
+└── __tests__/
+    └── streaming-flow.integration.test.ts # Integration tests
+```
+
+### Documentation Structure
+
+```
+docs/
+├── STREAMING_DESIGN_ANALYSIS.md    # Original complexity analysis
+├── STREAMING_DESIGN_TODO.md        # This file - implementation checklist
+├── STREAMING_ARCHITECTURE.md       # NEW: Architecture documentation
+└── STREAMING_MIGRATION_GUIDE.md    # NEW: Developer migration guide
+```
 
 ---
 
@@ -405,7 +477,7 @@ Ensure the refactored code is well-tested and documented.
 | 3. Simplify Transformations | Medium | Medium | Medium | ✅ COMPLETED |
 | 4. Error Handling | Medium | Low | Medium | ✅ COMPLETED |
 | 5. Refactor Hook | Low | Low | Medium | ✅ COMPLETED |
-| 6. Testing & Docs | Low | Medium | High | Not Started |
+| 6. Testing & Docs | Low | Medium | High | ✅ COMPLETED |
 
 ---
 
@@ -426,3 +498,24 @@ After completing all phases:
 - [x] Hook has single responsibility (orchestration only) (Phase 5)
 - [x] Request building extracted to pure function (Phase 5)
 - [x] Event mapping extracted to pure function (Phase 5)
+- [x] Unit tests for state machine, handlers, error handler, converters (Phase 6)
+- [x] Integration tests for complete streaming flow (Phase 6)
+- [x] Architecture documentation with diagrams (Phase 6)
+- [x] Migration guide with code examples (Phase 6)
+
+---
+
+## 🎉 All Phases Complete!
+
+The streaming architecture refactoring is now complete. All 6 phases have been implemented:
+
+1. ✅ Consolidated 9+ handler files into a single state machine
+2. ✅ Unified dual store architecture into MessageStore
+3. ✅ Simplified data transformations with canonical InternalMessage type
+4. ✅ Centralized error handling with configurable recovery strategies
+5. ✅ Refactored useSendMessageStream hook for single responsibility
+6. ✅ Added comprehensive tests and documentation
+
+For details on the new architecture, see:
+- [STREAMING_ARCHITECTURE.md](./STREAMING_ARCHITECTURE.md) - Technical documentation
+- [STREAMING_MIGRATION_GUIDE.md](./STREAMING_MIGRATION_GUIDE.md) - Migration instructions
