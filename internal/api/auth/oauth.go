@@ -57,16 +57,19 @@ func (h *OAuthHandler) OAuthStatus(c *gin.Context) {
 		c.JSON(http.StatusAccepted, gin.H{"error": "not_found"})
 		return
 	}
-	if cb.Used {
+
+	// Already used and outside the 10-second reuse window
+	if cb.Used && !h.OAuthService.IsWithinReuseWindow(cb) {
 		c.JSON(http.StatusGone, gin.H{"error": "used"})
 		return
 	}
 
-	// update used to true
-	err = h.OAuthService.OAuthMakeUsed(ctx, cb)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "update_used_failed"})
-		return
+	// Mark as used (first use)
+	if !cb.Used {
+		if err := h.OAuthService.OAuthMakeUsed(ctx, cb); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "update_used_failed"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": cb.Code, "access_token": cb.AccessToken})
