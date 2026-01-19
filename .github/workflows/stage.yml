@@ -1,0 +1,136 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+  repository_dispatch:
+    types: [release]
+
+jobs:
+  build-chrome-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.tag }}
+      
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Build
+        run: |
+          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
+          cd webapp/_webapp
+          npm install
+          npm run build:stg:chrome
+
+      - name: 👉 Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-stg
+          path: webapp/_webapp/dist
+
+      - name: Install zip
+        run: |
+          sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Zip extension files
+        run: |
+          zip -r dist.zip webapp/_webapp/dist/*
+
+      - name: Upload to Chrome Web Store (upload only)
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: 'upload'  # one of: upload, publish, testers
+          client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
+          extension_id: 'gjkgbnnlfophcfffoinfgdnhjnfankbn'
+          zip_file: 'dist.zip'
+        continue-on-error: true
+
+  build-backend-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      IMAGE_TAG: ${{ steps.output.outputs.IMAGE_TAG }}
+      PAPERDEBUGGER_IMAGE: ${{ steps.output.outputs.PAPERDEBUGGER_IMAGE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push docker image
+        run: |
+          make all
+      - id: output
+        name: Output image tag
+        run: |
+          export IMAGE_TAG=${BRANCH_NAME}-${MONOREPO_REVISION}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+  deploy-stg:
+    needs: build-backend-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Clone deploy repo
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
+      - name: Generate kubernetes manifests
+        env:
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_STG }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_STG }}
+          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_STG }}
+          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_STG }}
+          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_STG }}
+          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_STG }}
+          XTRAMCP_OPENAI_BASE_URL: ${{ secrets.XTRAMCP_OPENAI_BASE_URL_STG }}
+          XTRAMCP_OPENAI_API_KEY: ${{ secrets.XTRAMCP_OPENAI_API_KEY_STG }}
+          XTRAMCP_OPENREVIEW_BASE_URL: ${{ secrets.XTRAMCP_OPENREVIEW_BASE_URL_STG }}
+          XTRAMCP_OPENREVIEW_USERNAME: ${{ secrets.XTRAMCP_OPENREVIEW_USERNAME_STG }}
+          XTRAMCP_OPENREVIEW_PASSWORD: ${{ secrets.XTRAMCP_OPENREVIEW_PASSWORD_STG }}
+          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_STG }}
+          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_DOI_EMAIL_ADDRESS_STG }}
+          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ secrets.XTRAMCP_ARXIV_METADATA_DB_URL_STG }}
+          XTRAMCP_MONGO_URI: ${{ secrets.XTRAMCP_MONGO_URI_STG }}
+          MONGO_URI: ${{ secrets.MONGO_URI_STG }}
+          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_STG }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_STG }}
+        run: |
+          export PAPERDEBUGGER_IMAGE=${{ needs.build-backend-and-push.outputs.PAPERDEBUGGER_IMAGE }}
+          mkdir -p ../deploy/stg
+          ./hack/stg.sh > ../deploy/stg/paperdebugger.yaml
+      - name: Push changes to deploy repo
+        run: |
+          export IMAGE_TAG=${{ needs.build-backend-and-push.outputs.IMAGE_TAG }}
+          cd ../deploy
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add stg/paperdebugger.yaml
+          git diff --staged --quiet || git commit -m "chore: update paperdebugger stg, revision ${IMAGE_TAG}"
+          git push

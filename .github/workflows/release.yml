@@ -20,18 +20,19 @@ jobs:
           echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
           echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
           echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
       - name: Build
         run: |
-          export PD_API_ENDPOINT=https://app.paperdebugger.com
-          export BETA_BUILD=false
           export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
           cd webapp/_webapp
           npm install
-          npm run build
+          npm run build:prd:chrome
+
       - name: 👉 Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -41,9 +42,11 @@ jobs:
       - name: Install zip
         run: |
           sudo apt-get update && sudo apt-get install -y zip
+
       - name: Zip extension files
         run: |
           zip -r dist.zip webapp/_webapp/dist/*
+
       - name: Upload to Chrome Web Store (upload only)
         uses: mobilefirstllc/cws-publish@latest
         with:
