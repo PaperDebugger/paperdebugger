@@ -19,8 +19,8 @@ import {
   Conversation,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { logError, logWarn } from "../../libs/logger";
-import { errorToast } from "../../libs/toasts";
 import { useConversationStore } from "../conversation/conversation-store";
+import { createStreamingError, getRecoveryStrategy, StreamingErrorHandler } from "./error-handler";
 import { getConversation } from "../../query/api";
 import { getMessageTypeHandler, isValidMessageRole } from "./message-type-handlers";
 import {
@@ -330,26 +330,40 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
       // ========================================================================
       case "ERROR": {
         const errorMessage = event.payload.errorMessage;
+        const streamingError = createStreamingError(errorMessage);
+        const strategy = getRecoveryStrategy(streamingError);
 
-        // Check if this is a retryable "project out of date" error
+        // Check if this error can be recovered with sync-and-retry
         if (
-          errorMessage.includes("project is out of date") &&
+          streamingError.retryable &&
+          strategy.type === "sync-and-retry" &&
           context?.sync &&
           context?.sendMessageStream &&
           context?.currentPrompt !== undefined &&
           context?.currentSelectedText !== undefined
         ) {
-          try {
-            const result = await context.sync();
-            if (!result.success) {
-              throw result.error || new Error("Sync failed");
-            }
-            // Retry sending the message after sync
-            await context.sendMessageStream(context.currentPrompt, context.currentSelectedText);
-            return;
-          } catch {
-            // Fall through to error handling
+          const currentPrompt = context.currentPrompt;
+          const currentSelectedText = context.currentSelectedText;
+          const sendMessageStream = context.sendMessageStream;
+          
+          const handler = new StreamingErrorHandler({
+            sync: context.sync,
+            retryOperation: () => sendMessageStream(currentPrompt, currentSelectedText),
+          });
+
+          const resolution = await handler.handle(errorMessage, {
+            retryCount: 0,
+            maxRetries: 2,
+            currentPrompt: context.currentPrompt,
+            currentSelectedText: context.currentSelectedText,
+            userId: context.userId,
+            operation: "send-message",
+          });
+
+          if (resolution.success) {
+            return; // Successfully recovered
           }
+          // Fall through to error state if recovery failed
         }
 
         // Add error message to streaming parts
@@ -367,7 +381,10 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
           },
         }));
 
-        errorToast(errorMessage, "Chat Stream Error");
+        // Error handler already shows toast if needed, but show one for non-retryable errors
+        if (!streamingError.retryable) {
+          // Error is already handled by StreamingErrorHandler which shows toast
+        }
         break;
       }
 

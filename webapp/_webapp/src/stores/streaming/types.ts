@@ -128,3 +128,78 @@ export interface MessageTypeHandler {
  * Registry type for message type handlers.
  */
 export type MessageTypeHandlerRegistry = Record<MessageRole, MessageTypeHandler>;
+
+// ============================================================================
+// Error Handling Types (Phase 4)
+// ============================================================================
+
+/**
+ * Error codes that the streaming system can handle.
+ * Mapped from the protobuf ErrorCode enum for convenience.
+ */
+export type StreamingErrorCode =
+  | "PROJECT_OUT_OF_DATE"
+  | "NETWORK_ERROR"
+  | "TIMEOUT"
+  | "INVALID_RESPONSE"
+  | "RATE_LIMITED"
+  | "AUTHENTICATION_ERROR"
+  | "SERVER_ERROR"
+  | "UNKNOWN";
+
+/**
+ * Represents a streaming error with additional context.
+ */
+export interface StreamingError {
+  /** Error code for categorization */
+  code: StreamingErrorCode;
+  /** Human-readable error message */
+  message: string;
+  /** Original error object if available */
+  originalError?: Error | unknown;
+  /** Whether this error is retryable */
+  retryable: boolean;
+  /** Timestamp when the error occurred */
+  timestamp: number;
+}
+
+/**
+ * Recovery strategy types for different error scenarios.
+ */
+export type RecoveryStrategy =
+  | { type: "retry"; maxAttempts: number; backoff: "exponential" | "linear"; delayMs: number }
+  | { type: "sync-and-retry"; maxAttempts: number }
+  | { type: "show-error"; dismissable: boolean; message?: string }
+  | { type: "abort"; cleanup?: boolean };
+
+/**
+ * Context provided to the error handler for making recovery decisions.
+ */
+export interface ErrorContext {
+  /** Number of retry attempts already made */
+  retryCount: number;
+  /** Maximum retries allowed */
+  maxRetries: number;
+  /** Current prompt being sent */
+  currentPrompt: string;
+  /** Current selected text */
+  currentSelectedText: string;
+  /** User ID for logging/analytics */
+  userId?: string;
+  /** Operation that failed */
+  operation: "send-message" | "sync" | "fetch-conversation" | "other";
+}
+
+/**
+ * Result of error handling - what action was taken.
+ */
+export interface ErrorResolution {
+  /** Whether the error was handled (recovery attempted) */
+  handled: boolean;
+  /** Whether recovery was successful */
+  success: boolean;
+  /** Strategy that was applied */
+  strategy: RecoveryStrategy;
+  /** Additional message for logging/display */
+  message?: string;
+}

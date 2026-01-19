@@ -197,46 +197,89 @@ InternalMessage (streaming state)
 
 ---
 
-## Phase 4: Improve Error Handling
+## Phase 4: Improve Error Handling ✅ COMPLETED
 
 ### Goal
 Create a unified error handling strategy for all streaming errors.
 
 ### Tasks
 
-- [ ] **4.1 Create StreamingErrorHandler class**
-  ```typescript
-  class StreamingErrorHandler {
-    async handle(error: StreamingError, context: ErrorContext): Promise<ErrorResolution> {
-      if (this.isRetryable(error)) {
-        return this.handleWithRetry(error, context);
-      }
-      return this.handleFatal(error, context);
-    }
-    
-    private isRetryable(error: StreamingError): boolean {
-      return error.code === ErrorCode.PROJECT_OUT_OF_DATE ||
-             error.code === ErrorCode.NETWORK_ERROR;
-    }
-  }
-  ```
+- [x] **4.1 Create StreamingErrorHandler class**
   - Location: `stores/streaming/error-handler.ts`
+  - Implemented `StreamingErrorHandler` class with:
+    - `handle()` method for centralized error handling
+    - Support for multiple recovery strategies
+    - Exponential and linear backoff for retries
+    - Automatic error categorization from error messages and codes
   - Benefit: Centralized error handling logic
 
-- [ ] **4.2 Define error recovery strategies**
-  ```typescript
-  type RecoveryStrategy = 
-    | { type: 'retry'; maxAttempts: number; backoff: 'exponential' | 'linear' }
-    | { type: 'sync-and-retry' }
-    | { type: 'show-error'; dismissable: boolean }
-    | { type: 'abort' };
-  ```
+- [x] **4.2 Define error recovery strategies**
   - Location: `stores/streaming/types.ts`
+  - Implemented `RecoveryStrategy` union type with:
+    - `retry` - Retry with configurable attempts and backoff
+    - `sync-and-retry` - Sync project then retry (for PROJECT_OUT_OF_DATE)
+    - `show-error` - Display error to user
+    - `abort` - Stop processing
+  - Added `StreamingError`, `ErrorContext`, `ErrorResolution` types
   - Benefit: Explicit, testable recovery strategies
 
-- [ ] **4.3 Remove duplicate retry logic**
-  - Consolidate `with-retry-sync.ts` and `handleStreamError.ts` retry logic
+- [x] **4.3 Remove duplicate retry logic**
+  - Created `withStreamingErrorHandler()` as replacement for `withRetrySync()`
+  - Updated `useSendMessageStream` to use new error handler
+  - Updated `streaming-state-machine.ts` to use `StreamingErrorHandler`
+  - Deprecated `with-retry-sync.ts` with migration guide
   - Single retry implementation with configurable strategies
+
+### New File Structure
+
+```
+stores/streaming/
+├── index.ts                      # Module exports (updated)
+├── types.ts                      # Added error handling types
+├── message-type-handlers.ts      # (existing)
+├── streaming-state-machine.ts    # Updated to use error handler
+└── error-handler.ts              # NEW: Centralized error handling
+```
+
+### Error Handling Flow
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         StreamingErrorHandler                               │
+│  - createStreamingError(): Normalize errors to StreamingError              │
+│  - getRecoveryStrategy(): Get strategy based on error code                 │
+│  - handle(): Execute recovery strategy                                     │
+└─────────────────────────────────┬──────────────────────────────────────────┘
+                                  │
+    ┌─────────────────────────────┼─────────────────────────────────┐
+    │                             │                                 │
+    ▼                             ▼                                 ▼
+┌─────────────────┐    ┌─────────────────┐           ┌─────────────────────┐
+│ retry           │    │ sync-and-retry  │           │ show-error          │
+│ (NETWORK,       │    │ (PROJECT_OUT_   │           │ (AUTH, INVALID,     │
+│  TIMEOUT, etc.) │    │  OF_DATE)       │           │  UNKNOWN)           │
+└─────────────────┘    └─────────────────┘           └─────────────────────┘
+```
+
+### Recovery Strategies Configuration
+
+| Error Code | Strategy | Max Attempts | Backoff |
+|------------|----------|--------------|---------|
+| PROJECT_OUT_OF_DATE | sync-and-retry | 2 | - |
+| NETWORK_ERROR | retry | 3 | exponential, 1000ms |
+| TIMEOUT | retry | 2 | linear, 2000ms |
+| RATE_LIMITED | retry | 3 | exponential, 5000ms |
+| SERVER_ERROR | retry | 2 | exponential, 2000ms |
+| INVALID_RESPONSE | show-error | - | - |
+| AUTHENTICATION_ERROR | show-error | - | - |
+| UNKNOWN | show-error | - | - |
+
+### Migration Notes
+
+- `withRetrySync()` is deprecated, use `withStreamingErrorHandler()` instead
+- Error handling in `streaming-state-machine.ts` now uses `StreamingErrorHandler`
+- All error types are normalized to `StreamingError` for consistent handling
+- Recovery strategies are configurable per error type
 
 ---
 
@@ -318,7 +361,7 @@ Ensure the refactored code is well-tested and documented.
 | 1. Consolidate Handlers | High | Medium | High | ✅ COMPLETED |
 | 2. Unify Stores | High | High | High | ✅ COMPLETED |
 | 3. Simplify Transformations | Medium | Medium | Medium | ✅ COMPLETED |
-| 4. Error Handling | Medium | Low | Medium | Not Started |
+| 4. Error Handling | Medium | Low | Medium | ✅ COMPLETED |
 | 5. Refactor Hook | Low | Low | Medium | Not Started |
 | 6. Testing & Docs | Low | Medium | High | Not Started |
 
@@ -335,3 +378,6 @@ After completing all phases:
 - [x] Canonical internal message format defined (Phase 3)
 - [x] Bidirectional converters centralized in one file (Phase 3)
 - [x] MessageCard uses DisplayMessage directly (Phase 3)
+- [x] Centralized error handling with configurable strategies (Phase 4)
+- [x] Single retry implementation with backoff support (Phase 4)
+- [x] Error types normalized for consistent handling (Phase 4)

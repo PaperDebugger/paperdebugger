@@ -7,3 +7,4 @@
 export * from "./types";
 export * from "./message-type-handlers";
 export * from "./streaming-state-machine";
+export * from "./error-handler";

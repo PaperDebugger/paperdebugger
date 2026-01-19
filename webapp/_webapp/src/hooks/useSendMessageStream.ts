@@ -14,7 +14,6 @@ import {
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { PlainMessage } from "../query/types";
 import { getProjectId } from "../libs/helpers";
-import { withRetrySync } from "../libs/with-retry-sync";
 import { createConversationMessageStream } from "../query/api";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
@@ -29,6 +28,7 @@ import {
   useStreamingStateMachine,
   StreamEvent,
   InternalMessage,
+  withStreamingErrorHandler,
 } from "../stores/streaming";
 import { createUserMessage } from "../types/message";
 
@@ -143,7 +143,7 @@ export function useSendMessageStream() {
         sendMessageStream,
       };
 
-      await withRetrySync(
+      await withStreamingErrorHandler(
         () =>
           createConversationMessageStream(request, async (response) => {
             // Map response payload to StreamEvent and delegate to state machine
@@ -156,15 +156,20 @@ export function useSendMessageStream() {
           sync: async () => {
             try {
               const result = await sync();
-              if (!result.success) {
-                logError("Failed to sync project", result.error);
-              }
+              return result;
             } catch (e) {
               logError("Failed to sync project", e);
+              return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
             }
           },
           onGiveUp: () => {
             handleEvent({ type: "CONNECTION_ERROR", payload: new Error("connection error.") });
+          },
+          context: {
+            currentPrompt: message,
+            currentSelectedText: selectedText,
+            userId: user?.id,
+            operation: "send-message",
           },
         },
       );
