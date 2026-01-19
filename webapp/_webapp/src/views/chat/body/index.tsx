@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MessageCard } from "../../../components/message-card";
 import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
@@ -29,7 +29,6 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const setCurrentConversation = useConversationStore((s) => s.setCurrentConversation);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
-  const expanderRef = useRef<HTMLDivElement>(null);
   const [reloadSuccess, setReloadSuccess] = useState(ReloadStatus.Default);
 
   const conversationMode = useSettingStore((s) => s.conversationMode);
@@ -54,42 +53,34 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     [visibleMessages]
   );
 
-  // Scroll to the top of the last user message
+  // Get the last user message ID to track when it changes
+  const lastUserMessageId = useMemo(() => {
+    if (lastUserMessageIndex === -1) return null;
+    return visibleMessages[lastUserMessageIndex]?.id ?? null;
+  }, [visibleMessages, lastUserMessageIndex]);
+
+  // Scroll the last user message to the top of the viewport (container only)
+  const scrollToLastUserMessage = useCallback(() => {
+    if (!lastUserMsgRef.current || !chatContainerRef.current) return;
+    
+    const container = chatContainerRef.current;
+    const target = lastUserMsgRef.current;
+    
+    container.scrollTo({
+      top: target.offsetTop,
+      behavior: "smooth",
+    });
+  }, []);
+
+  // Auto-scroll only when a new user message is added
   useEffect(() => {
-    if (expanderRef.current) {
-      expanderRef.current.style.height = "1000px";
-    }
-
-    const chatContainerHeight = chatContainerRef.current?.clientHeight ?? 0;
-    const expanderViewOffset =
-      (expanderRef.current?.getBoundingClientRect().top ?? 0) -
-      (chatContainerRef.current?.getBoundingClientRect().y ?? 0);
-
-    let expanderHeight: number;
-    if (expanderViewOffset < 0) {
-      expanderHeight = 0;
-    } else {
-      expanderHeight = chatContainerHeight - expanderViewOffset;
-    }
-
-    if (expanderRef.current) {
-      const lastUserMsgHeight = lastUserMsgRef.current?.clientHeight ?? 0;
-      expanderRef.current.style.height = chatContainerHeight - lastUserMsgHeight - 8 + "px";
-    }
-
-    if (lastUserMsgRef.current && chatContainerRef.current) {
-      const container = chatContainerRef.current;
-      const target = lastUserMsgRef.current;
-      container.scrollTo({
-        top: target.offsetTop,
-        behavior: "smooth",
-      });
-    } else {
-      if (expanderRef.current) {
-        expanderRef.current.style.height = (expanderHeight < 0 ? 0 : expanderHeight) + "px";
-      }
-    }
-  }, [visibleMessages.length]);
+    if (!lastUserMessageId) return;
+    
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      scrollToLastUserMessage();
+    });
+  }, [lastUserMessageId, scrollToLastUserMessage]);
 
   // Render all messages using the unified DisplayMessage array
   const messageCards = useMemo(
@@ -119,38 +110,20 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     return <EmptyView />;
   }
 
-  const expander = (
-    <div
-      style={{
-        height: "0px",
-        backgroundColor: "transparent",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 0,
-        pointerEvents: "none",
-      }}
-      aria-hidden="true"
-      id="expander"
-      ref={expanderRef}
-    />
-  );
-
   return (
     <div className="pd-app-tab-content-body" id="pd-chat-item-container" ref={chatContainerRef}>
-      <div id="pd-chat-item-container-messages" style={{ zIndex: 3 }}>
+      {/* Spacer that pushes content down and provides scroll space for last user message */}
+      <div className="flex-1 min-h-0" aria-hidden="true" />
+      
+      <div id="pd-chat-item-container-messages">
         {messageCards}
       </div>
 
-      <div id="pd-chat-item-container-status" style={{ position: "relative" }}>
-        <div id="pd-chat-item-container-status-indicator" style={{ position: "relative", zIndex: 2 }}>
-          <StatusIndicator conversation={conversation} />
-        </div>
-
-        {expander}
+      <div id="pd-chat-item-container-status" className="relative">
+        <StatusIndicator conversation={conversation} />
+        
         {isDebugMode && (
-          <div className="text-xs text-gray-300 z-1 noselect">
+          <div className="text-xs text-gray-300 noselect">
             <span>* Debug mode is enabled, </span>
             <span
               className={`${reloadSuccess ? "text-emerald-300" : "text-gray-300"} underline cursor-pointer rnd-cancel`}
@@ -178,6 +151,13 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
           </div>
         )}
       </div>
+      
+      {/* Bottom spacer to allow scrolling the last user message to the top */}
+      <div 
+        className="flex-shrink-0" 
+        style={{ minHeight: "calc(100% - 80px)" }}
+        aria-hidden="true" 
+      />
     </div>
   );
 };
