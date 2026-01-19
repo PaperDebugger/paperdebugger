@@ -78,7 +78,9 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 		// Try to parse as XtraMCP ToolResult format
 		// This allows XtraMCP tools to use the new format while other tools continue with existing behavior
 		// NOTE: there is a bit of a coupled ugly logic here. (TODO: consider new API design later)
-		// 1. We rely on the xtramcp/tool_v2.go call method to return "" for LLM instruction
+		// 0. call method assumes it will return of format llm_content, error where llm_content is used for both frontend and openai history tracking
+		//		But for better user display, we might want to distinguish between frontend display and llm context update
+		// 1. We rely on the xtramcp/tool_v2.go call method to return "" for LLM instruction. We will construct the LLM instruction based on llm_content.
 		// 2. so in registry/registry_v2.go, the returned toolResult is the raw string from the tool execution
 		// 3. presently, it is not possible to do the parsing earlier in xtramcp/tool_v2.go because of the following branching logic
 		parsedXtraMCPResult, isXtraMCPFormat, parseErr := ParseXtraMCPToolResult(toolResult)

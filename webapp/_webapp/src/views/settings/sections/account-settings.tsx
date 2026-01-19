@@ -5,12 +5,15 @@ import { useSettingStore } from "../../../stores/setting-store";
 import { useAuthStore } from "../../../stores/auth-store";
 import { useEffect, useState } from "react";
 import { getCookies } from "../../../intermediate";
+import { useAdapterOptional } from "../../../adapters/context";
 
 export const AccountSettings = () => {
   const { updateSettings } = useSettingStore();
   const { logout, user } = useAuthStore();
   const [overleafSession, setOverleafSession] = useState("");
   const [gclb, setGclb] = useState("");
+  const adapter = useAdapterOptional();
+  const isWord = adapter?.platform === "word";
 
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
@@ -22,22 +25,24 @@ export const AccountSettings = () => {
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>Account</SettingsSectionTitle>
-      <CellWrapper>
-        <div className="flex flex-col">
-          <div className="text-xs">View onboarding guide</div>
-          <div className="text-xs text-default-500">Learn how to use PaperDebugger effectively</div>
-        </div>
-        <Button
-          size="sm"
-          color="primary"
-          radius="full"
-          onPress={() => {
-            updateSettings({ showedOnboarding: false });
-          }}
-        >
-          View
-        </Button>
-      </CellWrapper>
+      {!isWord && (
+        <CellWrapper>
+          <div className="flex flex-col">
+            <div className="text-xs">View onboarding guide</div>
+            <div className="text-xs text-default-500">Learn how to use PaperDebugger effectively</div>
+          </div>
+          <Button
+            size="sm"
+            color="primary"
+            radius="full"
+            onPress={() => {
+              updateSettings({ showedOnboarding: false });
+            }}
+          >
+            View
+          </Button>
+        </CellWrapper>
+      )}
       <CellWrapper>
         <div className="flex flex-col flex-1">
           <div className="text-xs">Status</div>
@@ -47,21 +52,25 @@ export const AccountSettings = () => {
           <div className="flex flex-row gap-2 items-center">
             <div className={cn("rounded-full w-2 h-2", user ? "bg-primary-500" : "bg-red-500")}></div>User
           </div>
-          <div className="flex flex-row gap-2 items-center">
-            <div
-              className={cn(
-                "rounded-full w-2 h-2",
-                overleafSession && overleafSession.length > 0 ? "bg-primary-500" : "bg-red-500",
-              )}
-            ></div>
-            Session
-          </div>
-          <div className="flex flex-row gap-2 items-center">
-            <div
-              className={cn("rounded-full w-2 h-2", gclb && gclb.length > 0 ? "bg-primary-500" : "bg-red-500")}
-            ></div>
-            GCLB
-          </div>
+          {!isWord && (
+            <>
+              <div className="flex flex-row gap-2 items-center">
+                <div
+                  className={cn(
+                    "rounded-full w-2 h-2",
+                    overleafSession && overleafSession.length > 0 ? "bg-primary-500" : "bg-red-500",
+                  )}
+                ></div>
+                Session
+              </div>
+              <div className="flex flex-row gap-2 items-center">
+                <div
+                  className={cn("rounded-full w-2 h-2", gclb && gclb.length > 0 ? "bg-primary-500" : "bg-red-500")}
+                ></div>
+                GCLB
+              </div>
+            </>
+          )}
         </div>
       </CellWrapper>
       <CellWrapper>

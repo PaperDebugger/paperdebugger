@@ -4,9 +4,11 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import LoginWithGoogle from "./login-with-google";
 import LoginWithOverleaf from "./login-with-overleaf";
 import AdvancedSettings from "./advanced-settings";
+import { useAdapterOptional } from "../../adapters";
 
 export const Login = () => {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const adapter = useAdapterOptional();
   const [loginLoadingMessage, setLoginLoadingMessage] = useState<string>("Please continue in the opened window/tab");
   const [errorMessage, setErrorMessage] = useState<string>("");
   // toggle show endpoint settings
@@ -42,12 +44,15 @@ export const Login = () => {
         setErrorMessage={setErrorMessage}
       /> */}
 
-      <LoginWithOverleaf
-        isLoginLoading={isLoginLoading}
-        setIsLoginLoading={setIsLoginLoading}
-        setErrorMessage={setErrorMessage}
-        setLoginLoadingMessage={setLoginLoadingMessage}
-      />
+      {/* Hide Overleaf login for Word plugin */}
+      {adapter?.platform !== "word" && (
+        <LoginWithOverleaf
+          isLoginLoading={isLoginLoading}
+          setIsLoginLoading={setIsLoginLoading}
+          setErrorMessage={setErrorMessage}
+          setLoginLoadingMessage={setLoginLoadingMessage}
+        />
+      )}
 
       {isLoginLoading && (
         <div className="text-sm text-gray-400 mt-4 flex items-center gap-2">
@@ -60,7 +65,7 @@ export const Login = () => {
       <div className="text-xs text-gray-500 mt-4 text-center max-w-xs">
         By login-in, you agree to PaperDebugger's <br />
         <a
-          href="https://www.paperdebugger.com/terms/"
+          href="https://www.paperdebugger.com/blog/terms/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary-600 underline"
@@ -69,7 +74,7 @@ export const Login = () => {
         </a>{" "}
         and its{" "}
         <a
-          href="https://www.paperdebugger.com/privacy"
+          href="https://www.paperdebugger.com/blog/privacy/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary-600 underline"

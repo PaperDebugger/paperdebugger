@@ -60,6 +60,8 @@ export function PromptInput() {
 
   const selectedText = useSelectionStore((s) => s.selectedText);
   const clearSelection = useSelectionStore((s) => s.clear);
+  const setSelectedText = useSelectionStore((s) => s.setSelectedText);
+  const setSurroundingText = useSelectionStore((s) => s.setSurroundingText);
 
   const { sendMessageStream } = useSendMessageStream();
   const minimalistMode = useSettingStore((s) => s.minimalistMode);
@@ -75,20 +77,38 @@ export function PromptInput() {
       userId: user?.id,
     });
     setPrompt("");
-    clearSelection();
+    if (selectedText) {
+      setSelectedText(null);
+      setSurroundingText(null);
+    } else {
+      clearSelection();
+    }
     setIsStreaming(true);
     await sendMessageStream(prompt, selectedText ?? "");
     setIsStreaming(false);
-  }, [sendMessageStream, prompt, selectedText, user?.id, setIsStreaming, setPrompt, clearSelection]);
+  }, [
+    sendMessageStream,
+    prompt,
+    selectedText,
+    user?.id,
+    setIsStreaming,
+    setPrompt,
+    clearSelection,
+    setSelectedText,
+    setSurroundingText,
+  ]);
   const handleKeyDown = useCallback(
     async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Check if IME composition is in progress to avoid submitting during Chinese input
+      // Use getState() to get the latest isStreaming value to avoid stale closure
+      const currentlyStreaming = useConversationStore.getState().isStreaming;
       if (
         e.key === "Enter" &&
         !e.shiftKey &&
         !e.nativeEvent.isComposing && // Prevent submission during IME composition
         !prompt.startsWith("/") && // Select prompt
-        !prompt.startsWith(":") // Select action
+        !prompt.startsWith(":") && // Select action
+        !currentlyStreaming // Prevent submission during streaming
       ) {
         e.preventDefault();
         e.stopPropagation();

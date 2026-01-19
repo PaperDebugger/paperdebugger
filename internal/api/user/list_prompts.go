@@ -13,14 +13,6 @@ import (
 )
 
 var defaultPrompts = []*userv1.Prompt{
-	// {
-	// 	Id:           "1",
-	// 	CreatedAt:    timestamppb.New(time.Time{}),
-	// 	UpdatedAt:    timestamppb.New(time.Time{}),
-	// 	Title:        "Enhance Academic Writing (Powered by XtraGPT)",
-	// 	Content:      "Suggest context-aware academic paper writing enhancements for the selected text.",
-	// 	IsUserPrompt: false,
-	// },
 	{
 		Id:           "2",
 		CreatedAt:    timestamppb.New(time.Time{}),

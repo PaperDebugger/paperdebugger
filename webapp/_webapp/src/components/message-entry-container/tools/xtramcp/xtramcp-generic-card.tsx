@@ -14,7 +14,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
         <div className="flex items-center justify-between">
           <h3 className="tool-card-title">Calling {functionName}</h3>
         </div>
-        <LoadingIndicator text="Processing ..." estimatedSeconds={150} />
+        <LoadingIndicator text="Processing ..." estimatedSeconds={90} />
       </div>
     );
   }

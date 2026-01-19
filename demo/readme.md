@@ -2,9 +2,9 @@
 
 - 🎬 Full Demo Video: https://drive.google.com/file/d/1g-YLlTfXdSvUA1C79lzFqlk9C8BNmuJD/view?usp=sharing
 
-- Latest product updates: https://www.paperdebugger.com/
-- Privacy overview: https://www.paperdebugger.com/privacy/
-- Terms of service: https://www.paperdebugger.com/terms/
+- Latest product updates: https://www.paperdebugger.com/blog/
+- Privacy overview: https://www.paperdebugger.com/blog/privacy/
+- Terms of service: https://www.paperdebugger.com/blog/terms/
 - Chrome Web Store reviews: https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog/reviews
 
 ## Videos
