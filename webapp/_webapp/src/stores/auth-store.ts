@@ -74,26 +74,26 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   // Initial values are empty - will be populated by initFromStorage()
   // This ensures we don't read from storage before the adapter is set
-  token: "",
+  token: storage.getItem(LOCAL_STORAGE_KEY.TOKEN) ?? "",
   setToken: (token) => {
     storage.setItem(LOCAL_STORAGE_KEY.TOKEN, token);
     set({ token });
   },
 
-  refreshToken: "",
+  refreshToken: storage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) ?? "",
   setRefreshToken: (refreshToken) => {
     storage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, refreshToken ?? "");
     set({ refreshToken });
   },
 
   initFromStorage: () => {
-    const token = storage.getItem(LOCAL_STORAGE_KEY.TOKEN) ?? "";
-    const refreshToken = storage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) ?? "";
-    console.log("[AuthStore] initFromStorage:", { 
-      hasToken: !!token, 
-      tokenLength: token.length,
-      hasRefreshToken: !!refreshToken 
-    });
-    set({ token, refreshToken });
+    // const token = storage.getItem(LOCAL_STORAGE_KEY.TOKEN) ?? "";
+    // const refreshToken = storage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN) ?? "";
+    // console.log("[AuthStore] initFromStorage:", { 
+    //   hasToken: !!token, 
+    //   tokenLength: token.length,
+    //   hasRefreshToken: !!refreshToken 
+    // });
+    // set({ token, refreshToken });
   },
 }));

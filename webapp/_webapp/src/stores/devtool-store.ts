@@ -1,19 +1,32 @@
 import { create } from "zustand";
-import { storage } from "../libs/storage";
 
-export const localStorageKey = {
+/**
+ * Devtool settings use localStorage directly (not the storage adapter).
+ * These settings are local to each device and don't need cross-device sync.
+ */
+const STORAGE_KEY = {
   showTool: "pd.devtool.showTool",
   slowStreamingMode: "pd.devtool.slowStreamingMode",
   alwaysSyncProject: "pd.devtool.alwaysSyncProject",
 } as const;
 
-interface DevtoolStore {
-  /**
-   * Initialize devtool settings from storage.
-   * Must be called after storage adapter is set (e.g., after Office.onReady).
-   */
-  initFromStorage: () => void;
+function getLocalStorageItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 
+function setLocalStorageItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+interface DevtoolStore {
   showTool: boolean;
   setShowTool: (showTool: boolean) => void;
 
@@ -25,29 +38,21 @@ interface DevtoolStore {
 }
 
 export const useDevtoolStore = create<DevtoolStore>((set) => ({
-  initFromStorage: () => {
-    const showTool = JSON.parse(storage.getItem(localStorageKey.showTool) || "false");
-    const slowStreamingMode = JSON.parse(storage.getItem(localStorageKey.slowStreamingMode) || "false");
-    const alwaysSyncProject = JSON.parse(storage.getItem(localStorageKey.alwaysSyncProject) || "false");
-    set({ showTool, slowStreamingMode, alwaysSyncProject });
-  },
-
-  // Initial values are defaults - will be populated by initFromStorage()
-  showTool: false,
+  showTool: getLocalStorageItem(STORAGE_KEY.showTool) === "true",
   setShowTool: (showTool: boolean) => {
-    storage.setItem(localStorageKey.showTool, JSON.stringify(showTool));
+    setLocalStorageItem(STORAGE_KEY.showTool, JSON.stringify(showTool));
     set({ showTool });
   },
 
-  slowStreamingMode: false,
+  slowStreamingMode: getLocalStorageItem(STORAGE_KEY.slowStreamingMode) === "true",
   setSlowStreamingMode: (slowStreamingMode: boolean) => {
-    storage.setItem(localStorageKey.slowStreamingMode, JSON.stringify(slowStreamingMode));
+    setLocalStorageItem(STORAGE_KEY.slowStreamingMode, JSON.stringify(slowStreamingMode));
     set({ slowStreamingMode });
   },
 
-  alwaysSyncProject: false,
+  alwaysSyncProject: getLocalStorageItem(STORAGE_KEY.alwaysSyncProject) === "true",
   setAlwaysSyncProject: (alwaysSyncProject: boolean) => {
-    storage.setItem(localStorageKey.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
+    setLocalStorageItem(STORAGE_KEY.alwaysSyncProject, JSON.stringify(alwaysSyncProject));
     set({ alwaysSyncProject });
   },
 }));

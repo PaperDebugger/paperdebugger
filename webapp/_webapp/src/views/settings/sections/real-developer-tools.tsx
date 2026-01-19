@@ -5,7 +5,7 @@ import { SettingsSectionContainer } from "./components";
 
 import { SettingsSectionTitle } from "./components";
 import { SettingItem } from "../setting-items";
-import { localStorageKey, useDevtoolStore } from "../../../stores/devtool-store";
+import { useDevtoolStore } from "../../../stores/devtool-store";
 import { storage } from "../../../libs/storage";
 
 // Keys to preserve during reset
@@ -113,14 +113,6 @@ export const RealDeveloperTools = () => {
             const preservedValues: Record<string, string | null> = {};
             keysToPreserve.forEach((key) => {
               preservedValues[key] = storage.getItem(key);
-            });
-            
-            // Also preserve devtool store keys
-            const devtoolKeys = Object.values(localStorageKey);
-            devtoolKeys.forEach((key) => {
-              if (!preservedValues[key]) {
-                preservedValues[key] = storage.getItem(key);
-              }
             });
             
             // Clear all storage

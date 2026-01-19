@@ -12,9 +12,7 @@ export { WordAdapter, createAndRegisterWordAdapter } from "./document-adapter";
 
 // Storage Adapter Implementations
 export {
-  OfficeRoamingAdapter,
   LocalStorageAdapter,
   MemoryStorageAdapter,
-  detectPlatform,
   createStorageAdapter,
 } from "./storage-adapter";

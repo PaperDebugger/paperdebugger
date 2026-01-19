@@ -262,7 +262,7 @@ body {
   flex: 0;
   flex-direction: row;
   display: flex;
-  height: 24px;
+  height: 32px;
   border-bottom: 1px solid var(--pd-border-color);
 }
 

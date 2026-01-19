@@ -6,14 +6,11 @@ import { Providers } from "./providers";
 import {
   AdapterProvider,
   type DocumentAdapter,
-  type StorageAdapter,
   type SelectionInfo,
 } from "../../adapters";
-import { setStorage as setGlobalStorage } from "../../libs/storage";
 import { useAuthStore } from "../../stores/auth-store";
 import { useSelectionStore } from "../../stores/selection-store";
 import { useSettingStore } from "../../stores/setting-store";
-import { useDevtoolStore } from "../../stores/devtool-store";
 
 import "../../index.css";
 
@@ -44,15 +41,6 @@ export function unregisterAdapter(id: string): void {
 }
 
 /**
- * Set the storage adapter to be used by PaperDebugger
- * This MUST be called before the component mounts to ensure auth state is properly loaded
- * @param adapter - A StorageAdapter implementation (e.g., OfficeRoamingAdapter)
- */
-export function setStorage(adapter: StorageAdapter): void {
-  setGlobalStorage(adapter);
-}
-
-/**
  * Set the current selection from external host (e.g., Office Add-in)
  * @param selection - The selection info, or null to clear
  */
@@ -79,8 +67,6 @@ if (typeof window !== "undefined") {
     __pdRegisterAdapter = registerAdapter;
   (window as unknown as { __pdUnregisterAdapter: typeof unregisterAdapter }).
     __pdUnregisterAdapter = unregisterAdapter;
-  (window as unknown as { __pdSetStorage: typeof setStorage }).
-    __pdSetStorage = setStorage;
   (window as unknown as { __pdSetSelection: typeof setSelection }).
     __pdSetSelection = setSelection;
 }
@@ -89,7 +75,6 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
   const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
   const { initFromStorage: initAuthFromStorage, login } = useAuthStore();
   const { initLocalSettings } = useSettingStore();
-  const { initFromStorage: initDevtoolFromStorage } = useDevtoolStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize stores from storage on mount
@@ -99,8 +84,6 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     initAuthFromStorage();
     // Re-initialize local UI settings from storage
     initLocalSettings();
-    // Re-initialize devtool settings from storage
-    initDevtoolFromStorage();
     // Attempt to login with restored tokens
     login();
     setIsInitialized(true);

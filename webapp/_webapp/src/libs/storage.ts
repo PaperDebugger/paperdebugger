@@ -29,27 +29,9 @@ let _storageInstance: StorageAdapter | null = null;
  */
 export function getStorage(): StorageAdapter {
   if (!_storageInstance) {
-    console.log("[Storage] Creating default storage adapter (no custom adapter set)");
     _storageInstance = createStorageAdapter();
   }
-  console.log("[Storage] getStorage returning:", _storageInstance?.constructor?.name ?? "unknown");
   return _storageInstance;
-}
-
-/**
- * Override the global storage instance
- * Useful for testing or when host environment provides a custom adapter
- */
-export function setStorage(adapter: StorageAdapter): void {
-  console.log("[Storage] setStorage called, adapter type:", adapter?.constructor?.name ?? "unknown");
-  _storageInstance = adapter;
-}
-
-/**
- * Reset the storage instance
- */
-export function resetStorage(): void {
-  _storageInstance = null;
 }
 
 /**
