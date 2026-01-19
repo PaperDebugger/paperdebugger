@@ -100,12 +100,15 @@ export function PromptInput() {
   const handleKeyDown = useCallback(
     async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Check if IME composition is in progress to avoid submitting during Chinese input
+      // Use getState() to get the latest isStreaming value to avoid stale closure
+      const currentlyStreaming = useConversationStore.getState().isStreaming;
       if (
         e.key === "Enter" &&
         !e.shiftKey &&
         !e.nativeEvent.isComposing && // Prevent submission during IME composition
         !prompt.startsWith("/") && // Select prompt
-        !prompt.startsWith(":") // Select action
+        !prompt.startsWith(":") && // Select action
+        !currentlyStreaming // Prevent submission during streaming
       ) {
         e.preventDefault();
         e.stopPropagation();
