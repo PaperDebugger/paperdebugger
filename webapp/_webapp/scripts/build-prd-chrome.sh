@@ -17,7 +17,7 @@ echo "📦 Beta Build: ${BETA_BUILD}"
 echo "📦 API Endpoint: ${PD_API_ENDPOINT}"
 echo ""
 
-if ! bun run build 2>&1 | tee logs/build.log; then
+if ! npm run build > logs/build.log 2>&1; then
     echo "❌ Failed to build Chrome Extension, please check logs/build.log"
     tail -n 10 logs/build.log
     exit 1
