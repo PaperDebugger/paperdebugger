@@ -207,9 +207,13 @@ func (s *ChatServerV1) prepare(ctx context.Context, projectId string, conversati
 	}
 
 	var latexFullSource string
+	var projectInstructions string
 	switch conversationType {
 	case chatv1.ConversationType_CONVERSATION_TYPE_DEBUG:
 		latexFullSource = "latex_full_source is not available in debug mode"
+		if project != nil {
+			projectInstructions = project.Instructions
+		}
 	default:
 		if project == nil || project.IsOutOfDate() {
 			return ctx, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
@@ -219,6 +223,7 @@ func (s *ChatServerV1) prepare(ctx context.Context, projectId string, conversati
 		if err != nil {
 			return ctx, nil, nil, err
 		}
+		projectInstructions = project.Instructions
 	}
 
 	var conversation *models.Conversation
@@ -229,7 +234,7 @@ func (s *ChatServerV1) prepare(ctx context.Context, projectId string, conversati
 			actor.ID,
 			projectId,
 			latexFullSource,
-			project.Instructions,
+			projectInstructions,
 			userInstructions,
 			userMessage,
 			userSelectedText,
