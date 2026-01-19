@@ -24,6 +24,7 @@ import { Logo } from "./components/logo";
 import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
 import { TracingInstrumentation } from "@grafana/faro-web-tracing";
 import { getManifest } from "./libs/manifest";
+import { AdapterProvider, getOverleafAdapter } from "./adapters";
 
 initializeFaro({
   url: "https://faro-collector-prod-ap-southeast-1.grafana.net/collect/79c7648395df4df8b58c228fad42af57",
@@ -232,16 +233,21 @@ if (!import.meta.env.DEV) {
     document.body.appendChild(div);
 
     const root = createRoot(div);
+    const adapter = getOverleafAdapter();
     root.render(
       import.meta.env.DEV ? (
         <StrictMode>
           <Providers>
-            <Main />
+            <AdapterProvider adapter={adapter}>
+              <Main />
+            </AdapterProvider>
           </Providers>
         </StrictMode>
       ) : (
         <Providers>
-          <Main />
+          <AdapterProvider adapter={adapter}>
+            <Main />
+          </AdapterProvider>
         </Providers>
       ),
     );

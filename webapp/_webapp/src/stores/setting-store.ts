@@ -3,6 +3,17 @@ import { getSettings, resetSettings, updateSettings } from "../query/api";
 import { Settings, UpdateSettingsRequest } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
+import { storage } from "../libs/storage";
+
+// Storage keys for local UI settings
+const LOCAL_STORAGE_KEY = {
+  ENABLE_USER_DEVELOPER_TOOLS: "pd.devtool.enabled",
+  CONVERSATION_MODE: "pd.devtool.conversationMode",
+  DISABLE_LINE_WRAP: "pd.lineWrap.enabled",
+  MINIMALIST_MODE: "pd.ui.minimalistMode",
+  HIDE_AVATAR: "pd.ui.hideAvatar",
+  ALLOW_OUT_OF_BOUNDS: "pd.ui.allowOutOfBounds",
+};
 
 export interface SettingStore {
   settings: PlainMessage<Settings> | null;
@@ -12,6 +23,13 @@ export interface SettingStore {
   loadSettings: () => Promise<void>;
   updateSettings: (newSettings: Partial<PlainMessage<Settings>>) => Promise<void>;
   resetSettings: () => Promise<void>;
+
+  /**
+   * Initialize local UI settings from storage.
+   * Must be called after storage adapter is set (e.g., after Office.onReady).
+   * This reloads local UI settings from the configured storage adapter.
+   */
+  initLocalSettings: () => void;
 
   enableUserDeveloperTools: boolean; // Not actual developer tools
   setEnableUserDeveloperTools: (enable: boolean) => void;
@@ -125,39 +143,59 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
     }
   },
 
-  enableUserDeveloperTools: localStorage.getItem("pd.devtool.enabled") === "true" || false,
+  initLocalSettings: () => {
+    const enableUserDeveloperTools = storage.getItem(LOCAL_STORAGE_KEY.ENABLE_USER_DEVELOPER_TOOLS) === "true";
+    const conversationMode = (storage.getItem(LOCAL_STORAGE_KEY.CONVERSATION_MODE) as "debug" | "normal") || "normal";
+    const disableLineWrap = storage.getItem(LOCAL_STORAGE_KEY.DISABLE_LINE_WRAP) === "true";
+    const minimalistMode = storage.getItem(LOCAL_STORAGE_KEY.MINIMALIST_MODE) === "true";
+    const hideAvatar = storage.getItem(LOCAL_STORAGE_KEY.HIDE_AVATAR) === "true";
+    const allowOutOfBounds = storage.getItem(LOCAL_STORAGE_KEY.ALLOW_OUT_OF_BOUNDS) === "true";
+
+    set({
+      enableUserDeveloperTools,
+      conversationMode,
+      disableLineWrap,
+      minimalistMode,
+      hideAvatar,
+      allowOutOfBounds,
+    });
+  },
+
+  // Initial values are defaults - will be populated by initLocalSettings()
+  // This ensures we don't read from storage before the adapter is set
+  enableUserDeveloperTools: false,
   setEnableUserDeveloperTools: (enable: boolean) => {
-    localStorage.setItem("pd.devtool.enabled", enable.toString());
+    storage.setItem(LOCAL_STORAGE_KEY.ENABLE_USER_DEVELOPER_TOOLS, enable.toString());
     set({ enableUserDeveloperTools: enable });
   },
 
-  conversationMode: (localStorage.getItem("pd.devtool.conversationMode") as "debug" | "normal") || "normal",
+  conversationMode: "normal",
   setConversationMode: (mode: "debug" | "normal") => {
-    localStorage.setItem("pd.devtool.conversationMode", mode);
+    storage.setItem(LOCAL_STORAGE_KEY.CONVERSATION_MODE, mode);
     set({ conversationMode: mode });
   },
 
-  disableLineWrap: localStorage.getItem("pd.lineWrap.enabled") === "true" || false,
+  disableLineWrap: false,
   setDisableLineWrap: (enable: boolean) => {
-    localStorage.setItem("pd.lineWrap.enabled", enable.toString());
+    storage.setItem(LOCAL_STORAGE_KEY.DISABLE_LINE_WRAP, enable.toString());
     set({ disableLineWrap: enable });
   },
 
-  minimalistMode: localStorage.getItem("pd.ui.minimalistMode") === "true" || false,
+  minimalistMode: false,
   setMinimalistMode: (enable: boolean) => {
-    localStorage.setItem("pd.ui.minimalistMode", enable.toString());
+    storage.setItem(LOCAL_STORAGE_KEY.MINIMALIST_MODE, enable.toString());
     set({ minimalistMode: enable });
   },
 
-  hideAvatar: localStorage.getItem("pd.ui.hideAvatar") === "true" || false,
+  hideAvatar: false,
   setHideAvatar: (enable: boolean) => {
-    localStorage.setItem("pd.ui.hideAvatar", enable.toString());
+    storage.setItem(LOCAL_STORAGE_KEY.HIDE_AVATAR, enable.toString());
     set({ hideAvatar: enable });
   },
 
-  allowOutOfBounds: localStorage.getItem("pd.ui.allowOutOfBounds") === "true" || false,
+  allowOutOfBounds: false,
   setAllowOutOfBounds: (enable: boolean) => {
-    localStorage.setItem("pd.ui.allowOutOfBounds", enable.toString());
+    storage.setItem(LOCAL_STORAGE_KEY.ALLOW_OUT_OF_BOUNDS, enable.toString());
     set({ allowOutOfBounds: enable });
   },
 }));

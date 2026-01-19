@@ -6,6 +6,7 @@ import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";
 import { ErrorCode, ErrorSchema } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
+import { storage } from "./storage";
 
 // Exhaustive type check helper - will cause compile error if a case is not handled
 const assertNever = (x: never): never => {
@@ -44,10 +45,10 @@ class ApiClient {
     this.axiosInstance.defaults.baseURL = `${baseURL}/_pd/api/${apiVersion}`;
     switch (apiVersion) {
       case "v1":
-        localStorage.setItem(API_VERSION_STORAGE_KEYS.v1, this.axiosInstance.defaults.baseURL);
+        storage.setItem(API_VERSION_STORAGE_KEYS.v1, this.axiosInstance.defaults.baseURL);
         break;
       case "v2":
-        localStorage.setItem(API_VERSION_STORAGE_KEYS.v2, this.axiosInstance.defaults.baseURL);
+        storage.setItem(API_VERSION_STORAGE_KEYS.v2, this.axiosInstance.defaults.baseURL);
         break;
       default:
         assertNever(apiVersion); // Compile error if a new version is added but not handled
@@ -248,26 +249,41 @@ const DEFAULT_ENDPOINT = `${process.env.PD_API_ENDPOINT || "http://localhost:300
 const LOCAL_STORAGE_KEY_V1 = "pd.devtool.endpoint";
 const LOCAL_STORAGE_KEY_V2 = "pd.devtool.endpoint.v2";
 
-// Create apiclient instance with endpoint from localStorage or default
-export const getEndpointFromLocalStorage = () => {
+// Create apiclient instance with endpoint from storage or default
+export const getEndpointFromStorage = () => {
   let endpoint = "";
   try {
-    endpoint = localStorage.getItem(LOCAL_STORAGE_KEY_V1) || DEFAULT_ENDPOINT;
+    endpoint = storage.getItem(LOCAL_STORAGE_KEY_V1) || DEFAULT_ENDPOINT;
   } catch {
-    // Fallback if localStorage is not available (e.g., in SSR)
+    // Fallback if storage is not available
     endpoint = DEFAULT_ENDPOINT;
   }
 
   return endpoint.replace("/_pd/api/v1", "").replace("/_pd/api/v2", ""); // compatible with old endpoint
 };
 
+/**
+ * @deprecated Use getEndpointFromStorage instead
+ */
+export const getEndpointFromLocalStorage = getEndpointFromStorage;
+
 export const resetApiClientEndpoint = () => {
-  localStorage.removeItem(LOCAL_STORAGE_KEY_V1);
-  localStorage.removeItem(LOCAL_STORAGE_KEY_V2);
-  apiclient.updateBaseURL(getEndpointFromLocalStorage(), "v1");
-  apiclientV2.updateBaseURL(getEndpointFromLocalStorage(), "v2");
+  storage.removeItem(LOCAL_STORAGE_KEY_V1);
+  storage.removeItem(LOCAL_STORAGE_KEY_V2);
+  apiclient.updateBaseURL(getEndpointFromStorage(), "v1");
+  apiclientV2.updateBaseURL(getEndpointFromStorage(), "v2");
 };
 
-const apiclient = new ApiClient(getEndpointFromLocalStorage(), "v1");
-export const apiclientV2 = new ApiClient(getEndpointFromLocalStorage(), "v2");
+/**
+ * Reinitialize API client endpoints from storage.
+ * Call this after the storage adapter has been set.
+ */
+export const initApiClientFromStorage = () => {
+  const endpoint = getEndpointFromStorage();
+  apiclient.updateBaseURL(endpoint, "v1");
+  apiclientV2.updateBaseURL(endpoint, "v2");
+};
+
+const apiclient = new ApiClient(getEndpointFromStorage(), "v1");
+export const apiclientV2 = new ApiClient(getEndpointFromStorage(), "v2");
 export default apiclient;

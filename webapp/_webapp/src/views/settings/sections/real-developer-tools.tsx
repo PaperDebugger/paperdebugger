@@ -5,7 +5,15 @@ import { SettingsSectionContainer } from "./components";
 
 import { SettingsSectionTitle } from "./components";
 import { SettingItem } from "../setting-items";
-import { localStorageKey, useDevtoolStore } from "../../../stores/devtool-store";
+import { useDevtoolStore } from "../../../stores/devtool-store";
+import { storage } from "../../../libs/storage";
+
+// Keys to preserve during reset
+const PRESERVED_KEY_PREFIXES = [
+  "pd.auth.",
+  "pd.devtool.",
+  "pd.projectId",
+];
 
 export const RealDeveloperTools = () => {
   const {
@@ -77,9 +85,9 @@ export const RealDeveloperTools = () => {
       />
       <CellWrapper>
         <div className="flex flex-col">
-          <div className="text-xs">Reset localStorage and reload</div>
+          <div className="text-xs">Reset storage and reload</div>
           <div className="text-xs text-default-500">
-            Reset all user-configurable localStorage of the app except the: <br />
+            Reset all user-configurable storage of the app except: <br />
             pd.projectId
             <br />
             pd.auth.*
@@ -93,23 +101,28 @@ export const RealDeveloperTools = () => {
           color="secondary"
           radius="full"
           onPress={() => {
-            const refreshToken = localStorage.getItem("pd.auth.refreshToken");
-            const token = localStorage.getItem("pd.auth.token");
-            const gclb = localStorage.getItem("pd.auth.gclb");
-            const overleafSession = localStorage.getItem("pd.auth.overleafSession");
-            const projectId = localStorage.getItem("pd.projectId");
-            const keys = Object.values(localStorageKey);
-            const values = keys.map((key) => localStorage.getItem(key));
-            localStorage.clear();
-
-            localStorage.setItem("pd.auth.refreshToken", refreshToken || "");
-            localStorage.setItem("pd.auth.token", token || "");
-            localStorage.setItem("pd.auth.gclb", gclb || "");
-            localStorage.setItem("pd.auth.overleafSession", overleafSession || "");
-            localStorage.setItem("pd.projectId", projectId || "");
-
-            keys.forEach((key, index) => {
-              localStorage.setItem(key, values[index] || "");
+            // Get all keys from storage
+            const allKeys = storage.keys();
+            
+            // Identify keys to preserve (auth, devtool, projectId)
+            const keysToPreserve = allKeys.filter((key) =>
+              PRESERVED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
+            );
+            
+            // Save values of keys to preserve
+            const preservedValues: Record<string, string | null> = {};
+            keysToPreserve.forEach((key) => {
+              preservedValues[key] = storage.getItem(key);
+            });
+            
+            // Clear all storage
+            storage.clear();
+            
+            // Restore preserved values
+            Object.entries(preservedValues).forEach(([key, value]) => {
+              if (value !== null) {
+                storage.setItem(key, value);
+              }
             });
 
             window.location.reload();

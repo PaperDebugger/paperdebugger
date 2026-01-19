@@ -8,6 +8,7 @@ export const DISPLAY_MODES = [
   { key: "floating", label: "Floating" },
   { key: "right-fixed", label: "Right Fixed" },
   { key: "bottom-fixed", label: "Bottom Fixed" },
+  { key: "fullscreen", label: "Full Screen" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
 
