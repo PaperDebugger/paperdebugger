@@ -2,7 +2,7 @@ import { TabHeader } from "../../../components/tab-header";
 import { ChatButton } from "./chat-button";
 import { useConversationStore } from "../../../stores/conversation/conversation-store";
 import { flushSync } from "react-dom";
-import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
+import { useStreamingStateMachine } from "../../../stores/streaming";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
 import { ChatHistoryModal } from "./chat-history-modal";
 import { BranchSwitcher } from "../../../components/branch-switcher";
@@ -10,7 +10,7 @@ import { BranchSwitcher } from "../../../components/branch-switcher";
 export const NewConversation = () => {
   flushSync(() => {
     // force UI refresh.
-    useStreamingMessageStore.getState().resetStreamingMessage();
+    useStreamingStateMachine.getState().reset();
     useConversationStore.getState().setIsStreaming(false);
     useConversationStore.getState().startFromScratch();
     useConversationUiStore.getState().inputRef?.current?.focus();

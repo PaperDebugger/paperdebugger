@@ -1,14 +1,13 @@
 import { LoadingIndicator } from "../../../components/loading-indicator";
 import { UnknownEntryMessageContainer } from "../../../components/message-entry-container/unknown-entry";
 import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { MessageEntryStatus } from "../../../stores/conversation/types";
 import { useSocketStore } from "../../../stores/socket-store";
-import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
+import { useStreamingStateMachine, MessageEntryStatus } from "../../../stores/streaming";
 
 export const StatusIndicator = ({ conversation }: { conversation?: Conversation }) => {
   const { syncing, syncingProgress } = useSocketStore();
-  const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
-  const incompleteIndicator = useStreamingMessageStore((s) => s.incompleteIndicator);
+  const streamingMessage = useStreamingStateMachine((s) => s.streamingMessage);
+  const incompleteIndicator = useStreamingStateMachine((s) => s.incompleteIndicator);
 
   const isWaitingForResponse =
     streamingMessage.parts.at(-1)?.user !== undefined ||

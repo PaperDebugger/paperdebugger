@@ -1,50 +1,92 @@
-// Store "every streaming messages" occurred in the stream.
+/**
+ * Streaming Message Store (Backward Compatibility Layer)
+ *
+ * This file now serves as a backward compatibility layer that re-exports
+ * functionality from the new StreamingStateMachine.
+ *
+ * For new code, prefer importing directly from '../stores/streaming'.
+ *
+ * @deprecated Use useStreamingStateMachine from '../stores/streaming' instead
+ */
 
-import { create } from "zustand";
-import { MessageEntry } from "./conversation/types";
 import { flushSync } from "react-dom";
 import { IncompleteIndicator } from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { SetterResetterStore } from "./types";
+import {
+  useStreamingStateMachine,
+  StreamingMessage,
+} from "./streaming";
 
-export type StreamingMessage = {
-  parts: MessageEntry[];
-  sequence: number;
-};
+// Re-export types for backward compatibility
+export type { StreamingMessage } from "./streaming";
 
-type CoreState = {
-  streamingMessage: StreamingMessage;
-  incompleteIndicator: IncompleteIndicator | null;
-};
-
-type StreamingMessageState = SetterResetterStore<CoreState>;
-
-export const useStreamingMessageStore = create<StreamingMessageState>((set) => ({
-  streamingMessage: { parts: [], sequence: 0 },
-  setStreamingMessage: (message) => set({ streamingMessage: message }),
-  resetStreamingMessage: () =>
-    set({
-      streamingMessage: { parts: [], sequence: 0 },
+/**
+ * Backward-compatible streaming message store.
+ *
+ * This creates a compatible interface by delegating to the new state machine.
+ * The store interface is maintained for existing consumers.
+ */
+export const useStreamingMessageStore = Object.assign(
+  // Main selector function - allows use like useStreamingMessageStore((s) => s.streamingMessage)
+  function <T>(selector: (state: {
+    streamingMessage: StreamingMessage;
+    incompleteIndicator: IncompleteIndicator | null;
+  }) => T): T {
+    return useStreamingStateMachine((state) =>
+      selector({
+        streamingMessage: state.streamingMessage,
+        incompleteIndicator: state.incompleteIndicator,
+      })
+    );
+  },
+  // Static methods for direct store access
+  {
+    getState: () => ({
+      streamingMessage: useStreamingStateMachine.getState().streamingMessage,
+      incompleteIndicator: useStreamingStateMachine.getState().incompleteIndicator,
+      setStreamingMessage: (message: StreamingMessage) => {
+        useStreamingStateMachine.setState({ streamingMessage: message });
+      },
+      resetStreamingMessage: () => {
+        useStreamingStateMachine.setState({
+          streamingMessage: { parts: [], sequence: 0 },
+        });
+      },
+      updateStreamingMessage: (updater: (prev: StreamingMessage) => StreamingMessage) => {
+        flushSync(() => {
+          useStreamingStateMachine.setState((state) => ({
+            streamingMessage: updater(state.streamingMessage),
+          }));
+        });
+      },
+      setIncompleteIndicator: (indicator: IncompleteIndicator | null) => {
+        useStreamingStateMachine.setState({ incompleteIndicator: indicator });
+      },
+      resetIncompleteIndicator: () => {
+        useStreamingStateMachine.setState({ incompleteIndicator: null });
+      },
+      updateIncompleteIndicator: (
+        updater: (prev: IncompleteIndicator | null) => IncompleteIndicator | null
+      ) => {
+        useStreamingStateMachine.setState((state) => ({
+          incompleteIndicator: updater(state.incompleteIndicator),
+        }));
+      },
     }),
-  updateStreamingMessage: (updater) => {
-    // force React to synchronously flush any pending updates and
-    // re-render the component immediately after each store update, rather than batching them together.
-    flushSync(() => {
-      set((state) => {
-        const newState = updater(state.streamingMessage);
-        return { streamingMessage: newState };
-      });
-    });
-  },
-
-  incompleteIndicator: null,
-  setIncompleteIndicator: (incompleteIndicator) => {
-    set({ incompleteIndicator });
-  },
-  resetIncompleteIndicator: () => set({ incompleteIndicator: null }),
-  updateIncompleteIndicator: (updater) => {
-    set((state) => {
-      const newState = updater(state.incompleteIndicator);
-      return { incompleteIndicator: newState };
-    });
-  },
-}));
+    setState: (
+      partial:
+        | Partial<{ streamingMessage: StreamingMessage; incompleteIndicator: IncompleteIndicator | null }>
+        | ((state: { streamingMessage: StreamingMessage; incompleteIndicator: IncompleteIndicator | null }) => Partial<{ streamingMessage: StreamingMessage; incompleteIndicator: IncompleteIndicator | null }>)
+    ) => {
+      if (typeof partial === "function") {
+        const currentState = {
+          streamingMessage: useStreamingStateMachine.getState().streamingMessage,
+          incompleteIndicator: useStreamingStateMachine.getState().incompleteIndicator,
+        };
+        const newPartial = partial(currentState);
+        useStreamingStateMachine.setState(newPartial);
+      } else {
+        useStreamingStateMachine.setState(partial);
+      }
+    },
+  }
+);

@@ -1,25 +1,10 @@
-import {
-  MessageTypeAssistant,
-  MessageTypeToolCall,
-  MessageTypeToolCallPrepareArguments,
-  MessageTypeUnknown,
-  MessageTypeUser,
-} from "../../pkg/gen/apiclient/chat/v2/chat_pb";
+/**
+ * Conversation Types (Backward Compatibility Layer)
+ *
+ * This file now re-exports types from the streaming module for backward compatibility.
+ * For new code, prefer importing directly from '../streaming'.
+ *
+ * @deprecated Use types from '../streaming' instead
+ */
 
-export enum MessageEntryStatus {
-  PREPARING = "PREPARING",
-  FINALIZED = "FINALIZED", // received "part end" or "stream finalization"
-  INCOMPLETE = "INCOMPLETE", // received "incomplete indicator"
-  STALE = "STALE", // if network shutdown or server crash.
-}
-
-export type MessageEntry = {
-  messageId: string;
-  status: MessageEntryStatus;
-  // roles
-  user?: MessageTypeUser;
-  assistant?: MessageTypeAssistant;
-  toolCallPrepareArguments?: MessageTypeToolCallPrepareArguments;
-  toolCall?: MessageTypeToolCall;
-  unknown?: MessageTypeUnknown;
-};
+export { MessageEntryStatus, type MessageEntry } from "../streaming/types";

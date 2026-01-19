@@ -63,6 +63,7 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
         }, 1500);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to apply text:", error);
       setInsertBtnText("Failed!");
       setTimeout(() => {

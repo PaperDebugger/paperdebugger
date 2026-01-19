@@ -8,8 +8,7 @@ import {
   MessageTypeUser,
 } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
-import { useStreamingMessageStore } from "../../stores/streaming-message-store";
+import { useStreamingStateMachine, MessageEntry, MessageEntryStatus } from "../../stores/streaming";
 
 export function getPrevUserMessage(messages: Message[], currentIndex: number): MessageTypeUser | undefined {
   for (let i = currentIndex - 1; i >= 0; i--) {
@@ -23,7 +22,7 @@ export function getPrevUserMessage(messages: Message[], currentIndex: number): M
 export function isEmptyConversation(): boolean {
   const converstaion = useConversationStore.getState().currentConversation;
   const visibleMessages = filterVisibleMessages(converstaion);
-  const streamingMessage = useStreamingMessageStore.getState().streamingMessage;
+  const streamingMessage = useStreamingStateMachine.getState().streamingMessage;
   return visibleMessages.length === 0 && streamingMessage.parts.length === 0;
 }
 

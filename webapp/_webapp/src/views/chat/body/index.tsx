@@ -4,7 +4,7 @@ import { Conversation, Message } from "../../../pkg/gen/apiclient/chat/v2/chat_p
 import { filterVisibleMessages, getPrevUserMessage, isEmptyConversation, messageToMessageEntry } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
-import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
+import { useStreamingStateMachine } from "../../../stores/streaming";
 import { useSettingStore } from "../../../stores/setting-store";
 import { useConversationStore } from "../../../stores/conversation/conversation-store";
 import { getConversation } from "../../../query/api";
@@ -24,7 +24,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const expanderRef = useRef<HTMLDivElement>(null);
-  const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
+  const streamingMessage = useStreamingStateMachine((s) => s.streamingMessage);
   const visibleMessages = useMemo(() => filterVisibleMessages(conversation), [conversation]);
   const [reloadSuccess, setReloadSuccess] = useState(ReloadStatus.Default);
 
@@ -145,8 +145,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
                     throw new Error(`Failed to load conversation ${conversation?.id ?? "unknown"}`);
                   }
                   setCurrentConversation(response.conversation);
-                  useStreamingMessageStore.getState().resetStreamingMessage();
-                  useStreamingMessageStore.getState().resetIncompleteIndicator();
+                  useStreamingStateMachine.getState().reset();
                   setReloadSuccess(ReloadStatus.Success);
                 } catch {
                   setReloadSuccess(ReloadStatus.Failed);

@@ -1,8 +1,7 @@
 import { Rnd } from "react-rnd";
 import { useSelectionStore } from "../../stores/selection-store";
 import { Button, Input } from "@heroui/react";
-import { useStreamingMessageStore } from "../../stores/streaming-message-store";
-import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
+import { useStreamingStateMachine, MessageEntry, MessageEntryStatus } from "../../stores/streaming";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { fromJson } from "../../libs/protobuf-utils";
 import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
@@ -28,9 +27,19 @@ const randomUUID = () => {
 export const DevTools = () => {
   // State management
   const { selectedText, setSelectedText, setSelectionRange } = useSelectionStore();
-  const { streamingMessage, setStreamingMessage, updateStreamingMessage } = useStreamingMessageStore();
+  const streamingMessage = useStreamingStateMachine((s) => s.streamingMessage);
   const { startFromScratch, currentConversation, setCurrentConversation } = useConversationStore();
   const [preparingDelay, setPreparingDelay] = useState(2);
+
+  // Helper functions to update streaming message
+  const setStreamingMessage = (message: typeof streamingMessage) => {
+    useStreamingStateMachine.setState({ streamingMessage: message });
+  };
+  const updateStreamingMessage = (updater: (prev: typeof streamingMessage) => typeof streamingMessage) => {
+    useStreamingStateMachine.setState((state) => ({
+      streamingMessage: updater(state.streamingMessage),
+    }));
+  };
 
   // --- Event handlers ---
   // Conversation related
@@ -97,7 +106,7 @@ export const DevTools = () => {
   // StreamingMessage related
   const handleClearStreamingMessage = () => setStreamingMessage({ ...streamingMessage, parts: [] });
   const handleStaleLastStreamingMessage = () => {
-    const newParts = useStreamingMessageStore
+    const newParts = useStreamingStateMachine
       .getState()
       .streamingMessage.parts.map((part, _, arr) =>
         part.messageId === arr[arr.length - 1]?.messageId ? { ...part, status: MessageEntryStatus.STALE } : part,
@@ -122,7 +131,7 @@ export const DevTools = () => {
     };
     setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, messageEntry] });
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
               ...part,
@@ -146,7 +155,7 @@ export const DevTools = () => {
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
               ...part,
@@ -185,7 +194,7 @@ export const DevTools = () => {
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
               ...part,
@@ -211,7 +220,7 @@ export const DevTools = () => {
     };
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
         part.messageId === messageEntry.messageId
           ? {
               ...part,

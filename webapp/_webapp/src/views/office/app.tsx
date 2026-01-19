@@ -103,6 +103,7 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
       }
     }
     // No adapter registered - host application must register one
+    // eslint-disable-next-line no-console
     console.error(
       "[PaperDebugger] No adapter registered. " +
       "The host application (e.g., Office Add-in) must register an adapter using __pdRegisterAdapter() before loading this component."

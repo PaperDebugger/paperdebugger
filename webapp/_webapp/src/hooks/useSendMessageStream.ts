@@ -2,58 +2,53 @@ import { useCallback } from "react";
 import {
   ConversationType,
   CreateConversationMessageStreamRequest,
+  CreateConversationMessageStreamResponse,
   IncompleteIndicator,
-  StreamFinalization,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { PlainMessage } from "../query/types";
-import { useStreamingMessageStore } from "../stores/streaming-message-store";
-import { getProjectId } from "../libs/helpers";
-import { withRetrySync } from "../libs/with-retry-sync";
-import { createConversationMessageStream } from "../query/api";
-import { handleStreamInitialization } from "../stores/conversation/handlers/handleStreamInitialization";
-import { handleStreamPartBegin } from "../stores/conversation/handlers/handleStreamPartBegin";
-import { handleMessageChunk } from "../stores/conversation/handlers/handleMessageChunk";
-import { handleReasoningChunk } from "../stores/conversation/handlers/handleReasoningChunk";
-import { handleStreamPartEnd } from "../stores/conversation/handlers/handleStreamPartEnd";
-import { handleStreamFinalization } from "../stores/conversation/handlers/handleStreamFinalization";
-import { handleStreamError } from "../stores/conversation/handlers/handleStreamError";
-import {
   MessageChunk,
   MessageTypeUserSchema,
   ReasoningChunk,
   StreamError,
+  StreamFinalization,
   StreamInitialization,
   StreamPartBegin,
   StreamPartEnd,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
+import { PlainMessage } from "../query/types";
+import { getProjectId } from "../libs/helpers";
+import { withRetrySync } from "../libs/with-retry-sync";
+import { createConversationMessageStream } from "../query/api";
 import { fromJson } from "../libs/protobuf-utils";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
 import { logError, logWarn } from "../libs/logger";
-import { handleError } from "../stores/conversation/handlers/handleError";
-import { handleIncompleteIndicator } from "../stores/conversation/handlers/handleIncompleteIndicator";
 import { useAuthStore } from "../stores/auth-store";
 import { useDevtoolStore } from "../stores/devtool-store";
 import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
+import {
+  useStreamingStateMachine,
+  MessageEntryStatus,
+  StreamEvent,
+  MessageEntry,
+} from "../stores/streaming";
 
 /**
  * Custom React hook to handle sending a message as a stream in a conversation.
  *
  * This hook manages the process of sending a user message to the backend as a streaming request,
- * handling all intermediate streaming events (initialization, message chunks, part begin/end, finalization, and errors).
- * It updates the relevant stores for streaming and finalized messages, manages conversation state,
- * and ensures proper synchronization with the backend (including Overleaf authentication).
+ * using the StreamingStateMachine to handle all intermediate streaming events.
+ *
+ * The hook focuses on orchestration while the state machine handles event processing,
+ * making the code easier to understand and maintain.
  *
  * Usage:
  *   const { sendMessageStream } = useSendMessageStream();
  *   await sendMessageStream(message, selectedText);
  *
  * @returns {Object} An object containing the sendMessageStream function.
- * @returns {Function} sendMessageStream - Function to send a message as a stream. Accepts (message: string, selectedText: string) and returns a Promise.
+ * @returns {Function} sendMessageStream - Function to send a message as a stream.
  */
 export function useSendMessageStream() {
   const { sync } = useSync();
@@ -64,7 +59,10 @@ export function useSendMessageStream() {
   // Get project ID from adapter (supports both Overleaf URL and Word document ID)
   const projectId = adapter.getDocumentId?.() || getProjectId();
   const { refetch: refetchConversationList } = useListConversationsQuery(projectId);
-  const { resetStreamingMessage, updateStreamingMessage, resetIncompleteIndicator } = useStreamingMessageStore();
+
+  // Use the new streaming state machine
+  const { handleEvent, reset: resetStateMachine } = useStreamingStateMachine();
+
   const { surroundingText: storeSurroundingText } = useSelectionStore();
   const { alwaysSyncProject } = useDevtoolStore();
   const { conversationMode } = useSettingStore();
@@ -84,18 +82,19 @@ export function useSendMessageStream() {
         userMessage: message,
         userSelectedText: selectedText,
         surrounding: storeSurroundingText ?? undefined,
-        conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
+        conversationType:
+          conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
         parentMessageId,
       };
 
-      resetStreamingMessage(); // ensure no stale message in the streaming messages
-      resetIncompleteIndicator();
+      // Reset the state machine to ensure no stale messages
+      resetStateMachine();
 
       // When editing a message (parentMessageId is provided), truncate the conversation
       // to only include messages up to and including the parent message
       if (parentMessageId && currentConversation.messages.length > 0) {
         const parentIndex = currentConversation.messages.findIndex(
-          (m) => m.messageId === parentMessageId
+          (m) => m.messageId === parentMessageId,
         );
         if (parentIndex !== -1) {
           // Truncate messages to include only up to parentMessage
@@ -112,6 +111,7 @@ export function useSendMessageStream() {
         }
       }
 
+      // Add the user message to the streaming state
       const newMessageEntry: MessageEntry = {
         messageId: "dummy",
         status: MessageEntryStatus.PREPARING,
@@ -121,10 +121,13 @@ export function useSendMessageStream() {
           surrounding: storeSurroundingText ?? null,
         }),
       };
-      updateStreamingMessage((prev) => ({
-        ...prev,
-        parts: [...prev.parts, newMessageEntry],
-        sequence: prev.sequence + 1,
+
+      // Directly update the state machine's streaming message
+      useStreamingStateMachine.setState((state) => ({
+        streamingMessage: {
+          parts: [...state.streamingMessage.parts, newMessageEntry],
+          sequence: state.streamingMessage.sequence + 1,
+        },
       }));
 
       if (import.meta.env.DEV && alwaysSyncProject) {
@@ -132,59 +135,28 @@ export function useSendMessageStream() {
         await sync();
       }
 
+      // Handler context for error recovery
+      const handlerContext = {
+        refetchConversationList,
+        userId: user?.id || "",
+        currentPrompt: message,
+        currentSelectedText: selectedText,
+        sync,
+        sendMessageStream,
+      };
+
       await withRetrySync(
         () =>
           createConversationMessageStream(request, async (response) => {
-            switch (response.responsePayload.case) {
-              case "streamInitialization": // means the user message is received by the server, can change the status to FINALIZED
-                handleStreamInitialization(
-                  response.responsePayload.value as StreamInitialization,
-                  refetchConversationList,
-                );
-                break;
-              case "streamPartBegin":
-                handleStreamPartBegin(response.responsePayload.value as StreamPartBegin, updateStreamingMessage);
-                break;
-              case "messageChunk":
-                handleMessageChunk(response.responsePayload.value as MessageChunk, updateStreamingMessage);
-                break;
-              case "streamPartEnd":
-                handleStreamPartEnd(response.responsePayload.value as StreamPartEnd, updateStreamingMessage);
-                break;
-              case "streamFinalization":
-                handleStreamFinalization(response.responsePayload.value as StreamFinalization);
-                break;
-              case "streamError":
-                await handleStreamError(
-                  response.responsePayload.value as StreamError,
-                  user?.id || "",
-                  message,
-                  selectedText,
-                  sync,
-                  sendMessageStream,
-                  updateStreamingMessage,
-                );
-                break;
-              case "incompleteIndicator":
-                handleIncompleteIndicator(response.responsePayload.value as IncompleteIndicator);
-                break;
-              case "reasoningChunk":
-                handleReasoningChunk(response.responsePayload.value as ReasoningChunk, updateStreamingMessage);
-                break;
-              default: {
-                if (response.responsePayload.value !== undefined) {
-                  const _typeCheck: never = response.responsePayload;
-                  throw new Error("Unexpected response payload: " + _typeCheck);
-                  // DO NOT delete above line, it is used to check that all cases are handled.
-                }
-                break;
-              }
+            // Map response payload to StreamEvent and delegate to state machine
+            const event = mapResponseToEvent(response);
+            if (event) {
+              await handleEvent(event, handlerContext);
             }
           }),
         {
           sync: async () => {
             try {
-              // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
               const result = await sync();
               if (!result.success) {
                 logError("Failed to sync project", result.error);
@@ -194,15 +166,14 @@ export function useSendMessageStream() {
             }
           },
           onGiveUp: () => {
-            handleError(new Error("connection error."));
+            handleEvent({ type: "CONNECTION_ERROR", payload: new Error("connection error.") });
           },
         },
       );
     },
     [
-      resetStreamingMessage,
-      resetIncompleteIndicator,
-      updateStreamingMessage,
+      resetStateMachine,
+      handleEvent,
       currentConversation,
       refetchConversationList,
       sync,
@@ -215,4 +186,37 @@ export function useSendMessageStream() {
   );
 
   return { sendMessageStream };
+}
+
+/**
+ * Maps the API response payload to a StreamEvent for the state machine.
+ */
+function mapResponseToEvent(
+  response: CreateConversationMessageStreamResponse,
+): StreamEvent | null {
+  const { case: payloadCase, value } = response.responsePayload;
+
+  switch (payloadCase) {
+    case "streamInitialization":
+      return { type: "INIT", payload: value as StreamInitialization };
+    case "streamPartBegin":
+      return { type: "PART_BEGIN", payload: value as StreamPartBegin };
+    case "messageChunk":
+      return { type: "CHUNK", payload: value as MessageChunk };
+    case "reasoningChunk":
+      return { type: "REASONING_CHUNK", payload: value as ReasoningChunk };
+    case "streamPartEnd":
+      return { type: "PART_END", payload: value as StreamPartEnd };
+    case "streamFinalization":
+      return { type: "FINALIZE", payload: value as StreamFinalization };
+    case "streamError":
+      return { type: "ERROR", payload: value as StreamError };
+    case "incompleteIndicator":
+      return { type: "INCOMPLETE", payload: value as IncompleteIndicator };
+    default:
+      if (value !== undefined) {
+        logError("Unexpected response payload:", response.responsePayload);
+      }
+      return null;
+  }
 }

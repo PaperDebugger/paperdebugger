@@ -4,69 +4,56 @@ This document outlines a phased approach to simplify and improve the front-end s
 
 ---
 
-## Phase 1: Consolidate Handlers into State Machine
+## Phase 1: Consolidate Handlers into State Machine ✅ COMPLETED
 
 ### Goal
 Replace 9 separate handler files with a single, cohesive state machine that manages all streaming state transitions.
 
 ### Tasks
 
-- [ ] **1.1 Create StreamingStateMachine class**
-  ```typescript
-  // stores/streaming/streaming-state-machine.ts
-  type StreamState = 'idle' | 'receiving' | 'finalizing' | 'error';
-  
-  class StreamingStateMachine {
-    private state: StreamState = 'idle';
-    private messageEntries: Map<string, MessageEntry> = new Map();
-    
-    handleEvent(event: StreamEvent): void {
-      // Central event handling
-    }
-  }
-  ```
+- [x] **1.1 Create StreamingStateMachine class**
   - Location: `stores/streaming/streaming-state-machine.ts`
+  - Implemented as a Zustand store with `handleEvent` method for centralized event handling
   - Benefit: Single point of control for all state transitions
 
-- [ ] **1.2 Define StreamEvent union type**
-  ```typescript
-  type StreamEvent = 
-    | { type: 'INIT'; payload: StreamInitialization }
-    | { type: 'PART_BEGIN'; payload: StreamPartBegin }
-    | { type: 'CHUNK'; payload: MessageChunk }
-    | { type: 'PART_END'; payload: StreamPartEnd }
-    | { type: 'FINALIZE'; payload: StreamFinalization }
-    | { type: 'ERROR'; payload: StreamError }
-    | { type: 'INCOMPLETE'; payload: IncompleteIndicator };
-  ```
+- [x] **1.2 Define StreamEvent union type**
   - Location: `stores/streaming/types.ts`
+  - Includes all event types: INIT, PART_BEGIN, CHUNK, REASONING_CHUNK, PART_END, FINALIZE, ERROR, INCOMPLETE, CONNECTION_ERROR
   - Benefit: Type-safe event handling with exhaustive checking
 
-- [ ] **1.3 Create message type handlers registry**
-  ```typescript
-  // Eliminates duplicate switch statements
-  const messageTypeHandlers: Record<MessageRole, MessageTypeHandler> = {
-    assistant: new AssistantHandler(),
-    toolCall: new ToolCallHandler(),
-    toolCallPrepareArguments: new ToolCallPrepareHandler(),
-    user: new NoOpHandler(),
-    system: new NoOpHandler(),
-    unknown: new NoOpHandler(),
-  };
-  ```
+- [x] **1.3 Create message type handlers registry**
   - Location: `stores/streaming/message-type-handlers.ts`
+  - Implemented handlers: AssistantHandler, ToolCallHandler, ToolCallPrepareHandler, NoOpHandler
   - Benefit: Add new message types without modifying multiple files
 
-- [ ] **1.4 Delete old handler files**
-  - Files to remove after migration:
+- [x] **1.4 Delete old handler files**
+  - Deleted files:
     - `handlers/handleStreamInitialization.ts`
     - `handlers/handleStreamPartBegin.ts`
     - `handlers/handleMessageChunk.ts`
+    - `handlers/handleReasoningChunk.ts`
     - `handlers/handleStreamPartEnd.ts`
     - `handlers/handleStreamFinalization.ts`
     - `handlers/handleStreamError.ts`
     - `handlers/handleIncompleteIndicator.ts`
     - `handlers/handleError.ts`
+    - `handlers/converter.ts`
+
+### New File Structure
+
+```
+stores/streaming/
+├── index.ts                      # Module exports
+├── types.ts                      # StreamEvent, MessageEntry, etc.
+├── message-type-handlers.ts      # Handler registry
+└── streaming-state-machine.ts    # Main state machine (Zustand store)
+```
+
+### Migration Notes
+
+- `streaming-message-store.ts` now serves as a backward compatibility layer
+- `conversation/types.ts` re-exports types from the streaming module
+- All consumer components updated to use `useStreamingStateMachine`
 
 ---
 
