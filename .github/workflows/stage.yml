@@ -8,13 +8,18 @@ on:
 
 jobs:
   build-chrome-extension:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史
+          ref: ${{ github.event.client_payload.tag }}
+      
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -23,6 +28,7 @@ jobs:
 
       - name: Build
         run: |
+          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
           cd webapp/_webapp
           npm install
           npm run build:stg:chrome
@@ -33,23 +39,13 @@ jobs:
           name: paperdebugger-chrome-extension-stg
           path: webapp/_webapp/dist
 
-  push-to-chrome-web-store:
-    runs-on: ubuntu-latest
-    needs: build-chrome-extension
-    steps:
       - name: Install zip
         run: |
           sudo apt-get update && sudo apt-get install -y zip
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: paperdebugger-chrome-extension-stg
-          path: dist
-
       - name: Zip extension files
         run: |
-          zip -r dist.zip dist/*
+          zip -r dist.zip webapp/_webapp/dist/*
 
       - name: Upload to Chrome Web Store (upload only)
         uses: mobilefirstllc/cws-publish@latest
