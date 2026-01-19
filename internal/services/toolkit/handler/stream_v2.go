@@ -98,9 +98,19 @@ func (h *StreamHandlerV2) HandleAddedItem(chunk openai.ChatCompletionChunk) {
 	}
 }
 
-func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, content string) {
+func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, content string, reasoning string) {
 	if h.callbackStream == nil {
 		return
+	}
+
+	assistant := &chatv2.MessageTypeAssistant{
+		Content:   content,
+		ModelSlug: h.modelSlug,
+	}
+
+	// Only send Reasoning if it's not empty
+	if reasoning != "" {
+		assistant.Reasoning = &reasoning
 	}
 
 	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
@@ -109,10 +119,7 @@ func (h *StreamHandlerV2) HandleTextDoneItem(chunk openai.ChatCompletionChunk, c
 				MessageId: chunk.ID,
 				Payload: &chatv2.MessagePayload{
 					MessageType: &chatv2.MessagePayload_Assistant{
-						Assistant: &chatv2.MessageTypeAssistant{
-							Content:   content,
-							ModelSlug: h.modelSlug,
-						},
+						Assistant: assistant,
 					},
 				},
 			},
@@ -150,6 +157,20 @@ func (h *StreamHandlerV2) HandleTextDelta(chunk openai.ChatCompletionChunk) {
 			MessageChunk: &chatv2.MessageChunk{
 				MessageId: chunk.ID,
 				Delta:     chunk.Choices[0].Delta.Content,
+			},
+		},
+	})
+}
+
+func (h *StreamHandlerV2) HandleReasoningDelta(messageId string, delta string) {
+	if h.callbackStream == nil {
+		return
+	}
+	h.callbackStream.Send(&chatv2.CreateConversationMessageStreamResponse{
+		ResponsePayload: &chatv2.CreateConversationMessageStreamResponse_ReasoningChunk{
+			ReasoningChunk: &chatv2.ReasoningChunk{
+				MessageId: messageId,
+				Delta:     delta,
 			},
 		},
 	})

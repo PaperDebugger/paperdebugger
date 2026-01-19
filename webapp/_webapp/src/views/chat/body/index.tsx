@@ -83,6 +83,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
             animated={false}
             messageEntry={messageToMessageEntry(message)}
             prevAttachment={getPrevUserMessage(visibleMessages, index)?.selectedText}
+            previousMessageId={index > 0 ? visibleMessages[index - 1].messageId : undefined}
           />
         </div>
       )),

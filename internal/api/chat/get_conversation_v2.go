@@ -29,7 +29,10 @@ func (s *ChatServerV2) GetConversation(
 		return nil, err
 	}
 
+	// Use specified branch_id if provided, otherwise use active branch
+	branchID := req.GetBranchId()
+
 	return &chatv2.GetConversationResponse{
-		Conversation: mapper.MapModelConversationToProtoV2(conversation),
+		Conversation: mapper.MapModelConversationToProtoV2WithBranch(conversation, branchID),
 	}, nil
 }

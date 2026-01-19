@@ -70,6 +70,8 @@ func local_request_ChatService_ListConversations_0(ctx context.Context, marshale
 	return msg, metadata, err
 }
 
+var filter_ChatService_GetConversation_0 = &utilities.DoubleArray{Encoding: map[string]int{"conversation_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
 func request_ChatService_GetConversation_0(ctx context.Context, marshaler runtime.Marshaler, client ChatServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq GetConversationRequest
@@ -86,6 +88,12 @@ func request_ChatService_GetConversation_0(ctx context.Context, marshaler runtim
 	protoReq.ConversationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "conversation_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ChatService_GetConversation_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := client.GetConversation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -104,6 +112,12 @@ func local_request_ChatService_GetConversation_0(ctx context.Context, marshaler 
 	protoReq.ConversationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "conversation_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ChatService_GetConversation_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := server.GetConversation(ctx, &protoReq)
 	return msg, metadata, err

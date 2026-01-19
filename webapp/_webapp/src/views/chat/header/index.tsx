@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
 import { ChatHistoryModal } from "./chat-history-modal";
+import { BranchSwitcher } from "../../../components/branch-switcher";
 
 export const NewConversation = () => {
   flushSync(() => {
@@ -32,6 +33,7 @@ export const ChatHeader = () => {
       title={title}
       actions={
         <>
+          <BranchSwitcher conversation={currentConversation} />
           <ChatButton
             icon="tabler:plus"
             alt="New Conversation"
@@ -52,3 +54,4 @@ export const ChatHeader = () => {
     />
   );
 };
+

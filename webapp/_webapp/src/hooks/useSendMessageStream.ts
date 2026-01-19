@@ -13,12 +13,14 @@ import { createConversationMessageStream } from "../query/api";
 import { handleStreamInitialization } from "../stores/conversation/handlers/handleStreamInitialization";
 import { handleStreamPartBegin } from "../stores/conversation/handlers/handleStreamPartBegin";
 import { handleMessageChunk } from "../stores/conversation/handlers/handleMessageChunk";
+import { handleReasoningChunk } from "../stores/conversation/handlers/handleReasoningChunk";
 import { handleStreamPartEnd } from "../stores/conversation/handlers/handleStreamPartEnd";
 import { handleStreamFinalization } from "../stores/conversation/handlers/handleStreamFinalization";
 import { handleStreamError } from "../stores/conversation/handlers/handleStreamError";
 import {
   MessageChunk,
   MessageTypeUserSchema,
+  ReasoningChunk,
   StreamError,
   StreamInitialization,
   StreamPartBegin,
@@ -68,7 +70,7 @@ export function useSendMessageStream() {
   const { conversationMode } = useSettingStore();
 
   const sendMessageStream = useCallback(
-    async (message: string, selectedText: string) => {
+    async (message: string, selectedText: string, parentMessageId?: string) => {
       if (!message || !message.trim()) {
         logWarn("No message to send");
         return;
@@ -83,10 +85,32 @@ export function useSendMessageStream() {
         userSelectedText: selectedText,
         surrounding: storeSurroundingText ?? undefined,
         conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
+        parentMessageId,
       };
 
       resetStreamingMessage(); // ensure no stale message in the streaming messages
       resetIncompleteIndicator();
+
+      // When editing a message (parentMessageId is provided), truncate the conversation
+      // to only include messages up to and including the parent message
+      if (parentMessageId && currentConversation.messages.length > 0) {
+        const parentIndex = currentConversation.messages.findIndex(
+          (m) => m.messageId === parentMessageId
+        );
+        if (parentIndex !== -1) {
+          // Truncate messages to include only up to parentMessage
+          useConversationStore.getState().updateCurrentConversation((prev) => ({
+            ...prev,
+            messages: prev.messages.slice(0, parentIndex + 1),
+          }));
+        } else if (parentMessageId === "root") {
+          // Clear all messages for "root" edit
+          useConversationStore.getState().updateCurrentConversation((prev) => ({
+            ...prev,
+            messages: [],
+          }));
+        }
+      }
 
       const newMessageEntry: MessageEntry = {
         messageId: "dummy",
@@ -143,6 +167,9 @@ export function useSendMessageStream() {
                 break;
               case "incompleteIndicator":
                 handleIncompleteIndicator(response.responsePayload.value as IncompleteIndicator);
+                break;
+              case "reasoningChunk":
+                handleReasoningChunk(response.responsePayload.value as ReasoningChunk, updateStreamingMessage);
                 break;
               default: {
                 if (response.responsePayload.value !== undefined) {

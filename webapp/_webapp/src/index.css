@@ -440,7 +440,7 @@ body {
 }
 
 .pd-rnd.dragging {
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 32px; /* horizontal, vertical, blur, spread */
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px; /* Same as hover, no expand */
 }
 
 .pd-context-menu {
