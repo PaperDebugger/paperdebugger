@@ -16,6 +16,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       return localStorage.getItem(key);
     } catch {
+      // eslint-disable-next-line no-console
       console.warn("[Storage] localStorage.getItem failed for key:", key);
       return null;
     }
@@ -25,6 +26,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       localStorage.setItem(key, value);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn("[Storage] localStorage.setItem failed for key:", key, e);
     }
   }
@@ -33,6 +35,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       localStorage.removeItem(key);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn("[Storage] localStorage.removeItem failed for key:", key, e);
     }
   }
@@ -41,6 +44,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       localStorage.clear();
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn("[Storage] localStorage.clear failed", e);
     }
   }
@@ -96,6 +100,7 @@ export function createStorageAdapter(type?: "localStorage" | "memory"): StorageA
     localStorage.removeItem(testKey);
     return new LocalStorageAdapter();
   } catch {
+    // eslint-disable-next-line no-console
     console.warn("[Storage] localStorage not available, falling back to memory storage");
     return new MemoryStorageAdapter();
   }
