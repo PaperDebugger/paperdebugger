@@ -25,6 +25,18 @@ func (s *ChatServerV2) ListConversations(
 		return nil, err
 	}
 
+	// Migrate legacy data to branch structure if needed
+	// Persist immediately so branch IDs remain stable across API calls
+	for _, conversation := range conversations {
+		if conversation.EnsureBranches() {
+			// Persist migration asynchronously to avoid blocking the response
+			// Errors are logged but don't fail the request
+			go func(c *models.Conversation) {
+				_ = s.chatServiceV2.UpdateConversationV2(c)
+			}(conversation)
+		}
+	}
+
 	return &chatv2.ListConversationsResponse{
 		Conversations: lo.Map(conversations, func(conversation *models.Conversation, _ int) *chatv2.Conversation {
 			return mapper.MapModelConversationToProtoV2(conversation)

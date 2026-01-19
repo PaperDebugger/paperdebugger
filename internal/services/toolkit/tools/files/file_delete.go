@@ -40,5 +40,5 @@ func DeleteFileTool(ctx context.Context, toolCallId string, args json.RawMessage
 	}
 
 	// TODO: Implement actual file deletion logic
-	return fmt.Sprintf("[DUMMY] File deleted: %s", getArgs.Path), "", nil
+	return "", "", fmt.Errorf("delete_file tool is not yet implemented: cannot delete file at %s", getArgs.Path)
 }

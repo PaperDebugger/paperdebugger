@@ -2,6 +2,8 @@ package chat
 
 import (
 	"context"
+	"time"
+
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
@@ -137,7 +139,7 @@ func (s *ChatServerV2) createConversation(
 }
 
 // appendConversationMessage appends a message to the conversation and writes it to the database
-// Returns the Conversation object
+// Returns the Conversation object and the active branch
 func (s *ChatServerV2) appendConversationMessage(
 	ctx context.Context,
 	userId bson.ObjectID,
@@ -146,78 +148,113 @@ func (s *ChatServerV2) appendConversationMessage(
 	userSelectedText string,
 	surrounding string,
 	conversationType chatv2.ConversationType,
-) (*models.Conversation, error) {
+	parentMessageId string,
+) (*models.Conversation, *models.Branch, error) {
 	objectID, err := bson.ObjectIDFromHex(conversationId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	conversation, err := s.chatServiceV2.GetConversationV2(ctx, userId, objectID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	// Ensure branches are initialized (migrate legacy data if needed)
+	conversation.EnsureBranches()
+
+	var activeBranch *models.Branch
+
+	// Handle branching / edit mode
+	if parentMessageId != "" {
+		// Create a new branch for the edit
+		var err error
+		activeBranch, err = conversation.CreateNewBranch("", parentMessageId)
+		if err != nil {
+			return nil, nil, shared.ErrBadRequest(err)
+		}
+	} else {
+		// Normal append - use active (latest) branch
+		activeBranch = conversation.GetActiveBranch()
+		if activeBranch == nil {
+			// This shouldn't happen after EnsureBranches, but handle it
+			return nil, nil, shared.ErrBadRequest("No active branch found")
+		}
+	}
+
+	// Now we get the branch, we can append the message to the branch.
 	userMsg, userOaiMsg, err := s.buildUserMessage(ctx, userMessage, userSelectedText, surrounding, conversationType)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	bsonMsg, err := convertToBSONV2(userMsg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMsg)
-	conversation.OpenaiChatHistoryCompletion = append(conversation.OpenaiChatHistoryCompletion, userOaiMsg)
+
+	// Append to the active branch
+	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMsg)
+	activeBranch.OpenaiChatHistoryCompletion = append(activeBranch.OpenaiChatHistoryCompletion, userOaiMsg)
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return conversation, nil
+	return conversation, activeBranch, nil
 }
 
 // prepare creates a new conversation if conversationId is "", otherwise appends a message to the conversation
 // conversationType can be switched multiple times within a single conversation
-func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType) (context.Context, *models.Conversation, *models.Settings, error) {
+// Returns: context, conversation, activeBranch, settings, error
+func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversationId string, userMessage string, userSelectedText string, surrounding string, modelSlug string, conversationType chatv2.ConversationType, parentMessageId string) (context.Context, *models.Conversation, *models.Branch, *models.Settings, error) {
 	actor, err := contextutil.GetActor(ctx)
 	if err != nil {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	project, err := s.projectService.GetProject(ctx, actor.ID, projectId)
 	if err != nil && err != mongo.ErrNoDocuments {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	userInstructions, err := s.userService.GetUserInstructions(ctx, actor.ID)
 	if err != nil {
-		return ctx, nil, nil, err
+		return ctx, nil, nil, nil, err
 	}
 
 	var latexFullSource string
+	var projectInstructions string
 	switch conversationType {
 	case chatv2.ConversationType_CONVERSATION_TYPE_DEBUG:
 		latexFullSource = "latex_full_source is not available in debug mode"
+		if project != nil {
+			projectInstructions = project.Instructions
+		}
 	default:
 		if project == nil || project.IsOutOfDate() {
-			return ctx, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
+			return ctx, nil, nil, nil, shared.ErrProjectOutOfDate("project is out of date")
 		}
 
 		latexFullSource, err = project.GetFullContent()
 		if err != nil {
-			return ctx, nil, nil, err
+			return ctx, nil, nil, nil, err
 		}
+		projectInstructions = project.Instructions
 	}
 
 	var conversation *models.Conversation
+	var activeBranch *models.Branch
 
 	if conversationId == "" {
+		// Create a new conversation
 		conversation, err = s.createConversation(
 			ctx,
 			actor.ID,
 			projectId,
 			latexFullSource,
-			project.Instructions,
+			projectInstructions,
 			userInstructions,
 			userMessage,
 			userSelectedText,
@@ -225,8 +262,15 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			modelSlug,
 			conversationType,
 		)
+		if err != nil {
+			return ctx, nil, nil, nil, err
+		}
+		// For new conversations, ensure branches and get the active one
+		conversation.EnsureBranches()
+		activeBranch = conversation.GetActiveBranch()
 	} else {
-		conversation, err = s.appendConversationMessage(
+		// Append to an existing conversation
+		conversation, activeBranch, err = s.appendConversationMessage(
 			ctx,
 			actor.ID,
 			conversationId,
@@ -234,11 +278,11 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			userSelectedText,
 			surrounding,
 			conversationType,
+			parentMessageId,
 		)
-	}
-
-	if err != nil {
-		return ctx, nil, nil, err
+		if err != nil {
+			return ctx, nil, nil, nil, err
+		}
 	}
 
 	ctx = contextutil.SetProjectID(ctx, conversation.ProjectID)
@@ -246,10 +290,10 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 
 	settings, err := s.userService.GetUserSettings(ctx, actor.ID)
 	if err != nil {
-		return ctx, conversation, nil, err
+		return ctx, conversation, activeBranch, nil, err
 	}
 
-	return ctx, conversation, settings, nil
+	return ctx, conversation, activeBranch, settings, nil
 }
 
 func (s *ChatServerV2) CreateConversationMessageStream(
@@ -259,15 +303,17 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	ctx := stream.Context()
 
 	modelSlug := req.GetModelSlug()
-	ctx, conversation, settings, err := s.prepare(
+	ctx, conversation, activeBranch, settings, err := s.prepare(
 		ctx,
 		req.GetProjectId(),
 		req.GetConversationId(),
 		req.GetUserMessage(),
 		req.GetUserSelectedText(),
+
 		req.GetSurrounding(),
 		modelSlug,
 		req.GetConversationType(),
+		req.GetParentMessageId(),
 	)
 	if err != nil {
 		return s.sendStreamError(stream, err)
@@ -278,12 +324,13 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		APIKey: settings.OpenAIAPIKey,
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
+	// Use active branch's history for the LLM call
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, activeBranch.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
-	// Append messages to the conversation
+	// Append messages to the active branch
 	bsonMessages := make([]bson.M, len(inappChatHistory))
 	for i := range inappChatHistory {
 		bsonMsg, err := convertToBSONV2(&inappChatHistory[i])
@@ -292,16 +339,17 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		}
 		bsonMessages[i] = bsonMsg
 	}
-	conversation.InappChatHistory = append(conversation.InappChatHistory, bsonMessages...)
-	conversation.OpenaiChatHistoryCompletion = openaiChatHistory
+	activeBranch.InappChatHistory = append(activeBranch.InappChatHistory, bsonMessages...)
+	activeBranch.OpenaiChatHistoryCompletion = openaiChatHistory
+	activeBranch.UpdatedAt = bson.NewDateTimeFromTime(time.Now())
 	if err := s.chatServiceV2.UpdateConversationV2(conversation); err != nil {
 		return s.sendStreamError(stream, err)
 	}
 
 	if conversation.Title == services.DefaultConversationTitle {
 		go func() {
-			protoMessages := make([]*chatv2.Message, len(conversation.InappChatHistory))
-			for i, bsonMsg := range conversation.InappChatHistory {
+			protoMessages := make([]*chatv2.Message, len(activeBranch.InappChatHistory))
+			for i, bsonMsg := range activeBranch.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
 			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
