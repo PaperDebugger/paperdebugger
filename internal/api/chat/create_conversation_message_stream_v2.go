@@ -168,9 +168,10 @@ func (s *ChatServerV2) appendConversationMessage(
 	// Handle branching / edit mode
 	if parentMessageId != "" {
 		// Create a new branch for the edit
-		activeBranch = conversation.CreateNewBranch("", parentMessageId)
-		if activeBranch == nil {
-			return nil, nil, shared.ErrBadRequest("Failed to create new branch")
+		var err error
+		activeBranch, err = conversation.CreateNewBranch("", parentMessageId)
+		if err != nil {
+			return nil, nil, shared.ErrBadRequest(err)
 		}
 	} else {
 		// Normal append - use active (latest) branch
