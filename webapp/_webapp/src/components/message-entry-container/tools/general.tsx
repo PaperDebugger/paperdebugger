@@ -1,5 +1,10 @@
-import { cn } from "@heroui/react";
+import { cn, Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
+import { Streamdown } from "streamdown";
+import { code } from "@streamdown/code";
+import { mermaid } from "@streamdown/mermaid";
+import { math } from "@streamdown/math";
+import { cjk } from "@streamdown/cjk";
 
 type GeneralToolCardProps = {
   functionName: string;
@@ -7,6 +12,7 @@ type GeneralToolCardProps = {
   animated: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isLoading?: boolean;
 };
 
 const shimmerStyle = {
@@ -22,7 +28,7 @@ const shimmerStyle = {
   backgroundPositionX: "-100%",
 } as const;
 
-export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse }: GeneralToolCardProps) => {
+export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse, isLoading }: GeneralToolCardProps) => {
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
 
   // Use external state if provided, otherwise use internal state
@@ -54,7 +60,7 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
     }
   };
   const pascalCase = (str: string) => {
-    const words = str.split("_");
+    const words = str.split(/[\s_-]+/);
     return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
   };
   // When there is a message, show the compact card with collapsible content
@@ -62,7 +68,7 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
     <div className={cn("tool-card noselect compact", { animated: animated })}>
       <div className="flex items-center gap-1 cursor-pointer" onClick={toggleCollapse}>
         <button
-          className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-0.5 rounded"
+          className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded"
           aria-label={isCollapsed ? "Expand" : "Collapse"}
         >
           <svg
@@ -77,15 +83,32 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
           </svg>
         </button>
         <h3 className="tool-card-title">{pascalCase(functionName)}</h3>
+        {isLoading && (
+          <Spinner size="sm" color="default" variant="dots" classNames={{ base: "scale-75" }} />
+        )}
       </div>
 
       <div
-        className={cn("canselect overflow-hidden transition-all duration-300 ease-in-out", {
-          "max-h-0 opacity-0": isCollapsed,
-          "max-h-[1000px] opacity-100": !isCollapsed,
-        })}
+        className="grid transition-[grid-template-rows] duration-200 ease-out"
+        style={{ gridTemplateRows: isCollapsed ? "0fr" : "1fr" }}
       >
-        <span className="text-[11px] text-gray-400">{message}</span>
+        <div className="overflow-hidden">
+          <div
+            className={cn(
+              "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200",
+              {
+                "opacity-0": isCollapsed,
+                "opacity-100 !border-gray-200": !isCollapsed,
+              }
+            )}
+          >
+            <span className="text-[11px] text-gray-400">
+              <Streamdown plugins={{ code, mermaid, math, cjk }} isAnimating={true}>
+                {message}
+              </Streamdown>
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

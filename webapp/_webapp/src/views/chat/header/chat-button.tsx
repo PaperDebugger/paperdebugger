@@ -63,7 +63,7 @@ export const ChatButton = ({
           ? "text-gray-400 !border-gray-200"
           : variant === "danger"
             ? "text-danger !border-danger-200"
-            : "text-gray-500 !border-gray-100 !hover:border-gray-200",
+            : "text-gray-500 !border-gray-100 hover:!border-gray-200",
         iconLoaded ? "opacity-100" : "opacity-0",
       )}
       onClick={() => {

@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap");
+@source "../node_modules/streamdown/dist/*.js";
 
 @tailwind base;
 @tailwind components;
@@ -104,7 +105,7 @@ video, canvas, audio, iframe, embed, object {
 
 /* Tool Card Begin */
 .tool-card {
-  @apply bg-white rounded-xl border overflow-hidden max-w-xl mx-2 p-4 my-2;
+  @apply bg-white overflow-hidden max-w-xl p-4 my-2;
   border-color: var(--pd-border-color) !important;
 }
 
@@ -127,7 +128,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .tool-card.compact {
-  @apply px-[3px] py-[1px] my-0.5 bg-transparent text-xs border-0;
+  @apply px-[0px] py-[0px] my-0.5 bg-transparent text-xs border-0;
 }
 
 .tool-card.compact .tool-card-title {
@@ -266,6 +267,10 @@ video, canvas, audio, iframe, embed, object {
   flex-shrink: 0;
 }
 
+.pd-chat-item-container-messages {
+  @apply px-2;
+}
+
 .pd-app-tab-content {
   /* 填满 pd-app-body-container */
   height: 100%;
@@ -325,7 +330,6 @@ video, canvas, audio, iframe, embed, object {
   width: 100%;
   display: flex;
   flex-direction: column;
-  word-break: break-all;
 }
 
 .chat-message-entry .indicator {
@@ -362,7 +366,10 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .chat-message-entry .message-box-user {
-  max-width: 70%;
+  max-width: min(70%, 700px);
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
   @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
   @apply bg-gray-200 my-2;
@@ -370,14 +377,16 @@ video, canvas, audio, iframe, embed, object {
 
 .chat-message-entry .message-box-assistant {
   align-self: flex-start;
-  @apply text-sm text-default-800 px-2 py-2 border border-transparent rounded-xl;
+  max-width: min(95%, 700px);
+  min-width: 0;
+  @apply text-sm text-default-800 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply mb-2;
 }
 
-.chat-message-entry .message-box-assistant:hover {
-  @apply !bg-gray-100 !delay-[2000ms];
-  border-color: var(--pd-border-color) !important;
+.chat-message-entry .message-box-assistant > * {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .chat-message-entry .actions {
@@ -595,7 +604,20 @@ video, canvas, audio, iframe, embed, object {
   vertical-align: top;
   text-align: right;
 }
-/* Embed Sidebar Styles */
+
+[data-streamdown="code-block"] {
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-streamdown="code-block-header"] {
+  @apply py-1 px-2;
+}
+
+[data-streamdown="code-block-body"] {
+  @apply py-2 px-3 text-xs;
+}/* Embed Sidebar Styles */
 #pd-embed-sidebar {
   background-color: var(--pd-default-bg);
   position: relative;
