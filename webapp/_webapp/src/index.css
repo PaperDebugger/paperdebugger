@@ -268,7 +268,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-chat-item-container-messages {
-  @apply px-2;
+  @apply flex flex-col px-2 gap-4;
 }
 
 .pd-app-tab-content {
@@ -359,7 +359,6 @@ video, canvas, audio, iframe, embed, object {
 .chat-message-entry .message-box-user-wrapper {
   display: flex;
   flex-direction: row;
-  align-items: center;
   justify-content: flex-end;
   gap: 4px;
   width: 100%;
@@ -372,7 +371,7 @@ video, canvas, audio, iframe, embed, object {
   word-wrap: break-word;
   @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply bg-gray-200 my-2;
+  @apply bg-gray-200;
 }
 
 .chat-message-entry .message-box-assistant {
@@ -392,11 +391,9 @@ video, canvas, audio, iframe, embed, object {
 .chat-message-entry .actions {
   display: flex;
   flex-direction: row;
-  @apply gap-2 text-gray-400 mt-2 -ml-2 opacity-0 transition-all duration-100;
-}
-
-.chat-message-entry .actions.actions-left {
-  @apply mt-0 ml-0 mr-0;
+  justify-content: flex-start;
+  align-items: flex-end;
+  @apply text-gray-400 opacity-0 transition-all duration-100;
 }
 
 .chat-message-entry:hover .actions {
@@ -407,7 +404,7 @@ video, canvas, audio, iframe, embed, object {
 .chat-message-entry .actions .icon {
   cursor: pointer;
   font-size: 24px;
-  @apply hover:text-gray-500 hover:bg-gray-200 rounded-md p-1 transition-all duration-100 ml-2;
+  @apply hover:text-gray-500 hover:bg-gray-200 rounded-md p-1 transition-all duration-100;
 }
 
 .message-box-stale {
