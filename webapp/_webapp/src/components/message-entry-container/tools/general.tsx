@@ -1,5 +1,5 @@
 import { cn, Spinner } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Streamdown } from "streamdown";
 import { code } from "@streamdown/code";
 import { mermaid } from "@streamdown/mermaid";
@@ -30,6 +30,7 @@ const shimmerStyle = {
 
 export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse, isLoading }: GeneralToolCardProps) => {
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Use external state if provided, otherwise use internal state
   const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
@@ -40,6 +41,13 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
       setInternalIsCollapsed(externalIsCollapsed);
     }
   }, [externalIsCollapsed]);
+
+  // Auto-scroll to bottom when message updates and is loading
+  useEffect(() => {
+    if (isLoading && scrollContainerRef.current && !isCollapsed) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [message, isLoading, isCollapsed]);
 
   // When no message, show minimal "Calling tool..." style like Preparing function
   if (!message) {
@@ -82,10 +90,7 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <h3 className="tool-card-title">{pascalCase(functionName)}</h3>
-        {isLoading && (
-          <Spinner size="sm" color="default" variant="dots" classNames={{ base: "scale-75" }} />
-        )}
+        <h3 className={cn("tool-card-title", isLoading && "loading-shimmer")} style={isLoading ? shimmerStyle : undefined}>{pascalCase(functionName)}</h3>
       </div>
 
 
@@ -95,12 +100,28 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
       >
         <div className="overflow-hidden">
           <div className={cn(
-            "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200",
+            "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
             isCollapsed ? "opacity-0" : "opacity-100 !border-gray-200"
           )}>
-            <Streamdown className="text-[11px] text-gray-400" plugins={{ code, mermaid, math, cjk }} isAnimating={isLoading}>
-              {message}
-            </Streamdown>
+            {/* Fade-out gradient at top */}
+            <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 rounded-t-md" />
+
+            {/* Scrollable content with max height - hide scrollbar */}
+            <div
+              ref={scrollContainerRef}
+              className="max-h-[100px] overflow-y-auto scrollbar-hide"
+              style={{
+                scrollbarWidth: 'none', // Firefox
+                msOverflowStyle: 'none', // IE and Edge
+              }}
+            >
+              <Streamdown className="text-[11px] text-gray-400" plugins={{ code, mermaid, math, cjk }} isAnimating={isLoading}>
+                {message}
+              </Streamdown>
+            </div>
+
+            {/* Fade-out gradient at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none z-10 rounded-b-md" />
           </div>
         </div>
       </div>
