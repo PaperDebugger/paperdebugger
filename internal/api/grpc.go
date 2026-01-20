@@ -15,6 +15,7 @@ import (
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
+	projectv2 "paperdebugger/pkg/gen/api/project/v2"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
 
 	// "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -105,6 +106,7 @@ func NewGrpcServer(
 	chatServerV2 chatv2.ChatServiceServer,
 	userServer userv1.UserServiceServer,
 	projectServer projectv1.ProjectServiceServer,
+	projectServerV2 projectv2.ProjectServiceServer,
 	commentServer commentv1.CommentServiceServer,
 ) *GrpcServer {
 	grpcServer := &GrpcServer{}
@@ -127,6 +129,7 @@ func NewGrpcServer(
 	chatv2.RegisterChatServiceServer(grpcServer.Server, chatServerV2)
 	userv1.RegisterUserServiceServer(grpcServer.Server, userServer)
 	projectv1.RegisterProjectServiceServer(grpcServer.Server, projectServer)
+	projectv2.RegisterProjectServiceServer(grpcServer.Server, projectServerV2)
 	commentv1.RegisterCommentServiceServer(grpcServer.Server, commentServer)
 	return grpcServer
 }
