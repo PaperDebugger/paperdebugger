@@ -118,6 +118,8 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				if err == nil {
 					if reasoning_content == "" {
 						a.logger.Info("[Stream Debug] First reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
+					} else {
+						a.logger.Info("[Stream Debug] Additional reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
 					}
 					reasoning_content += s
 					streamHandler.HandleReasoningDelta(chunk.ID, s)
@@ -128,6 +130,8 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				if err == nil {
 					if reasoning_content == "" {
 						a.logger.Info("[Stream Debug] First reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
+					} else {
+						a.logger.Info("[Stream Debug] Additional reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
 					}
 					reasoning_content += s
 					streamHandler.HandleReasoningDelta(chunk.ID, s)
