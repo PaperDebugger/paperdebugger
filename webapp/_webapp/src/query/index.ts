@@ -149,7 +149,7 @@ export const useUpsertUserInstructionsMutation = (
 // Project Instructions
 export const useGetProjectInstructionsQuery = (
   projectId: string,
-  opts?: UseQueryOptionsOverride<GetProjectInstructionsResponse>,
+  opts?: UseQueryOptionsOverride<{ instructions: string }>,
 ) => {
   return useQuery({
     queryKey: queryKeys.projects.getProjectInstructions(projectId).queryKey,
@@ -160,7 +160,7 @@ export const useGetProjectInstructionsQuery = (
 };
 
 export const useUpsertProjectInstructionsMutation = (
-  opts?: UseMutationOptionsOverride<UpsertProjectInstructionsResponse>,
+  opts?: UseMutationOptionsOverride<{ instructions: string }>,
 ) => {
   return useMutation({
     mutationFn: upsertProjectInstructions,

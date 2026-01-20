@@ -10,6 +10,7 @@ import {
   ConversationType,
   CreateConversationMessageStreamRequest,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { OverleafAuth } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { PlainMessage } from "../query/types";
 
 // ============================================================================
@@ -36,6 +37,8 @@ export interface StreamRequestParams {
   conversationMode: "debug" | "default";
   /** Parent message ID for message editing/branching */
   parentMessageId?: string;
+  /** Overleaf authentication for tools that need direct Overleaf API access */
+  overleafAuth?: PlainMessage<OverleafAuth>;
 }
 
 // ============================================================================
@@ -82,6 +85,7 @@ export function buildStreamRequest(
         ? ConversationType.DEBUG
         : ConversationType.UNSPECIFIED,
     parentMessageId: params.parentMessageId,
+    overleafAuth: params.overleafAuth,
   };
 }
 

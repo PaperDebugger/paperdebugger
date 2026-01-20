@@ -24,3 +24,12 @@ message Error {
   ErrorCode code = 2;
   string message = 3;
 }
+
+// OverleafAuth contains authentication information for Overleaf API calls.
+// This is passed from frontend on each request and used by tools that need
+// to interact with Overleaf directly (e.g., create_file, delete_file).
+message OverleafAuth {
+  string session = 1;      // overleaf_session2 cookie
+  string gclb = 2;         // GCLB cookie (Google Cloud Load Balancer)
+  string project_id = 3;   // Current Overleaf project ID
+}

@@ -303,6 +303,15 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 ) error {
 	ctx := stream.Context()
 
+	// Inject Overleaf auth into context if provided
+	if req.OverleafAuth != nil {
+		ctx = contextutil.SetOverleafAuth(ctx, &contextutil.OverleafAuth{
+			Session:   req.OverleafAuth.Session,
+			GCLB:      req.OverleafAuth.Gclb,
+			ProjectID: req.OverleafAuth.ProjectId,
+		})
+	}
+
 	modelSlug := req.GetModelSlug()
 	ctx, conversation, activeBranch, settings, err := s.prepare(
 		ctx,

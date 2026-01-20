@@ -52,6 +52,7 @@ import {
 import { createUserMessage } from "../types/message";
 import { buildStreamRequest, StreamRequestParams } from "../utils/stream-request-builder";
 import { mapResponseToStreamEvent } from "../utils/stream-event-mapper";
+import { getCookies } from "../intermediate";
 
 // ============================================================================
 // Types
@@ -159,6 +160,23 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       }
       message = message.trim();
 
+      // Get Overleaf authentication cookies for tools that need direct API access
+      let overleafAuth: StreamRequestParams["overleafAuth"];
+      try {
+        const { session, gclb } = await getCookies(window.location.hostname);
+        if (session) {
+          overleafAuth = {
+            session,
+            gclb,
+            projectId: projectId,
+          };
+        }
+      } catch (e) {
+        // Cookies not available - this is expected in some environments (e.g., Office Add-in)
+        // Tools that require Overleaf auth will fail gracefully
+        logWarn("Failed to get Overleaf cookies", e);
+      }
+
       // Build request parameters
       const requestParams: StreamRequestParams = {
         message,
@@ -169,6 +187,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
         surroundingText: surroundingText ?? undefined,
         conversationMode: conversationMode === "debug" ? "debug" : "default",
         parentMessageId,
+        overleafAuth,
       };
 
       // Build the API request
