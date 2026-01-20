@@ -56,3 +56,73 @@ func (u *Project) GetFullContent() (string, error) {
 func (u *Project) IsOutOfDate() bool {
 	return u.UpdatedAt.Time().Before(time.Now().Add(-time.Minute * 30))
 }
+
+// ProjectFolder represents a folder in the project hierarchy (v2)
+type ProjectFolder struct {
+	ID      string          `bson:"id"`
+	Name    string          `bson:"name"`
+	Docs    []ProjectDoc    `bson:"docs"`
+	Folders []ProjectFolder `bson:"folders"`
+}
+
+// ProjectV2 represents a project with hierarchical folder structure
+type ProjectV2 struct {
+	BaseModel    `bson:",inline"`
+	UserID       bson.ObjectID         `bson:"user_id"`
+	ProjectID    string                `bson:"project_id"`
+	Name         string                `bson:"name"`
+	RootDocID    string                `bson:"root_doc_id"`
+	RootFolder   *ProjectFolder        `bson:"root_folder"`
+	Instructions string                `bson:"instructions"`
+	Category     ClassifyPaperResponse `bson:"category,omitempty"`
+}
+
+func (u ProjectV2) CollectionName() string {
+	return "projects"
+}
+
+// collectDocs recursively collects all documents from the folder tree
+func (u *ProjectV2) collectDocs(folder *ProjectFolder, docs map[string]string) {
+	if folder == nil {
+		return
+	}
+	for _, doc := range folder.Docs {
+		docs[doc.Filepath] = strings.Join(doc.Lines, "\n")
+	}
+	for i := range folder.Folders {
+		u.collectDocs(&folder.Folders[i], docs)
+	}
+}
+
+// findRootDoc finds the root document in the folder tree
+func (u *ProjectV2) findRootDoc(folder *ProjectFolder) *ProjectDoc {
+	if folder == nil {
+		return nil
+	}
+	for i := range folder.Docs {
+		if folder.Docs[i].ID == u.RootDocID {
+			return &folder.Docs[i]
+		}
+	}
+	for i := range folder.Folders {
+		if doc := u.findRootDoc(&folder.Folders[i]); doc != nil {
+			return doc
+		}
+	}
+	return nil
+}
+
+func (u *ProjectV2) GetFullContent() (string, error) {
+	docs := make(map[string]string)
+	u.collectDocs(u.RootFolder, docs)
+
+	rootDoc := u.findRootDoc(u.RootFolder)
+	if rootDoc == nil {
+		return "", shared.ErrInternal("root doc not found")
+	}
+	return tex.Latexpand(docs, rootDoc.Filepath)
+}
+
+func (u *ProjectV2) IsOutOfDate() bool {
+	return u.UpdatedAt.Time().Before(time.Now().Add(-time.Minute * 30))
+}

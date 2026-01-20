@@ -72,6 +72,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		params.Messages = openaiChatHistory
 		// var openaiOutput OpenAIChatHistory
 		streamStartTime := time.Now()
+		_ = streamStartTime
 		stream := oaiClient.Chat.Completions.NewStreaming(context.Background(), params)
 
 		reasoning_content := ""

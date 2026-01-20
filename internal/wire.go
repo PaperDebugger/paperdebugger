@@ -9,6 +9,7 @@ import (
 	"paperdebugger/internal/api/chat"
 	"paperdebugger/internal/api/comment"
 	"paperdebugger/internal/api/project"
+	projectv2 "paperdebugger/internal/api/project/v2"
 	"paperdebugger/internal/api/user"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
@@ -31,6 +32,7 @@ var Set = wire.NewSet(
 	chat.NewChatServerV2,
 	user.NewUserServer,
 	project.NewProjectServer,
+	projectv2.NewProjectServerV2,
 	comment.NewCommentServer,
 
 	aiclient.NewAIClient,
