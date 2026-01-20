@@ -27,7 +27,7 @@ export type { InternalMessage, MessageStatus };
 /**
  * Represents the current state of the streaming process.
  */
-export type StreamState = "idle" | "receiving" | "finalizing" | "error";
+export type StreamState = "idle" | "receiving" | "thinking" | "finalizing" | "error";
 
 // ============================================================================
 // Streaming Message State

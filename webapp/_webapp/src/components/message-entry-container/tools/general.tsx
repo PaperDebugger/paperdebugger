@@ -88,25 +88,19 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
         )}
       </div>
 
+
       <div
-        className="grid transition-[grid-template-rows] duration-200 ease-out"
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
         style={{ gridTemplateRows: isCollapsed ? "0fr" : "1fr" }}
       >
         <div className="overflow-hidden">
-          <div
-            className={cn(
-              "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200",
-              {
-                "opacity-0": isCollapsed,
-                "opacity-100 !border-gray-200": !isCollapsed,
-              }
-            )}
-          >
-            <span className="text-[11px] text-gray-400">
-              <Streamdown plugins={{ code, mermaid, math, cjk }} isAnimating={true}>
-                {message}
-              </Streamdown>
-            </span>
+          <div className={cn(
+            "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200",
+            isCollapsed ? "opacity-0" : "opacity-100 !border-gray-200"
+          )}>
+            <Streamdown className="text-[11px] text-gray-400" plugins={{ code, mermaid, math, cjk }} isAnimating={isLoading}>
+              {message}
+            </Streamdown>
           </div>
         </div>
       </div>

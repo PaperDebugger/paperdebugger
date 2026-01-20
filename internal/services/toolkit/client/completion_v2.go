@@ -71,7 +71,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	for {
 		params.Messages = openaiChatHistory
 		// var openaiOutput OpenAIChatHistory
-		a.logger.Info("[Stream Debug] Starting new streaming request", "model", modelSlug)
 		streamStartTime := time.Now()
 		stream := oaiClient.Chat.Completions.NewStreaming(context.Background(), params)
 
@@ -88,7 +87,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 			if !firstChunkReceived {
 				firstChunkReceived = true
-				a.logger.Info("[Stream Debug] First chunk received", "elapsed_ms", time.Since(streamStartTime).Milliseconds())
 			}
 
 			if len(chunk.Choices) == 0 {
@@ -108,7 +106,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			_, hasReasoning := delta.JSON.ExtraFields["reasoning"]
 			if !has_sent_part_begin && (delta.Role == "assistant" || delta.Content != "" || hasReasoningContent || hasReasoning) {
 				has_sent_part_begin = true
-				a.logger.Info("[Stream Debug] Sending StreamPartBegin", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "role", delta.Role, "hasReasoningContent", hasReasoningContent, "hasReasoning", hasReasoning)
 				streamHandler.HandleAssistantPartBegin(chunk.ID)
 			}
 
@@ -116,11 +113,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				var s string
 				err := json.Unmarshal([]byte(field.Raw()), &s)
 				if err == nil {
-					if reasoning_content == "" {
-						a.logger.Info("[Stream Debug] First reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
-					} else {
-						a.logger.Info("[Stream Debug] Additional reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
-					}
 					reasoning_content += s
 					streamHandler.HandleReasoningDelta(chunk.ID, s)
 				}
@@ -128,19 +120,11 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				var s string
 				err := json.Unmarshal([]byte(field.Raw()), &s)
 				if err == nil {
-					if reasoning_content == "" {
-						a.logger.Info("[Stream Debug] First reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
-					} else {
-						a.logger.Info("[Stream Debug] Additional reasoning chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(s))
-					}
 					reasoning_content += s
 					streamHandler.HandleReasoningDelta(chunk.ID, s)
 				}
 			} else {
 				if delta.Content != "" {
-					if answer_content == "" {
-						a.logger.Info("[Stream Debug] First content chunk", "elapsed_ms", time.Since(streamStartTime).Milliseconds(), "length", len(delta.Content))
-					}
 					answer_content += delta.Content
 					answer_content_id = chunk.ID
 					streamHandler.HandleTextDelta(chunk)

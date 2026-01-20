@@ -249,7 +249,7 @@ body {
 }
 
 .pd-chat-item-container-messages {
-  @apply flex flex-col px-2 gap-4;
+  @apply flex flex-col px-2;
 }
 
 .pd-app-tab-content {
@@ -314,7 +314,7 @@ body {
 }
 
 .chat-message-entry .indicator {
-  @apply transition-all duration-500 fade-in noselect;
+  @apply transition-all duration-300 ease-in-out fade-in noselect;
   @apply bg-transparent px-2;
   text-wrap-style: balance;
   overflow: hidden;
@@ -326,11 +326,18 @@ body {
 }
 
 .chat-message-entry .indicator.preparing {
-  @apply opacity-100 h-6;
+  @apply opacity-100 h-6 mb-0;
 }
 
 .chat-message-entry .indicator.prepared {
-  @apply opacity-0 h-0 -mt-2;
+  @apply opacity-0 m-0 p-0;
+  height: 0;
+  max-height: 0;
+}
+
+/* prepared 后的下一个兄弟元素不需要上边距 */
+.chat-message-entry .indicator.prepared + * {
+  margin-top: 0;
 }
 
 .chat-message-entry .indicator.incomplete {
@@ -595,4 +602,7 @@ body {
 
 [data-streamdown="code-block-body"] {
   @apply py-2 px-3 text-xs;
+}
+[data-streamdown="inline-code"] {
+  @apply px-1 py-0 !text-xs !bg-gray-200 rounded-md font-mono;
 }
