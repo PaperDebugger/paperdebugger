@@ -31,6 +31,7 @@ type Project struct {
 	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	RootDocId     string                 `protobuf:"bytes,5,opt,name=root_doc_id,json=rootDocId,proto3" json:"root_doc_id,omitempty"`
 	RootFolder    *ProjectFolder         `protobuf:"bytes,6,opt,name=root_folder,json=rootFolder,proto3" json:"root_folder,omitempty"`
+	Instructions  string                 `protobuf:"bytes,7,opt,name=instructions,proto3" json:"instructions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,6 +106,13 @@ func (x *Project) GetRootFolder() *ProjectFolder {
 		return x.RootFolder
 	}
 	return nil
+}
+
+func (x *Project) GetInstructions() string {
+	if x != nil {
+		return x.Instructions
+	}
+	return ""
 }
 
 type ProjectFolder struct {
@@ -256,7 +264,8 @@ type UpsertProjectRequest struct {
 	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	RootDocId     string                 `protobuf:"bytes,3,opt,name=root_doc_id,json=rootDocId,proto3" json:"root_doc_id,omitempty"`
-	RootFolder    *ProjectFolder         `protobuf:"bytes,6,opt,name=root_folder,json=rootFolder,proto3" json:"root_folder,omitempty"`
+	RootFolder    *ProjectFolder         `protobuf:"bytes,4,opt,name=root_folder,json=rootFolder,proto3" json:"root_folder,omitempty"`
+	Instructions  string                 `protobuf:"bytes,5,opt,name=instructions,proto3" json:"instructions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -317,6 +326,13 @@ func (x *UpsertProjectRequest) GetRootFolder() *ProjectFolder {
 		return x.RootFolder
 	}
 	return nil
+}
+
+func (x *UpsertProjectRequest) GetInstructions() string {
+	if x != nil {
+		return x.Instructions
+	}
+	return ""
 }
 
 type UpsertProjectResponse struct {
@@ -451,902 +467,12 @@ func (x *GetProjectResponse) GetProject() *Project {
 	return nil
 }
 
-// Paper score
-type RunProjectPaperScoreRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *RunProjectPaperScoreRequest) Reset() {
-	*x = RunProjectPaperScoreRequest{}
-	mi := &file_project_v2_project_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectPaperScoreRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectPaperScoreRequest) ProtoMessage() {}
-
-func (x *RunProjectPaperScoreRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectPaperScoreRequest.ProtoReflect.Descriptor instead.
-func (*RunProjectPaperScoreRequest) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *RunProjectPaperScoreRequest) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectPaperScoreRequest) GetConversationId() string {
-	if x != nil {
-		return x.ConversationId
-	}
-	return ""
-}
-
-type RunProjectPaperScoreResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	PaperScore    *PaperScoreResult      `protobuf:"bytes,2,opt,name=paper_score,json=paperScore,proto3" json:"paper_score,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RunProjectPaperScoreResponse) Reset() {
-	*x = RunProjectPaperScoreResponse{}
-	mi := &file_project_v2_project_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectPaperScoreResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectPaperScoreResponse) ProtoMessage() {}
-
-func (x *RunProjectPaperScoreResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectPaperScoreResponse.ProtoReflect.Descriptor instead.
-func (*RunProjectPaperScoreResponse) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *RunProjectPaperScoreResponse) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectPaperScoreResponse) GetPaperScore() *PaperScoreResult {
-	if x != nil {
-		return x.PaperScore
-	}
-	return nil
-}
-
-// Paper score comment
-type RunProjectPaperScoreCommentRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *RunProjectPaperScoreCommentRequest) Reset() {
-	*x = RunProjectPaperScoreCommentRequest{}
-	mi := &file_project_v2_project_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectPaperScoreCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectPaperScoreCommentRequest) ProtoMessage() {}
-
-func (x *RunProjectPaperScoreCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectPaperScoreCommentRequest.ProtoReflect.Descriptor instead.
-func (*RunProjectPaperScoreCommentRequest) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *RunProjectPaperScoreCommentRequest) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectPaperScoreCommentRequest) GetConversationId() string {
-	if x != nil {
-		return x.ConversationId
-	}
-	return ""
-}
-
-type RunProjectPaperScoreCommentResponse struct {
-	state         protoimpl.MessageState     `protogen:"open.v1"`
-	ProjectId     string                     `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Comments      []*PaperScoreCommentResult `protobuf:"bytes,2,rep,name=comments,proto3" json:"comments,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RunProjectPaperScoreCommentResponse) Reset() {
-	*x = RunProjectPaperScoreCommentResponse{}
-	mi := &file_project_v2_project_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectPaperScoreCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectPaperScoreCommentResponse) ProtoMessage() {}
-
-func (x *RunProjectPaperScoreCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectPaperScoreCommentResponse.ProtoReflect.Descriptor instead.
-func (*RunProjectPaperScoreCommentResponse) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *RunProjectPaperScoreCommentResponse) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectPaperScoreCommentResponse) GetComments() []*PaperScoreCommentResult {
-	if x != nil {
-		return x.Comments
-	}
-	return nil
-}
-
-// Overleaf comment
-type RunProjectOverleafCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Section       string                 `protobuf:"bytes,2,opt,name=section,proto3" json:"section,omitempty"`
-	AnchorText    string                 `protobuf:"bytes,3,opt,name=anchor_text,json=anchorText,proto3" json:"anchor_text,omitempty"`
-	Comment       string                 `protobuf:"bytes,4,opt,name=comment,proto3" json:"comment,omitempty"`
-	Importance    string                 `protobuf:"bytes,5,opt,name=importance,proto3" json:"importance,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RunProjectOverleafCommentRequest) Reset() {
-	*x = RunProjectOverleafCommentRequest{}
-	mi := &file_project_v2_project_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectOverleafCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectOverleafCommentRequest) ProtoMessage() {}
-
-func (x *RunProjectOverleafCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectOverleafCommentRequest.ProtoReflect.Descriptor instead.
-func (*RunProjectOverleafCommentRequest) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *RunProjectOverleafCommentRequest) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectOverleafCommentRequest) GetSection() string {
-	if x != nil {
-		return x.Section
-	}
-	return ""
-}
-
-func (x *RunProjectOverleafCommentRequest) GetAnchorText() string {
-	if x != nil {
-		return x.AnchorText
-	}
-	return ""
-}
-
-func (x *RunProjectOverleafCommentRequest) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-func (x *RunProjectOverleafCommentRequest) GetImportance() string {
-	if x != nil {
-		return x.Importance
-	}
-	return ""
-}
-
-type RunProjectOverleafCommentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Comments      []*OverleafComment     `protobuf:"bytes,2,rep,name=comments,proto3" json:"comments,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RunProjectOverleafCommentResponse) Reset() {
-	*x = RunProjectOverleafCommentResponse{}
-	mi := &file_project_v2_project_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunProjectOverleafCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunProjectOverleafCommentResponse) ProtoMessage() {}
-
-func (x *RunProjectOverleafCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunProjectOverleafCommentResponse.ProtoReflect.Descriptor instead.
-func (*RunProjectOverleafCommentResponse) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *RunProjectOverleafCommentResponse) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *RunProjectOverleafCommentResponse) GetComments() []*OverleafComment {
-	if x != nil {
-		return x.Comments
-	}
-	return nil
-}
-
-type OverleafComment struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CommentId     string                 `protobuf:"bytes,1,opt,name=comment_id,json=commentId,proto3" json:"comment_id,omitempty"`
-	ProjectId     string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	DocId         string                 `protobuf:"bytes,3,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
-	DocVersion    int32                  `protobuf:"varint,4,opt,name=doc_version,json=docVersion,proto3" json:"doc_version,omitempty"`
-	DocSha1       string                 `protobuf:"bytes,5,opt,name=doc_sha1,json=docSha1,proto3" json:"doc_sha1,omitempty"`
-	QuotePosition int32                  `protobuf:"varint,6,opt,name=quote_position,json=quotePosition,proto3" json:"quote_position,omitempty"`
-	// PaperScoreCommentResult filed:
-	QuoteText     string `protobuf:"bytes,7,opt,name=quote_text,json=quoteText,proto3" json:"quote_text,omitempty"`
-	Comment       string `protobuf:"bytes,8,opt,name=comment,proto3" json:"comment,omitempty"`
-	Importance    string `protobuf:"bytes,9,opt,name=importance,proto3" json:"importance,omitempty"`
-	DocPath       string `protobuf:"bytes,10,opt,name=doc_path,json=docPath,proto3" json:"doc_path,omitempty"`
-	Section       string `protobuf:"bytes,11,opt,name=section,proto3" json:"section,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OverleafComment) Reset() {
-	*x = OverleafComment{}
-	mi := &file_project_v2_project_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OverleafComment) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OverleafComment) ProtoMessage() {}
-
-func (x *OverleafComment) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OverleafComment.ProtoReflect.Descriptor instead.
-func (*OverleafComment) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *OverleafComment) GetCommentId() string {
-	if x != nil {
-		return x.CommentId
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetDocId() string {
-	if x != nil {
-		return x.DocId
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetDocVersion() int32 {
-	if x != nil {
-		return x.DocVersion
-	}
-	return 0
-}
-
-func (x *OverleafComment) GetDocSha1() string {
-	if x != nil {
-		return x.DocSha1
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetQuotePosition() int32 {
-	if x != nil {
-		return x.QuotePosition
-	}
-	return 0
-}
-
-func (x *OverleafComment) GetQuoteText() string {
-	if x != nil {
-		return x.QuoteText
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetImportance() string {
-	if x != nil {
-		return x.Importance
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetDocPath() string {
-	if x != nil {
-		return x.DocPath
-	}
-	return ""
-}
-
-func (x *OverleafComment) GetSection() string {
-	if x != nil {
-		return x.Section
-	}
-	return ""
-}
-
-type PaperScoreCommentResult struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	Results       []*PaperScoreCommentEntry `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PaperScoreCommentResult) Reset() {
-	*x = PaperScoreCommentResult{}
-	mi := &file_project_v2_project_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PaperScoreCommentResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PaperScoreCommentResult) ProtoMessage() {}
-
-func (x *PaperScoreCommentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PaperScoreCommentResult.ProtoReflect.Descriptor instead.
-func (*PaperScoreCommentResult) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *PaperScoreCommentResult) GetResults() []*PaperScoreCommentEntry {
-	if x != nil {
-		return x.Results
-	}
-	return nil
-}
-
-type PaperScoreCommentEntry struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Section string                 `protobuf:"bytes,1,opt,name=section,proto3" json:"section,omitempty"`
-	// Note: Do not use anchor_text here, the key in backend is “anchorText”.
-	AnchorText    string `protobuf:"bytes,2,opt,name=anchorText,proto3" json:"anchorText,omitempty"` // do not trust the linter
-	Weakness      string `protobuf:"bytes,3,opt,name=weakness,proto3" json:"weakness,omitempty"`
-	Importance    string `protobuf:"bytes,4,opt,name=importance,proto3" json:"importance,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PaperScoreCommentEntry) Reset() {
-	*x = PaperScoreCommentEntry{}
-	mi := &file_project_v2_project_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PaperScoreCommentEntry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PaperScoreCommentEntry) ProtoMessage() {}
-
-func (x *PaperScoreCommentEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PaperScoreCommentEntry.ProtoReflect.Descriptor instead.
-func (*PaperScoreCommentEntry) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *PaperScoreCommentEntry) GetSection() string {
-	if x != nil {
-		return x.Section
-	}
-	return ""
-}
-
-func (x *PaperScoreCommentEntry) GetAnchorText() string {
-	if x != nil {
-		return x.AnchorText
-	}
-	return ""
-}
-
-func (x *PaperScoreCommentEntry) GetWeakness() string {
-	if x != nil {
-		return x.Weakness
-	}
-	return ""
-}
-
-func (x *PaperScoreCommentEntry) GetImportance() string {
-	if x != nil {
-		return x.Importance
-	}
-	return ""
-}
-
-type PaperScoreResult struct {
-	state         protoimpl.MessageState     `protogen:"open.v1"`
-	Score         float32                    `protobuf:"fixed32,1,opt,name=score,proto3" json:"score,omitempty"`
-	Percentile    float32                    `protobuf:"fixed32,2,opt,name=percentile,proto3" json:"percentile,omitempty"`
-	Details       map[string]int32           `protobuf:"bytes,3,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	Suggestions   map[string]*SuggestionList `protobuf:"bytes,4,rep,name=suggestions,proto3" json:"suggestions,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PaperScoreResult) Reset() {
-	*x = PaperScoreResult{}
-	mi := &file_project_v2_project_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PaperScoreResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PaperScoreResult) ProtoMessage() {}
-
-func (x *PaperScoreResult) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PaperScoreResult.ProtoReflect.Descriptor instead.
-func (*PaperScoreResult) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *PaperScoreResult) GetScore() float32 {
-	if x != nil {
-		return x.Score
-	}
-	return 0
-}
-
-func (x *PaperScoreResult) GetPercentile() float32 {
-	if x != nil {
-		return x.Percentile
-	}
-	return 0
-}
-
-func (x *PaperScoreResult) GetDetails() map[string]int32 {
-	if x != nil {
-		return x.Details
-	}
-	return nil
-}
-
-func (x *PaperScoreResult) GetSuggestions() map[string]*SuggestionList {
-	if x != nil {
-		return x.Suggestions
-	}
-	return nil
-}
-
-type SuggestionList struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Suggestions   []string               `protobuf:"bytes,1,rep,name=suggestions,proto3" json:"suggestions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SuggestionList) Reset() {
-	*x = SuggestionList{}
-	mi := &file_project_v2_project_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SuggestionList) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SuggestionList) ProtoMessage() {}
-
-func (x *SuggestionList) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SuggestionList.ProtoReflect.Descriptor instead.
-func (*SuggestionList) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *SuggestionList) GetSuggestions() []string {
-	if x != nil {
-		return x.Suggestions
-	}
-	return nil
-}
-
-// Instructions
-type GetProjectInstructionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetProjectInstructionsRequest) Reset() {
-	*x = GetProjectInstructionsRequest{}
-	mi := &file_project_v2_project_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetProjectInstructionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetProjectInstructionsRequest) ProtoMessage() {}
-
-func (x *GetProjectInstructionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetProjectInstructionsRequest.ProtoReflect.Descriptor instead.
-func (*GetProjectInstructionsRequest) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *GetProjectInstructionsRequest) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-type GetProjectInstructionsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Instructions  string                 `protobuf:"bytes,2,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetProjectInstructionsResponse) Reset() {
-	*x = GetProjectInstructionsResponse{}
-	mi := &file_project_v2_project_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetProjectInstructionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetProjectInstructionsResponse) ProtoMessage() {}
-
-func (x *GetProjectInstructionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetProjectInstructionsResponse.ProtoReflect.Descriptor instead.
-func (*GetProjectInstructionsResponse) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *GetProjectInstructionsResponse) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *GetProjectInstructionsResponse) GetInstructions() string {
-	if x != nil {
-		return x.Instructions
-	}
-	return ""
-}
-
-type UpsertProjectInstructionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Instructions  string                 `protobuf:"bytes,2,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertProjectInstructionsRequest) Reset() {
-	*x = UpsertProjectInstructionsRequest{}
-	mi := &file_project_v2_project_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertProjectInstructionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertProjectInstructionsRequest) ProtoMessage() {}
-
-func (x *UpsertProjectInstructionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertProjectInstructionsRequest.ProtoReflect.Descriptor instead.
-func (*UpsertProjectInstructionsRequest) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *UpsertProjectInstructionsRequest) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *UpsertProjectInstructionsRequest) GetInstructions() string {
-	if x != nil {
-		return x.Instructions
-	}
-	return ""
-}
-
-type UpsertProjectInstructionsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Instructions  string                 `protobuf:"bytes,2,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertProjectInstructionsResponse) Reset() {
-	*x = UpsertProjectInstructionsResponse{}
-	mi := &file_project_v2_project_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertProjectInstructionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertProjectInstructionsResponse) ProtoMessage() {}
-
-func (x *UpsertProjectInstructionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_project_v2_project_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertProjectInstructionsResponse.ProtoReflect.Descriptor instead.
-func (*UpsertProjectInstructionsResponse) Descriptor() ([]byte, []int) {
-	return file_project_v2_project_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *UpsertProjectInstructionsResponse) GetProjectId() string {
-	if x != nil {
-		return x.ProjectId
-	}
-	return ""
-}
-
-func (x *UpsertProjectInstructionsResponse) GetInstructions() string {
-	if x != nil {
-		return x.Instructions
-	}
-	return ""
-}
-
 var File_project_v2_project_proto protoreflect.FileDescriptor
 
 const file_project_v2_project_proto_rawDesc = "" +
 	"\n" +
 	"\x18project/v2/project.proto\x12\n" +
-	"project.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xff\x01\n" +
+	"project.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa3\x02\n" +
 	"\aProject\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x129\n" +
 	"\n" +
@@ -1356,7 +482,8 @@ const file_project_v2_project_proto_rawDesc = "" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1e\n" +
 	"\vroot_doc_id\x18\x05 \x01(\tR\trootDocId\x12:\n" +
 	"\vroot_folder\x18\x06 \x01(\v2\x19.project.v2.ProjectFolderR\n" +
-	"rootFolder\"\x94\x01\n" +
+	"rootFolder\x12\"\n" +
+	"\finstructions\x18\a \x01(\tR\finstructions\"\x94\x01\n" +
 	"\rProjectFolder\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12*\n" +
@@ -1368,121 +495,26 @@ const file_project_v2_project_proto_rawDesc = "" +
 	"\aversion\x18\x02 \x01(\x05R\aversion\x12\x1a\n" +
 	"\bfilename\x18\x03 \x01(\tR\bfilename\x12\x1a\n" +
 	"\bfilepath\x18\x04 \x01(\tR\bfilepath\x12\x14\n" +
-	"\x05lines\x18\x05 \x03(\tR\x05lines\"\xa5\x01\n" +
+	"\x05lines\x18\x05 \x03(\tR\x05lines\"\xc9\x01\n" +
 	"\x14UpsertProjectRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
 	"\vroot_doc_id\x18\x03 \x01(\tR\trootDocId\x12:\n" +
-	"\vroot_folder\x18\x06 \x01(\v2\x19.project.v2.ProjectFolderR\n" +
-	"rootFolder\"F\n" +
+	"\vroot_folder\x18\x04 \x01(\v2\x19.project.v2.ProjectFolderR\n" +
+	"rootFolder\x12\"\n" +
+	"\finstructions\x18\x05 \x01(\tR\finstructions\"F\n" +
 	"\x15UpsertProjectResponse\x12-\n" +
 	"\aproject\x18\x01 \x01(\v2\x13.project.v2.ProjectR\aproject\"2\n" +
 	"\x11GetProjectRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\"C\n" +
 	"\x12GetProjectResponse\x12-\n" +
-	"\aproject\x18\x01 \x01(\v2\x13.project.v2.ProjectR\aproject\"e\n" +
-	"\x1bRunProjectPaperScoreRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12'\n" +
-	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\"|\n" +
-	"\x1cRunProjectPaperScoreResponse\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12=\n" +
-	"\vpaper_score\x18\x02 \x01(\v2\x1c.project.v2.PaperScoreResultR\n" +
-	"paperScore\"l\n" +
-	"\"RunProjectPaperScoreCommentRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12'\n" +
-	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\"\x85\x01\n" +
-	"#RunProjectPaperScoreCommentResponse\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12?\n" +
-	"\bcomments\x18\x02 \x03(\v2#.project.v2.PaperScoreCommentResultR\bcomments\"\xb6\x01\n" +
-	" RunProjectOverleafCommentRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x18\n" +
-	"\asection\x18\x02 \x01(\tR\asection\x12\x1f\n" +
-	"\vanchor_text\x18\x03 \x01(\tR\n" +
-	"anchorText\x12\x18\n" +
-	"\acomment\x18\x04 \x01(\tR\acomment\x12\x1e\n" +
-	"\n" +
-	"importance\x18\x05 \x01(\tR\n" +
-	"importance\"{\n" +
-	"!RunProjectOverleafCommentResponse\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x127\n" +
-	"\bcomments\x18\x02 \x03(\v2\x1b.project.v2.OverleafCommentR\bcomments\"\xd7\x02\n" +
-	"\x0fOverleafComment\x12\x1d\n" +
-	"\n" +
-	"comment_id\x18\x01 \x01(\tR\tcommentId\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x02 \x01(\tR\tprojectId\x12\x15\n" +
-	"\x06doc_id\x18\x03 \x01(\tR\x05docId\x12\x1f\n" +
-	"\vdoc_version\x18\x04 \x01(\x05R\n" +
-	"docVersion\x12\x19\n" +
-	"\bdoc_sha1\x18\x05 \x01(\tR\adocSha1\x12%\n" +
-	"\x0equote_position\x18\x06 \x01(\x05R\rquotePosition\x12\x1d\n" +
-	"\n" +
-	"quote_text\x18\a \x01(\tR\tquoteText\x12\x18\n" +
-	"\acomment\x18\b \x01(\tR\acomment\x12\x1e\n" +
-	"\n" +
-	"importance\x18\t \x01(\tR\n" +
-	"importance\x12\x19\n" +
-	"\bdoc_path\x18\n" +
-	" \x01(\tR\adocPath\x12\x18\n" +
-	"\asection\x18\v \x01(\tR\asection\"W\n" +
-	"\x17PaperScoreCommentResult\x12<\n" +
-	"\aresults\x18\x01 \x03(\v2\".project.v2.PaperScoreCommentEntryR\aresults\"\x8e\x01\n" +
-	"\x16PaperScoreCommentEntry\x12\x18\n" +
-	"\asection\x18\x01 \x01(\tR\asection\x12\x1e\n" +
-	"\n" +
-	"anchorText\x18\x02 \x01(\tR\n" +
-	"anchorText\x12\x1a\n" +
-	"\bweakness\x18\x03 \x01(\tR\bweakness\x12\x1e\n" +
-	"\n" +
-	"importance\x18\x04 \x01(\tR\n" +
-	"importance\"\xf6\x02\n" +
-	"\x10PaperScoreResult\x12\x14\n" +
-	"\x05score\x18\x01 \x01(\x02R\x05score\x12\x1e\n" +
-	"\n" +
-	"percentile\x18\x02 \x01(\x02R\n" +
-	"percentile\x12C\n" +
-	"\adetails\x18\x03 \x03(\v2).project.v2.PaperScoreResult.DetailsEntryR\adetails\x12O\n" +
-	"\vsuggestions\x18\x04 \x03(\v2-.project.v2.PaperScoreResult.SuggestionsEntryR\vsuggestions\x1a:\n" +
-	"\fDetailsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aZ\n" +
-	"\x10SuggestionsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
-	"\x05value\x18\x02 \x01(\v2\x1a.project.v2.SuggestionListR\x05value:\x028\x01\"2\n" +
-	"\x0eSuggestionList\x12 \n" +
-	"\vsuggestions\x18\x01 \x03(\tR\vsuggestions\">\n" +
-	"\x1dGetProjectInstructionsRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\"c\n" +
-	"\x1eGetProjectInstructionsResponse\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\"\n" +
-	"\finstructions\x18\x02 \x01(\tR\finstructions\"e\n" +
-	" UpsertProjectInstructionsRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\"\n" +
-	"\finstructions\x18\x02 \x01(\tR\finstructions\"f\n" +
-	"!UpsertProjectInstructionsResponse\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\"\n" +
-	"\finstructions\x18\x02 \x01(\tR\finstructions2\x90\t\n" +
+	"\aproject\x18\x01 \x01(\v2\x13.project.v2.ProjectR\aproject2\x8d\x02\n" +
 	"\x0eProjectService\x12\x82\x01\n" +
 	"\rUpsertProject\x12 .project.v2.UpsertProjectRequest\x1a!.project.v2.UpsertProjectResponse\",\x82\xd3\xe4\x93\x02&:\x01*\x1a!/_pd/api/v2/projects/{project_id}\x12v\n" +
 	"\n" +
-	"GetProject\x12\x1d.project.v2.GetProjectRequest\x1a\x1e.project.v2.GetProjectResponse\")\x82\xd3\xe4\x93\x02#\x12!/_pd/api/v2/projects/{project_id}\x12\xa3\x01\n" +
-	"\x14RunProjectPaperScore\x12'.project.v2.RunProjectPaperScoreRequest\x1a(.project.v2.RunProjectPaperScoreResponse\"8\x82\xd3\xe4\x93\x022:\x01*\"-/_pd/api/v2/projects/{project_id}/paper-score\x12\xc0\x01\n" +
-	"\x1bRunProjectPaperScoreComment\x12..project.v2.RunProjectPaperScoreCommentRequest\x1a/.project.v2.RunProjectPaperScoreCommentResponse\"@\x82\xd3\xe4\x93\x02::\x01*\"5/_pd/api/v2/projects/{project_id}/paper-score-comment\x12\xb7\x01\n" +
-	"\x19RunProjectOverleafComment\x12,.project.v2.RunProjectOverleafCommentRequest\x1a-.project.v2.RunProjectOverleafCommentResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/_pd/api/v2/projects/{project_id}/overleaf-comment\x12\xa7\x01\n" +
-	"\x16GetProjectInstructions\x12).project.v2.GetProjectInstructionsRequest\x1a*.project.v2.GetProjectInstructionsResponse\"6\x82\xd3\xe4\x93\x020\x12./_pd/api/v2/projects/{project_id}/instructions\x12\xb3\x01\n" +
-	"\x19UpsertProjectInstructions\x12,.project.v2.UpsertProjectInstructionsRequest\x1a-.project.v2.UpsertProjectInstructionsResponse\"9\x82\xd3\xe4\x93\x023:\x01*\"./_pd/api/v2/projects/{project_id}/instructionsB\x97\x01\n" +
+	"GetProject\x12\x1d.project.v2.GetProjectRequest\x1a\x1e.project.v2.GetProjectResponse\")\x82\xd3\xe4\x93\x02#\x12!/_pd/api/v2/projects/{project_id}B\x97\x01\n" +
 	"\x0ecom.project.v2B\fProjectProtoP\x01Z.paperdebugger/pkg/gen/api/project/v2;projectv2\xa2\x02\x03PXX\xaa\x02\n" +
 	"Project.V2\xca\x02\n" +
 	"Project\\V2\xe2\x02\x16Project\\V2\\GPBMetadata\xea\x02\vProject::V2b\x06proto3"
@@ -1499,69 +531,35 @@ func file_project_v2_project_proto_rawDescGZIP() []byte {
 	return file_project_v2_project_proto_rawDescData
 }
 
-var file_project_v2_project_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_project_v2_project_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_project_v2_project_proto_goTypes = []any{
-	(*Project)(nil),                             // 0: project.v2.Project
-	(*ProjectFolder)(nil),                       // 1: project.v2.ProjectFolder
-	(*ProjectDoc)(nil),                          // 2: project.v2.ProjectDoc
-	(*UpsertProjectRequest)(nil),                // 3: project.v2.UpsertProjectRequest
-	(*UpsertProjectResponse)(nil),               // 4: project.v2.UpsertProjectResponse
-	(*GetProjectRequest)(nil),                   // 5: project.v2.GetProjectRequest
-	(*GetProjectResponse)(nil),                  // 6: project.v2.GetProjectResponse
-	(*RunProjectPaperScoreRequest)(nil),         // 7: project.v2.RunProjectPaperScoreRequest
-	(*RunProjectPaperScoreResponse)(nil),        // 8: project.v2.RunProjectPaperScoreResponse
-	(*RunProjectPaperScoreCommentRequest)(nil),  // 9: project.v2.RunProjectPaperScoreCommentRequest
-	(*RunProjectPaperScoreCommentResponse)(nil), // 10: project.v2.RunProjectPaperScoreCommentResponse
-	(*RunProjectOverleafCommentRequest)(nil),    // 11: project.v2.RunProjectOverleafCommentRequest
-	(*RunProjectOverleafCommentResponse)(nil),   // 12: project.v2.RunProjectOverleafCommentResponse
-	(*OverleafComment)(nil),                     // 13: project.v2.OverleafComment
-	(*PaperScoreCommentResult)(nil),             // 14: project.v2.PaperScoreCommentResult
-	(*PaperScoreCommentEntry)(nil),              // 15: project.v2.PaperScoreCommentEntry
-	(*PaperScoreResult)(nil),                    // 16: project.v2.PaperScoreResult
-	(*SuggestionList)(nil),                      // 17: project.v2.SuggestionList
-	(*GetProjectInstructionsRequest)(nil),       // 18: project.v2.GetProjectInstructionsRequest
-	(*GetProjectInstructionsResponse)(nil),      // 19: project.v2.GetProjectInstructionsResponse
-	(*UpsertProjectInstructionsRequest)(nil),    // 20: project.v2.UpsertProjectInstructionsRequest
-	(*UpsertProjectInstructionsResponse)(nil),   // 21: project.v2.UpsertProjectInstructionsResponse
-	nil,                           // 22: project.v2.PaperScoreResult.DetailsEntry
-	nil,                           // 23: project.v2.PaperScoreResult.SuggestionsEntry
-	(*timestamppb.Timestamp)(nil), // 24: google.protobuf.Timestamp
+	(*Project)(nil),               // 0: project.v2.Project
+	(*ProjectFolder)(nil),         // 1: project.v2.ProjectFolder
+	(*ProjectDoc)(nil),            // 2: project.v2.ProjectDoc
+	(*UpsertProjectRequest)(nil),  // 3: project.v2.UpsertProjectRequest
+	(*UpsertProjectResponse)(nil), // 4: project.v2.UpsertProjectResponse
+	(*GetProjectRequest)(nil),     // 5: project.v2.GetProjectRequest
+	(*GetProjectResponse)(nil),    // 6: project.v2.GetProjectResponse
+	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 }
 var file_project_v2_project_proto_depIdxs = []int32{
-	24, // 0: project.v2.Project.created_at:type_name -> google.protobuf.Timestamp
-	24, // 1: project.v2.Project.updated_at:type_name -> google.protobuf.Timestamp
+	7,  // 0: project.v2.Project.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 1: project.v2.Project.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 2: project.v2.Project.root_folder:type_name -> project.v2.ProjectFolder
 	2,  // 3: project.v2.ProjectFolder.docs:type_name -> project.v2.ProjectDoc
 	1,  // 4: project.v2.ProjectFolder.folders:type_name -> project.v2.ProjectFolder
 	1,  // 5: project.v2.UpsertProjectRequest.root_folder:type_name -> project.v2.ProjectFolder
 	0,  // 6: project.v2.UpsertProjectResponse.project:type_name -> project.v2.Project
 	0,  // 7: project.v2.GetProjectResponse.project:type_name -> project.v2.Project
-	16, // 8: project.v2.RunProjectPaperScoreResponse.paper_score:type_name -> project.v2.PaperScoreResult
-	14, // 9: project.v2.RunProjectPaperScoreCommentResponse.comments:type_name -> project.v2.PaperScoreCommentResult
-	13, // 10: project.v2.RunProjectOverleafCommentResponse.comments:type_name -> project.v2.OverleafComment
-	15, // 11: project.v2.PaperScoreCommentResult.results:type_name -> project.v2.PaperScoreCommentEntry
-	22, // 12: project.v2.PaperScoreResult.details:type_name -> project.v2.PaperScoreResult.DetailsEntry
-	23, // 13: project.v2.PaperScoreResult.suggestions:type_name -> project.v2.PaperScoreResult.SuggestionsEntry
-	17, // 14: project.v2.PaperScoreResult.SuggestionsEntry.value:type_name -> project.v2.SuggestionList
-	3,  // 15: project.v2.ProjectService.UpsertProject:input_type -> project.v2.UpsertProjectRequest
-	5,  // 16: project.v2.ProjectService.GetProject:input_type -> project.v2.GetProjectRequest
-	7,  // 17: project.v2.ProjectService.RunProjectPaperScore:input_type -> project.v2.RunProjectPaperScoreRequest
-	9,  // 18: project.v2.ProjectService.RunProjectPaperScoreComment:input_type -> project.v2.RunProjectPaperScoreCommentRequest
-	11, // 19: project.v2.ProjectService.RunProjectOverleafComment:input_type -> project.v2.RunProjectOverleafCommentRequest
-	18, // 20: project.v2.ProjectService.GetProjectInstructions:input_type -> project.v2.GetProjectInstructionsRequest
-	20, // 21: project.v2.ProjectService.UpsertProjectInstructions:input_type -> project.v2.UpsertProjectInstructionsRequest
-	4,  // 22: project.v2.ProjectService.UpsertProject:output_type -> project.v2.UpsertProjectResponse
-	6,  // 23: project.v2.ProjectService.GetProject:output_type -> project.v2.GetProjectResponse
-	8,  // 24: project.v2.ProjectService.RunProjectPaperScore:output_type -> project.v2.RunProjectPaperScoreResponse
-	10, // 25: project.v2.ProjectService.RunProjectPaperScoreComment:output_type -> project.v2.RunProjectPaperScoreCommentResponse
-	12, // 26: project.v2.ProjectService.RunProjectOverleafComment:output_type -> project.v2.RunProjectOverleafCommentResponse
-	19, // 27: project.v2.ProjectService.GetProjectInstructions:output_type -> project.v2.GetProjectInstructionsResponse
-	21, // 28: project.v2.ProjectService.UpsertProjectInstructions:output_type -> project.v2.UpsertProjectInstructionsResponse
-	22, // [22:29] is the sub-list for method output_type
-	15, // [15:22] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	3,  // 8: project.v2.ProjectService.UpsertProject:input_type -> project.v2.UpsertProjectRequest
+	5,  // 9: project.v2.ProjectService.GetProject:input_type -> project.v2.GetProjectRequest
+	4,  // 10: project.v2.ProjectService.UpsertProject:output_type -> project.v2.UpsertProjectResponse
+	6,  // 11: project.v2.ProjectService.GetProject:output_type -> project.v2.GetProjectResponse
+	10, // [10:12] is the sub-list for method output_type
+	8,  // [8:10] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_project_v2_project_proto_init() }
@@ -1575,7 +573,7 @@ func file_project_v2_project_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_project_v2_project_proto_rawDesc), len(file_project_v2_project_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

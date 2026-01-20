@@ -19,13 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ProjectService_UpsertProject_FullMethodName               = "/project.v2.ProjectService/UpsertProject"
-	ProjectService_GetProject_FullMethodName                  = "/project.v2.ProjectService/GetProject"
-	ProjectService_RunProjectPaperScore_FullMethodName        = "/project.v2.ProjectService/RunProjectPaperScore"
-	ProjectService_RunProjectPaperScoreComment_FullMethodName = "/project.v2.ProjectService/RunProjectPaperScoreComment"
-	ProjectService_RunProjectOverleafComment_FullMethodName   = "/project.v2.ProjectService/RunProjectOverleafComment"
-	ProjectService_GetProjectInstructions_FullMethodName      = "/project.v2.ProjectService/GetProjectInstructions"
-	ProjectService_UpsertProjectInstructions_FullMethodName   = "/project.v2.ProjectService/UpsertProjectInstructions"
+	ProjectService_UpsertProject_FullMethodName = "/project.v2.ProjectService/UpsertProject"
+	ProjectService_GetProject_FullMethodName    = "/project.v2.ProjectService/GetProject"
 )
 
 // ProjectServiceClient is the client API for ProjectService service.
@@ -34,11 +29,6 @@ const (
 type ProjectServiceClient interface {
 	UpsertProject(ctx context.Context, in *UpsertProjectRequest, opts ...grpc.CallOption) (*UpsertProjectResponse, error)
 	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
-	RunProjectPaperScore(ctx context.Context, in *RunProjectPaperScoreRequest, opts ...grpc.CallOption) (*RunProjectPaperScoreResponse, error)
-	RunProjectPaperScoreComment(ctx context.Context, in *RunProjectPaperScoreCommentRequest, opts ...grpc.CallOption) (*RunProjectPaperScoreCommentResponse, error)
-	RunProjectOverleafComment(ctx context.Context, in *RunProjectOverleafCommentRequest, opts ...grpc.CallOption) (*RunProjectOverleafCommentResponse, error)
-	GetProjectInstructions(ctx context.Context, in *GetProjectInstructionsRequest, opts ...grpc.CallOption) (*GetProjectInstructionsResponse, error)
-	UpsertProjectInstructions(ctx context.Context, in *UpsertProjectInstructionsRequest, opts ...grpc.CallOption) (*UpsertProjectInstructionsResponse, error)
 }
 
 type projectServiceClient struct {
@@ -69,67 +59,12 @@ func (c *projectServiceClient) GetProject(ctx context.Context, in *GetProjectReq
 	return out, nil
 }
 
-func (c *projectServiceClient) RunProjectPaperScore(ctx context.Context, in *RunProjectPaperScoreRequest, opts ...grpc.CallOption) (*RunProjectPaperScoreResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RunProjectPaperScoreResponse)
-	err := c.cc.Invoke(ctx, ProjectService_RunProjectPaperScore_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *projectServiceClient) RunProjectPaperScoreComment(ctx context.Context, in *RunProjectPaperScoreCommentRequest, opts ...grpc.CallOption) (*RunProjectPaperScoreCommentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RunProjectPaperScoreCommentResponse)
-	err := c.cc.Invoke(ctx, ProjectService_RunProjectPaperScoreComment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *projectServiceClient) RunProjectOverleafComment(ctx context.Context, in *RunProjectOverleafCommentRequest, opts ...grpc.CallOption) (*RunProjectOverleafCommentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RunProjectOverleafCommentResponse)
-	err := c.cc.Invoke(ctx, ProjectService_RunProjectOverleafComment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *projectServiceClient) GetProjectInstructions(ctx context.Context, in *GetProjectInstructionsRequest, opts ...grpc.CallOption) (*GetProjectInstructionsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetProjectInstructionsResponse)
-	err := c.cc.Invoke(ctx, ProjectService_GetProjectInstructions_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *projectServiceClient) UpsertProjectInstructions(ctx context.Context, in *UpsertProjectInstructionsRequest, opts ...grpc.CallOption) (*UpsertProjectInstructionsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpsertProjectInstructionsResponse)
-	err := c.cc.Invoke(ctx, ProjectService_UpsertProjectInstructions_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ProjectServiceServer is the server API for ProjectService service.
 // All implementations must embed UnimplementedProjectServiceServer
 // for forward compatibility.
 type ProjectServiceServer interface {
 	UpsertProject(context.Context, *UpsertProjectRequest) (*UpsertProjectResponse, error)
 	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
-	RunProjectPaperScore(context.Context, *RunProjectPaperScoreRequest) (*RunProjectPaperScoreResponse, error)
-	RunProjectPaperScoreComment(context.Context, *RunProjectPaperScoreCommentRequest) (*RunProjectPaperScoreCommentResponse, error)
-	RunProjectOverleafComment(context.Context, *RunProjectOverleafCommentRequest) (*RunProjectOverleafCommentResponse, error)
-	GetProjectInstructions(context.Context, *GetProjectInstructionsRequest) (*GetProjectInstructionsResponse, error)
-	UpsertProjectInstructions(context.Context, *UpsertProjectInstructionsRequest) (*UpsertProjectInstructionsResponse, error)
 	mustEmbedUnimplementedProjectServiceServer()
 }
 
@@ -145,21 +80,6 @@ func (UnimplementedProjectServiceServer) UpsertProject(context.Context, *UpsertP
 }
 func (UnimplementedProjectServiceServer) GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetProject not implemented")
-}
-func (UnimplementedProjectServiceServer) RunProjectPaperScore(context.Context, *RunProjectPaperScoreRequest) (*RunProjectPaperScoreResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RunProjectPaperScore not implemented")
-}
-func (UnimplementedProjectServiceServer) RunProjectPaperScoreComment(context.Context, *RunProjectPaperScoreCommentRequest) (*RunProjectPaperScoreCommentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RunProjectPaperScoreComment not implemented")
-}
-func (UnimplementedProjectServiceServer) RunProjectOverleafComment(context.Context, *RunProjectOverleafCommentRequest) (*RunProjectOverleafCommentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RunProjectOverleafComment not implemented")
-}
-func (UnimplementedProjectServiceServer) GetProjectInstructions(context.Context, *GetProjectInstructionsRequest) (*GetProjectInstructionsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetProjectInstructions not implemented")
-}
-func (UnimplementedProjectServiceServer) UpsertProjectInstructions(context.Context, *UpsertProjectInstructionsRequest) (*UpsertProjectInstructionsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpsertProjectInstructions not implemented")
 }
 func (UnimplementedProjectServiceServer) mustEmbedUnimplementedProjectServiceServer() {}
 func (UnimplementedProjectServiceServer) testEmbeddedByValue()                        {}
@@ -218,96 +138,6 @@ func _ProjectService_GetProject_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ProjectService_RunProjectPaperScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RunProjectPaperScoreRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).RunProjectPaperScore(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ProjectService_RunProjectPaperScore_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).RunProjectPaperScore(ctx, req.(*RunProjectPaperScoreRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ProjectService_RunProjectPaperScoreComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RunProjectPaperScoreCommentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).RunProjectPaperScoreComment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ProjectService_RunProjectPaperScoreComment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).RunProjectPaperScoreComment(ctx, req.(*RunProjectPaperScoreCommentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ProjectService_RunProjectOverleafComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RunProjectOverleafCommentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).RunProjectOverleafComment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ProjectService_RunProjectOverleafComment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).RunProjectOverleafComment(ctx, req.(*RunProjectOverleafCommentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ProjectService_GetProjectInstructions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetProjectInstructionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).GetProjectInstructions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ProjectService_GetProjectInstructions_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).GetProjectInstructions(ctx, req.(*GetProjectInstructionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ProjectService_UpsertProjectInstructions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpsertProjectInstructionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).UpsertProjectInstructions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ProjectService_UpsertProjectInstructions_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).UpsertProjectInstructions(ctx, req.(*UpsertProjectInstructionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ProjectService_ServiceDesc is the grpc.ServiceDesc for ProjectService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -322,26 +152,6 @@ var ProjectService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProject",
 			Handler:    _ProjectService_GetProject_Handler,
-		},
-		{
-			MethodName: "RunProjectPaperScore",
-			Handler:    _ProjectService_RunProjectPaperScore_Handler,
-		},
-		{
-			MethodName: "RunProjectPaperScoreComment",
-			Handler:    _ProjectService_RunProjectPaperScoreComment_Handler,
-		},
-		{
-			MethodName: "RunProjectOverleafComment",
-			Handler:    _ProjectService_RunProjectOverleafComment_Handler,
-		},
-		{
-			MethodName: "GetProjectInstructions",
-			Handler:    _ProjectService_GetProjectInstructions_Handler,
-		},
-		{
-			MethodName: "UpsertProjectInstructions",
-			Handler:    _ProjectService_UpsertProjectInstructions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
