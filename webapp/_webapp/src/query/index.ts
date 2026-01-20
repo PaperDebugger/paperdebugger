@@ -16,7 +16,6 @@ import {
   listConversations,
   listPrompts,
   listSupportedModels,
-  runProjectPaperScore,
   updateConversation,
   updatePrompt,
   getUserInstructions,
@@ -35,10 +34,7 @@ import {
 import { queryKeys } from "./keys";
 import {
   GetProjectResponse,
-  RunProjectPaperScoreResponse,
-  GetProjectInstructionsResponse,
-  UpsertProjectInstructionsResponse,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
+} from "../pkg/gen/apiclient/project/v2/project_pb";
 import { useAuthStore } from "../stores/auth-store";
 
 // Deprecated
@@ -118,13 +114,6 @@ export const useDeleteConversationMutation = (opts?: UseMutationOptionsOverride<
   });
 };
 
-export const useRunProjectPaperScoreMutation = (opts?: UseMutationOptionsOverride<RunProjectPaperScoreResponse>) => {
-  return useMutation({
-    mutationFn: runProjectPaperScore,
-    ...opts,
-  });
-};
-
 export const useGetConversationQuery = (
   conversationId: string,
   opts?: UseQueryOptionsOverride<GetConversationResponse>,
@@ -168,7 +157,7 @@ export const useUpsertUserInstructionsMutation = (
 // Project Instructions
 export const useGetProjectInstructionsQuery = (
   projectId: string,
-  opts?: UseQueryOptionsOverride<GetProjectInstructionsResponse>,
+  opts?: UseQueryOptionsOverride<{ instructions: string }>,
 ) => {
   return useQuery({
     queryKey: queryKeys.projects.getProjectInstructions(projectId).queryKey,
@@ -179,7 +168,7 @@ export const useGetProjectInstructionsQuery = (
 };
 
 export const useUpsertProjectInstructionsMutation = (
-  opts?: UseMutationOptionsOverride<UpsertProjectInstructionsResponse>,
+  opts?: UseMutationOptionsOverride<{ instructions: string }>,
 ) => {
   return useMutation({
     mutationFn: upsertProjectInstructions,

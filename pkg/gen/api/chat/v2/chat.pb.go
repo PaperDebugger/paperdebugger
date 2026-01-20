@@ -10,6 +10,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	v1 "paperdebugger/pkg/gen/api/shared/v1"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -1729,8 +1730,10 @@ type CreateConversationMessageStreamRequest struct {
 	ConversationType *ConversationType      `protobuf:"varint,6,opt,name=conversation_type,json=conversationType,proto3,enum=chat.v2.ConversationType,oneof" json:"conversation_type,omitempty"`
 	Surrounding      *string                `protobuf:"bytes,8,opt,name=surrounding,proto3,oneof" json:"surrounding,omitempty"`
 	ParentMessageId  *string                `protobuf:"bytes,9,opt,name=parent_message_id,json=parentMessageId,proto3,oneof" json:"parent_message_id,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Overleaf authentication for tools that need direct Overleaf API access
+	OverleafAuth  *v1.OverleafAuth `protobuf:"bytes,10,opt,name=overleaf_auth,json=overleafAuth,proto3,oneof" json:"overleaf_auth,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateConversationMessageStreamRequest) Reset() {
@@ -1817,6 +1820,13 @@ func (x *CreateConversationMessageStreamRequest) GetParentMessageId() string {
 		return *x.ParentMessageId
 	}
 	return ""
+}
+
+func (x *CreateConversationMessageStreamRequest) GetOverleafAuth() *v1.OverleafAuth {
+	if x != nil {
+		return x.OverleafAuth
+	}
+	return nil
 }
 
 // Response for streaming a message within an existing conversation
@@ -2010,7 +2020,7 @@ var File_chat_v2_chat_proto protoreflect.FileDescriptor
 
 const file_chat_v2_chat_proto_rawDesc = "" +
 	"\n" +
-	"\x12chat/v2/chat.proto\x12\achat.v2\x1a\x1cgoogle/api/annotations.proto\"k\n" +
+	"\x12chat/v2/chat.proto\x12\achat.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x16shared/v1/shared.proto\"k\n" +
 	"\x13MessageTypeToolCall\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04args\x18\x02 \x01(\tR\x04args\x12\x16\n" +
@@ -2129,7 +2139,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x12StreamFinalization\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"2\n" +
 	"\vStreamError\x12#\n" +
-	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xf6\x03\n" +
+	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xcb\x04\n" +
 	"&CreateConversationMessageStreamRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12,\n" +
@@ -2140,12 +2150,15 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x12user_selected_text\x18\x05 \x01(\tH\x01R\x10userSelectedText\x88\x01\x01\x12K\n" +
 	"\x11conversation_type\x18\x06 \x01(\x0e2\x19.chat.v2.ConversationTypeH\x02R\x10conversationType\x88\x01\x01\x12%\n" +
 	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01\x12/\n" +
-	"\x11parent_message_id\x18\t \x01(\tH\x04R\x0fparentMessageId\x88\x01\x01B\x12\n" +
+	"\x11parent_message_id\x18\t \x01(\tH\x04R\x0fparentMessageId\x88\x01\x01\x12A\n" +
+	"\roverleaf_auth\x18\n" +
+	" \x01(\v2\x17.shared.v1.OverleafAuthH\x05R\foverleafAuth\x88\x01\x01B\x12\n" +
 	"\x10_conversation_idB\x15\n" +
 	"\x13_user_selected_textB\x14\n" +
 	"\x12_conversation_typeB\x0e\n" +
 	"\f_surroundingB\x14\n" +
-	"\x12_parent_message_id\"\xfd\x04\n" +
+	"\x12_parent_message_idB\x10\n" +
+	"\x0e_overleaf_auth\"\xfd\x04\n" +
 	"'CreateConversationMessageStreamResponse\x12T\n" +
 	"\x15stream_initialization\x18\x01 \x01(\v2\x1d.chat.v2.StreamInitializationH\x00R\x14streamInitialization\x12F\n" +
 	"\x11stream_part_begin\x18\x02 \x01(\v2\x18.chat.v2.StreamPartBeginH\x00R\x0fstreamPartBegin\x12<\n" +
@@ -2215,6 +2228,7 @@ var file_chat_v2_chat_proto_goTypes = []any{
 	(*StreamError)(nil),                             // 29: chat.v2.StreamError
 	(*CreateConversationMessageStreamRequest)(nil),  // 30: chat.v2.CreateConversationMessageStreamRequest
 	(*CreateConversationMessageStreamResponse)(nil), // 31: chat.v2.CreateConversationMessageStreamResponse
+	(*v1.OverleafAuth)(nil),                         // 32: shared.v1.OverleafAuth
 }
 var file_chat_v2_chat_proto_depIdxs = []int32{
 	3,  // 0: chat.v2.MessagePayload.system:type_name -> chat.v2.MessageTypeSystem
@@ -2233,31 +2247,32 @@ var file_chat_v2_chat_proto_depIdxs = []int32{
 	7,  // 13: chat.v2.StreamPartBegin.payload:type_name -> chat.v2.MessagePayload
 	7,  // 14: chat.v2.StreamPartEnd.payload:type_name -> chat.v2.MessagePayload
 	0,  // 15: chat.v2.CreateConversationMessageStreamRequest.conversation_type:type_name -> chat.v2.ConversationType
-	22, // 16: chat.v2.CreateConversationMessageStreamResponse.stream_initialization:type_name -> chat.v2.StreamInitialization
-	23, // 17: chat.v2.CreateConversationMessageStreamResponse.stream_part_begin:type_name -> chat.v2.StreamPartBegin
-	24, // 18: chat.v2.CreateConversationMessageStreamResponse.message_chunk:type_name -> chat.v2.MessageChunk
-	26, // 19: chat.v2.CreateConversationMessageStreamResponse.incomplete_indicator:type_name -> chat.v2.IncompleteIndicator
-	27, // 20: chat.v2.CreateConversationMessageStreamResponse.stream_part_end:type_name -> chat.v2.StreamPartEnd
-	28, // 21: chat.v2.CreateConversationMessageStreamResponse.stream_finalization:type_name -> chat.v2.StreamFinalization
-	29, // 22: chat.v2.CreateConversationMessageStreamResponse.stream_error:type_name -> chat.v2.StreamError
-	25, // 23: chat.v2.CreateConversationMessageStreamResponse.reasoning_chunk:type_name -> chat.v2.ReasoningChunk
-	11, // 24: chat.v2.ChatService.ListConversations:input_type -> chat.v2.ListConversationsRequest
-	13, // 25: chat.v2.ChatService.GetConversation:input_type -> chat.v2.GetConversationRequest
-	30, // 26: chat.v2.ChatService.CreateConversationMessageStream:input_type -> chat.v2.CreateConversationMessageStreamRequest
-	15, // 27: chat.v2.ChatService.UpdateConversation:input_type -> chat.v2.UpdateConversationRequest
-	17, // 28: chat.v2.ChatService.DeleteConversation:input_type -> chat.v2.DeleteConversationRequest
-	20, // 29: chat.v2.ChatService.ListSupportedModels:input_type -> chat.v2.ListSupportedModelsRequest
-	12, // 30: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
-	14, // 31: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
-	31, // 32: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
-	16, // 33: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
-	18, // 34: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
-	21, // 35: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
-	30, // [30:36] is the sub-list for method output_type
-	24, // [24:30] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	32, // 16: chat.v2.CreateConversationMessageStreamRequest.overleaf_auth:type_name -> shared.v1.OverleafAuth
+	22, // 17: chat.v2.CreateConversationMessageStreamResponse.stream_initialization:type_name -> chat.v2.StreamInitialization
+	23, // 18: chat.v2.CreateConversationMessageStreamResponse.stream_part_begin:type_name -> chat.v2.StreamPartBegin
+	24, // 19: chat.v2.CreateConversationMessageStreamResponse.message_chunk:type_name -> chat.v2.MessageChunk
+	26, // 20: chat.v2.CreateConversationMessageStreamResponse.incomplete_indicator:type_name -> chat.v2.IncompleteIndicator
+	27, // 21: chat.v2.CreateConversationMessageStreamResponse.stream_part_end:type_name -> chat.v2.StreamPartEnd
+	28, // 22: chat.v2.CreateConversationMessageStreamResponse.stream_finalization:type_name -> chat.v2.StreamFinalization
+	29, // 23: chat.v2.CreateConversationMessageStreamResponse.stream_error:type_name -> chat.v2.StreamError
+	25, // 24: chat.v2.CreateConversationMessageStreamResponse.reasoning_chunk:type_name -> chat.v2.ReasoningChunk
+	11, // 25: chat.v2.ChatService.ListConversations:input_type -> chat.v2.ListConversationsRequest
+	13, // 26: chat.v2.ChatService.GetConversation:input_type -> chat.v2.GetConversationRequest
+	30, // 27: chat.v2.ChatService.CreateConversationMessageStream:input_type -> chat.v2.CreateConversationMessageStreamRequest
+	15, // 28: chat.v2.ChatService.UpdateConversation:input_type -> chat.v2.UpdateConversationRequest
+	17, // 29: chat.v2.ChatService.DeleteConversation:input_type -> chat.v2.DeleteConversationRequest
+	20, // 30: chat.v2.ChatService.ListSupportedModels:input_type -> chat.v2.ListSupportedModelsRequest
+	12, // 31: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
+	14, // 32: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
+	31, // 33: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
+	16, // 34: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
+	18, // 35: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
+	21, // 36: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
+	31, // [31:37] is the sub-list for method output_type
+	25, // [25:31] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_chat_v2_chat_proto_init() }

@@ -150,6 +150,69 @@ func (x *Error) GetMessage() string {
 	return ""
 }
 
+// OverleafAuth contains authentication information for Overleaf API calls.
+// This is passed from frontend on each request and used by tools that need
+// to interact with Overleaf directly (e.g., create_file, delete_file).
+type OverleafAuth struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`                      // overleaf_session2 cookie
+	Gclb          string                 `protobuf:"bytes,2,opt,name=gclb,proto3" json:"gclb,omitempty"`                            // GCLB cookie (Google Cloud Load Balancer)
+	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"` // Current Overleaf project ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OverleafAuth) Reset() {
+	*x = OverleafAuth{}
+	mi := &file_shared_v1_shared_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OverleafAuth) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OverleafAuth) ProtoMessage() {}
+
+func (x *OverleafAuth) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_v1_shared_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OverleafAuth.ProtoReflect.Descriptor instead.
+func (*OverleafAuth) Descriptor() ([]byte, []int) {
+	return file_shared_v1_shared_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *OverleafAuth) GetSession() string {
+	if x != nil {
+		return x.Session
+	}
+	return ""
+}
+
+func (x *OverleafAuth) GetGclb() string {
+	if x != nil {
+		return x.Gclb
+	}
+	return ""
+}
+
+func (x *OverleafAuth) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
 var File_shared_v1_shared_proto protoreflect.FileDescriptor
 
 const file_shared_v1_shared_proto_rawDesc = "" +
@@ -157,7 +220,12 @@ const file_shared_v1_shared_proto_rawDesc = "" +
 	"\x16shared/v1/shared.proto\x12\tshared.v1\"K\n" +
 	"\x05Error\x12(\n" +
 	"\x04code\x18\x02 \x01(\x0e2\x14.shared.v1.ErrorCodeR\x04code\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage*\x87\x03\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"[\n" +
+	"\fOverleafAuth\x12\x18\n" +
+	"\asession\x18\x01 \x01(\tR\asession\x12\x12\n" +
+	"\x04gclb\x18\x02 \x01(\tR\x04gclb\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x03 \x01(\tR\tprojectId*\x87\x03\n" +
 	"\tErrorCode\x12\x1a\n" +
 	"\x16ERROR_CODE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x12ERROR_CODE_UNKNOWN\x10\xe8\a\x12\x18\n" +
@@ -187,10 +255,11 @@ func file_shared_v1_shared_proto_rawDescGZIP() []byte {
 }
 
 var file_shared_v1_shared_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_shared_v1_shared_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_shared_v1_shared_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_shared_v1_shared_proto_goTypes = []any{
-	(ErrorCode)(0), // 0: shared.v1.ErrorCode
-	(*Error)(nil),  // 1: shared.v1.Error
+	(ErrorCode)(0),       // 0: shared.v1.ErrorCode
+	(*Error)(nil),        // 1: shared.v1.Error
+	(*OverleafAuth)(nil), // 2: shared.v1.OverleafAuth
 }
 var file_shared_v1_shared_proto_depIdxs = []int32{
 	0, // 0: shared.v1.Error.code:type_name -> shared.v1.ErrorCode
@@ -212,7 +281,7 @@ func file_shared_v1_shared_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_v1_shared_proto_rawDesc), len(file_shared_v1_shared_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

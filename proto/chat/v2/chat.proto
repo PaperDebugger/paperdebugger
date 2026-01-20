@@ -3,6 +3,7 @@ syntax = "proto3";
 package chat.v2;
 
 import "google/api/annotations.proto";
+import "shared/v1/shared.proto";
 
 option go_package = "paperdebugger/pkg/gen/api/chat/v2;chatv2";
 
@@ -233,6 +234,8 @@ message CreateConversationMessageStreamRequest {
   optional ConversationType conversation_type = 6;
   optional string surrounding = 8;
   optional string parent_message_id = 9;
+  // Overleaf authentication for tools that need direct Overleaf API access
+  optional shared.v1.OverleafAuth overleaf_auth = 10;
 }
 
 // Response for streaming a message within an existing conversation

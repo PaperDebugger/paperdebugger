@@ -23,17 +23,15 @@ import {
   UpdateConversationResponseSchema,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
-  GetProjectRequest,
-  GetProjectResponseSchema,
   RunProjectPaperScoreRequest,
   RunProjectPaperScoreResponseSchema,
+} from "../pkg/gen/apiclient/project/v1/project_pb";
+import {
+  GetProjectRequest,
+  GetProjectResponseSchema,
   UpsertProjectRequest,
   UpsertProjectResponseSchema,
-  GetProjectInstructionsRequest,
-  GetProjectInstructionsResponseSchema,
-  UpsertProjectInstructionsRequest,
-  UpsertProjectInstructionsResponseSchema,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
+} from "../pkg/gen/apiclient/project/v2/project_pb";
 import {
   GetSettingsResponseSchema,
   GetUserResponseSchema,
@@ -142,14 +140,14 @@ export const updateConversation = async (data: PlainMessage<UpdateConversationRe
 };
 
 export const getProject = async (data: PlainMessage<GetProjectRequest>) => {
-  const response = await apiclient.get(`/projects/${data.projectId}`, data, {
+  const response = await apiclientV2.get(`/projects/${data.projectId}`, data, {
     ignoreErrorToast: true,
   });
   return fromJson(GetProjectResponseSchema, response);
 };
 
 export const upsertProject = async (data: PlainMessage<UpsertProjectRequest>) => {
-  const response = await apiclient.put(`/projects/${data.projectId}`, data);
+  const response = await apiclientV2.put(`/projects/${data.projectId}`, data);
   return fromJson(UpsertProjectResponseSchema, response);
 };
 
@@ -202,22 +200,34 @@ export const runProjectPaperScore = async (data: PlainMessage<RunProjectPaperSco
   return fromJson(RunProjectPaperScoreResponseSchema, response);
 };
 
-export const getProjectInstructions = async (data: PlainMessage<GetProjectInstructionsRequest>) => {
+// V2 API: Instructions are now included in getProject response
+// These functions are kept for backward compatibility but now use getProject/upsertProject internally
+export const getProjectInstructions = async (data: { projectId: string }) => {
   if (!apiclient.hasToken()) {
     throw new Error("No token");
   }
-  const response = await apiclient.get(`/projects/${data.projectId}/instructions`, undefined, {
-    ignoreErrorToast: true,
-  });
-  return fromJson(GetProjectInstructionsResponseSchema, response);
+  const project = await getProject({ projectId: data.projectId });
+  return { instructions: project.project?.instructions || "" };
 };
 
-export const upsertProjectInstructions = async (data: PlainMessage<UpsertProjectInstructionsRequest>) => {
+export const upsertProjectInstructions = async (data: { projectId: string; instructions: string }) => {
   if (!apiclient.hasToken()) {
     throw new Error("No token");
   }
-  const response = await apiclient.post(`/projects/${data.projectId}/instructions`, data);
-  return fromJson(UpsertProjectInstructionsResponseSchema, response);
+
+  // Get current project to preserve other fields
+  const currentProject = await getProject({ projectId: data.projectId });
+
+  // Update with new instructions
+  await upsertProject({
+    projectId: data.projectId,
+    name: currentProject.project?.name || "Project",
+    rootDocId: currentProject.project?.rootDocId || "",
+    rootFolder: currentProject.project?.rootFolder,
+    instructions: data.instructions,
+  });
+
+  return { instructions: data.instructions };
 };
 
 export const acceptComments = async (data: PlainMessage<CommentsAcceptedRequest>) => {

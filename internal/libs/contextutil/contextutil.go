@@ -67,3 +67,26 @@ func GetConversationID(ctx context.Context) (string, error) {
 	}
 	return v, nil
 }
+
+// OverleafAuth contains authentication information for Overleaf API calls.
+type OverleafAuth struct {
+	Session   string // overleaf_session2 cookie
+	GCLB      string // GCLB cookie (Google Cloud Load Balancer)
+	ProjectID string // Current Overleaf project ID
+}
+
+const overleafAuthKey = "overleafAuth"
+
+func SetOverleafAuth(ctx context.Context, auth *OverleafAuth) context.Context {
+	return Set(ctx, overleafAuthKey, auth)
+}
+
+// GetOverleafAuth returns the Overleaf authentication from the context.
+// Returns nil and error if not found - callers should check if Overleaf auth is required.
+func GetOverleafAuth(ctx context.Context) (*OverleafAuth, error) {
+	v, ok := Get[*OverleafAuth](ctx, overleafAuthKey)
+	if !ok {
+		return nil, shared.ErrBadRequest("overleaf auth not found in context")
+	}
+	return v, nil
+}

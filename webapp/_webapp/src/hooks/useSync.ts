@@ -15,7 +15,7 @@ import { useAuthStore } from "../stores/auth-store";
 import { getCookies } from "../intermediate";
 import { getProjectId } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import { UpsertProjectRequest, ProjectDoc } from "../pkg/gen/apiclient/project/v1/project_pb";
+import { UpsertProjectRequest } from "../pkg/gen/apiclient/project/v2/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError, logInfo } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";
@@ -99,19 +99,26 @@ async function syncWordDocument(
   const fullText = await adapter.getFullText();
   options?.onProgress?.(50);
 
-  // Create project snapshot with single document
+  // Create project snapshot with single document in root folder
   const projectSnapshot: PlainMessage<UpsertProjectRequest> = {
     projectId,
     name: "Word Document", // Word documents don't have a project name concept
     rootDocId: "main",
-    docs: [
-      {
-        id: "main",
-        version: Math.floor(Date.now() / 1000), // Use seconds timestamp (int32 safe)
-        filepath: "document.docx",
-        lines: fullText.split("\n"),
-      } as PlainMessage<ProjectDoc>,
-    ],
+    rootFolder: {
+      id: "root",
+      name: "rootFolder",
+      docs: [
+        {
+          id: "main",
+          version: Math.floor(Date.now() / 1000), // Use seconds timestamp (int32 safe)
+          filename: "document.docx",
+          filepath: "document.docx",
+          lines: fullText.split("\n"),
+        },
+      ],
+      folders: [],
+    },
+    instructions: "", // Instructions will be preserved by server if already set
   };
   options?.onProgress?.(70);
 
@@ -146,14 +153,21 @@ async function syncGenericDocument(
       projectId,
       name: "Document",
       rootDocId: "main",
-      docs: [
-        {
-          id: "main",
-          version: Math.floor(Date.now() / 1000),
-          filepath: "document.txt",
-          lines: fullText.split("\n"),
-        } as PlainMessage<ProjectDoc>,
-      ],
+      rootFolder: {
+        id: "root",
+        name: "rootFolder",
+        docs: [
+          {
+            id: "main",
+            version: Math.floor(Date.now() / 1000),
+            filename: "document.txt",
+            filepath: "document.txt",
+            lines: fullText.split("\n"),
+          },
+        ],
+        folders: [],
+      },
+      instructions: "", // Instructions will be preserved by server if already set
     };
     options?.onProgress?.(70);
 

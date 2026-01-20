@@ -111,15 +111,20 @@ func initializeToolkitV2(
 ) *registry.ToolRegistryV2 {
 	toolRegistry := registry.NewToolRegistryV2()
 
+	// File tools with ProjectService dependency
+	createFileTool := filetools.NewCreateFileTool(projectService)
 	readFileTool := filetools.NewReadFileTool(projectService)
 	listFolderTool := filetools.NewListFolderTool(projectService)
 	searchStringTool := filetools.NewSearchStringTool(projectService)
 	searchFileTool := filetools.NewSearchFileTool(projectService)
+
+	// LaTeX tools with ProjectService dependency
 	documentStructureTool := latextools.NewDocumentStructureTool(projectService)
 	readSectionSourceTool := latextools.NewReadSectionSourceTool(projectService)
 	readSourceLineRangeTool := latextools.NewReadSourceLineRangeTool(projectService)
 
-	toolRegistry.Register("create_file", filetools.CreateFileToolDescriptionV2, filetools.CreateFileTool)
+	// Register file tools
+	toolRegistry.Register("create_file", filetools.CreateFileToolDescriptionV2, createFileTool.Call)
 	toolRegistry.Register("delete_file", filetools.DeleteFileToolDescriptionV2, filetools.DeleteFileTool)
 	toolRegistry.Register("create_folder", filetools.CreateFolderToolDescriptionV2, filetools.CreateFolderTool)
 	toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
@@ -127,6 +132,8 @@ func initializeToolkitV2(
 	toolRegistry.Register("list_folder", filetools.ListFolderToolDescriptionV2, listFolderTool.Call)
 	toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, searchStringTool.Call)
 	toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, searchFileTool.Call)
+
+	// Register LaTeX tools
 	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, documentStructureTool.Call)
 	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
 	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, readSectionSourceTool.Call)
