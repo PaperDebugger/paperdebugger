@@ -132,7 +132,7 @@ export function PromptInput() {
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
-        <div className="border border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
+        <div className="border !border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
           <textarea
             onMouseDown={(e) => e.stopPropagation()}
             onFocus={() => setShowModelSelection(false)}

@@ -56,7 +56,7 @@ export default function LoginWithOverleaf({
 
   return (
     <div
-      className="mt-[1rem] border border-primary-700 rounded-lg px-3 h-[32px] min-h-[32px] w-[196px] flex flex-row items-center bg-primary-700 text-white cursor-pointer"
+      className="mt-[1rem] border !border-primary-700 rounded-lg px-3 h-[32px] min-h-[32px] w-[196px] flex flex-row items-center bg-primary-700 text-white cursor-pointer"
       onClick={() => onOverleafLogin()}
       style={{
         cursor: isLoginLoading ? "wait" : "pointer",

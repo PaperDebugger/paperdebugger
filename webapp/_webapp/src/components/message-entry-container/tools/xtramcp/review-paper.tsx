@@ -111,7 +111,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
                 {/* Informational note */}
                 <div className="mb-2 text-gray-600">
                   <MarkdownComponent animated={animated}>

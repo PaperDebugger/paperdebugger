@@ -87,7 +87,7 @@ const WindowController = () => {
   const CompactHeader = useMemo(() => {
     return (
       <PdAppControlTitleBar
-        className={cn("border-gray-200 rounded-xl rnd-cancel", sidebarCollapsed ? "collapsed" : "expanded")}
+        className={cn("!border-gray-200 rounded-xl rnd-cancel", sidebarCollapsed ? "collapsed" : "expanded")}
         id="pd-app-header"
       >
         <div className="flex items-center justify-between pl-2 pr-0 py-0">

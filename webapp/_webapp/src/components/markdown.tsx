@@ -102,7 +102,7 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
           ),
         },
         hr: {
-          component: ({ ...props }: ComponentProps) => <hr {...props} className="border-t border-gray-300 my-3" />,
+          component: ({ ...props }: ComponentProps) => <hr {...props} className="border-t !border-gray-300 my-3" />,
         },
         li: {
           component: ({ children, ...props }: ComponentProps) => (

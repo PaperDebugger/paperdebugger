@@ -144,7 +144,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
       ref={scrollContainerRef}
       className={cn(
         "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white shadow-lg",
-        items && items.length > 0 ? "rounded-lg border border-gray-200 overflow-y-auto" : "max-h-[0px]",
+        items && items.length > 0 ? "rounded-lg border !border-gray-200 overflow-y-auto" : "max-h-[0px]",
         heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
     >

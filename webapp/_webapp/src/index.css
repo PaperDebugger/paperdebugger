@@ -88,7 +88,7 @@ body {
 /* Tool Card Begin */
 .tool-card {
   @apply bg-white rounded-xl border overflow-hidden max-w-xl mx-2 p-4 my-2;
-  border-color: var(--pd-border-color);
+  border-color: var(--pd-border-color) !important;
 }
 
 .tool-card.narrow {
@@ -358,7 +358,7 @@ body {
 
 .chat-message-entry .message-box-assistant:hover {
   @apply !bg-gray-100 !delay-[2000ms];
-  border-color: var(--pd-border-color);
+  border-color: var(--pd-border-color) !important;
 }
 
 .chat-message-entry .actions {
@@ -384,12 +384,12 @@ body {
 
 .message-box-stale {
   @apply !bg-red-50 !border;
-  border-color: var(--pd-border-color-error);
+  border-color: var(--pd-border-color-error) !important;
 }
 
 .message-box-stale-description {
   @apply !text-sm !text-red-400 !border-t !mt-2 !pt-1 fade-in;
-  border-color: var(--pd-border-color-error);
+  border-color: var(--pd-border-color-error) !important;
 }
 
 .pd-message {
@@ -543,7 +543,7 @@ body {
 .gsi-material-button:disabled {
   cursor: default;
   background-color: #ffffff61;
-  border-color: #1f1f1f1f;
+  border-color: #1f1f1f1f !important;
 }
 
 .gsi-material-button:disabled .gsi-material-button-contents {

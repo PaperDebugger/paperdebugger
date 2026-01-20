@@ -27,7 +27,7 @@ export const VariableInput = ({
       </div>
       <div className="text-xs text-gray-500">{description}</div>
       <input
-        className="border border-gray-200 rounded-md px-2 py-1"
+        className="border !border-gray-200 rounded-md px-2 py-1"
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
