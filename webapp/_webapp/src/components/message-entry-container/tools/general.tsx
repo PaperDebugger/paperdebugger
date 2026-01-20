@@ -49,6 +49,20 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
     }
   }, [message, isLoading, isCollapsed]);
 
+  // Auto-collapse when loading finishes (reasoning ends)
+  const prevIsLoadingRef = useRef(isLoading);
+  useEffect(() => {
+    // Only collapse if it was loading before and now it's not
+    if (prevIsLoadingRef.current && !isLoading) {
+      if (onToggleCollapse && externalIsCollapsed === false) {
+        onToggleCollapse();
+      } else if (externalIsCollapsed === undefined) {
+        setInternalIsCollapsed(true);
+      }
+    }
+    prevIsLoadingRef.current = isLoading;
+  }, [isLoading, onToggleCollapse, externalIsCollapsed]);
+
   // When no message, show minimal "Calling tool..." style like Preparing function
   if (!message) {
     return (
