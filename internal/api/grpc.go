@@ -113,6 +113,13 @@ func NewGrpcServer(
 	grpcServer.Server = grpc.NewServer(
 		grpc.UnaryInterceptor(grpcServer.grpcUnaryAuthInterceptor),
 		grpc.StreamInterceptor(grpcServer.grpcStreamAuthInterceptor),
+		// Disable write buffer to enable immediate streaming
+		grpc.WriteBufferSize(0),
+		// Disable read buffer size to reduce latency
+		grpc.ReadBufferSize(0),
+		// Set initial window size for faster streaming
+		grpc.InitialWindowSize(65536),
+		grpc.InitialConnWindowSize(65536),
 	)
 
 	authv1.RegisterAuthServiceServer(grpcServer.Server, authServer)
