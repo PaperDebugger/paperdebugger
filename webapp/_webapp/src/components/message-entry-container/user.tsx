@@ -82,7 +82,7 @@ export const UserMessageContainer = ({
           {isEditing ? (
             <div className="flex flex-col gap-2 w-full min-w-[300px]">
                 <textarea
-                  className="w-full p-2 rounded bg-default-100 text-small text-default-900 outline-none resize-none border border-default-200 focus:border-primary"
+                  className="w-full p-2 rounded bg-default-100 text-small text-default-900 outline-none resize-none border !border-default-200 focus:!border-primary"
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={Math.max(3, editContent.split('\n').length)}

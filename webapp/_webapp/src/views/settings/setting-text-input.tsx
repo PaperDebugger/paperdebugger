@@ -106,7 +106,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     );
 
     const inputClassName = cn(
-      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200 rounded-md w-full",
+      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 rounded-md w-full",
       className,
     );
 

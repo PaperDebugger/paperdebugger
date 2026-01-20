@@ -77,7 +77,7 @@ export function UserInstructions() {
           id="pd-chat-prompt-input-user"
           ref={userLevelPromptRef}
           className={cn(
-            "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200 rounded-md w-full",
+            "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 rounded-md w-full",
           )}
           style={{
             fontSize: "12px",
