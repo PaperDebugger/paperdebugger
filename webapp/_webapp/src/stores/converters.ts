@@ -57,7 +57,7 @@ export function isDisplayableMessage(msg: DisplayMessage): boolean {
     return msg.content.length > 0;
   }
   if (msg.type === "assistant") {
-    return msg.content.length > 0;
+    return msg.content.length > 0 || (msg.reasoning?.length ?? 0) > 0;
   }
   if (msg.type === "toolCall" || msg.type === "toolCallPrepare") {
     return true;

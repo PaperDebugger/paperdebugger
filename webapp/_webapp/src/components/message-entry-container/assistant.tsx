@@ -1,6 +1,6 @@
 import { cn, Tooltip } from "@heroui/react";
 import { GeneralToolCard } from "./tools/general";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import googleAnalytics from "../../libs/google-analytics";
 import { getProjectId } from "../../libs/helpers";
 import MarkdownComponent from "../markdown";
@@ -38,6 +38,24 @@ export const AssistantMessageContainer = ({
   const projectId = getProjectId();
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Auto-collapse reasoning when message content arrives
+  const [isReasoningCollapsed, setIsReasoningCollapsed] = useState(true);
+
+  useEffect(() => {
+    const hasReasoning = (reasoning?.length ?? 0) > 0;
+    const hasMessage = (processedMessage?.length ?? 0) > 0;
+
+    // Auto-expand when reasoning arrives
+    if (hasReasoning && !hasMessage) {
+      setIsReasoningCollapsed(false);
+    }
+
+    // Auto-collapse when message content arrives
+    if (hasReasoning && hasMessage) {
+      setIsReasoningCollapsed(true);
+    }
+  }, [reasoning, processedMessage]);
+
   const handleCopy = useCallback(() => {
     if (processedMessage) {
       googleAnalytics.fireEvent(user?.id, "messagecard_copy_message", {
@@ -52,7 +70,7 @@ export const AssistantMessageContainer = ({
     }
   }, [user?.id, projectId, processedMessage, messageId]);
 
-  const showMessage = (processedMessage?.length || 0 > 0) || (reasoning?.length || 0 > 0);
+  const showMessage = (processedMessage?.length ?? 0) > 0 || (reasoning?.length ?? 0) > 0;
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
   const writingIndicator =
     stale || !showMessage ? null : (
@@ -73,7 +91,13 @@ export const AssistantMessageContainer = ({
       key="reasoning"
       className={cn("reasoning-container mb-3", animated && "animate-in fade-in slide-in-from-top-2 duration-300")}
     >
-      <GeneralToolCard functionName="reasoning" message={reasoning} animated={animated} />
+      <GeneralToolCard
+        functionName="reasoning"
+        message={reasoning}
+        animated={animated}
+        isCollapsed={isReasoningCollapsed}
+        onToggleCollapse={() => setIsReasoningCollapsed(!isReasoningCollapsed)}
+      />
     </div>
   );
 

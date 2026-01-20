@@ -30,7 +30,7 @@ export function isEmptyConversation(): boolean {
   const allMessages = state.allDisplayMessages;
   const visibleMessages = allMessages.filter((msg) => {
     if (msg.type === "user") return msg.content.length > 0;
-    if (msg.type === "assistant") return msg.content.length > 0;
+    if (msg.type === "assistant") return msg.content.length > 0 || (msg.reasoning?.length ?? 0) > 0;
     if (msg.type === "toolCall" || msg.type === "toolCallPrepare") return true;
     return false;
   });
