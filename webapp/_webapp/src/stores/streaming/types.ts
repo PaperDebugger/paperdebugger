@@ -167,8 +167,8 @@ export interface StreamingError {
  * Recovery strategy types for different error scenarios.
  */
 export type RecoveryStrategy =
-  | { type: "retry"; maxAttempts: number; backoff: "exponential" | "linear"; delayMs: number }
-  | { type: "sync-and-retry"; maxAttempts: number }
+  | { type: "retry"; maxRetries: number; backoff: "exponential" | "linear"; delayMs: number }
+  | { type: "sync-and-retry"; maxRetries: number }
   | { type: "show-error"; dismissable: boolean; message?: string }
   | { type: "abort"; cleanup?: boolean };
 

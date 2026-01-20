@@ -330,7 +330,7 @@ function detectErrorCodeFromMessage(message: string): StreamingErrorCode {
 const DEFAULT_STRATEGIES: Record<StreamingErrorCode, RecoveryStrategy> = {
   NEW_ERROR_TYPE: {
     type: "retry",
-    maxAttempts: 2,
+    maxRetries: 2,
     backoff: "exponential",
     delayMs: 1000,
   },

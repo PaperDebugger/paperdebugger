@@ -166,29 +166,29 @@ function isRetryableCode(code: StreamingErrorCode): boolean {
 const DEFAULT_STRATEGIES: Record<StreamingErrorCode, RecoveryStrategy> = {
   PROJECT_OUT_OF_DATE: {
     type: "sync-and-retry",
-    maxAttempts: 2,
+    maxRetries: 2,
   },
   NETWORK_ERROR: {
     type: "retry",
-    maxAttempts: 3,
+    maxRetries: 3,
     backoff: "exponential",
     delayMs: 1000,
   },
   TIMEOUT: {
     type: "retry",
-    maxAttempts: 2,
+    maxRetries: 2,
     backoff: "linear",
     delayMs: 2000,
   },
   RATE_LIMITED: {
     type: "retry",
-    maxAttempts: 3,
+    maxRetries: 3,
     backoff: "exponential",
     delayMs: 5000,
   },
   SERVER_ERROR: {
     type: "retry",
-    maxAttempts: 2,
+    maxRetries: 2,
     backoff: "exponential",
     delayMs: 2000,
   },
@@ -313,8 +313,8 @@ export class StreamingErrorHandler {
     context: ErrorContext,
     strategy: Extract<RecoveryStrategy, { type: "retry" }>
   ): Promise<ErrorResolution> {
-    if (context.retryCount >= strategy.maxAttempts) {
-      logWarn(`Max retry attempts (${strategy.maxAttempts}) reached for ${error.code}`);
+    if (context.retryCount >= strategy.maxRetries) {
+      logWarn(`Max retry attempts (${strategy.maxRetries}) reached for ${error.code}`);
       this.showErrorToUser(error, "Retry failed after multiple attempts");
       return {
         handled: true,
@@ -325,7 +325,7 @@ export class StreamingErrorHandler {
     }
 
     const delay = this.calculateDelay(context.retryCount, strategy);
-    logInfo(`Retrying in ${delay}ms (attempt ${context.retryCount + 1}/${strategy.maxAttempts})`);
+    logInfo(`Retrying in ${delay}ms (attempt ${context.retryCount + 1}/${strategy.maxRetries})`);
 
     await this.sleep(delay);
 
@@ -354,8 +354,8 @@ export class StreamingErrorHandler {
     context: ErrorContext,
     strategy: Extract<RecoveryStrategy, { type: "sync-and-retry" }>
   ): Promise<ErrorResolution> {
-    if (context.retryCount >= strategy.maxAttempts) {
-      logWarn(`Max sync-and-retry attempts (${strategy.maxAttempts}) reached`);
+    if (context.retryCount >= strategy.maxRetries) {
+      logWarn(`Max sync-and-retry attempts (${strategy.maxRetries}) reached`);
       this.showErrorToUser(error, "Project sync failed");
       return {
         handled: true,
@@ -365,7 +365,7 @@ export class StreamingErrorHandler {
       };
     }
 
-    logInfo(`Syncing project before retry (attempt ${context.retryCount + 1}/${strategy.maxAttempts})`);
+    logInfo(`Syncing project before retry (attempt ${context.retryCount + 1}/${strategy.maxRetries})`);
 
     try {
       const syncResult = await this.deps.sync();

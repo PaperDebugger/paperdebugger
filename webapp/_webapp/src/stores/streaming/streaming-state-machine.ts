@@ -353,7 +353,7 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
 
           const resolution = await handler.handle(errorMessage, {
             retryCount: 0,
-            maxRetries: 2,
+            maxRetries: strategy.maxRetries || 2,  // Use strategy's maxRetries to prevent infinite retry
             currentPrompt: context.currentPrompt,
             currentSelectedText: context.currentSelectedText,
             userId: context.userId,

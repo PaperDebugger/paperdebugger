@@ -160,7 +160,7 @@ describe("Error Handler", () => {
       });
     }
 
-    it("should have correct maxAttempts for retry strategies", () => {
+    it("should have correct maxRetries for retry strategies", () => {
       const networkError: StreamingError = {
         code: "NETWORK_ERROR",
         message: "Test",
@@ -171,7 +171,7 @@ describe("Error Handler", () => {
       const strategy = getRecoveryStrategy(networkError);
 
       if (strategy.type === "retry") {
-        expect(strategy.maxAttempts).toBe(3);
+        expect(strategy.maxRetries).toBe(3);
         expect(strategy.backoff).toBe("exponential");
         expect(strategy.delayMs).toBe(1000);
       }
@@ -188,7 +188,7 @@ describe("Error Handler", () => {
       const strategy = getRecoveryStrategy(error);
 
       if (strategy.type === "sync-and-retry") {
-        expect(strategy.maxAttempts).toBe(2);
+        expect(strategy.maxRetries).toBe(2);
       }
     });
   });
