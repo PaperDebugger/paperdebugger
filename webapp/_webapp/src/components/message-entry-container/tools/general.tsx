@@ -1,10 +1,12 @@
 import { cn } from "@heroui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type GeneralToolCardProps = {
   functionName: string;
   message: string;
   animated: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 };
 
 const shimmerStyle = {
@@ -20,8 +22,18 @@ const shimmerStyle = {
   backgroundPositionX: "-100%",
 } as const;
 
-export const GeneralToolCard = ({ functionName, message, animated }: GeneralToolCardProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse }: GeneralToolCardProps) => {
+  const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
+
+  // Use external state if provided, otherwise use internal state
+  const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
+
+  // Sync internal state with external state when it changes
+  useEffect(() => {
+    if (externalIsCollapsed !== undefined) {
+      setInternalIsCollapsed(externalIsCollapsed);
+    }
+  }, [externalIsCollapsed]);
 
   // When no message, show minimal "Calling tool..." style like Preparing function
   if (!message) {
@@ -35,7 +47,11 @@ export const GeneralToolCard = ({ functionName, message, animated }: GeneralTool
   }
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    if (onToggleCollapse) {
+      onToggleCollapse();
+    } else {
+      setInternalIsCollapsed(!internalIsCollapsed);
+    }
   };
   const pascalCase = (str: string) => {
     const words = str.split("_");

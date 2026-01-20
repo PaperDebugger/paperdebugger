@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ Important Rules (READ FIRST)
+
+**When working on this project, ALWAYS follow these rules:**
+
+1. **Frontend work MUST use `bun`** - Never use `npm` for `webapp/_webapp`. Use `bun install`, `bun run build`, etc.
+2. **All frontend code is in `webapp/_webapp`** - For UI bugs, state management, React components, always look here first.
+3. **API changes follow this workflow:**
+   - First: Edit `.proto` files in `proto/` directory
+   - Second: Run `make gen` to generate Go and TypeScript code
+   - Third: Implement the Go handler in `internal/api/` or `internal/services/`
+   - Never manually edit files in `pkg/gen/` or `webapp/_webapp/src/pkg/gen/`
+4. **Office Add-in uses `npm` only** - `webapp/office` is the exception, use `npm` there for compatibility.
+5. **Check CLAUDE.md before asking** - Most architecture questions are answered in this file.
+
 ## Project Overview
 
 PaperDebugger is an AI-powered academic writing assistant with Chrome extension frontend and Go backend. It integrates with Overleaf to provide intelligent suggestions, chat assistance, and AI-powered paper review capabilities.
@@ -100,38 +114,38 @@ make test-view
 
 #### Chrome Extension (webapp/_webapp)
 
-**Package manager**: Use `bun` or `npm` (both supported)
+**Package manager**: **MUST use `bun`** (preferred) or `npm` as fallback
 
 ```bash
 cd webapp/_webapp
 
-# Install dependencies
-npm install
+# Install dependencies (prefer bun)
+bun install
 
 # Development mode (watch and rebuild on changes)
-npm run dev
+bun run dev
 
 # Development server (for testing chat UI in browser)
-npm run dev:chat
+bun run dev:chat
 
 # Full production build (all components)
-npm run build
+bun run build
 
 # Build individual components
-npm run _build:default      # Main extension UI
-npm run _build:background   # Background service worker
-npm run _build:office       # Office Add-in bundle
-npm run _build:settings     # Settings page
-npm run _build:popup        # Extension popup
+bun run _build:default      # Main extension UI
+bun run _build:background   # Background service worker
+bun run _build:office       # Office Add-in bundle
+bun run _build:settings     # Settings page
+bun run _build:popup        # Extension popup
 
 # Environment-specific builds
-npm run build:local:chrome  # Local development
-npm run build:stg:chrome    # Staging
-npm run build:prd:chrome    # Production
+bun run build:local:chrome  # Local development
+bun run build:stg:chrome    # Staging
+bun run build:prd:chrome    # Production
 
 # Lint and format
-npm run lint
-npm run format
+bun run lint
+bun run format
 ```
 
 **Build Office Add-in for Word:**
@@ -180,13 +194,26 @@ npm run validate
 
 ## Protocol Buffer Workflow
 
-When modifying API contracts:
+**CRITICAL: This is the ONLY way to modify APIs. Follow this order strictly.**
 
-1. Edit `.proto` files in `proto/` directory
-2. Run `make gen` to regenerate Go and TypeScript code
-3. Backend code appears in `pkg/gen/`
-4. Frontend code appears in `webapp/_webapp/src/pkg/gen/`
-5. Never manually edit generated files
+When adding or modifying API endpoints:
+
+1. **First**: Edit `.proto` files in `proto/` directory (define the gRPC service and messages)
+2. **Second**: Run `make gen` to regenerate Go and TypeScript code
+   - Backend code appears in `pkg/gen/`
+   - Frontend code appears in `webapp/_webapp/src/pkg/gen/`
+3. **Third**: Implement the Go handler in `internal/api/` or business logic in `internal/services/`
+4. **Fourth**: Use the generated TypeScript client in frontend (`webapp/_webapp/src/`)
+5. **Never manually edit generated files** - They will be overwritten by `make gen`
+
+**Example workflow for adding a new endpoint:**
+```bash
+# 1. Edit proto/chat/v2/chat.proto to add new RPC method
+# 2. Generate code
+make gen
+# 3. Implement handler in internal/api/chat/handler.go
+# 4. Use in frontend via generated client
+```
 
 ## Testing
 
