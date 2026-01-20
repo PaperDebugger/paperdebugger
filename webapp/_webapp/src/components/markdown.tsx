@@ -1,6 +1,11 @@
 import Markdown from "markdown-to-jsx";
 import { TextPatches } from "./text-patches";
 import { ReactNode, useMemo, memo } from "react";
+import { Streamdown } from "streamdown";
+import { code } from "@streamdown/code";
+import { mermaid } from "@streamdown/mermaid";
+import { math } from "@streamdown/math";
+import { cjk } from "@streamdown/cjk";
 
 interface MarkdownComponentProps {
   children: string;
@@ -59,27 +64,7 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
         //     </div>
         //   ),
         // },
-        h1: {
-          component: ({ children, ...props }: ComponentProps) => (
-            <h1 {...props} className="text-lg font-bold mt-2">
-              {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </h1>
-          ),
-        },
-        h2: {
-          component: ({ children, ...props }: ComponentProps) => (
-            <h2 {...props} className="text-base font-bold mt-2">
-              {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </h2>
-          ),
-        },
-        h3: {
-          component: ({ children, ...props }: ComponentProps) => (
-            <h3 {...props} className="text-sm font-bold mt-2">
-              {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </h3>
-          ),
-        },
+
         code: {
           component: ({ children, ...props }: ComponentProps) => (
             <code {...props} className="text-xs break-all">
@@ -111,13 +96,7 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
             </li>
           ),
         },
-        ul: {
-          component: ({ children, ...props }: ComponentProps) => (
-            <ul {...props} className="list-disc mb-2 mt-2">
-              {typeof children === "string" ? <AnimatedText animated={animated}>{children}</AnimatedText> : children}
-            </ul>
-          ),
-        },
+
         ol: {
           component: ({ children, ...props }: ComponentProps) => (
             <ol {...props} className="list-decimal mb-2 mt-2">
@@ -130,7 +109,33 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
     [prevAttachment, animated],
   );
 
-  return <Markdown options={markdownOptions}>{children}</Markdown>;
+  return <Streamdown
+    className="space-y-1 leading-[1.50]"
+    components={{
+      h1: ({ children }) => (
+        <h1 className="text-lg font-bold mt-2">
+          {children}
+        </h1>
+      ),
+
+      h2: ({ children }) => (
+        <h2 className="text-base font-bold mt-2 mb-1">
+          {children}
+        </h2>
+      ),
+
+      h3: ({ children }) => (
+        <h3 className="text-sm font-bold mt-2">
+          {children}
+        </h3>
+      ),
+    }}
+    plugins={{ code, mermaid, math, cjk }}
+    isAnimating={animated}>
+    {children}
+  </Streamdown>
+
+  // return <Markdown options={markdownOptions}>{children}</Markdown>;
 });
 
 MarkdownComponent.displayName = "MarkdownComponent";

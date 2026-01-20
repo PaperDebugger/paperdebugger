@@ -87,20 +87,16 @@ export const AssistantMessageContainer = ({
     );
 
   const reasoningComponent = reasoning && (
-    <div
-      key="reasoning"
-      className={cn("reasoning-container mb-3", animated && "animate-in fade-in slide-in-from-top-2 duration-300")}
-    >
       <GeneralToolCard
         functionName="reasoning"
         message={reasoning}
         animated={animated}
         isCollapsed={isReasoningCollapsed}
         onToggleCollapse={() => setIsReasoningCollapsed(!isReasoningCollapsed)}
+        isLoading={preparing}
       />
-    </div>
-  );
 
+  );
   return (
     showMessage && (
       <div className="chat-message-entry noselect">
@@ -120,13 +116,14 @@ export const AssistantMessageContainer = ({
           {/* Stale message */}
           {staleComponent}
 
+          { (processedMessage?.length || 0) > 0 &&
           <div className="actions rnd-cancel noselect">
             <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
               <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
                 <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
               </span>
             </Tooltip>
-          </div>
+          </div>}
         </div>
       </div>
     )

@@ -115,7 +115,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
       {/* Spacer that pushes content down and provides scroll space for last user message */}
       <div className="flex-1 min-h-0" aria-hidden="true" />
       
-      <div id="pd-chat-item-container-messages">
+      <div className="pd-chat-item-container-messages">
         {messageCards}
       </div>
 
