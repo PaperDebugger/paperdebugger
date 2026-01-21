@@ -166,7 +166,7 @@ function isRetryableCode(code: StreamingErrorCode): boolean {
 const DEFAULT_STRATEGIES: Record<StreamingErrorCode, RecoveryStrategy> = {
   PROJECT_OUT_OF_DATE: {
     type: "sync-and-retry",
-    maxRetries: 2,
+    maxRetries: 3,
   },
   NETWORK_ERROR: {
     type: "retry",
