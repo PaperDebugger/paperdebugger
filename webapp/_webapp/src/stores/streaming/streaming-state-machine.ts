@@ -41,6 +41,14 @@ interface StreamingStateMachineState {
   // Current streaming state
   state: StreamState;
 
+  /**
+   * Retry counter specifically for sync-and-retry recovery.
+   *
+   * IMPORTANT: This must survive "retry" re-stream attempts; do NOT rely on callers
+   * passing the correct retryCount (they often reset state for a new stream).
+   */
+  syncRetryCount: number;
+
   // Streaming message data
   streamingMessage: StreamingMessage;
 
@@ -60,6 +68,7 @@ interface StreamingStateMachineState {
 
 const initialState = {
   state: "idle" as StreamState,
+  syncRetryCount: 0,
   streamingMessage: { parts: [], sequence: 0 },
   incompleteIndicator: null,
 };
@@ -138,6 +147,7 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
         // Finalize the user message (mark as received by server)
         set((state) => ({
           state: "receiving",
+          syncRetryCount: 0,
           streamingMessage: {
             ...state.streamingMessage,
             parts: state.streamingMessage.parts.map((part) => {
@@ -345,6 +355,7 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
           const currentPrompt = context.currentPrompt;
           const currentSelectedText = context.currentSelectedText;
           const sendMessageStream = context.sendMessageStream;
+          const retryCount = get().syncRetryCount;
           
           const handler = new StreamingErrorHandler({
             sync: context.sync,
@@ -352,7 +363,7 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
           });
 
           const resolution = await handler.handle(errorMessage, {
-            retryCount: 0,
+            retryCount,
             maxRetries: strategy.maxRetries || 2,  // Use strategy's maxRetries to prevent infinite retry
             currentPrompt: context.currentPrompt,
             currentSelectedText: context.currentSelectedText,
@@ -361,8 +372,13 @@ export const useStreamingStateMachine = create<StreamingStateMachineState>()(
           });
 
           if (resolution.success) {
+            // Recovery succeeded; reset counter for next time
+            set({ syncRetryCount: 0 });
             return; // Successfully recovered
           }
+
+          // Recovery failed; advance counter so we eventually stop instead of looping.
+          set({ syncRetryCount: retryCount + 1 });
           // Fall through to error state if recovery failed
         }
 

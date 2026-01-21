@@ -141,11 +141,10 @@ export const useSocketStore = createStore<SocketStore>((set, get) => ({
         instructions: "", // Instructions will be preserved by server if already set
       };
 
-      try {
-        await upsertProject(projectSnapshot);
-      } catch (e) {
-        logError("failed to save project snapshot to MongoDB:", e);
-      }
+      // IMPORTANT:
+      // If this fails, the server will still think the project is out-of-date.
+      // Swallowing this error can cause infinite "PROJECT_OUT_OF_DATE" retry loops.
+      await upsertProject(projectSnapshot);
 
       set({ lastSync: new Date() });
       return result;

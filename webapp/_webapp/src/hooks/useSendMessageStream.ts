@@ -32,7 +32,7 @@
  * ```
  */
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { createConversationMessageStream } from "../query/api";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
@@ -151,8 +151,23 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
   /**
    * Main send message function.
    */
-  const sendMessageStream = useCallback(
-    async (message: string, selectedText: string, parentMessageId?: string) => {
+  type SendMessageStreamImpl = (
+    message: string,
+    selectedText: string,
+    parentMessageId?: string,
+    options?: { isRetry?: boolean }
+  ) => Promise<void>;
+
+  // Break circular hook dependencies for retry callbacks.
+  const sendMessageStreamImplRef = useRef<SendMessageStreamImpl | null>(null);
+
+  const sendMessageStreamImpl = useCallback<SendMessageStreamImpl>(
+    async (
+      message: string,
+      selectedText: string,
+      parentMessageId?: string,
+      options?: { isRetry?: boolean }
+    ) => {
       // Validate input
       if (!message?.trim()) {
         logWarn("No message to send");
@@ -198,10 +213,15 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       // Build the API request
       const request = buildStreamRequest(requestParams);
 
-      // Reset state machine and prepare for new stream
-      stateMachine.reset();
-      truncateConversationIfEditing(parentMessageId);
-      addUserMessageToStream(message, selectedText);
+      // Reset state machine and prepare for new stream.
+      // For retries, avoid resetting the state machine (it would also reset retry counters and
+      // can cause infinite loops where attempt never increments). Also avoid duplicating the
+      // user's message in the UI.
+      if (!options?.isRetry) {
+        stateMachine.reset();
+        truncateConversationIfEditing(parentMessageId);
+        addUserMessageToStream(message, selectedText);
+      }
 
       // Optional: sync project in dev mode
       if (import.meta.env.DEV && alwaysSyncProject) {
@@ -228,7 +248,11 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
                     return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
                   }
                 },
-                sendMessageStream,
+                // IMPORTANT: pass a retry-aware sender so the state machine's sync-and-retry
+                // recovery doesn't reset itself back to attempt 1.
+                sendMessageStream: (m, s) =>
+                  sendMessageStreamImplRef.current?.(m, s, parentMessageId, { isRetry: true }) ??
+                  Promise.resolve(),
               });
             }
           }),
@@ -272,6 +296,16 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       addUserMessageToStream,
       truncateConversationIfEditing,
     ]
+  );
+
+  // Keep ref updated for retry callbacks.
+  sendMessageStreamImplRef.current = sendMessageStreamImpl;
+
+  const sendMessageStream = useCallback(
+    async (message: string, selectedText: string, parentMessageId?: string) => {
+      return sendMessageStreamImpl(message, selectedText, parentMessageId, { isRetry: false });
+    },
+    [sendMessageStreamImpl]
   );
 
   return useMemo(
