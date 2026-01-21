@@ -1,5 +1,8 @@
 // import { generateId } from "./helpers";
 
+import { ProjectFolder } from "../pkg/gen/apiclient/project/v2/project_pb";
+import { PlainMessage } from "../query/types";
+
 // =============================================================================
 // Interfaces - Authentication & User
 // =============================================================================
@@ -44,7 +47,7 @@ export interface OverleafProject {
   _id: string;
   name: string; // Project Name
   rootDoc_id: string; // Root document ID
-  rootFolder: OverleafFolder[];
+  rootFolder: PlainMessage<ProjectFolder>;
   publicAccessLevel: string; // default: private
   dropboxEnabled: boolean;
   compiler: string; // default: pdflatex
@@ -102,7 +105,7 @@ export interface OverleafFolder {
   _id: string;
   name: string;
   folders: OverleafFolder[];
-  fileRefs: OverleafFileRef[];
+  fileRefs: OverleafFileRef[]; // not used
   docs: OverleafDoc[];
 }
 
@@ -129,12 +132,6 @@ export interface RequestResponse {
   // can be any type of response
   response: object | null;
   callback?: (response: object) => void;
-}
-
-export interface OverleafVersionedDoc {
-  path: string;
-  version: number;
-  lines: string[];
 }
 
 // =============================================================================

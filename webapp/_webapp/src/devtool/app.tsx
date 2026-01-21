@@ -5,17 +5,36 @@ import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
 import { storage } from "../libs/storage";
 
+/**
+ * Updates or creates the meta[name="ol-csrfToken"] tag in the document head
+ */
+const updateCsrfTokenMeta = (csrfToken: string) => {
+  let metaTag = document.querySelector('meta[name="ol-csrfToken"]') as HTMLMetaElement | null;
+  if (!metaTag) {
+    metaTag = document.createElement("meta");
+    metaTag.name = "ol-csrfToken";
+    document.head.appendChild(metaTag);
+  }
+  metaTag.content = csrfToken;
+};
+
 const App = () => {
   const { token, refreshToken, setToken, setRefreshToken } = useAuthStore();
   const [projectId, setProjectId] = useState(storage.getItem("pd.projectId") ?? "");
   const [overleafSession, setOverleafSession] = useState(storage.getItem("pd.auth.overleafSession") ?? "");
   const [gclb, setGclb] = useState(storage.getItem("pd.auth.gclb") ?? "");
-
+  const [csrfToken, setCsrfToken] = useState(storage.getItem("pd.auth.csrfToken") ?? "");
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
       setGclb(cookies.gclb ?? storage.getItem("pd.auth.gclb") ?? "");
     });
+    const savedCsrfToken = storage.getItem("pd.auth.csrfToken") ?? "";
+    setCsrfToken(savedCsrfToken);
+    // Create meta tag if csrfToken exists
+    if (savedCsrfToken) {
+      updateCsrfTokenMeta(savedCsrfToken);
+    }
   }, []);
 
   const setProjectId_ = useCallback((projectId: string) => {
@@ -31,6 +50,13 @@ const App = () => {
   const setGclb_ = useCallback((gclb: string) => {
     storage.setItem("pd.auth.gclb", gclb);
     setGclb(gclb);
+  }, []);
+
+  const setCsrfToken_ = useCallback((csrfToken: string) => {
+    storage.setItem("pd.auth.csrfToken", csrfToken);
+    setCsrfToken(csrfToken);
+    // Update meta tag in DOM
+    updateCsrfTokenMeta(csrfToken);
   }, []);
 
   return (
@@ -66,6 +92,12 @@ const App = () => {
             description="Overleaf → Local Storage → https://www.overleaf.com → pd.auth.refreshToken"
             value={refreshToken}
             setValue={setRefreshToken}
+          />
+          <VariableInput
+            title="CSRF Token"
+            description="Overleaf → Request Headers → X-CSRF-Token (also creates meta[name='ol-csrfToken'])"
+            value={csrfToken}
+            setValue={setCsrfToken_}
           />
         </div>
       </div>
