@@ -73,6 +73,7 @@ type OverleafAuth struct {
 	Session   string // overleaf_session2 cookie
 	GCLB      string // GCLB cookie (Google Cloud Load Balancer)
 	ProjectID string // Current Overleaf project ID
+	CSRFToken string // CSRF token for API requests
 }
 
 const overleafAuthKey = "overleafAuth"

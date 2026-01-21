@@ -164,17 +164,22 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       let overleafAuth: StreamRequestParams["overleafAuth"];
       try {
         const { session, gclb } = await getCookies(window.location.hostname);
+        const csrfToken = document.querySelector('meta[name="ol-csrfToken"]')?.getAttribute("content") || "";
+        if (csrfToken.length === 0) {
+          throw new Error("CSRF token not found");
+        }
         if (session) {
           overleafAuth = {
             session,
             gclb,
             projectId: projectId,
+            csrfToken: csrfToken,
           };
         }
       } catch (e) {
         // Cookies not available - this is expected in some environments (e.g., Office Add-in)
         // Tools that require Overleaf auth will fail gracefully
-        logWarn("Failed to get Overleaf cookies", e);
+        logWarn("Failed to get Overleaf auth", e);
       }
 
       // Build request parameters

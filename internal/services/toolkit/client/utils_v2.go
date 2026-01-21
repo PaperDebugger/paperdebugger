@@ -113,6 +113,7 @@ func initializeToolkitV2(
 
 	// File tools with ProjectService dependency
 	createFileTool := filetools.NewCreateFileTool(projectService)
+	createFolderTool := filetools.NewCreateFolderTool(projectService)
 	readFileTool := filetools.NewReadFileTool(projectService)
 	listFolderTool := filetools.NewListFolderTool(projectService)
 	searchStringTool := filetools.NewSearchStringTool(projectService)
@@ -126,7 +127,7 @@ func initializeToolkitV2(
 	// Register file tools
 	toolRegistry.Register("create_file", filetools.CreateFileToolDescriptionV2, createFileTool.Call)
 	toolRegistry.Register("delete_file", filetools.DeleteFileToolDescriptionV2, filetools.DeleteFileTool)
-	toolRegistry.Register("create_folder", filetools.CreateFolderToolDescriptionV2, filetools.CreateFolderTool)
+	toolRegistry.Register("create_folder", filetools.CreateFolderToolDescriptionV2, createFolderTool.Call)
 	toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
 	toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, readFileTool.Call)
 	toolRegistry.Register("list_folder", filetools.ListFolderToolDescriptionV2, listFolderTool.Call)

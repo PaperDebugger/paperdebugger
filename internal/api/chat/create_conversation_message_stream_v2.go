@@ -306,9 +306,10 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	// Inject Overleaf auth into context if provided
 	if req.OverleafAuth != nil {
 		ctx = contextutil.SetOverleafAuth(ctx, &contextutil.OverleafAuth{
-			Session:   req.OverleafAuth.Session,
-			GCLB:      req.OverleafAuth.Gclb,
-			ProjectID: req.OverleafAuth.ProjectId,
+			Session:   req.OverleafAuth.GetSession(),
+			GCLB:      req.OverleafAuth.GetGclb(),
+			ProjectID: req.OverleafAuth.GetProjectId(),
+			CSRFToken: req.OverleafAuth.GetCsrfToken(),
 		})
 	}
 

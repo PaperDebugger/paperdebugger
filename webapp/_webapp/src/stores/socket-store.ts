@@ -1,32 +1,34 @@
-import { create } from "zustand";
+import { create as createStore } from "zustand";
+import { create as createMessage } from "@bufbuild/protobuf";
 import {
   OverleafAuthentication,
-  OverleafFolder,
   OverleafJoinProjectResponse,
   OverleafSocketRequest,
   OverleafSocketResponse,
-  OverleafVersionedDoc,
   postCommentToThread,
   RequestResponse,
   wsConnect,
 } from "../libs/overleaf-socket";
 import { generateId } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import { UpsertProjectRequest, ProjectFolder } from "../pkg/gen/apiclient/project/v2/project_pb";
+import { ProjectDoc, ProjectFolder, ProjectFolderSchema, UpsertProjectRequest } from "../pkg/gen/apiclient/project/v2/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";
 
-// Types
 export interface SocketStore {
   // State
   projectName: string;
   rootDocId: string;
+  rootFolder: ProjectFolder;
+
   content: string;
-  docs: Map<string, OverleafVersionedDoc>; // fileId -> OverleafVersionedDoc
+  docs: Map<string, ProjectDoc>; // fileId -> ProjectDoc
+  folders: Map<string, ProjectFolder>; // folderId -> ProjectFolder
 
   syncing: boolean;
   syncingProgress: number; // 0-100
+  lastSync: Date | null;
 
   auth: OverleafAuthentication | null;
 
@@ -41,10 +43,10 @@ export interface SocketStore {
     projectId: string,
     overleafAuth: OverleafAuthentication,
     csrfToken: string,
-  ) => Promise<Map<string, OverleafVersionedDoc>>;
+  ) => Promise<Map<string, PlainMessage<ProjectDoc>>>;
   connectSocket: (projectId: string, overleafAuth: OverleafAuthentication, csrfToken: string) => Promise<void>;
   disconnectSocket: () => void;
-  createSnapshot: (onProgress?: (progress: number) => void) => Promise<Map<string, OverleafVersionedDoc>>;
+  createSnapshot: (onProgress?: (progress: number) => void) => Promise<Map<string, PlainMessage<ProjectDoc>>>;
   addComment: (
     projectId: string,
     docId: string,
@@ -71,13 +73,20 @@ export interface SocketStore {
   _responseReceivedWithoutData: (seq: number, data: OverleafSocketResponse) => void;
 }
 
-export const useSocketStore = create<SocketStore>((set, get) => ({
+export const useSocketStore = createStore<SocketStore>((set, get) => ({
   // Initial State
   content: "",
   auth: null,
   projectName: "",
   rootDocId: "",
-  docs: new Map<string, OverleafVersionedDoc>(),
+  rootFolder: createMessage(ProjectFolderSchema, {
+    id: "",
+    name: "",
+    docs: [],
+    folders: [],
+  }),
+  docs: new Map<string, ProjectDoc>(),
+  folders: new Map<string, ProjectFolder>(),
   syncing: false,
   syncingProgress: 0,
   lastSync: null,
@@ -128,7 +137,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
         projectId,
         name: get().projectName,
         rootDocId: get().rootDocId,
-        rootFolder: convertDocsToFolderTree(result),
+        rootFolder: get().rootFolder,
         instructions: "", // Instructions will be preserved by server if already set
       };
 
@@ -138,6 +147,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
         logError("failed to save project snapshot to MongoDB:", e);
       }
 
+      set({ lastSync: new Date() });
       return result;
     } catch (e) {
       logError("Error during sync:", e);
@@ -161,7 +171,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     // Configure WebSocket event handlers
     ws.onclose = () => {
       set({
-        docs: new Map<string, OverleafVersionedDoc>(),
+        docs: new Map<string, ProjectDoc>(),
         socketRef: null,
         socketJoined: false,
       });
@@ -205,7 +215,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       socketJoined: false,
       socketMessageSeq: 0,
       socketRequestResponse: new Map<string, RequestResponse>(),
-      docs: new Map<string, OverleafVersionedDoc>(),
+      docs: new Map<string, ProjectDoc>(),
     });
   },
 
@@ -276,13 +286,20 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
    */
   _updateDocById: (docId, options) => {
     const { docs } = get();
-    const doc = docs.get(docId);
+    const existing = docs.get(docId);
 
-    docs.set(docId, {
-      path: options.newPath || doc?.path || "",
-      version: options.newVersion || doc?.version || 0,
-      lines: options.newLines || doc?.lines || [],
-    });
+    const nextDoc: PlainMessage<ProjectDoc> = {
+      id: docId,
+      filename: existing?.filename ?? "",
+      filepath: options.newPath ?? existing?.filepath ?? "",
+      version: options.newVersion ?? existing?.version ?? 0,
+      lines: options.newLines ?? existing?.lines ?? [],
+    } as PlainMessage<ProjectDoc>;
+
+    // IMPORTANT: Create a new Map so Zustand subscribers re-render.
+    const nextDocs = new Map(docs);
+    nextDocs.set(docId, nextDoc as ProjectDoc);
+    set({ docs: nextDocs });
   },
 
   /**
@@ -403,7 +420,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     if (data.name === "joinProjectResponse") {
       // Process project structure after joining
       const project = data.args[0] as OverleafJoinProjectResponse;
-      const queue: OverleafFolder[] = project.project.rootFolder;
+      const queue = (project.project.rootFolder.folders ?? []) as unknown as ProjectFolder[];
 
       // Process folder structure with BFS traversal
       while (queue.length > 0) {
@@ -412,8 +429,8 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
         // Process documents in current folder
         for (const doc of folder.docs) {
-          const path = `${folder.name}/${doc.name}`.replace("rootFolder/", "");
-          _updateDocById(doc._id, { newPath: path });
+          const path = `${folder.name}/${doc.filename}`.replace("rootFolder/", "");
+          _updateDocById(doc.id, { newPath: path });
         }
 
         // Queue subfolders
@@ -430,6 +447,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
         socketJoined: true,
         projectName: project.project.name,
         rootDocId: project.project.rootDoc_id,
+        rootFolder: project.project.rootFolder as ProjectFolder,
       });
     } else if (data.name === "otUpdateApplied") {
       // Update document version after OT update
@@ -516,65 +534,3 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 export const SocketStoreProvider = () => {
   return null;
 };
-
-/**
- * Convert flat document map to hierarchical folder tree structure for v2 API
- */
-function convertDocsToFolderTree(docs: Map<string, OverleafVersionedDoc>): PlainMessage<ProjectFolder> {
-  const rootFolder: PlainMessage<ProjectFolder> = {
-    id: "root",
-    name: "rootFolder",
-    docs: [],
-    folders: [],
-  };
-
-  // Build folder map
-  const folderMap = new Map<string, PlainMessage<ProjectFolder>>();
-  folderMap.set("", rootFolder);
-
-  // Sort paths to ensure parent folders are created before children
-  const sortedDocs = Array.from(docs.entries()).sort(([, a], [, b]) => a.path.localeCompare(b.path));
-
-  for (const [id, doc] of sortedDocs) {
-    const pathParts = doc.path.split("/");
-    const filename = pathParts[pathParts.length - 1];
-    const folderPath = pathParts.slice(0, -1).join("/");
-
-    // Ensure all parent folders exist
-    let currentPath = "";
-    for (let i = 0; i < pathParts.length - 1; i++) {
-      const parentPath = currentPath;
-      currentPath = currentPath ? `${currentPath}/${pathParts[i]}` : pathParts[i];
-
-      if (!folderMap.has(currentPath)) {
-        const newFolder: PlainMessage<ProjectFolder> = {
-          id: currentPath,
-          name: pathParts[i],
-          docs: [],
-          folders: [],
-        };
-        folderMap.set(currentPath, newFolder);
-
-        // Add to parent folder
-        const parentFolder = folderMap.get(parentPath);
-        if (parentFolder && Array.isArray(parentFolder.folders)) {
-          parentFolder.folders.push(newFolder);
-        }
-      }
-    }
-
-    // Add document to its folder
-    const folder = folderMap.get(folderPath);
-    if (folder && Array.isArray(folder.docs)) {
-      folder.docs.push({
-        id,
-        version: doc.version,
-        filename,
-        filepath: doc.path,
-        lines: doc.lines,
-      });
-    }
-  }
-
-  return rootFolder;
-}

@@ -1,4 +1,4 @@
-import { cn, Spinner } from "@heroui/react";
+import { cn } from "@heroui/react";
 import { useEffect, useState, useRef } from "react";
 import { Streamdown } from "streamdown";
 import { code } from "@streamdown/code";

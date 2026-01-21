@@ -81,6 +81,9 @@ func getAuthFromContext(ctx context.Context) (*contextutil.OverleafAuth, error) 
 	if auth.ProjectID == "" {
 		return nil, fmt.Errorf("overleaf project ID is empty")
 	}
+	if auth.CSRFToken == "" {
+		return nil, fmt.Errorf("overleaf csrf token is empty")
+	}
 	return auth, nil
 }
 
@@ -114,10 +117,18 @@ func (c *Client) doRequest(ctx context.Context, method, url string, body interfa
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
+	httpReq.Header.Set("Accept", "application/json")
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Cookie", buildCookieHeader(auth))
 	httpReq.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
-	httpReq.Header.Set("Accept", "application/json")
+
+	// Add CSRF token if available
+	if auth.CSRFToken != "" {
+		httpReq.Header.Set("X-Csrf-Token", auth.CSRFToken)
+	} else {
+		// warn if CSRF token is missing
+		fmt.Println("[WARN] CSRF Token is missing for overleaf client")
+	}
 
 	resp, err := c.httpClient.Do(httpReq)
 	if err != nil {

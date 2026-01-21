@@ -158,6 +158,7 @@ type OverleafAuth struct {
 	Session       string                 `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`                      // overleaf_session2 cookie
 	Gclb          string                 `protobuf:"bytes,2,opt,name=gclb,proto3" json:"gclb,omitempty"`                            // GCLB cookie (Google Cloud Load Balancer)
 	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"` // Current Overleaf project ID
+	CsrfToken     string                 `protobuf:"bytes,4,opt,name=csrf_token,json=csrfToken,proto3" json:"csrf_token,omitempty"` // csrf token for user's webpage
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -213,6 +214,13 @@ func (x *OverleafAuth) GetProjectId() string {
 	return ""
 }
 
+func (x *OverleafAuth) GetCsrfToken() string {
+	if x != nil {
+		return x.CsrfToken
+	}
+	return ""
+}
+
 var File_shared_v1_shared_proto protoreflect.FileDescriptor
 
 const file_shared_v1_shared_proto_rawDesc = "" +
@@ -220,12 +228,14 @@ const file_shared_v1_shared_proto_rawDesc = "" +
 	"\x16shared/v1/shared.proto\x12\tshared.v1\"K\n" +
 	"\x05Error\x12(\n" +
 	"\x04code\x18\x02 \x01(\x0e2\x14.shared.v1.ErrorCodeR\x04code\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\"[\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"z\n" +
 	"\fOverleafAuth\x12\x18\n" +
 	"\asession\x18\x01 \x01(\tR\asession\x12\x12\n" +
 	"\x04gclb\x18\x02 \x01(\tR\x04gclb\x12\x1d\n" +
 	"\n" +
-	"project_id\x18\x03 \x01(\tR\tprojectId*\x87\x03\n" +
+	"project_id\x18\x03 \x01(\tR\tprojectId\x12\x1d\n" +
+	"\n" +
+	"csrf_token\x18\x04 \x01(\tR\tcsrfToken*\x87\x03\n" +
 	"\tErrorCode\x12\x1a\n" +
 	"\x16ERROR_CODE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x12ERROR_CODE_UNKNOWN\x10\xe8\a\x12\x18\n" +

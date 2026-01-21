@@ -276,7 +276,7 @@ export class StreamingErrorHandler {
     const streamingError = createStreamingError(error);
     const strategy = getRecoveryStrategy(streamingError);
 
-    logError(`Streaming error [${streamingError.code}]:`, streamingError.message);
+    logError(`Streaming error [${streamingError.code}] ${strategy.type}:`, streamingError.message, context);
 
     switch (strategy.type) {
       case "retry":
@@ -313,7 +313,10 @@ export class StreamingErrorHandler {
     context: ErrorContext,
     strategy: Extract<RecoveryStrategy, { type: "retry" }>
   ): Promise<ErrorResolution> {
-    if (context.retryCount >= strategy.maxRetries) {
+    // Increment retry count at the beginning
+    const currentAttempt = context.retryCount + 1;
+
+    if (currentAttempt > strategy.maxRetries) {
       logWarn(`Max retry attempts (${strategy.maxRetries}) reached for ${error.code}`);
       this.showErrorToUser(error, "Retry failed after multiple attempts");
       return {
@@ -325,7 +328,7 @@ export class StreamingErrorHandler {
     }
 
     const delay = this.calculateDelay(context.retryCount, strategy);
-    logInfo(`Retrying in ${delay}ms (attempt ${context.retryCount + 1}/${strategy.maxRetries})`);
+    logInfo(`Retrying in ${delay}ms (attempt ${currentAttempt}/${strategy.maxRetries})`);
 
     await this.sleep(delay);
 
@@ -335,13 +338,13 @@ export class StreamingErrorHandler {
         handled: true,
         success: true,
         strategy,
-        message: `Retry successful on attempt ${context.retryCount + 1}`,
+        message: `Retry successful on attempt ${currentAttempt}`,
       };
     } catch (retryError) {
       // Recursive retry with incremented count
       return this.handle(retryError, {
         ...context,
-        retryCount: context.retryCount + 1,
+        retryCount: currentAttempt,
       });
     }
   }
@@ -354,7 +357,10 @@ export class StreamingErrorHandler {
     context: ErrorContext,
     strategy: Extract<RecoveryStrategy, { type: "sync-and-retry" }>
   ): Promise<ErrorResolution> {
-    if (context.retryCount >= strategy.maxRetries) {
+    // Increment retry count at the beginning
+    const currentAttempt = context.retryCount + 1;
+    console.log("handleSyncAndRetry called, currentAttempt:", currentAttempt);
+    if (currentAttempt > strategy.maxRetries) {
       logWarn(`Max sync-and-retry attempts (${strategy.maxRetries}) reached`);
       this.showErrorToUser(error, "Project sync failed");
       return {
@@ -365,7 +371,7 @@ export class StreamingErrorHandler {
       };
     }
 
-    logInfo(`Syncing project before retry (attempt ${context.retryCount + 1}/${strategy.maxRetries})`);
+    logInfo(`Syncing project before retry (attempt ${currentAttempt}/${strategy.maxRetries})`);
 
     try {
       const syncResult = await this.deps.sync();
@@ -384,7 +390,7 @@ export class StreamingErrorHandler {
       // Recursive retry with incremented count
       return this.handle(retryError, {
         ...context,
-        retryCount: context.retryCount + 1,
+        retryCount: currentAttempt,
       });
     }
   }
@@ -506,6 +512,7 @@ export async function handleStreamingError(
     context?: Partial<ErrorContext>;
   }
 ): Promise<ErrorResolution> {
+  const currentAttempt = options.context?.retryCount || 0;
   const streamingError = createStreamingError(error);
   const strategy = getRecoveryStrategy(streamingError);
 
@@ -527,7 +534,7 @@ export async function handleStreamingError(
   });
 
   return handler.handle(error, {
-    retryCount: 0,
+    retryCount: currentAttempt,
     maxRetries: 3,
     currentPrompt: "",
     currentSelectedText: "",
