@@ -215,9 +215,6 @@ export const DevTools = () => {
   };
 
   // --- Render ---
-  const maxWidth = typeof window !== 'undefined' ? window.innerWidth / 2 : 800;
-  const defaultWidth = Math.min(800, maxWidth);
-  
   return (
     <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 border-orange-600 rounded-lg overflow-hidden">
       {/* Header */}
