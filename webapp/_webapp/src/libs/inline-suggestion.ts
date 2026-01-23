@@ -102,7 +102,7 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
   };
 }
 
-export async function completion(state: EditorState): Promise<string> {
+export async function completion(_state: EditorState): Promise<string> {
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
     return "";

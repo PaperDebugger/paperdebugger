@@ -1,5 +1,5 @@
 import { Extension } from "@codemirror/state";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { OnboardingGuide } from "./components/onboarding-guide";
