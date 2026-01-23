@@ -15,11 +15,43 @@ export const EmbedSidebar = () => {
     display?: string;
     flexDirection?: string;
   }>({});
+  const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const mouseUpHandlerRef = useRef<(() => void) | null>(null);
+  const originalCursorRef = useRef<string>("");
+  const originalUserSelectRef = useRef<string>("");
 
   // Keep ref in sync with embedWidth
   useEffect(() => {
     embedWidthRef.current = embedWidth;
   }, [embedWidth]);
+
+  // Cleanup resize handlers and body styles on unmount or when isOpen changes
+  useEffect(() => {
+    return () => {
+      // Clean up any active resize handlers
+      if (mouseMoveHandlerRef.current) {
+        document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
+        mouseMoveHandlerRef.current = null;
+      }
+      if (mouseUpHandlerRef.current) {
+        document.removeEventListener("mouseup", mouseUpHandlerRef.current);
+        mouseUpHandlerRef.current = null;
+      }
+      
+      // Restore body styles
+      if (originalCursorRef.current !== "") {
+        document.body.style.cursor = originalCursorRef.current;
+        originalCursorRef.current = "";
+      }
+      if (originalUserSelectRef.current !== "") {
+        document.body.style.userSelect = originalUserSelectRef.current;
+        originalUserSelectRef.current = "";
+      }
+      
+      // Reset resizing state
+      isResizingRef.current = false;
+    };
+  }, [isOpen]);
 
   // Function to update main content area flex properties
   const updateMainContentFlex = useCallback((ideBody: HTMLElement) => {
@@ -160,6 +192,14 @@ export const EmbedSidebar = () => {
     e.preventDefault();
     e.stopPropagation();
     
+    // Clean up any existing handlers first
+    if (mouseMoveHandlerRef.current) {
+      document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
+    }
+    if (mouseUpHandlerRef.current) {
+      document.removeEventListener("mouseup", mouseUpHandlerRef.current);
+    }
+    
     isResizingRef.current = true;
     const startX = e.clientX;
     const startWidth = embedWidthRef.current;
@@ -175,12 +215,37 @@ export const EmbedSidebar = () => {
 
     const handleMouseUp = () => {
       isResizingRef.current = false;
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "default";
-      document.body.style.userSelect = "";
+      
+      // Remove event listeners
+      if (mouseMoveHandlerRef.current) {
+        document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
+        mouseMoveHandlerRef.current = null;
+      }
+      if (mouseUpHandlerRef.current) {
+        document.removeEventListener("mouseup", mouseUpHandlerRef.current);
+        mouseUpHandlerRef.current = null;
+      }
+      
+      // Restore body styles
+      if (originalCursorRef.current !== "") {
+        document.body.style.cursor = originalCursorRef.current;
+        originalCursorRef.current = "";
+      }
+      if (originalUserSelectRef.current !== "") {
+        document.body.style.userSelect = originalUserSelectRef.current;
+        originalUserSelectRef.current = "";
+      }
     };
 
+    // Store handlers in refs for cleanup
+    mouseMoveHandlerRef.current = handleMouseMove;
+    mouseUpHandlerRef.current = handleMouseUp;
+
+    // Save original body styles
+    originalCursorRef.current = document.body.style.cursor || "";
+    originalUserSelectRef.current = document.body.style.userSelect || "";
+
+    // Apply new styles and attach listeners
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
     document.body.style.cursor = "col-resize";
