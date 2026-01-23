@@ -56,6 +56,21 @@ func NewOAuthService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *OAuthServi
 }
 
 func (s *OAuthService) CreateOAuthRecord(ctx context.Context, code, state, accessToken string) error {
+	// Check if state already exists
+	var existing models.OAuth
+	err := s.oauthCollection.FindOne(ctx, bson.M{"state": state}).Decode(&existing)
+	if err == nil {
+		// Record exists - allow if within 10s window (idempotent callback)
+		if time.Since(existing.CreatedAt.Time()) <= OAuthReuseWindow {
+			return nil
+		}
+		return errors.New("state already exists, please restart the login process")
+	}
+	if !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+
+	// Create new record
 	now := time.Now()
 	callback := &models.OAuth{
 		BaseModel: models.BaseModel{
@@ -69,23 +84,15 @@ func (s *OAuthService) CreateOAuthRecord(ctx context.Context, code, state, acces
 		Used:        false,
 	}
 
-	// count if state is already exist
-	count, err := s.oauthCollection.CountDocuments(ctx, bson.M{"state": state})
-	if err != nil {
-		return err
-	}
-	if count > 0 {
-		return errors.New("state already exists, please restart the login process")
-	}
-
 	_, err = s.oauthCollection.InsertOne(ctx, callback)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return errors.New("code already exists, please do not refresh the page")
+			// Race condition: another request just created it, treat as success
+			return nil
 		}
 		return err
 	}
-	return err
+	return nil
 }
 
 func (s *OAuthService) GetOAuthRecordByState(ctx context.Context, state string) (*models.OAuth, error) {
@@ -102,9 +109,22 @@ func (s *OAuthService) OAuthMakeUsed(ctx context.Context, cb *models.OAuth) erro
 	update := bson.M{
 		"$set": bson.M{
 			"used":       true,
+			"used_at":    bson.NewDateTimeFromTime(now),
 			"updated_at": bson.NewDateTimeFromTime(now),
 		},
 	}
 	_, err := s.oauthCollection.UpdateOne(ctx, bson.M{"_id": cb.ID}, update)
 	return err
+}
+
+// OAuthReuseWindow is the time window (10 seconds) during which a used OAuth record can still be reused
+const OAuthReuseWindow = 10 * time.Second
+
+// IsWithinReuseWindow checks if the OAuth record was used within the reuse window
+func (s *OAuthService) IsWithinReuseWindow(cb *models.OAuth) bool {
+	if !cb.Used || cb.UsedAt == 0 {
+		return false
+	}
+	usedAt := cb.UsedAt.Time()
+	return time.Since(usedAt) <= OAuthReuseWindow
 }

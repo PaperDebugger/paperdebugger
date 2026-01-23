@@ -89,6 +89,16 @@ export const MainDrawer = () => {
       enableResizing: { left: false, right: false, top: true, bottom: false },
       disableDragging: true,
     };
+  } else if (displayMode === "fullscreen") {
+    rndProps = {
+      default: { x: 0, y: 0, width: windowSize.width, height: windowSize.height },
+      position: { x: 0, y: 0 },
+      size: { width: windowSize.width, height: windowSize.height },
+      minWidth: windowSize.width,
+      minHeight: windowSize.height,
+      enableResizing: { left: false, right: false, top: false, bottom: false },
+      disableDragging: true,
+    };
   }
 
   return createPortal(
@@ -172,8 +182,13 @@ export const MainDrawer = () => {
         },
       }}
     >
-      <PdAppContainer>
-        <WindowController />
+      <PdAppContainer
+        style={{
+          borderRadius: displayMode == "fullscreen" ? "0" : undefined,
+          border: displayMode == "fullscreen" ? "none" : undefined,
+        }}
+      >
+        {displayMode !== "fullscreen" && <WindowController />}
         <Body />
       </PdAppContainer>
     </Rnd>,

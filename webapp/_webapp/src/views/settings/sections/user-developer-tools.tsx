@@ -4,10 +4,13 @@ import { useSettingStore } from "../../../stores/setting-store";
 import { SettingItemInput } from "../setting-item-input";
 import { useEffect, useState } from "react";
 import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../../libs/apiclient";
+import { useAdapter } from "../../../adapters/context";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
   const [endpoint, setEndpoint] = useState(getEndpointFromLocalStorage());
+  const adapter = useAdapter();
+  const documentId = adapter.getDocumentId?.() || "N/A";
 
   useEffect(() => {
     apiclient.updateBaseURL(endpoint, "v1");
@@ -44,6 +47,13 @@ export const UserDeveloperTools = () => {
           setEndpoint(getEndpointFromLocalStorage());
         }}
       />
+
+      <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-2 items-center">
+        <div className="flex flex-col gap-0 w-full pl-3 pt-1 pb-1">
+          <p className="text-sm">Document ID</p>
+          <p className="text-xs text-gray-500 font-mono select-all">{documentId}</p>
+        </div>
+      </div>
 
       <div className="text-gray-500 text-xs ps-2">
         * developer settings stored locally, will be reset when you clear your browser data

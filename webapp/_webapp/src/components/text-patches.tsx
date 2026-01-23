@@ -1,10 +1,11 @@
 import { Button } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { diffWords } from "diff";
-import { applyChanges, getProjectId } from "../libs/helpers";
+import { getProjectId } from "../libs/helpers";
 import { useSelectionStore } from "../stores/selection-store";
 import googleAnalytics from "../libs/google-analytics";
 import { useAuthStore } from "../stores/auth-store";
+import { useAdapterOptional } from "../adapters";
 
 type TextPatchesProps = {
   attachment?: string;
@@ -15,6 +16,7 @@ type TextPatchesProps = {
 export function TextPatches({ attachment, children }: TextPatchesProps) {
   const { user } = useAuthStore();
   const { selectionRange, setSelectionRange } = useSelectionStore();
+  const adapter = useAdapterOptional();
   const preRef = useRef<HTMLPreElement>(null);
 
   const [insertBtnText, setInsertBtnText] = useState("Insert");
@@ -32,16 +34,42 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
     }
   }, [preRef]);
 
-  const applyText = useCallback(() => {
-    if (preRef.current && selectionRange) {
-      applyChanges(preRef.current.innerText, selectionRange);
-      setSelectionRange(null);
-      setInsertBtnText("Applied!");
+  const applyText = useCallback(async () => {
+    if (!preRef.current) return;
+
+    const textToInsert = preRef.current.innerText;
+
+    try {
+      // Prefer adapter-based insertion if available
+      if (adapter && adapter.isReady()) {
+        await adapter.replaceSelection(textToInsert);
+        setSelectionRange(null);
+        setInsertBtnText("Applied!");
+        setTimeout(() => {
+          setInsertBtnText("Insert");
+        }, 1500);
+        return;
+      }
+
+      // Fallback to legacy Range-based insertion for Overleaf
+      if (selectionRange) {
+        const newText = document.createTextNode(textToInsert);
+        selectionRange.deleteContents();
+        selectionRange.insertNode(newText);
+        setSelectionRange(null);
+        setInsertBtnText("Applied!");
+        setTimeout(() => {
+          setInsertBtnText("Insert");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Failed to apply text:", error);
+      setInsertBtnText("Failed!");
       setTimeout(() => {
         setInsertBtnText("Insert");
       }, 1500);
     }
-  }, [preRef, selectionRange, setSelectionRange]);
+  }, [preRef, selectionRange, setSelectionRange, adapter]);
 
   // Process children to handle newlines
   let processedChildren = children;
@@ -85,6 +113,11 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
     }
     setMappedNodes(diffElements);
   }, [preRef, attachment]);
+
+  // Determine if insert button should be enabled
+  // With adapter: always enabled if adapter is ready
+  // Without adapter: only enabled if selectionRange exists (legacy Overleaf behavior)
+  const canInsert = (adapter && adapter.isReady()) || !!selectionRange;
 
   return (
     <div className="my-2 w-full flex flex-col gap-2">
@@ -135,11 +168,11 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
         <Button
           size="sm"
           variant="bordered"
-          color={selectionRange ? "primary" : "default"}
+          color={canInsert ? "primary" : "default"}
           radius="full"
-          disabled={!selectionRange}
+          disabled={!canInsert}
           style={{
-            opacity: selectionRange ? 1 : 0.5,
+            opacity: canInsert ? 1 : 0.5,
           }}
           onPress={() => {
             googleAnalytics.fireEvent(user?.id, "textpatch_click_insert_button", {
