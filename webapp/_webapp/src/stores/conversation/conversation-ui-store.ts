@@ -8,6 +8,7 @@ export const DISPLAY_MODES = [
   { key: "floating", label: "Floating" },
   { key: "right-fixed", label: "Right Fixed" },
   { key: "bottom-fixed", label: "Bottom Fixed" },
+  { key: "embed", label: "Embed Sidebar" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
 
@@ -40,6 +41,9 @@ interface ConversationUiStore {
 
   rightFixedWidth: number;
   setRightFixedWidth: (rightFixedWidth: number) => void;
+
+  embedWidth: number;
+  setEmbedWidth: (embedWidth: number) => void;
 
   isOpen: boolean; // for the main drawer
   setIsOpen: (isOpen: boolean) => void;
@@ -91,6 +95,9 @@ export const useConversationUiStore = create<ConversationUiStore>()(
       rightFixedWidth: 580,
       setRightFixedWidth: (rightFixedWidth: number) => set({ rightFixedWidth }),
 
+      embedWidth: 480,
+      setEmbedWidth: (embedWidth: number) => set({ embedWidth }),
+
       isOpen: false,
       setIsOpen: (isOpen: boolean) => set({ isOpen }),
 
@@ -110,8 +117,8 @@ export const useConversationUiStore = create<ConversationUiStore>()(
         set({
           floatingX: 100,
           floatingY: 100,
-          floatingWidth: 620,
-          floatingHeight: 200,
+          floatingWidth: 500,
+          floatingHeight: 500,
           displayMode: "floating",
         });
       },
