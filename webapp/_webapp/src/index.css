@@ -16,6 +16,23 @@ body {
     sans-serif;
 }
 
+/* Overleaf Compatibility Fixes (tricks) */
+img, svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Block-level media elements */
+video, canvas, audio, iframe, embed, object {
+  display: block;
+}
+
+.collapse {
+  visibility: visible !important;
+}
+/* Overleaf Compatibility Fixes (tricks) */
+
+
 /* Others */
 .noselect {
   -webkit-touch-callout: none;
