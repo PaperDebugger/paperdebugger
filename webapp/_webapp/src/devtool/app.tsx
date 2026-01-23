@@ -3,13 +3,16 @@ import { useAuthStore } from "../stores/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
+import { DevTools } from "../views/devtools";
+import { useDevtoolStore } from "../stores/devtool-store";
 
 const App = () => {
   const { token, refreshToken, setToken, setRefreshToken } = useAuthStore();
   const [projectId, setProjectId] = useState(localStorage.getItem("pd.projectId") ?? "");
   const [overleafSession, setOverleafSession] = useState(localStorage.getItem("pd.auth.overleafSession") ?? "");
   const [gclb, setGclb] = useState(localStorage.getItem("pd.auth.gclb") ?? "");
-
+  const { showTool } = useDevtoolStore();
+  
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
@@ -84,6 +87,9 @@ const App = () => {
             )}
           </div>
         </TooltipArea>
+      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+      {import.meta.env.DEV && showTool && <DevTools />}
       </div>
     </main>
   );
