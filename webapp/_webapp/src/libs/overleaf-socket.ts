@@ -192,7 +192,6 @@ export async function postCommentToThread(
 ): Promise<void> {
   const currentDomain = window.location.hostname;
   const threadUrl = `https://${currentDomain}/project/${projectId}/thread/${threadId}/messages`;
-  // console.log("Posting comment to thread:", threadUrl, comment);
 
   if (!comment || comment.length === 0) {
     throw new Error("Comment is empty");

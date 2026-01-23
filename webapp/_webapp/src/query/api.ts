@@ -23,10 +23,6 @@ import {
   UpdateConversationResponseSchema,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
-  RunProjectPaperScoreRequest,
-  RunProjectPaperScoreResponseSchema,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
-import {
   GetProjectRequest,
   GetProjectResponseSchema,
   UpsertProjectRequest,
@@ -194,11 +190,6 @@ export const upsertUserInstructions = async (data: PlainMessage<UpsertUserInstru
   return fromJson(UpsertUserInstructionsResponseSchema, response);
 };
 
-// Deprecated, use function call in LLMs instead. We do not need to call this function anymore.
-export const runProjectPaperScore = async (data: PlainMessage<RunProjectPaperScoreRequest>) => {
-  const response = await apiclient.post(`/projects/${data.projectId}/paper-score`, data);
-  return fromJson(RunProjectPaperScoreResponseSchema, response);
-};
 
 // V2 API: Instructions are now included in getProject response
 // These functions are kept for backward compatibility but now use getProject/upsertProject internally

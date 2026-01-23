@@ -1,5 +1,5 @@
 import { Extension } from "@codemirror/state";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { OnboardingGuide } from "./components/onboarding-guide";
@@ -230,22 +230,13 @@ if (!import.meta.env.DEV) {
 
     const root = createRoot(div);
     const adapter = getOverleafAdapter();
+    // This block only runs in production (!DEV), so always render without StrictMode
     root.render(
-      import.meta.env.DEV ? (
-        <StrictMode>
-          <Providers>
-            <AdapterProvider adapter={adapter}>
-              <Main />
-            </AdapterProvider>
-          </Providers>
-        </StrictMode>
-      ) : (
-        <Providers>
-          <AdapterProvider adapter={adapter}>
-            <Main />
-          </AdapterProvider>
-        </Providers>
-      ),
+      <Providers>
+        <AdapterProvider adapter={adapter}>
+          <Main />
+        </AdapterProvider>
+      </Providers>
     );
     googleAnalytics.firePageViewEvent(
       "unknown",

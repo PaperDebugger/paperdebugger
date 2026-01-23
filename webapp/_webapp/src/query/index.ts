@@ -37,16 +37,6 @@ import {
 } from "../pkg/gen/apiclient/project/v2/project_pb";
 import { useAuthStore } from "../stores/auth-store";
 
-// Deprecated
-// export const useGetUserQuery = (
-//   opts?: UseQueryOptionsOverride<GetUserResponse>,
-// ) => {
-//   return useQuery({
-//     queryKey: queryKeys.users.getUser().queryKey,
-//     queryFn: getUser,
-//     ...opts,
-//   });
-// };
 
 export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {
   return useQuery({

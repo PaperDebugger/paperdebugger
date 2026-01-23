@@ -30,8 +30,8 @@ const App = () => {
   
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
-      setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
-      setGclb(cookies.gclb ?? storage.getItem("pd.auth.gclb") ?? "");
+      setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
+      setGclb(cookies.gclb ?? localStorage.getItem("pd.auth.gclb") ?? "");
     });
     const savedCsrfToken = storage.getItem("pd.auth.csrfToken") ?? "";
     setCsrfToken(savedCsrfToken);
@@ -42,17 +42,17 @@ const App = () => {
   }, []);
 
   const setProjectId_ = useCallback((projectId: string) => {
-    storage.setItem("pd.projectId", projectId);
+    localStorage.setItem("pd.projectId", projectId);
     setProjectId(projectId);
   }, []);
 
   const setOverleafSession_ = useCallback((overleafSession: string) => {
-    storage.setItem("pd.auth.overleafSession", overleafSession);
+    localStorage.setItem("pd.auth.overleafSession", overleafSession);
     setOverleafSession(overleafSession);
   }, []);
 
   const setGclb_ = useCallback((gclb: string) => {
-    storage.setItem("pd.auth.gclb", gclb);
+    localStorage.setItem("pd.auth.gclb", gclb);
     setGclb(gclb);
   }, []);
 
@@ -106,7 +106,9 @@ const App = () => {
         </div>
       </div>
       <div className="flex flex-col gap-2 flex-1 min-w-0">
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
         <TooltipArea>
+          <div className="whitespace-pre-wrap break-all max-w-full font-mono text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
           <div className="whitespace-pre-wrap break-all max-w-full font-mono text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
             {JSON.stringify(
               {
@@ -121,6 +123,9 @@ const App = () => {
             )}
           </div>
         </TooltipArea>
+      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+      {import.meta.env.DEV && showTool && <DevTools />}
       </div>
       <div className="flex flex-col gap-2 flex-1 min-w-0">
       {import.meta.env.DEV && showTool && <DevTools />}

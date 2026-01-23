@@ -139,7 +139,7 @@ export const EmbedSidebar = () => {
     const sidebarDiv = document.createElement("div");
     sidebarDiv.id = "pd-embed-sidebar";
     sidebarDiv.className = "pd-embed-sidebar";
-    sidebarDiv.style.width = `${embedWidth}px`;
+    sidebarDiv.style.width = `${embedWidthRef.current}px`;
     sidebarDiv.style.height = "100%"; // Use 100% to match parent height
     sidebarDiv.style.display = "flex";
     sidebarDiv.style.flexDirection = "column";
@@ -185,7 +185,7 @@ export const EmbedSidebar = () => {
 
       setContainer(null);
     };
-  }, [isOpen, embedWidth, updateMainContentFlex]);
+  }, [isOpen, updateMainContentFlex]);
 
   // Handle resize drag
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -226,15 +226,11 @@ export const EmbedSidebar = () => {
         mouseUpHandlerRef.current = null;
       }
       
-      // Restore body styles
-      if (originalCursorRef.current !== "") {
-        document.body.style.cursor = originalCursorRef.current;
-        originalCursorRef.current = "";
-      }
-      if (originalUserSelectRef.current !== "") {
-        document.body.style.userSelect = originalUserSelectRef.current;
-        originalUserSelectRef.current = "";
-      }
+      // Restore body styles (including clearing inline styles when originally unset)
+      document.body.style.cursor = originalCursorRef.current;
+      document.body.style.userSelect = originalUserSelectRef.current;
+      originalCursorRef.current = "";
+      originalUserSelectRef.current = "";
     };
 
     // Store handlers in refs for cleanup
