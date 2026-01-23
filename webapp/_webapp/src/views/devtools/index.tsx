@@ -300,19 +300,19 @@ export const DevTools = () => {
             <div className="text-xs text-gray-600 flex flex-wrap gap-1">
               <span>({streamingMessage.parts.length} total,</span>
               <span className="text-orange-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.PREPARING).length}{" "}
+                {streamingMessage.parts.filter((part) => part.status === "streaming").length}{" "}
                 preparing,
               </span>
               <span className="text-green-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.FINALIZED).length}{" "}
+                {streamingMessage.parts.filter((part) => part.status === "complete").length}{" "}
                 finalized,
               </span>
-              <span className="text-blue-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.INCOMPLETE).length}{" "}
-                incomplete,
+              <span className="text-red-600">
+                {streamingMessage.parts.filter((part) => part.status === "error").length}{" "}
+                error,
               </span>
               <span className="text-gray-500">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.STALE).length} stale
+                {streamingMessage.parts.filter((part) => part.status === "stale").length} stale
               </span>
               <span>)</span>
             </div>
