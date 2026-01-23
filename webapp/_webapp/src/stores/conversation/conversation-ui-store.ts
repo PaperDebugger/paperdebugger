@@ -54,6 +54,9 @@ interface ConversationUiStore {
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sidebarCollapsed: boolean) => void;
 
+  tabItemsWidth: number;
+  setTabItemsWidth: (tabItemsWidth: number) => void;
+
   heightCollapseRequired: boolean;
   setHeightCollapseRequired: (heightCollapseRequired: boolean) => void;
 
@@ -106,6 +109,9 @@ export const useConversationUiStore = create<ConversationUiStore>()(
 
       sidebarCollapsed: false,
       setSidebarCollapsed: (sidebarCollapsed: boolean) => set({ sidebarCollapsed }),
+
+      tabItemsWidth: 140, // Default width in pixels
+      setTabItemsWidth: (tabItemsWidth: number) => set({ tabItemsWidth }),
 
       heightCollapseRequired: false,
       setHeightCollapseRequired: (heightCollapseRequired: boolean) => set({ heightCollapseRequired }),

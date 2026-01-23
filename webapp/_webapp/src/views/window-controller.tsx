@@ -6,7 +6,7 @@ import { PdAppControlTitleBar } from "../components/pd-app-control-title-bar";
 import { PdAppSmallControlButton } from "../components/pd-app-small-control-button";
 
 export const WindowController = () => {
-  const { sidebarCollapsed, setSidebarCollapsed, setIsOpen } = useConversationUiStore();
+  const { sidebarCollapsed, setIsOpen } = useConversationUiStore();
   const CompactHeader = useMemo(() => {
     return (
       <PdAppControlTitleBar
@@ -21,25 +21,11 @@ export const WindowController = () => {
               </PdAppSmallControlButton>
             </Tooltip>
             <PositionController />
-            <Tooltip
-              content={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              placement="bottom"
-              className="noselect"
-              size="sm"
-              delay={500}
-            >
-              <PdAppSmallControlButton onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
-                <Icon
-                  icon={sidebarCollapsed ? "tabler:layout-sidebar-left-expand" : "tabler:layout-sidebar-left-collapse"}
-                  fontSize={18}
-                />
-              </PdAppSmallControlButton>
-            </Tooltip>
           </div>
         </div>
       </PdAppControlTitleBar>
     );
-  }, [sidebarCollapsed, setSidebarCollapsed, setIsOpen]);
+  }, [sidebarCollapsed, setIsOpen]);
   return CompactHeader;
 };
 
@@ -114,7 +100,11 @@ const PositionController = () => {
           }}
         >
           <Icon
-            icon={displayMode === "embed" ? "tabler:layout-sidebar-right-collapse-filled" : "tabler:layout-sidebar-right-collapse"}
+            icon={
+              displayMode === "embed"
+                ? "tabler:layout-sidebar-right-collapse-filled"
+                : "tabler:layout-sidebar-right-collapse"
+            }
             fontSize={18}
           />
         </PdAppSmallControlButton>

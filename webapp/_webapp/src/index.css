@@ -245,6 +245,8 @@ body {
   gap: 1rem;
   @apply bg-gray-100 px-3 pb-3 pt-12;
   z-index: 888;
+  position: relative;
+  flex-shrink: 0;
 }
 
 .pd-app-tab-content {
@@ -606,11 +608,68 @@ body {
   width: 8px;
   cursor: col-resize;
   background-color: transparent;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
   z-index: 10000;
   pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pd-embed-resize-handle:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.pd-embed-resize-handle:hover .resize-handle-indicator {
+  opacity: 1 !important;
+}
+
+.pd-embed-resize-handle.resizing {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.pd-embed-resize-handle.resizing .resize-handle-indicator {
+  opacity: 1 !important;
+}
+
+.resize-handle-indicator {
+  width: 2px;
+  height: 40px;
   background-color: var(--pd-primary-color, #3b82f6);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* Tab Items Resize Handle */
+.pd-tab-items-resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s, opacity 0.2s;
+  z-index: 1000;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pd-tab-items-resize-handle:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.pd-tab-items-resize-handle:hover .resize-handle-indicator {
+  opacity: 1 !important;
+}
+
+.pd-tab-items-resize-handle.resizing {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.pd-tab-items-resize-handle.resizing .resize-handle-indicator {
+  opacity: 1 !important;
 }

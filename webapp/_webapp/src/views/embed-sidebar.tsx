@@ -202,26 +202,11 @@ export const EmbedSidebar = () => {
       <div
         ref={resizeHandleRef}
         className="pd-embed-resize-handle"
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: "8px",
-          cursor: "col-resize",
-          backgroundColor: "transparent",
-          transition: "background-color 0.2s",
-          zIndex: 10000,
-          pointerEvents: "auto",
-        }}
         onMouseDown={handleMouseDown}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = "var(--pd-primary-color, #3b82f6)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-        }}
-      />
+      >
+        {/* Visual indicator line */}
+        <div className="resize-handle-indicator" />
+      </div>
       <PdAppContainer>
         <WindowController />
         <Body />
