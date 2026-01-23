@@ -120,7 +120,31 @@ class ApiClient {
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
-        const errorPayload = fromJson(ErrorSchema, errorData);
+        let errorPayload: { code: ErrorCode; message: string };
+
+        // Some environments/backends return non-JSON (or already-stringified) errors.
+        // Never allow error parsing to throw, or it will mask the real failure.
+        try {
+          const normalized =
+            typeof errorData === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(errorData);
+                  } catch {
+                    return errorData;
+                  }
+                })()
+              : errorData;
+          const parsed = fromJson(ErrorSchema, normalized);
+          errorPayload = { code: parsed.code, message: parsed.message };
+        } catch {
+          const fallbackMessage =
+            (typeof errorData === "string" && errorData) ||
+            error.message ||
+            `HTTP error${error.response?.status ? `: ${error.response.status}` : ""}`;
+          errorPayload = { code: ErrorCode.UNKNOWN, message: fallbackMessage };
+        }
+
         if (!options?.ignoreErrorToast) {
           const message = this.cleanErrorMessage(errorPayload.message);
           const title = this.getErrorTitle(errorPayload.code);

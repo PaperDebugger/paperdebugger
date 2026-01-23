@@ -46,10 +46,10 @@ message ProjectDoc {
 
 message UpsertProjectRequest {
   string project_id = 1;
-  string name = 2;
-  string root_doc_id = 3;
-  ProjectFolder root_folder = 4;
-  string instructions = 5;
+  optional string name = 2;
+  optional string root_doc_id = 3;
+  optional ProjectFolder root_folder = 4;
+  optional string instructions = 5;
 }
 
 message UpsertProjectResponse {

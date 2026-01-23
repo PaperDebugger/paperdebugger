@@ -2,6 +2,8 @@ import { create as createStore } from "zustand";
 import { create as createMessage } from "@bufbuild/protobuf";
 import {
   OverleafAuthentication,
+  OverleafDoc,
+  OverleafFolder,
   OverleafJoinProjectResponse,
   OverleafSocketRequest,
   OverleafSocketResponse,
@@ -11,10 +13,73 @@ import {
 } from "../libs/overleaf-socket";
 import { generateId } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import { ProjectDoc, ProjectFolder, ProjectFolderSchema, UpsertProjectRequest } from "../pkg/gen/apiclient/project/v2/project_pb";
+import {
+  ProjectDoc,
+  ProjectDocSchema,
+  ProjectFolder,
+  ProjectFolderSchema,
+  UpsertProjectRequest,
+} from "../pkg/gen/apiclient/project/v2/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";
+
+function joinPath(parent: string, leaf: string): string {
+  if (!parent) return leaf;
+  if (!leaf) return parent;
+  return `${parent.replace(/\/+$/g, "")}/${leaf.replace(/^\/+/g, "")}`;
+}
+
+function overleafDocToProjectDoc(doc: OverleafDoc, folderPath: string): ProjectDoc {
+  return createMessage(ProjectDocSchema, {
+    id: doc._id,
+    // Overleaf doesn't provide version/lines from joinProjectResponse; those come from joinDoc.
+    version: 0,
+    filename: doc.name,
+    filepath: joinPath(folderPath, doc.name),
+    lines: [],
+  });
+}
+
+function overleafFolderToProjectFolderTree(
+  folder: OverleafFolder,
+  parentPath: string,
+): {
+  folder: ProjectFolder;
+  docs: Map<string, ProjectDoc>;
+  folders: Map<string, ProjectFolder>;
+} {
+  const folderPath = joinPath(parentPath, folder.name);
+
+  const docs = new Map<string, ProjectDoc>();
+  const folders = new Map<string, ProjectFolder>();
+
+  const projectDocs = (folder.docs ?? []).map((d) => {
+    const pd = overleafDocToProjectDoc(d, folderPath);
+    
+    docs.set(pd.id, pd);
+    return pd;
+  });
+
+  const projectSubfolders = (folder.folders ?? []).map((sf) => {
+    const child = overleafFolderToProjectFolderTree(sf, folderPath);
+    // merge maps
+    for (const [k, v] of child.docs) docs.set(k, v);
+    for (const [k, v] of child.folders) folders.set(k, v);
+    return child.folder;
+  });
+
+  const projectFolder = createMessage(ProjectFolderSchema, {
+    id: folder._id,
+    name: folder.name,
+    docs: projectDocs,
+    folders: projectSubfolders,
+  });
+
+  folders.set(projectFolder.id, projectFolder);
+
+  return { folder: projectFolder, docs, folders };
+}
 
 export interface SocketStore {
   // State
@@ -131,14 +196,13 @@ export const useSocketStore = createStore<SocketStore>((set, get) => ({
       const result = await createSnapshot((progress) => {
         set({ syncingProgress: Math.round(progress) });
       });
-
+      console.log("snapshot", result);
       // Update project snapshot to server DB
       const projectSnapshot: PlainMessage<UpsertProjectRequest> = {
         projectId,
         name: get().projectName,
         rootDocId: get().rootDocId,
         rootFolder: get().rootFolder,
-        instructions: "", // Instructions will be preserved by server if already set
       };
 
       // IMPORTANT:
@@ -419,34 +483,21 @@ export const useSocketStore = createStore<SocketStore>((set, get) => ({
     if (data.name === "joinProjectResponse") {
       // Process project structure after joining
       const project = data.args[0] as OverleafJoinProjectResponse;
-      const queue = (project.project.rootFolder.folders ?? []) as unknown as ProjectFolder[];
-
-      // Process folder structure with BFS traversal
-      while (queue.length > 0) {
-        const folder = queue.pop();
-        if (!folder) continue;
-
-        // Process documents in current folder
-        for (const doc of folder.docs) {
-          const path = `${folder.name}/${doc.filename}`.replace("rootFolder/", "");
-          _updateDocById(doc.id, { newPath: path });
-        }
-
-        // Queue subfolders
-        for (const subFolder of folder.folders) {
-          queue.push({
-            ...subFolder,
-            name: `${folder.name}/${subFolder.name}`,
-          });
-        }
+      const overleafRootFolder = project.project.rootFolder.at(0);
+      if (!overleafRootFolder) {
+        throw new Error("Overleaf joinProjectResponse missing rootFolder[0]");
       }
+
+      const { folder: projectRootFolder, docs, folders } = overleafFolderToProjectFolderTree(overleafRootFolder, "");
 
       // Mark project as joined
       set({
         socketJoined: true,
         projectName: project.project.name,
         rootDocId: project.project.rootDoc_id,
-        rootFolder: project.project.rootFolder as ProjectFolder,
+        rootFolder: projectRootFolder,
+        docs,
+        folders,
       });
     } else if (data.name === "otUpdateApplied") {
       // Update document version after OT update

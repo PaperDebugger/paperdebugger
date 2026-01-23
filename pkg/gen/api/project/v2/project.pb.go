@@ -262,10 +262,10 @@ func (x *ProjectDoc) GetLines() []string {
 type UpsertProjectRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	RootDocId     string                 `protobuf:"bytes,3,opt,name=root_doc_id,json=rootDocId,proto3" json:"root_doc_id,omitempty"`
-	RootFolder    *ProjectFolder         `protobuf:"bytes,4,opt,name=root_folder,json=rootFolder,proto3" json:"root_folder,omitempty"`
-	Instructions  string                 `protobuf:"bytes,5,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	RootDocId     *string                `protobuf:"bytes,3,opt,name=root_doc_id,json=rootDocId,proto3,oneof" json:"root_doc_id,omitempty"`
+	RootFolder    *ProjectFolder         `protobuf:"bytes,4,opt,name=root_folder,json=rootFolder,proto3,oneof" json:"root_folder,omitempty"`
+	Instructions  *string                `protobuf:"bytes,5,opt,name=instructions,proto3,oneof" json:"instructions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -308,15 +308,15 @@ func (x *UpsertProjectRequest) GetProjectId() string {
 }
 
 func (x *UpsertProjectRequest) GetName() string {
-	if x != nil {
-		return x.Name
+	if x != nil && x.Name != nil {
+		return *x.Name
 	}
 	return ""
 }
 
 func (x *UpsertProjectRequest) GetRootDocId() string {
-	if x != nil {
-		return x.RootDocId
+	if x != nil && x.RootDocId != nil {
+		return *x.RootDocId
 	}
 	return ""
 }
@@ -329,8 +329,8 @@ func (x *UpsertProjectRequest) GetRootFolder() *ProjectFolder {
 }
 
 func (x *UpsertProjectRequest) GetInstructions() string {
-	if x != nil {
-		return x.Instructions
+	if x != nil && x.Instructions != nil {
+		return *x.Instructions
 	}
 	return ""
 }
@@ -495,15 +495,19 @@ const file_project_v2_project_proto_rawDesc = "" +
 	"\aversion\x18\x02 \x01(\x05R\aversion\x12\x1a\n" +
 	"\bfilename\x18\x03 \x01(\tR\bfilename\x12\x1a\n" +
 	"\bfilepath\x18\x04 \x01(\tR\bfilepath\x12\x14\n" +
-	"\x05lines\x18\x05 \x03(\tR\x05lines\"\xc9\x01\n" +
+	"\x05lines\x18\x05 \x03(\tR\x05lines\"\x97\x02\n" +
 	"\x14UpsertProjectRequest\x12\x1d\n" +
 	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
-	"\vroot_doc_id\x18\x03 \x01(\tR\trootDocId\x12:\n" +
-	"\vroot_folder\x18\x04 \x01(\v2\x19.project.v2.ProjectFolderR\n" +
-	"rootFolder\x12\"\n" +
-	"\finstructions\x18\x05 \x01(\tR\finstructions\"F\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x17\n" +
+	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12#\n" +
+	"\vroot_doc_id\x18\x03 \x01(\tH\x01R\trootDocId\x88\x01\x01\x12?\n" +
+	"\vroot_folder\x18\x04 \x01(\v2\x19.project.v2.ProjectFolderH\x02R\n" +
+	"rootFolder\x88\x01\x01\x12'\n" +
+	"\finstructions\x18\x05 \x01(\tH\x03R\finstructions\x88\x01\x01B\a\n" +
+	"\x05_nameB\x0e\n" +
+	"\f_root_doc_idB\x0e\n" +
+	"\f_root_folderB\x0f\n" +
+	"\r_instructions\"F\n" +
 	"\x15UpsertProjectResponse\x12-\n" +
 	"\aproject\x18\x01 \x01(\v2\x13.project.v2.ProjectR\aproject\"2\n" +
 	"\x11GetProjectRequest\x12\x1d\n" +
@@ -567,6 +571,7 @@ func file_project_v2_project_proto_init() {
 	if File_project_v2_project_proto != nil {
 		return
 	}
+	file_project_v2_project_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
