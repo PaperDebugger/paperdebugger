@@ -4,7 +4,7 @@ on:
     tags:
       - 'v*'
   repository_dispatch:
-    types: [stage]
+    types: [stg]
 
 jobs:
   build-backend-and-push:

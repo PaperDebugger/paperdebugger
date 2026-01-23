@@ -1,14 +1,11 @@
 name: build chrome extension for prd
 
 on:
-  workflow_run:
-    workflows:
-      - 'Bump Version'
-    types:
-      - completed
+  repository_dispatch:
+    types: [prd]
+
 jobs:
   build-chrome-extension:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
