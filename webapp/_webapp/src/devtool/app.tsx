@@ -68,9 +68,9 @@ const App = () => {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2 w-50%">
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
         <TooltipArea>
-          <div className="whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap break-all max-w-full font-mono text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
             {JSON.stringify(
               {
                 projectId,
