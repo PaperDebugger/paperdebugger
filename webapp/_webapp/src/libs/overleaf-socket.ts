@@ -47,7 +47,7 @@ export interface OverleafProject {
   _id: string;
   name: string; // Project Name
   rootDoc_id: string; // Root document ID
-  rootFolder: PlainMessage<ProjectFolder>;
+  rootFolder: OverleafFolder[];
   publicAccessLevel: string; // default: private
   dropboxEnabled: boolean;
   compiler: string; // default: pdflatex
