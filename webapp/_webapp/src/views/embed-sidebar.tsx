@@ -108,17 +108,19 @@ export const EmbedSidebar = () => {
     sidebarDiv.id = "pd-embed-sidebar";
     sidebarDiv.className = "pd-embed-sidebar";
     sidebarDiv.style.width = `${embedWidth}px`;
-    sidebarDiv.style.height = "100vh";
+    sidebarDiv.style.height = "100%"; // Use 100% to match parent height
     sidebarDiv.style.display = "flex";
     sidebarDiv.style.flexDirection = "column";
     sidebarDiv.style.borderLeft = "1px solid var(--pd-border-color)";
     sidebarDiv.style.flexShrink = "0";
     sidebarDiv.style.position = "relative";
+    sidebarDiv.style.overflow = "hidden"; // Prevent overflow
 
     // Modify parent container to flex layout
     ideBody.style.display = "flex";
     ideBody.style.flexDirection = "row";
     ideBody.style.width = "100%";
+    ideBody.style.height = "100vh"; // Ensure full viewport height
     ideBody.style.overflow = "hidden";
 
     // Append sidebar to ideBody (after ide-redesign-inner)
