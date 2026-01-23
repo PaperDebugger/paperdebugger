@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
 jobs:
   bump-version:
@@ -24,25 +25,42 @@ jobs:
           echo "Found tag: $tag"
           echo "tag=$tag" >> $GITHUB_OUTPUT
 
-      - name: Bump patch version
+      - name: Bump version
         id: bump
         run: |
           tag="${{ steps.get_tag.outputs.tag }}"
+          branch="${{ github.ref_name }}"
           # Remove v prefix
           version="${tag#v}"
 
-          # Use awk or bash logic to increment the last digit
+          # Parse version parts
           IFS='.' read -r -a parts <<< "$version"
-          last_index=$((${#parts[@]} - 1))
-          parts[$last_index]=$((parts[$last_index] + 1))
+          
+          if [ "$branch" = "develop" ]; then
+            # Develop branch: bump patch version (last value)
+            # v2.1.2 --> v2.1.3
+            last_index=$((${#parts[@]} - 1))
+            parts[$last_index]=$((parts[$last_index] + 1))
+          elif [ "$branch" = "main" ]; then
+            # Main branch: bump minor version and set patch to 0
+            # v2.1.2 --> v2.2.0
+            if [ ${#parts[@]} -ge 2 ]; then
+              parts[1]=$((parts[1] + 1))
+              # Set patch version to 0
+              if [ ${#parts[@]} -ge 3 ]; then
+                parts[2]=0
+              fi
+            fi
+          fi
 
           # Reassemble
           new_version="${parts[0]}"
-          for i in $(seq 1 $last_index); do
+          for i in $(seq 1 $((${#parts[@]} - 1))); do
             new_version="${new_version}.${parts[$i]}"
           done
 
           new_tag="v${new_version}"
+          echo "Branch: $branch"
           echo "Bumped tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
 
@@ -59,4 +77,4 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           repository: PaperDebugger/paperdebugger
           event-type: release
-          client-payload: '{"tag": "${{ steps.bump.outputs.new_tag }}"}'
+          client-payload: '{"tag": "${{ steps.bump.outputs.new_tag }}", "branch": "${{ github.ref_name }}"}'
