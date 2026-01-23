@@ -9,6 +9,7 @@ export const DISPLAY_MODES = [
   { key: "right-fixed", label: "Right Fixed" },
   { key: "bottom-fixed", label: "Bottom Fixed" },
   { key: "embed", label: "Embed Sidebar" },
+  { key: "fullscreen", label: "Full Screen" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
 
