@@ -16,7 +16,6 @@ import {
   listConversations,
   listPrompts,
   listSupportedModels,
-  runProjectPaperScore,
   updateConversation,
   updatePrompt,
   getUserInstructions,
@@ -35,22 +34,11 @@ import {
 import { queryKeys } from "./keys";
 import {
   GetProjectResponse,
-  RunProjectPaperScoreResponse,
   GetProjectInstructionsResponse,
   UpsertProjectInstructionsResponse,
 } from "../pkg/gen/apiclient/project/v1/project_pb";
 import { useAuthStore } from "../stores/auth-store";
 
-// Deprecated
-// export const useGetUserQuery = (
-//   opts?: UseQueryOptionsOverride<GetUserResponse>,
-// ) => {
-//   return useQuery({
-//     queryKey: queryKeys.users.getUser().queryKey,
-//     queryFn: getUser,
-//     ...opts,
-//   });
-// };
 
 export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {
   return useQuery({
@@ -114,13 +102,6 @@ export const useListConversationsQuery = (
 export const useDeleteConversationMutation = (opts?: UseMutationOptionsOverride<DeleteConversationResponse>) => {
   return useMutation({
     mutationFn: deleteConversation,
-    ...opts,
-  });
-};
-
-export const useRunProjectPaperScoreMutation = (opts?: UseMutationOptionsOverride<RunProjectPaperScoreResponse>) => {
-  return useMutation({
-    mutationFn: runProjectPaperScore,
     ...opts,
   });
 };

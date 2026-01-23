@@ -3,33 +3,35 @@ import { useAuthStore } from "../stores/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
-import { storage } from "../libs/storage";
+import { DevTools } from "../views/devtools";
+import { useDevtoolStore } from "../stores/devtool-store";
 
 const App = () => {
   const { token, refreshToken, setToken, setRefreshToken } = useAuthStore();
-  const [projectId, setProjectId] = useState(storage.getItem("pd.projectId") ?? "");
-  const [overleafSession, setOverleafSession] = useState(storage.getItem("pd.auth.overleafSession") ?? "");
-  const [gclb, setGclb] = useState(storage.getItem("pd.auth.gclb") ?? "");
-
+  const [projectId, setProjectId] = useState(localStorage.getItem("pd.projectId") ?? "");
+  const [overleafSession, setOverleafSession] = useState(localStorage.getItem("pd.auth.overleafSession") ?? "");
+  const [gclb, setGclb] = useState(localStorage.getItem("pd.auth.gclb") ?? "");
+  const { showTool } = useDevtoolStore();
+  
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
-      setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
-      setGclb(cookies.gclb ?? storage.getItem("pd.auth.gclb") ?? "");
+      setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
+      setGclb(cookies.gclb ?? localStorage.getItem("pd.auth.gclb") ?? "");
     });
   }, []);
 
   const setProjectId_ = useCallback((projectId: string) => {
-    storage.setItem("pd.projectId", projectId);
+    localStorage.setItem("pd.projectId", projectId);
     setProjectId(projectId);
   }, []);
 
   const setOverleafSession_ = useCallback((overleafSession: string) => {
-    storage.setItem("pd.auth.overleafSession", overleafSession);
+    localStorage.setItem("pd.auth.overleafSession", overleafSession);
     setOverleafSession(overleafSession);
   }, []);
 
   const setGclb_ = useCallback((gclb: string) => {
-    storage.setItem("pd.auth.gclb", gclb);
+    localStorage.setItem("pd.auth.gclb", gclb);
     setGclb(gclb);
   }, []);
 
@@ -69,9 +71,9 @@ const App = () => {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2 w-50%">
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
         <TooltipArea>
-          <div className="whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap break-all max-w-full font-mono text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
             {JSON.stringify(
               {
                 projectId,
@@ -85,6 +87,9 @@ const App = () => {
             )}
           </div>
         </TooltipArea>
+      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+      {import.meta.env.DEV && showTool && <DevTools />}
       </div>
     </main>
   );

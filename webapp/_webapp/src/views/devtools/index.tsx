@@ -1,4 +1,3 @@
-import { Rnd } from "react-rnd";
 import { useSelectionStore } from "../../stores/selection-store";
 import { Button, Input } from "@heroui/react";
 import { useStreamingMessageStore } from "../../stores/streaming-message-store";
@@ -231,111 +230,144 @@ export const DevTools = () => {
 
   // --- Render ---
   return (
-    <Rnd
-      style={{ zIndex: 1003, position: "static", top: 0, left: 0 }}
-      default={{ x: 0, y: 0, width: 800, height: 600 }}
-    >
-      <div className="flex flex-col gap-2 w-full h-full bg-orange-100 border-2 border-orange-600 rounded-lg overflow-hidden p-2">
-        <h1 className="text-2xl font-bold text-center text-orange-600">DevTools</h1>
-        {/* Conversation section */}
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            Conversation (
-            {isEmptyConversation() ? (
-              <span className="text-red-500">empty</span>
-            ) : (
-              <span className="text-green-500">not empty</span>
-            )}
-            )
-            <Button size="sm" onPress={startFromScratch}>
-              Create Dummy Conversation
-            </Button>
-          </h2>
-          <div className="flex flex-row gap-2 items-center">
-            <h3>Selected Text</h3>
-            <Input
-              className="flex-1"
-              size="sm"
-              placeholder="Selected Text"
-              value={selectedText ?? ""}
-              onChange={handleSelectedTextChange}
-            />
-            <Button size="sm" onPress={handleClearSelectedText}>
-              Clear Selected Text
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="flex items-center gap-2">
-              Finalized Message ({currentConversation.messages.length})
-              <Button className="h-8 w-8" onPress={handleClearConversation}>
-                clear
-              </Button>
-            </h3>
-            <div className="flex flex-col gap-2 items-center">
-              <Button className="h-8 w-full" size="sm" onPress={handleAddUserMessage}>
-                👨🏻‍💻 Add User Message
-              </Button>
-              <Button className="h-8 w-full" size="sm" onPress={handleAddAssistantMessage}>
-                👮🏻‍♂️ Add Assistant Message
-              </Button>
-              <Button className="h-8 w-full" size="sm" onPress={() => handleAddToolCallMessage("greeting")}>
-                👋 Add Tool Call Message (Greeting)
-              </Button>
-              <Button className="h-8 w-full" size="sm" onPress={() => handleAddToolCallMessage("paper_score")}>
-                📄 Add Tool Call Message (PaperScore)
-              </Button>
-              <Button className="h-8 w-full" size="sm" onPress={handleStaleLastConversationMessage}>
-                ⏳ Stale the last message
+    <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 border-orange-600 rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 px-4 py-3 bg-orange-100 border-b-2 border-orange-600">
+        <h1 className="text-2xl font-bold text-center text-orange-700">DevTools</h1>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+        <div className="flex flex-col gap-4">
+          {/* Conversation section */}
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h2 className="text-lg font-bold text-orange-700 flex items-center gap-2">
+                Conversation (
+                {isEmptyConversation() ? (
+                  <span className="text-red-500 font-normal">empty</span>
+                ) : (
+                  <span className="text-green-500 font-normal">not empty</span>
+                )}
+                )
+              </h2>
+              <Button size="sm" onPress={startFromScratch} className="flex-shrink-0">
+                Create Dummy Conversation
               </Button>
             </div>
+
+            {/* Selected Text */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold text-gray-700">Selected Text</h3>
+              <div className="flex flex-row gap-2 items-center">
+                <Input
+                  className="flex-1"
+                  size="sm"
+                  placeholder="Selected Text"
+                  value={selectedText ?? ""}
+                  onChange={handleSelectedTextChange}
+                />
+                <Button size="sm" onPress={handleClearSelectedText} className="flex-shrink-0">
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            {/* Finalized Messages */}
+            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Finalized Messages ({currentConversation.messages.length})
+                </h3>
+                <Button size="sm" variant="light" onPress={handleClearConversation} className="h-7 min-w-16">
+                  Clear
+                </Button>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button size="sm" onPress={handleAddUserMessage} className="w-full">
+                  👨🏻‍💻 Add User Message
+                </Button>
+                <Button size="sm" onPress={handleAddAssistantMessage} className="w-full">
+                  👮🏻‍♂️ Add Assistant Message
+                </Button>
+                <Button size="sm" onPress={() => handleAddToolCallMessage("greeting")} className="w-full">
+                  👋 Add Tool Call Message (Greeting)
+                </Button>
+                <Button size="sm" onPress={() => handleAddToolCallMessage("paper_score")} className="w-full">
+                  📄 Add Tool Call Message (PaperScore)
+                </Button>
+                <Button size="sm" onPress={handleStaleLastConversationMessage} className="w-full">
+                  ⏳ Stale the last message
+                </Button>
+              </div>
+            </div>
           </div>
+
           {/* Streaming Message section */}
-          <div className="flex flex-col gap-2">
-            <h3 className="flex items-center gap-2">
-              Streaming Message
-              <div>
-                ({streamingMessage.parts.length} total,
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h3 className="text-sm font-semibold text-gray-700">Streaming Message</h3>
+              <Button size="sm" variant="light" onPress={handleClearStreamingMessage} className="h-7 min-w-16">
+                Clear
+              </Button>
+            </div>
+            <div className="text-xs text-gray-600 flex flex-wrap gap-1">
+              <span>({streamingMessage.parts.length} total,</span>
+              <span className="text-orange-600">
                 {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.PREPARING).length}{" "}
                 preparing,
+              </span>
+              <span className="text-green-600">
                 {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.FINALIZED).length}{" "}
                 finalized,
+              </span>
+              <span className="text-blue-600">
                 {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.INCOMPLETE).length}{" "}
                 incomplete,
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.STALE).length} stale )
-              </div>
-              <Button className="h-8 w-8" onPress={handleClearStreamingMessage}>
-                clear
-              </Button>
-            </h3>
-            <div className="flex flex-row gap-2 items-center">
-              <p className="text-nowrap">Preparing delay (seconds):</p>
+              </span>
+              <span className="text-gray-500">
+                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.STALE).length} stale
+              </span>
+              <span>)</span>
+            </div>
+
+            {/* Preparing delay */}
+            <div className="flex flex-row gap-2 items-center pt-2 border-t border-orange-200">
+              <label className="text-sm text-gray-700 whitespace-nowrap">Preparing delay (seconds):</label>
               <Input
                 size="sm"
+                type="number"
+                min="0"
+                className="w-20"
                 value={preparingDelay.toString()}
                 onChange={(e) => setPreparingDelay(Number(e.target.value) || 0)}
               />
             </div>
-            <Button size="sm" onPress={handleAddStreamingUserMessage}>
-              Add User Message
-            </Button>
-            <Button size="sm" onPress={handleAddStreamingToolPrepare}>
-              Add Tool Prepare Message
-            </Button>
-            <Button size="sm" onPress={() => handleAddStreamingToolCall("paper_score")}>
-              Add Tool Call Message (PaperScore) stream
-            </Button>
-            <Button size="sm" onPress={() => handleAddStreamingToolCall("greeting")}>
-              Add Greeting Tool Call Message
-            </Button>
-            <Button size="sm" onPress={handleAddStreamingAssistant}>
-              Add assistant response
-            </Button>
-            <Button size="sm" onPress={handleStaleLastStreamingMessage}>
-              Stale the last message
-            </Button>
+
+            {/* Streaming buttons */}
+            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200">
+              <Button size="sm" onPress={handleAddStreamingUserMessage} className="w-full">
+                Add User Message
+              </Button>
+              <Button size="sm" onPress={handleAddStreamingToolPrepare} className="w-full">
+                Add Tool Prepare Message
+              </Button>
+              <Button size="sm" onPress={() => handleAddStreamingToolCall("paper_score")} className="w-full">
+                Add Tool Call Message (PaperScore) stream
+              </Button>
+              <Button size="sm" onPress={() => handleAddStreamingToolCall("greeting")} className="w-full">
+                Add Greeting Tool Call Message
+              </Button>
+              <Button size="sm" onPress={handleAddStreamingAssistant} className="w-full">
+                Add assistant response
+              </Button>
+              <Button size="sm" onPress={handleStaleLastStreamingMessage} className="w-full">
+                Stale the last message
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </Rnd>
+    </div>
   );
 };

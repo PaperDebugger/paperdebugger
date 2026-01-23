@@ -1,5 +1,5 @@
 import { Extension } from "@codemirror/state";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { OnboardingGuide } from "./components/onboarding-guide";
@@ -13,11 +13,9 @@ import apiclient, { apiclientV2, getEndpointFromLocalStorage } from "./libs/apic
 import { Providers } from "./providers";
 import { useAuthStore } from "./stores/auth-store";
 import { useConversationUiStore } from "./stores/conversation/conversation-ui-store";
-import { useDevtoolStore } from "./stores/devtool-store";
 import { useSelectionStore } from "./stores/selection-store";
 import { useSettingStore } from "./stores/setting-store";
 import { MainDrawer } from "./views";
-import { DevTools } from "./views/devtools";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
@@ -69,7 +67,6 @@ export const Main = () => {
   } = useSelectionStore();
   const [menuElement, setMenuElement] = useState<Element | null>(null);
   const { isOpen, setIsOpen } = useConversationUiStore();
-  const { showTool: showDevTool } = useDevtoolStore();
   const { settings, loadSettings, disableLineWrap } = useSettingStore();
   const { login } = useAuthStore();
   const { loadPrompts } = usePromptLibraryStore();
@@ -215,7 +212,6 @@ export const Main = () => {
 
       {buttonPortal}
       <MainDrawer />
-      {import.meta.env.DEV && showDevTool && <DevTools />}
       <OnboardingGuide />
     </>
   );
@@ -234,22 +230,13 @@ if (!import.meta.env.DEV) {
 
     const root = createRoot(div);
     const adapter = getOverleafAdapter();
+    // This block only runs in production (!DEV), so always render without StrictMode
     root.render(
-      import.meta.env.DEV ? (
-        <StrictMode>
-          <Providers>
-            <AdapterProvider adapter={adapter}>
-              <Main />
-            </AdapterProvider>
-          </Providers>
-        </StrictMode>
-      ) : (
-        <Providers>
-          <AdapterProvider adapter={adapter}>
-            <Main />
-          </AdapterProvider>
-        </Providers>
-      ),
+      <Providers>
+        <AdapterProvider adapter={adapter}>
+          <Main />
+        </AdapterProvider>
+      </Providers>
     );
     googleAnalytics.firePageViewEvent(
       "unknown",

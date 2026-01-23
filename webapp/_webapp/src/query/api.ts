@@ -25,8 +25,6 @@ import {
 import {
   GetProjectRequest,
   GetProjectResponseSchema,
-  RunProjectPaperScoreRequest,
-  RunProjectPaperScoreResponseSchema,
   UpsertProjectRequest,
   UpsertProjectResponseSchema,
   GetProjectInstructionsRequest,
@@ -195,11 +193,6 @@ export const upsertUserInstructions = async (data: PlainMessage<UpsertUserInstru
   return fromJson(UpsertUserInstructionsResponseSchema, response);
 };
 
-// Deprecated, use function call in LLMs instead. We do not need to call this function anymore.
-export const runProjectPaperScore = async (data: PlainMessage<RunProjectPaperScoreRequest>) => {
-  const response = await apiclient.post(`/projects/${data.projectId}/paper-score`, data);
-  return fromJson(RunProjectPaperScoreResponseSchema, response);
-};
 
 export const getProjectInstructions = async (data: PlainMessage<GetProjectInstructionsRequest>) => {
   if (!apiclient.hasToken()) {
