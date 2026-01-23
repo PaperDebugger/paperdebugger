@@ -43,6 +43,8 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const isResizingRef = useRef(false);
   const tabItemsWidthRef = useRef(tabItemsWidth);
+  const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const mouseUpHandlerRef = useRef<(() => void) | null>(null);
 
   // Keep ref in sync with tabItemsWidth
   useEffect(() => {
@@ -64,6 +66,34 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
     setSelectedTab: setActiveTab,
   }));
 
+  // Cleanup function to reset resize state and remove event listeners
+  const cleanupResizeState = useCallback(() => {
+    isResizingRef.current = false;
+    document.body.style.cursor = "default";
+    document.body.style.userSelect = "";
+    if (resizeHandleRef.current) {
+      resizeHandleRef.current.classList.remove("resizing");
+    }
+    // Remove event listeners if they exist
+    if (mouseMoveHandlerRef.current) {
+      document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
+      mouseMoveHandlerRef.current = null;
+    }
+    if (mouseUpHandlerRef.current) {
+      document.removeEventListener("mouseup", mouseUpHandlerRef.current);
+      mouseUpHandlerRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount to prevent leaks if component unmounts during resize
+  useEffect(() => {
+    return () => {
+      if (isResizingRef.current) {
+        cleanupResizeState();
+      }
+    };
+  }, [cleanupResizeState]);
+
   // Handle resize drag
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,15 +112,12 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
     };
 
     const handleMouseUp = () => {
-      isResizingRef.current = false;
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "default";
-      document.body.style.userSelect = "";
-      if (resizeHandleRef.current) {
-        resizeHandleRef.current.classList.remove("resizing");
-      }
+      cleanupResizeState();
     };
+
+    // Store handlers in refs so they can be cleaned up on unmount
+    mouseMoveHandlerRef.current = handleMouseMove;
+    mouseUpHandlerRef.current = handleMouseUp;
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
@@ -99,7 +126,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
     if (resizeHandleRef.current) {
       resizeHandleRef.current.classList.add("resizing");
     }
-  }, [setTabItemsWidth]);
+  }, [setTabItemsWidth, cleanupResizeState]);
 
   const renderTabItem = useCallback(
     (item: TabItem) => {

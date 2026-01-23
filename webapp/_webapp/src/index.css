@@ -675,14 +675,6 @@ video, canvas, audio, iframe, embed, object {
   opacity: 1 !important;
 }
 
-.pd-embed-resize-handle.resizing {
-  background-color: rgba(59, 130, 246, 0.2) !important;
-}
-
-.pd-embed-resize-handle.resizing .resize-handle-indicator {
-  opacity: 1 !important;
-}
-
 .resize-handle-indicator {
   width: 2px;
   height: 40px;
