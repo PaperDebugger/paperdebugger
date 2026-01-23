@@ -8,7 +8,7 @@ export const DISPLAY_MODES = [
   { key: "floating", label: "Floating" },
   { key: "right-fixed", label: "Right Fixed" },
   { key: "bottom-fixed", label: "Bottom Fixed" },
-  { key: "fullscreen", label: "Full Screen" },
+  { key: "embed", label: "Embed Sidebar" },
 ] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number]["key"];
 
@@ -42,6 +42,9 @@ interface ConversationUiStore {
   rightFixedWidth: number;
   setRightFixedWidth: (rightFixedWidth: number) => void;
 
+  embedWidth: number;
+  setEmbedWidth: (embedWidth: number) => void;
+
   isOpen: boolean; // for the main drawer
   setIsOpen: (isOpen: boolean) => void;
 
@@ -50,6 +53,9 @@ interface ConversationUiStore {
 
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sidebarCollapsed: boolean) => void;
+
+  tabItemsWidth: number;
+  setTabItemsWidth: (tabItemsWidth: number) => void;
 
   heightCollapseRequired: boolean;
   setHeightCollapseRequired: (heightCollapseRequired: boolean) => void;
@@ -92,6 +98,9 @@ export const useConversationUiStore = create<ConversationUiStore>()(
       rightFixedWidth: 580,
       setRightFixedWidth: (rightFixedWidth: number) => set({ rightFixedWidth }),
 
+      embedWidth: 480,
+      setEmbedWidth: (embedWidth: number) => set({ embedWidth }),
+
       isOpen: false,
       setIsOpen: (isOpen: boolean) => set({ isOpen }),
 
@@ -100,6 +109,9 @@ export const useConversationUiStore = create<ConversationUiStore>()(
 
       sidebarCollapsed: false,
       setSidebarCollapsed: (sidebarCollapsed: boolean) => set({ sidebarCollapsed }),
+
+      tabItemsWidth: 140, // Default width in pixels
+      setTabItemsWidth: (tabItemsWidth: number) => set({ tabItemsWidth }),
 
       heightCollapseRequired: false,
       setHeightCollapseRequired: (heightCollapseRequired: boolean) => set({ heightCollapseRequired }),
@@ -111,8 +123,8 @@ export const useConversationUiStore = create<ConversationUiStore>()(
         set({
           floatingX: 100,
           floatingY: 100,
-          floatingWidth: 620,
-          floatingHeight: 200,
+          floatingWidth: 500,
+          floatingHeight: 500,
           displayMode: "floating",
         });
       },

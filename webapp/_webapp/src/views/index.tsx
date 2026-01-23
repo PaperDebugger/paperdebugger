@@ -1,129 +1,16 @@
-import { cn, Tooltip } from "@heroui/react";
+import { cn } from "@heroui/react";
 import { Rnd } from "react-rnd";
 import { useCallback, useState, useEffect, useMemo } from "react";
-import { PaperDebugger } from "../paperdebugger";
 import { createPortal } from "react-dom";
 
 import { COLLAPSED_HEIGHT, useConversationUiStore } from "../stores/conversation/conversation-ui-store";
-import { Icon } from "@iconify/react/dist/iconify.js";
 import { debounce } from "../libs/helpers";
-import { Login } from "./login";
 import { PdAppContainer } from "../components/pd-app-container";
-import { PdAppControlTitleBar } from "../components/pd-app-control-title-bar";
-import { PdAppSmallControlButton } from "../components/pd-app-small-control-button";
-import { useAuthStore } from "../stores/auth-store";
 import { useSettingStore } from "../stores/setting-store";
+import { WindowController } from "./window-controller";
+import { Body } from "./body";
+import { EmbedSidebar } from "./embed-sidebar";
 
-const PositionController = () => {
-  const {
-    sidebarCollapsed,
-    floatingHeight,
-    bottomFixedHeight,
-    setHeightCollapseRequired,
-    setDisplayMode,
-    displayMode,
-  } = useConversationUiStore();
-  return (
-    <div
-      className={cn(
-        "flex flex-row items-center noselect gap-0 overflow-clip transition-all duration-[300ms]",
-        sidebarCollapsed ? "w-[0%]" : "w-[100%]",
-      )}
-    >
-      <Tooltip content="Floating" placement="bottom" className="noselect" size="sm" delay={500}>
-        <PdAppSmallControlButton
-          onClick={() => {
-            if (floatingHeight < COLLAPSED_HEIGHT) {
-              setHeightCollapseRequired(true);
-            } else {
-              setHeightCollapseRequired(false);
-            }
-            setDisplayMode("floating");
-          }}
-        >
-          <Icon icon={displayMode === "floating" ? "tabler:app-window-filled" : "tabler:app-window"} fontSize={18} />
-        </PdAppSmallControlButton>
-      </Tooltip>
-      <Tooltip content="Sticky Bottom" placement="bottom" className="noselect" size="sm" delay={500}>
-        <PdAppSmallControlButton
-          onClick={() => {
-            if (bottomFixedHeight < COLLAPSED_HEIGHT) {
-              setHeightCollapseRequired(true);
-            } else {
-              setHeightCollapseRequired(false);
-            }
-            setDisplayMode("bottom-fixed");
-          }}
-        >
-          <Icon
-            icon={displayMode === "bottom-fixed" ? "tabler:layout-bottombar-filled" : "tabler:layout-bottombar"}
-            fontSize={18}
-          />
-        </PdAppSmallControlButton>
-      </Tooltip>
-      <Tooltip content="Sticky Right" placement="bottom" className="noselect" size="sm" delay={500}>
-        <PdAppSmallControlButton
-          onClick={() => {
-            if (window.innerHeight < COLLAPSED_HEIGHT) {
-              setHeightCollapseRequired(true);
-            } else {
-              setHeightCollapseRequired(false);
-            }
-            setDisplayMode("right-fixed");
-          }}
-        >
-          <Icon
-            icon={displayMode === "right-fixed" ? "tabler:layout-sidebar-right-filled" : "tabler:layout-sidebar-right"}
-            fontSize={18}
-          />
-        </PdAppSmallControlButton>
-      </Tooltip>
-    </div>
-  );
-};
-
-const WindowController = () => {
-  const { sidebarCollapsed, setSidebarCollapsed, setIsOpen } = useConversationUiStore();
-  const CompactHeader = useMemo(() => {
-    return (
-      <PdAppControlTitleBar
-        className={cn("!border-gray-200 rounded-xl rnd-cancel", sidebarCollapsed ? "collapsed" : "expanded")}
-        id="pd-app-header"
-      >
-        <div className="flex items-center justify-between pl-2 pr-0 py-0">
-          <div className="flex flex-row items-center noselect gap-0 rnd-cancel">
-            <Tooltip content={"Close"} placement="bottom" className="noselect" size="sm" delay={500}>
-              <PdAppSmallControlButton onClick={() => setIsOpen(false)}>
-                <Icon icon={"tabler:square-x"} fontSize={16} />
-              </PdAppSmallControlButton>
-            </Tooltip>
-            <PositionController />
-            <Tooltip
-              content={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              placement="bottom"
-              className="noselect"
-              size="sm"
-              delay={500}
-            >
-              <PdAppSmallControlButton onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
-                <Icon
-                  icon={sidebarCollapsed ? "tabler:layout-sidebar-left-expand" : "tabler:layout-sidebar-left-collapse"}
-                  fontSize={18}
-                />
-              </PdAppSmallControlButton>
-            </Tooltip>
-          </div>
-        </div>
-      </PdAppControlTitleBar>
-    );
-  }, [sidebarCollapsed, setSidebarCollapsed, setIsOpen]);
-  return CompactHeader;
-};
-
-const Body = () => {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated() ? <PaperDebugger /> : <Login />;
-};
 
 export const MainDrawer = () => {
   const { displayMode, isOpen } = useConversationUiStore();
@@ -148,6 +35,26 @@ export const MainDrawer = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const handleResize = useCallback(
+    (...args: unknown[]) => {
+      const [, , /* _e */ /* _dir */ ref] = args;
+      if (ref && ref instanceof HTMLElement && ref.offsetHeight < COLLAPSED_HEIGHT) {
+        setHeightCollapseRequired(true);
+      } else {
+        setHeightCollapseRequired(false);
+      }
+    },
+    [setHeightCollapseRequired],
+  );
+  const debouncedHandleResize = useMemo(() => debounce(handleResize, 100), [handleResize]);
+
+  // Handle embed mode separately
+  if (displayMode === "embed") {
+    return <EmbedSidebar />;
+  }
+
+  // Handle other modes with Rnd
 
   // Layout configs for each mode
   type RndProps = React.ComponentProps<typeof Rnd>;
@@ -193,19 +100,6 @@ export const MainDrawer = () => {
       disableDragging: true,
     };
   }
-
-  const handleResize = useCallback(
-    (...args: unknown[]) => {
-      const [, , /* _e */ /* _dir */ ref] = args;
-      if (ref && ref instanceof HTMLElement && ref.offsetHeight < COLLAPSED_HEIGHT) {
-        setHeightCollapseRequired(true);
-      } else {
-        setHeightCollapseRequired(false);
-      }
-    },
-    [setHeightCollapseRequired],
-  );
-  const debouncedHandleResize = useMemo(() => debounce(handleResize, 100), [handleResize]);
 
   return createPortal(
     <Rnd

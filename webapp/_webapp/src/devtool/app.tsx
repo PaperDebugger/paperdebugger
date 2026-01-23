@@ -3,6 +3,8 @@ import { useAuthStore } from "../stores/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
+import { DevTools } from "../views/devtools";
+import { useDevtoolStore } from "../stores/devtool-store";
 import { storage } from "../libs/storage";
 
 /**
@@ -24,6 +26,8 @@ const App = () => {
   const [overleafSession, setOverleafSession] = useState(storage.getItem("pd.auth.overleafSession") ?? "");
   const [gclb, setGclb] = useState(storage.getItem("pd.auth.gclb") ?? "");
   const [csrfToken, setCsrfToken] = useState(storage.getItem("pd.auth.csrfToken") ?? "");
+  const { showTool } = useDevtoolStore();
+  
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
@@ -101,9 +105,9 @@ const App = () => {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2 w-50%">
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
         <TooltipArea>
-          <div className="whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap break-all max-w-full font-mono text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
             {JSON.stringify(
               {
                 projectId,
@@ -117,6 +121,9 @@ const App = () => {
             )}
           </div>
         </TooltipArea>
+      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+      {import.meta.env.DEV && showTool && <DevTools />}
       </div>
     </main>
   );
