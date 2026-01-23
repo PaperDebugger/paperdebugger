@@ -1,8 +1,3 @@
-// import { generateId } from "./helpers";
-
-import { ProjectFolder } from "../pkg/gen/apiclient/project/v2/project_pb";
-import { PlainMessage } from "../query/types";
-
 // =============================================================================
 // Interfaces - Authentication & User
 // =============================================================================
