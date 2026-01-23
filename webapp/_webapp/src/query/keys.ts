@@ -17,12 +17,6 @@ export const queryKeys = createQueryKeyStore({
   },
   projects: {
     getProject: (projectId: string) => ["projects", projectId],
-    runProjectPaperScore: (projectId: string, conversationId: string) => [
-      "projects",
-      "paper-score",
-      projectId,
-      conversationId,
-    ],
     getProjectInstructions: (projectId: string) => ["projects", projectId, "instructions"],
   },
   comments: {

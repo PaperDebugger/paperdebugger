@@ -108,27 +108,7 @@ export async function completion(state: EditorState): Promise<string> {
     return "";
   }
 
-  const cursor = state.selection.main.head;
-  const left = state.doc.sliceString(Math.max(0, cursor - 2048), cursor);
-  logDebug("left", left);
-
-  // const completion = await chatCompletion({
-  //   languageModel: LanguageModel.OPENAI_GPT4O_MINI,
-  //   messages: [
-  //     {
-  //       role: "developer",
-  //       content:
-  //         'You are a senior PhD candidate writing in Overleaf. At [COMPLETE_AT_HERE], write a concise, context-aware sentence (15 words or fewer). The text may include LaTeX code—handle it cleanly but don’t overfocus on it. Avoid the words “ensuring,” “utilizing,” "illustrates", “showcasing,” and “necessitating.” Keep it short, direct, and natural—no need for lengthy or structured phrasing. Replace all transition words and conjunctions in the sentences with the most basic and commonly used ones. Use simple expressions，avoiding complex vocabulary. Ensure the logical connections between sentences are clear. Deletes the conclusion part in the end of the text.',
-  //     },
-  //     {
-  //       role: "user",
-  //       content: `The paragraph is: ${left}[COMPLETE_AT_HERE]`,
-  //     },
-  //   ],
-  // });
-  // const responseText = completion.message?.content || "";
-  const responseText = "Unsupported Feature";
-  return responseText;
+  return "Unsupported Feature";
 }
 
 /**
