@@ -226,15 +226,11 @@ export const EmbedSidebar = () => {
         mouseUpHandlerRef.current = null;
       }
       
-      // Restore body styles
-      if (originalCursorRef.current !== "") {
-        document.body.style.cursor = originalCursorRef.current;
-        originalCursorRef.current = "";
-      }
-      if (originalUserSelectRef.current !== "") {
-        document.body.style.userSelect = originalUserSelectRef.current;
-        originalUserSelectRef.current = "";
-      }
+      // Restore body styles (including clearing inline styles when originally unset)
+      document.body.style.cursor = originalCursorRef.current;
+      document.body.style.userSelect = originalUserSelectRef.current;
+      originalCursorRef.current = "";
+      originalUserSelectRef.current = "";
     };
 
     // Store handlers in refs for cleanup
