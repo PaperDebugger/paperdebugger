@@ -139,6 +139,7 @@ export const EmbedSidebar = () => {
         ideBody.style.display = originalBodyStyleRef.current.display || "";
         ideBody.style.flexDirection = originalBodyStyleRef.current.flexDirection || "";
         ideBody.style.width = "";
+        ideBody.style.height = "";
         ideBody.style.overflow = "";
         
         // Restore ide-redesign-inner flex properties
