@@ -1,16 +1,16 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
 import { PdAppContainer } from "../components/pd-app-container";
 import { WindowController } from "./window-controller";
 import { Body } from "./body";
-import { onElementAppeared } from "../libs/helpers";
 
 export const EmbedSidebar = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const { embedWidth, isOpen, setEmbedWidth } = useConversationUiStore();
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const embedWidthRef = useRef(embedWidth);
+  const isResizingRef = useRef(false);
   const originalBodyStyleRef = useRef<{
     display?: string;
     flexDirection?: string;
@@ -21,65 +21,108 @@ export const EmbedSidebar = () => {
     embedWidthRef.current = embedWidth;
   }, [embedWidth]);
 
+  // Function to update main content area flex properties
+  const updateMainContentFlex = useCallback((ideBody: HTMLElement) => {
+    // Find or create ide-redesign-inner
+    let ideInner = ideBody.querySelector(".ide-redesign-inner") as HTMLElement | null;
+    if (!ideInner) {
+      ideInner = document.createElement("div");
+      ideInner.className = "ide-redesign-inner";
+      // Move all existing children (except sidebar) into ideInner
+      const children = Array.from(ideBody.children) as HTMLElement[];
+      children.forEach((child) => {
+        if (child.id !== "pd-embed-sidebar" && !child.classList.contains("ide-redesign-inner")) {
+          ideInner!.appendChild(child);
+        }
+      });
+      // Insert ideInner before sidebar (or at the beginning if no sidebar)
+      const sidebar = ideBody.querySelector("#pd-embed-sidebar");
+      if (sidebar) {
+        ideBody.insertBefore(ideInner, sidebar);
+      } else {
+        ideBody.appendChild(ideInner);
+      }
+    }
+    
+    // Set flex properties for ide-redesign-inner
+    ideInner.style.flex = "1";
+    ideInner.style.minWidth = "0";
+    ideInner.style.overflow = "hidden";
+  }, []);
+
   // Update container width when embedWidth changes
   useEffect(() => {
     if (container) {
       container.style.width = `${embedWidth}px`;
     }
-  }, [container, embedWidth]);
+    
+    // Also update layout when embedWidth changes
+    if (isOpen) {
+      const ideBody = document.querySelector(".ide-redesign-body") as HTMLElement | null;
+      if (ideBody) {
+        // Re-apply flex layout
+        updateMainContentFlex(ideBody);
+      }
+    }
+  }, [container, embedWidth, isOpen, updateMainContentFlex]);
+
+  // Handle window resize to ensure layout stays correct
+  useEffect(() => {
+    if (!isOpen || !container) return;
+
+    const handleResize = () => {
+      const ideBody = document.querySelector(".ide-redesign-body") as HTMLElement | null;
+      if (ideBody) {
+        // Re-apply flex layout on window resize
+        updateMainContentFlex(ideBody);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isOpen, container, updateMainContentFlex]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // Try to find Overleaf's body element first (extension mode)
+    // Find ide-redesign-body (works in both normal and dev mode)
     const ideBody = document.querySelector(".ide-redesign-body") as HTMLElement | null;
 
-    // If not found, use the main body for dev:chat mode
-    const targetElement = ideBody || document.body;
-
-    if (!targetElement) return;
+    if (!ideBody) {
+      return;
+    }
 
     // Store original styles
     originalBodyStyleRef.current = {
-      display: targetElement.style.display || "",
-      flexDirection: targetElement.style.flexDirection || "",
+      display: ideBody.style.display || "",
+      flexDirection: ideBody.style.flexDirection || "",
     };
+
+    // Ensure ide-redesign-inner exists and has correct flex properties
+    updateMainContentFlex(ideBody);
 
     // Create sidebar container
     const sidebarDiv = document.createElement("div");
     sidebarDiv.id = "pd-embed-sidebar";
+    sidebarDiv.className = "pd-embed-sidebar";
     sidebarDiv.style.width = `${embedWidth}px`;
     sidebarDiv.style.height = "100vh";
     sidebarDiv.style.display = "flex";
     sidebarDiv.style.flexDirection = "column";
     sidebarDiv.style.borderLeft = "1px solid var(--pd-border-color)";
     sidebarDiv.style.flexShrink = "0";
-    sidebarDiv.style.position = ideBody ? "relative" : "fixed";
-    sidebarDiv.style.right = "0";
-    sidebarDiv.style.top = "0";
+    sidebarDiv.style.position = "relative";
 
-    // Modify parent container to flex layout (only in extension mode)
-    if (ideBody) {
-      targetElement.style.display = "flex";
-      targetElement.style.flexDirection = "row";
+    // Modify parent container to flex layout
+    ideBody.style.display = "flex";
+    ideBody.style.flexDirection = "row";
+    ideBody.style.width = "100%";
+    ideBody.style.overflow = "hidden";
 
-      // Find the main content area and ensure it can grow
-      const mainContent = targetElement.querySelector(".ide-redesign-toolbar-menu-bar, .editor-area");
-      if (mainContent) {
-        (mainContent as HTMLElement).style.flex = "1";
-        (mainContent as HTMLElement).style.minWidth = "0";
-      }
-    } else {
-      // In dev:chat mode, adjust body to make room for sidebar
-      const rootPaperDebugger = document.getElementById("root-paper-debugger");
-      if (rootPaperDebugger) {
-        (rootPaperDebugger as HTMLElement).style.marginRight = `${embedWidth}px`;
-        (rootPaperDebugger as HTMLElement).style.transition = "margin-right 0.2s";
-      }
-    }
-
-    // Append sidebar to target element
-    targetElement.appendChild(sidebarDiv);
+    // Append sidebar to ideBody (after ide-redesign-inner)
+    ideBody.appendChild(sidebarDiv);
     setContainer(sidebarDiv);
 
     return () => {
@@ -89,72 +132,57 @@ export const EmbedSidebar = () => {
         sidebarDiv.remove();
       }
 
-      // Restore original styles for extension mode
-      const ideBody = document.querySelector(".ide-redesign-body") as HTMLElement | null;
+      // Restore original styles
       if (ideBody && originalBodyStyleRef.current) {
         ideBody.style.display = originalBodyStyleRef.current.display || "";
         ideBody.style.flexDirection = originalBodyStyleRef.current.flexDirection || "";
-      }
-
-      // Restore margin for dev:chat mode
-      const rootPaperDebugger = document.getElementById("root-paper-debugger");
-      if (rootPaperDebugger) {
-        (rootPaperDebugger as HTMLElement).style.marginRight = "";
+        ideBody.style.width = "";
+        ideBody.style.overflow = "";
+        
+        // Restore ide-redesign-inner flex properties
+        const ideInner = ideBody.querySelector(".ide-redesign-inner") as HTMLElement | null;
+        if (ideInner) {
+          ideInner.style.flex = "";
+          ideInner.style.minWidth = "";
+          ideInner.style.overflow = "";
+        }
       }
 
       setContainer(null);
     };
-  }, [isOpen]);
+  }, [isOpen, embedWidth, updateMainContentFlex]);
 
-  // Handle resize - only set up when container exists
-  useEffect(() => {
-    if (!container || !isOpen) return;
+  // Handle resize drag
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    const handleRef = resizeHandleRef.current;
-    if (!handleRef) return;
-
-    let isResizing = false;
-    let startX = 0;
-    let startWidth = embedWidthRef.current;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      isResizing = true;
-      startX = e.clientX;
-      startWidth = embedWidthRef.current;
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    };
+    isResizingRef.current = true;
+    const startX = e.clientX;
+    const startWidth = embedWidthRef.current;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
+      if (!isResizingRef.current) return;
       e.preventDefault();
       const delta = e.clientX - startX;
-      const newWidth = Math.max(300, Math.min(800, startWidth - delta)); // min 300px, max 800px
+      const maxWidth = window.innerWidth * 0.8; // 80% of window width
+      const newWidth = Math.max(300, Math.min(maxWidth, startWidth - delta)); // min 300px, max 80% of window
       setEmbedWidth(newWidth);
     };
 
     const handleMouseUp = () => {
-      isResizing = false;
+      isResizingRef.current = false;
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
       document.body.style.cursor = "default";
       document.body.style.userSelect = "";
     };
 
-    handleRef.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      handleRef.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "default";
-      document.body.style.userSelect = "";
-    };
-  }, [container, isOpen, setEmbedWidth]);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [setEmbedWidth]);
 
   if (!container || !isOpen) return null;
 
@@ -184,6 +212,7 @@ export const EmbedSidebar = () => {
           zIndex: 10000,
           pointerEvents: "auto",
         }}
+        onMouseDown={handleMouseDown}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLElement).style.backgroundColor = "var(--pd-primary-color, #3b82f6)";
         }}

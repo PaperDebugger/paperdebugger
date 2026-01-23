@@ -10,19 +10,23 @@
     <title>Paper Debugger Dev Tools</title>
   </head>
   <body class="p-4 bg-gray-50 min-h-screen overflow-x-hidden">
-    <div id="devtool-container" class="max-w-7xl mx-auto space-y-4 w-full">
-      <!-- Header -->
-      <div id="anchor" class="bg-white shadow-sm border-slate-200 border rounded-lg">
-        <div class="toolbar-left p-4">
-          <div class="toolbar-item text-xl font-bold mb-4">PaperDebugger Dev Tools</div>
+    <div class="ide-redesign-body" style="display: flex; flex-direction: row; width: 100%; height: 100vh;">
+      <div class="ide-redesign-inner" style="flex: 1; min-width: 0; overflow: hidden;">
+        <div id="devtool-container" class="max-w-7xl mx-auto space-y-4 w-full">
+          <!-- Header -->
+          <div id="anchor" class="bg-white shadow-sm border-slate-200 border rounded-lg">
+            <div class="toolbar-left p-4">
+              <div class="toolbar-item text-xl font-bold mb-4">PaperDebugger Dev Tools</div>
+            </div>
+          </div>
+
+          <!-- Dev Tools Root -->
+          <div id="root-devtools" class="bg-white shadow-sm border-slate-200 border rounded-lg p-4 overflow-hidden"></div>
+
+          <!-- Paper Debugger Root -->
+          <div id="root-paper-debugger" class="hidden"></div>
         </div>
       </div>
-
-      <!-- Dev Tools Root -->
-      <div id="root-devtools" class="bg-white shadow-sm border-slate-200 border rounded-lg p-4 overflow-hidden"></div>
-
-      <!-- Paper Debugger Root -->
-      <div id="root-paper-debugger" class="hidden"></div>
     </div>
     <script type="module" src="index.tsx"></script>
   </body>
