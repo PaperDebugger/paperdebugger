@@ -3,6 +3,8 @@ import { Button, cn } from "@heroui/react";
 import { useSettingStore } from "../../stores/setting-store";
 import { Settings } from "../../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../../query/types";
+import { useConversationStore } from "../../stores/conversation/conversation-store";
+import { listSupportedModels } from "../../query/api";
 
 type SettingKey = keyof PlainMessage<Settings>;
 
@@ -27,6 +29,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     password = false,
   }: SettingsTextInputProps) {
     const { settings, isUpdating, updateSettings } = useSettingStore();
+    const { currentConversation, setCurrentConversation } = useConversationStore();
     const [value, setValue] = useState<string>("");
     const [originalValue, setOriginalValue] = useState<string>("");
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -47,7 +50,29 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
       await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
       setOriginalValue(value.trim());
       setIsEditing(false);
-    }, [value, updateSettings]); // settingKey is an outer scope value, not a dependency
+
+      // If openaiApiKey was updated, fetch new model list and update current model slug
+      if (settingKey === "openaiApiKey") {
+        const response = await listSupportedModels({});
+        if (response.models?.length) {
+          const { currentConversation: latest } = useConversationStore.getState();
+          // try to find a model that matches the current slug
+          const currentSlugLower = latest.modelSlug.toLowerCase();
+          const matchingModel = response.models.find(m =>
+            currentSlugLower.includes(m.name.toLowerCase())
+          );
+          // fall back to the first model in the list
+          const newSlug = matchingModel?.slug ?? response.models[0].slug;
+
+          if (newSlug !== latest.modelSlug) {
+            setCurrentConversation({
+              ...latest,
+              modelSlug: newSlug,
+            });
+          }
+        }
+      }
+    }, [value, settingKey, updateSettings]); // settingKey is an outer scope value, not a dependency
 
     const handleEdit = useCallback(() => {
       setIsEditing(true);
