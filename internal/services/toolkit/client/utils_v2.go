@@ -87,13 +87,13 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 	}
 }
 
-func CheckOpenAIWorksV2(oaiClient openaiv3.Client, logger *logger.Logger) {
-	logger.Info("[AI Client V2] checking if openai client works")
+func CheckOpenAIWorksV2(oaiClient openaiv3.Client, baseUrl string, model string, logger *logger.Logger) {
+	logger.Info("[AI Client V2] checking if openai client works with " + baseUrl + "..")
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
 		Messages: []openaiv3.ChatCompletionMessageParamUnion{
 			openaiv3.UserMessage("Say 'openai client works'"),
 		},
-		Model: "openai/gpt-5-nano",
+		Model: model,
 	})
 	if err != nil {
 		logger.Errorf("[AI Client V2] openai client does not work: %v", err)
