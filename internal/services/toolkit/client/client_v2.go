@@ -63,11 +63,26 @@ func NewAIClientV2(
 	logger *logger.Logger,
 ) *AIClientV2 {
 	database := db.Database("paperdebugger")
+
+	llmProvider := &models.LLMProviderConfig{
+		APIKey: cfg.OpenAIAPIKey,
+	}
+
+	var baseUrl string
+	var apiKey string
+	if llmProvider != nil && llmProvider.IsCustom() {
+		baseUrl = cfg.InferenceBaseURL + "/openai"
+		apiKey = cfg.OpenAIAPIKey
+	} else {
+		baseUrl = cfg.InferenceBaseURL + "/openrouter"
+		apiKey = cfg.InferenceAPIKey
+	}
+
 	oaiClient := openai.NewClient(
-		option.WithBaseURL(cfg.InferenceBaseURL+"/openrouter"),
-		option.WithAPIKey(cfg.InferenceAPIKey),
+		option.WithBaseURL(baseUrl),
+		option.WithAPIKey(apiKey),
 	)
-	CheckOpenAIWorksV2(oaiClient, logger)
+	CheckOpenAIWorksV2(oaiClient, llmProvider, logger)
 
 	toolRegistry := initializeToolkitV2(db, projectService, cfg, logger)
 	toolCallHandler := handler.NewToolCallHandlerV2(toolRegistry)

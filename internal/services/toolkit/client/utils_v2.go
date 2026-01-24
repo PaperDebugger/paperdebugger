@@ -12,6 +12,7 @@ import (
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
+	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/registry"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -87,13 +88,19 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 	}
 }
 
-func CheckOpenAIWorksV2(oaiClient openaiv3.Client, logger *logger.Logger) {
+func CheckOpenAIWorksV2(oaiClient openaiv3.Client, llmProvider *models.LLMProviderConfig, logger *logger.Logger) {
 	logger.Info("[AI Client V2] checking if openai client works")
+
+	var model = "openai/gpt-5-nano"
+	if llmProvider != nil && llmProvider.IsCustom() {
+		model = model[strings.LastIndex(model, "/")+1:]
+	}
+
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
 		Messages: []openaiv3.ChatCompletionMessageParamUnion{
 			openaiv3.UserMessage("Say 'openai client works'"),
 		},
-		Model: "openai/gpt-5-nano",
+		Model: model,
 	})
 	if err != nil {
 		logger.Errorf("[AI Client V2] openai client does not work: %v", err)
