@@ -27,11 +27,12 @@ const XTRA_MCP_TOOL_NAMES = [
   // REVIEWER TOOLS
   "review_paper",
   "verify_citations",
+  "generate_citations",
   // ENHANCER TOOLS
   // "enhance_academic_writing",
   // OPENREVIEW ONLINE TOOLS
-  // "search_user",
-  // "get_user_papers"
+  "search_user",
+  "get_user_papers"
 ];
 
 export const isXtraMcpTool = (functionName: string): boolean => {
