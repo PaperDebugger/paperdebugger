@@ -8,6 +8,7 @@ import { ReviewPaperCard } from "./xtramcp/review-paper";
 import { SearchRelevantPapersCard } from "./xtramcp/search-relevant-papers";
 import { OnlineSearchPapersCard } from "./xtramcp/online-search-papers";
 import { VerifyCitationsCard } from "./xtramcp/verify-citations";
+import { GenerateCitationsCard } from "./xtramcp/generate-citations";
 import { isXtraMcpTool } from "./xtramcp/utils/common";
 import { GeneralToolCard } from "./general";
 
@@ -66,6 +67,10 @@ export default function Tools({ messageId, functionName, message, error, prepari
     } else if (functionName === "verify_citations") {
       return (
         <VerifyCitationsCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
+      );
+    } else if (functionName === "generate_citations") {
+      return (
+        <GenerateCitationsCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
       );
     }
 
