@@ -84,9 +84,9 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
                 {/* Custom metadata rendering */}
-                <div className="mb-2 italic">[Experimental Feature] Some Bibtex entries may not be able to be generated. Report if you encounter an unknown issue.</div>
+                <div className="mb-2 italic">⚠️ [Experimental Feature] Some BibTeX entries may not be able to be generated.<br />Report if you encounter an unknown issue.</div>
                 {result.metadata.total_links !== undefined && (
                   <div>
                     <span className="font-medium">Total Links/IDs/Info:</span> {result.metadata.total_links}
