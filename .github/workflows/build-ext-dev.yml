@@ -1,0 +1,22 @@
+name: build chrome extension for dev (unsupported)
+
+on:
+  repository_dispatch:
+    types: [dev]
+
+jobs:
+  build-chrome-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚫 Dev extension build/release is not supported
+        run: |
+          echo "::notice::Dev environment is not supported for Chrome extension build/release."
+          cat <<'EOF'
+          Development environment is not supported to build a Chrome extension and push to the Chrome Web Store.
+
+          The reason is that we only have two versions of the third-party extension:
+          1. Production
+          2. Staging
+
+          If you want to release your new Chrome extension, please use the staging environment.
+          EOF

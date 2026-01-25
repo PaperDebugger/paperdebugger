@@ -1,10 +1,8 @@
-name: build backend for prd
+name: build backend for dev
 on:
   push:
-    tags:
-      - 'v*'
-  repository_dispatch:
-    types: [prd]
+    branches:
+      - development
 
 jobs:
   build-backend-and-push:
@@ -19,12 +17,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: development
       - name: Setup env
         run: |
           echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
-          echo "BRANCH_NAME=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
-          echo "VERSION=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=development" >> $GITHUB_ENV
+          echo "VERSION=development" >> $GITHUB_ENV
       - name: Log in to the container registry
         uses: docker/login-action@v3
         with:
@@ -50,40 +48,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: development
       - name: Clone deploy repo
         run: |
           git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
       - name: Generate kubernetes manifests
         env:
-          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_PRD }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_PRD }}
-          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_PRD }}
-          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_PRD }}
-          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_PRD }}
-          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_PRD }}
-          XTRAMCP_OPENAI_BASE_URL: ${{ secrets.XTRAMCP_OPENAI_BASE_URL_PRD }}
-          XTRAMCP_OPENAI_API_KEY: ${{ secrets.XTRAMCP_OPENAI_API_KEY_PRD }}
-          XTRAMCP_OPENREVIEW_BASE_URL: ${{ secrets.XTRAMCP_OPENREVIEW_BASE_URL_PRD }}
-          XTRAMCP_OPENREVIEW_USERNAME: ${{ secrets.XTRAMCP_OPENREVIEW_USERNAME_PRD }}
-          XTRAMCP_OPENREVIEW_PASSWORD: ${{ secrets.XTRAMCP_OPENREVIEW_PASSWORD_PRD }}
-          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_PRD }}
-          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_DOI_EMAIL_ADDRESS_PRD }}
-          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ secrets.XTRAMCP_ARXIV_METADATA_DB_URL_PRD }}
-          XTRAMCP_MONGO_URI: ${{ secrets.XTRAMCP_MONGO_URI_PRD }}
-          MONGO_URI: ${{ secrets.MONGO_URI_PRD }}
-          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_PRD }}
-          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_PRD }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL_DEV }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_DEV }}
+          INFERENCE_BASE_URL: ${{ secrets.INFERENCE_BASE_URL_DEV }}
+          INFERENCE_API_KEY: ${{ secrets.INFERENCE_API_KEY_DEV }}
+          MCP_BASIC_KEY: ${{ secrets.MCP_BASIC_KEY_DEV }}
+          MCP_PAPERSCORE_KEY: ${{ secrets.MCP_PAPERSCORE_KEY_DEV }}
+          XTRAMCP_OPENAI_BASE_URL: ${{ secrets.XTRAMCP_OPENAI_BASE_URL_DEV }}
+          XTRAMCP_OPENAI_API_KEY: ${{ secrets.XTRAMCP_OPENAI_API_KEY_DEV }}
+          XTRAMCP_OPENREVIEW_BASE_URL: ${{ secrets.XTRAMCP_OPENREVIEW_BASE_URL_DEV }}
+          XTRAMCP_OPENREVIEW_USERNAME: ${{ secrets.XTRAMCP_OPENREVIEW_USERNAME_DEV }}
+          XTRAMCP_OPENREVIEW_PASSWORD: ${{ secrets.XTRAMCP_OPENREVIEW_PASSWORD_DEV }}
+          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_DEV }}
+          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ secrets.XTRAMCP_DOI_EMAIL_ADDRESS_DEV }}
+          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ secrets.XTRAMCP_ARXIV_METADATA_DB_URL_DEV }}
+          XTRAMCP_MONGO_URI: ${{ secrets.XTRAMCP_MONGO_URI_DEV }}
+          MONGO_URI: ${{ secrets.MONGO_URI_DEV }}
+          GHCR_DOCKER_CONFIG: ${{ secrets.GHCR_DOCKER_CONFIG_DEV }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN_DEV }}
         run: |
           export PAPERDEBUGGER_IMAGE=${{ needs.build-backend-and-push.outputs.PAPERDEBUGGER_IMAGE }}
-          mkdir -p ../deploy/prd
-          ./hack/prd.sh > ../deploy/prd/paperdebugger.yaml
+          mkdir -p ../deploy/dev
+          ./hack/dev.sh > ../deploy/dev/paperdebugger.yaml
       - name: Push changes to deploy repo
         run: |
           export IMAGE_TAG=${{ needs.build-backend-and-push.outputs.IMAGE_TAG }}
           cd ../deploy
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add prd/paperdebugger.yaml
-          git diff --staged --quiet || git commit -m "chore: update paperdebugger prd, revision ${IMAGE_TAG}"
+          git add dev/paperdebugger.yaml
+          git diff --staged --quiet || git commit -m "chore: update paperdebugger dev, revision ${IMAGE_TAG}"
           git push

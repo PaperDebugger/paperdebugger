@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: staging
           fetch-depth: 0  # 获取完整历史
 
       - name: Setup node

@@ -19,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: staging
       - name: Setup env
         run: |
           echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
@@ -50,7 +50,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: staging
       - name: Clone deploy repo
         run: |
           git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
