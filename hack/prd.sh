@@ -43,6 +43,7 @@ helm template $ROOT_DIR/helm-chart \
     --set-string xtramcp_openreview_password=$XTRAMCP_OPENREVIEW_PASSWORD \
     --set-string xtramcp_crossref_email_address=$XTRAMCP_CROSSREF_EMAIL_ADDRESS \
     --set-string xtramcp_doi_email_address=$XTRAMCP_DOI_EMAIL_ADDRESS \
+    --set-string xtramcp_acl_metadata_db_url=$XTRAMCP_ACL_METADATA_DB_URL \
     --set-string xtramcp_arxiv_metadata_db_url=$XTRAMCP_ARXIV_METADATA_DB_URL \
     --set-string xtramcp_mongo_uri=$XTRAMCP_MONGO_URI \
     --set-string paperdebugger.image=$PAPERDEBUGGER_IMAGE \
