@@ -88,7 +88,7 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 }
 
 func CheckOpenAIWorksV2(oaiClient openaiv3.Client, baseUrl string, model string, logger *logger.Logger) {
-	logger.Info("[AI Client V2] checking if openai client works with " + baseUrl + "..")
+	logger.Info("[AI Client V2] checking if openai client works with " + baseUrl + " ..")
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
 		Messages: []openaiv3.ChatCompletionMessageParamUnion{
 			openaiv3.UserMessage("Say 'openai client works'"),
