@@ -6,13 +6,13 @@ This file contains utility functions for the client package. (Mainly miscellaneo
 It is used to append assistant responses to both OpenAI and in-app chat histories, and to create response items for chat interactions.
 */
 import (
+	"path"
 	"context"
 	"fmt"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
-	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/registry"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -53,7 +53,12 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 	})
 }
 
-func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2) openaiv3.ChatCompletionNewParams {
+func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2, isCustomModel bool) openaiv3.ChatCompletionNewParams {
+	// If custom model is used, strip prefix (eg "openai/gpt-4o" -> "gpt-4o")
+	if isCustomModel {
+		modelSlug = path.Base(modelSlug)
+	}
+
 	var reasoningModels = []string{
 		"gpt-5",
 		"gpt-5-mini",
@@ -88,14 +93,8 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 	}
 }
 
-func CheckOpenAIWorksV2(oaiClient openaiv3.Client, llmProvider *models.LLMProviderConfig, logger *logger.Logger) {
-	logger.Info("[AI Client V2] checking if openai client works")
-
-	var model = "openai/gpt-5-nano"
-	if llmProvider != nil && llmProvider.IsCustom() {
-		model = model[strings.LastIndex(model, "/")+1:]
-	}
-
+func CheckOpenAIWorksV2(oaiClient openaiv3.Client, baseUrl string, model string, logger *logger.Logger) {
+	logger.Info("[AI Client V2] checking if openai client works with " + baseUrl + "..")
 	chatCompletion, err := oaiClient.Chat.Completions.New(context.TODO(), openaiv3.ChatCompletionNewParams{
 		Messages: []openaiv3.ChatCompletionMessageParamUnion{
 			openaiv3.UserMessage("Say 'openai client works'"),
