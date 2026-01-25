@@ -29,7 +29,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     password = false,
   }: SettingsTextInputProps) {
     const { settings, isUpdating, updateSettings } = useSettingStore();
-    const { currentConversation, setCurrentConversation } = useConversationStore();
+    const { setCurrentConversation } = useConversationStore();
     const [value, setValue] = useState<string>("");
     const [originalValue, setOriginalValue] = useState<string>("");
     const [isEditing, setIsEditing] = useState<boolean>(false);
