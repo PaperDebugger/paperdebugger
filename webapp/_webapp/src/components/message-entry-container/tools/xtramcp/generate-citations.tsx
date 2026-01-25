@@ -4,15 +4,7 @@ import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
-// Helper function to format time
-const formatTime = (time: unknown): string => {
-  if (typeof time === "number") {
-    return `${time.toFixed(2)}s`;
-  }
-  return String(time);
-};
-
-export const SearchRelevantPapersCard = ({ functionName, message, preparing, animated }: XtraMcpToolCardProps) => {
+export const GenerateCitationsCard = ({ functionName, message, preparing, animated }: XtraMcpToolCardProps) => {
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(false);
 
   // Loading state (tool executing)
@@ -20,7 +12,7 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
     return (
       <div className={cn("tool-card", { animated: animated })}>
         <div className="flex items-center justify-between">
-          <h3 className="tool-card-title">Searching for papers..</h3>
+          <h3 className="tool-card-title">Generating your citations..</h3>
         </div>
         <LoadingIndicator text="Processing ..." estimatedSeconds={35} />
       </div>
@@ -93,23 +85,11 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
               <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
-                {/* Custom metadata rendering; NOTE: hard-coded the CAA date */}
-                <div className="mb-2">
-                  <span className="font-medium">⚠️ Papers searched from a pool updated as of 31st Dec 2025.</span>
-                </div>
-                {result.metadata.query && (
-                  <div className="mb-2">
-                    <span className="font-medium">Query Used:</span> "{result.metadata.query}"
-                  </div>
-                )}
-                {result.metadata.search_time !== undefined && (
-                  <div className="mb-2">
-                    <span className="font-medium">Time Taken:</span> {formatTime(result.metadata.search_time)}
-                  </div>
-                )}
-                {result.metadata.total_count !== undefined && (
+                {/* Custom metadata rendering */}
+                <div className="mb-2 italic">⚠️ [Experimental Feature] Some BibTeX entries may not be able to be generated.<br />Report if you encounter an unknown issue.</div>
+                {result.metadata.total_links !== undefined && (
                   <div>
-                    <span className="font-medium">Total Results:</span> {result.metadata.total_count}
+                    <span className="font-medium">Total Links/IDs/Info:</span> {result.metadata.total_links}
                   </div>
                 )}
               </div>
