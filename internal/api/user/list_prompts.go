@@ -50,7 +50,7 @@ var defaultPrompts = []*userv1.Prompt{
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
 		Title:        "Generate Citations (XtraMCP's Reviewer)",
-		Content:      "Call `generate_citations` to create properly formatted citations for my paper based on the provided references.\n\nTool parameters:\n- links: [\n\t# paste URLs, arXiv IDs, DOIs, or titles\n\t# eg.: XtraGPT: Context-Aware and Controllable Academic Paper Revision\n\t...\n]",
+		Content:      "Call `generate_citations` to create properly formatted citations for:\n\nTool parameters:\n- links: [\n\t# paste URLs, arXiv IDs, DOIs, or titles\n\t# eg.: XtraGPT: Context-Aware and Controllable Academic Paper Revision\n\t...\n]",
 		IsUserPrompt: false,
 	},
 	{
