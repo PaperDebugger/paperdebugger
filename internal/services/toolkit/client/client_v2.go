@@ -37,6 +37,7 @@ func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *opena
 			// User provided their own API key, use the OpenAI-compatible endpoint
 			Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
 		} else {
+			// suffix needed for cloudflare gateway
 			Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
 		}
 	}
@@ -63,7 +64,7 @@ func NewAIClientV2(
 	logger *logger.Logger,
 ) *AIClientV2 {
 	database := db.Database("paperdebugger")
-	
+
 	llmProvider := &models.LLMProviderConfig{
 		APIKey: cfg.OpenAIAPIKey,
 	}
@@ -77,18 +78,23 @@ func NewAIClientV2(
 		baseUrl = cfg.OpenAIBaseURL
 		apiKey = cfg.OpenAIAPIKey
 		modelSlug = "gpt-5-nano"
-	// Use the default inference endpoint
+		// Use the default inference endpoint
 	} else {
+		// suffix needed for cloudflare gateway
 		baseUrl = cfg.InferenceBaseURL + "/openrouter"
 		apiKey = cfg.InferenceAPIKey
 		modelSlug = "openai/gpt-5-nano"
 	}
 
-	oaiClient := openai.NewClient(
-		option.WithBaseURL(baseUrl),
-		option.WithAPIKey(apiKey),
+	CheckOpenAIWorksV2(
+		openai.NewClient(
+			option.WithBaseURL(baseUrl),
+			option.WithAPIKey(apiKey),
+		),
+		baseUrl,
+		modelSlug,
+		logger,
 	)
-	CheckOpenAIWorksV2(oaiClient, baseUrl, modelSlug, logger)
 
 	toolRegistry := initializeToolkitV2(db, projectService, cfg, logger)
 	toolCallHandler := handler.NewToolCallHandlerV2(toolRegistry)
