@@ -16,7 +16,6 @@ import (
 	"paperdebugger/internal/services/toolkit/registry"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
-	"strings"
 	"time"
 
 	openaiv3 "github.com/openai/openai-go/v3"
@@ -72,7 +71,7 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2,
 		"codex-mini-latest",
 	}
 	for _, model := range reasoningModels {
-		if strings.Contains(modelSlug, model) {
+		if modelSlug == model {
 			return openaiv3.ChatCompletionNewParams{
 				Model:               modelSlug,
 				MaxCompletionTokens: openaiv3.Int(4000),
