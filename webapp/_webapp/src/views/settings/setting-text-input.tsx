@@ -59,7 +59,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           // try to find a model that matches the current slug
           const currentSlugLower = latest.modelSlug.toLowerCase();
           const matchingModel = response.models.find(m =>
-            currentSlugLower.includes(m.name.toLowerCase())
+            currentSlugLower === m.name.toLowerCase()
           );
           // fall back to the first model in the list
           const newSlug = matchingModel?.slug ?? response.models[0].slug;
