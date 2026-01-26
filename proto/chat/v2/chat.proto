@@ -52,6 +52,7 @@ message MessageTypeSystem {
 message MessageTypeAssistant {
   string content = 1;
   string model_slug = 2;
+  optional string reasoning = 3;
 }
 
 message MessageTypeUser {
@@ -165,6 +166,11 @@ message MessageChunk {
   string delta = 2; // The small piece of text
 }
 
+message ReasoningChunk {
+  string message_id = 1; // The id of the message that this chunk belongs to
+  string delta = 2; // The small piece of reasoning text
+}
+
 message IncompleteIndicator {
   string reason = 1;
   string response_id = 2;
@@ -223,5 +229,6 @@ message CreateConversationMessageStreamResponse {
     StreamPartEnd stream_part_end = 5;
     StreamFinalization stream_finalization = 6;
     StreamError stream_error = 7;
+    ReasoningChunk reasoning_chunk = 8;
   }
 }
