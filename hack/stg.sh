@@ -18,6 +18,7 @@ XTRAMCP_OPENREVIEW_USERNAME=${XTRAMCP_OPENREVIEW_USERNAME:-dummy-XTRAMCP_OPENREV
 XTRAMCP_OPENREVIEW_PASSWORD=${XTRAMCP_OPENREVIEW_PASSWORD:-dummy-XTRAMCP_OPENREVIEW_PASSWORD}
 XTRAMCP_CROSSREF_EMAIL_ADDRESS=${XTRAMCP_CROSSREF_EMAIL_ADDRESS:-dummy-crossref-email-address}
 XTRAMCP_DOI_EMAIL_ADDRESS=${XTRAMCP_DOI_EMAIL_ADDRESS:-dummy-doi-email-address}
+XTRAMCP_ACL_METADATA_DB_URL=${XTRAMCP_ACL_METADATA_DB_URL:-postgresql://dummy-acl-metadata-db-url}
 XTRAMCP_ARXIV_METADATA_DB_URL=${XTRAMCP_ARXIV_METADATA_DB_URL:-postgresql://dummy-arxiv-metadata-db-url}
 XTRAMCP_MONGO_URI=${XTRAMCP_MONGO_URI:-mongodb://dummy-mongo-uri}
 PAPERDEBUGGER_IMAGE=${PAPERDEBUGGER_IMAGE:-ghcr.io/paperdebugger/sharelatex-paperdebugger:latest}
@@ -42,6 +43,7 @@ helm template $ROOT_DIR/helm-chart \
     --set-string xtramcp_openreview_password=$XTRAMCP_OPENREVIEW_PASSWORD \
     --set-string xtramcp_crossref_email_address=$XTRAMCP_CROSSREF_EMAIL_ADDRESS \
     --set-string xtramcp_doi_email_address=$XTRAMCP_DOI_EMAIL_ADDRESS \
+    --set-string xtramcp_acl_metadata_db_url=$XTRAMCP_ACL_METADATA_DB_URL \
     --set-string xtramcp_arxiv_metadata_db_url=$XTRAMCP_ARXIV_METADATA_DB_URL \
     --set-string xtramcp_mongo_uri=$XTRAMCP_MONGO_URI \
     --set-string paperdebugger.image=$PAPERDEBUGGER_IMAGE \

@@ -60,3 +60,4 @@ data:
   MONGODB_CONNECTION_STRING: "{{ .Values.xtramcp_mongo_uri }}"
   MONGODB_DATABASE: "paperdebugger"
   ARXIV_METADATA_DB_URL: "{{ .Values.xtramcp_arxiv_metadata_db_url }}"
+  ACL_METADATA_DB_URL: "{{ .Values.xtramcp_acl_metadata_db_url }}"
