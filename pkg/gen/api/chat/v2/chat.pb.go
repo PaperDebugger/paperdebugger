@@ -1025,15 +1025,17 @@ func (*DeleteConversationResponse) Descriptor() ([]byte, []int) {
 }
 
 type SupportedModel struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
-	TotalContext  int64                  `protobuf:"varint,3,opt,name=total_context,json=totalContext,proto3" json:"total_context,omitempty"`
-	MaxOutput     int64                  `protobuf:"varint,4,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
-	InputPrice    int64                  `protobuf:"varint,5,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`    // in cents per 1M tokens
-	OutputPrice   int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"` // in cents per 1M tokens
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Slug           string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	TotalContext   int64                  `protobuf:"varint,3,opt,name=total_context,json=totalContext,proto3" json:"total_context,omitempty"`
+	MaxOutput      int64                  `protobuf:"varint,4,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
+	InputPrice     int64                  `protobuf:"varint,5,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`                  // in cents per 1M tokens
+	OutputPrice    int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`               // in cents per 1M tokens
+	Disabled       bool                   `protobuf:"varint,7,opt,name=disabled,proto3" json:"disabled,omitempty"`                                        // If true, the model is disabled and cannot be used
+	DisabledReason *string                `protobuf:"bytes,8,opt,name=disabled_reason,json=disabledReason,proto3,oneof" json:"disabled_reason,omitempty"` // The reason why the model is disabled
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *SupportedModel) Reset() {
@@ -1106,6 +1108,20 @@ func (x *SupportedModel) GetOutputPrice() int64 {
 		return x.OutputPrice
 	}
 	return 0
+}
+
+func (x *SupportedModel) GetDisabled() bool {
+	if x != nil {
+		return x.Disabled
+	}
+	return false
+}
+
+func (x *SupportedModel) GetDisabledReason() string {
+	if x != nil && x.DisabledReason != nil {
+		return *x.DisabledReason
+	}
+	return ""
 }
 
 type ListSupportedModelsRequest struct {
@@ -1947,7 +1963,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"\xc0\x01\n" +
+	"\x1aDeleteConversationResponse\"\x9e\x02\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
@@ -1956,7 +1972,10 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"max_output\x18\x04 \x01(\x03R\tmaxOutput\x12\x1f\n" +
 	"\vinput_price\x18\x05 \x01(\x03R\n" +
 	"inputPrice\x12!\n" +
-	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\"\x1c\n" +
+	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\x12\x1a\n" +
+	"\bdisabled\x18\a \x01(\bR\bdisabled\x12,\n" +
+	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01B\x12\n" +
+	"\x10_disabled_reason\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
 	"\x06models\x18\x01 \x03(\v2\x17.chat.v2.SupportedModelR\x06models\"^\n" +
@@ -2130,6 +2149,7 @@ func file_chat_v2_chat_proto_init() {
 		(*MessagePayload_Unknown)(nil),
 	}
 	file_chat_v2_chat_proto_msgTypes[9].OneofWrappers = []any{}
+	file_chat_v2_chat_proto_msgTypes[17].OneofWrappers = []any{}
 	file_chat_v2_chat_proto_msgTypes[28].OneofWrappers = []any{}
 	file_chat_v2_chat_proto_msgTypes[29].OneofWrappers = []any{
 		(*CreateConversationMessageStreamResponse_StreamInitialization)(nil),
