@@ -1,11 +1,11 @@
 import { cn, Tooltip } from "@heroui/react";
-import { useCallback, useMemo, useState } from "react";
+import { GeneralToolCard } from "./tools/general";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import googleAnalytics from "../../libs/google-analytics";
 import { getProjectId } from "../../libs/helpers";
 import MarkdownComponent from "../markdown";
 import { useAuthStore } from "../../stores/auth-store";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { GeneralToolCard } from "./tools/general";
 
 // Helper functions
 const preprocessMessage = (message: string): string | undefined => {
@@ -38,6 +38,24 @@ export const AssistantMessageContainer = ({
   const projectId = getProjectId();
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Auto-collapse reasoning when message content arrives
+  const [isReasoningCollapsed, setIsReasoningCollapsed] = useState(true);
+
+  useEffect(() => {
+    const hasReasoning = (reasoning?.length ?? 0) > 0;
+    const hasMessage = (processedMessage?.length ?? 0) > 0;
+
+    // Auto-expand when reasoning arrives
+    if (hasReasoning && !hasMessage) {
+      setIsReasoningCollapsed(false);
+    }
+
+    // Auto-collapse when message content arrives
+    if (hasReasoning && hasMessage) {
+      setIsReasoningCollapsed(true);
+    }
+  }, [reasoning, processedMessage]);
+
   const handleCopy = useCallback(() => {
     if (processedMessage) {
       googleAnalytics.fireEvent(user?.id, "messagecard_copy_message", {
@@ -52,7 +70,7 @@ export const AssistantMessageContainer = ({
     }
   }, [user?.id, projectId, processedMessage, messageId]);
 
-  const showMessage = processedMessage?.length || 0 > 0 || reasoning?.length || 0 > 0;
+  const showMessage = (processedMessage?.length ?? 0) > 0 || (reasoning?.length ?? 0) > 0;
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
   const writingIndicator =
     stale || !showMessage ? null : (
@@ -69,43 +87,46 @@ export const AssistantMessageContainer = ({
     );
 
   const reasoningComponent = reasoning && (
-    <div
-      key="reasoning"
-      className={cn("reasoning-container mb-3", animated && "animate-in fade-in slide-in-from-top-2 duration-300")}
-    >
-      <GeneralToolCard functionName="reasoning" message={reasoning} animated={animated} />
-    </div>
-  );
+      <GeneralToolCard
+        functionName="reasoning"
+        message={reasoning}
+        animated={animated}
+        isCollapsed={isReasoningCollapsed}
+        onToggleCollapse={() => setIsReasoningCollapsed(!isReasoningCollapsed)}
+        isLoading={preparing}
+      />
 
-  const messageComponent = processedMessage && (
-    <div className="canselect">
-      <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>
-        {processedMessage || ""}
-      </MarkdownComponent>
-    </div>
   );
-
-  const actionComponent = (
-    <div className="actions rnd-cancel noselect">
-      <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
-        <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
-          <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
-        </span>
-      </Tooltip>
-    </div>
-  );
-
   return (
     showMessage && (
       <div className="chat-message-entry noselect">
         <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
+          {/* Reasoning content */}
           {reasoningComponent}
-          {messageComponent}
+
+          {/* Message content */}
+          <div className="canselect">
+            <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>
+              {processedMessage || ""}
+            </MarkdownComponent>
+          </div>
+
           {writingIndicator}
+
+          {/* Stale message */}
           {staleComponent}
-          {actionComponent}
+
+          { (processedMessage?.length || 0) > 0 &&
+          <div className="actions rnd-cancel noselect">
+            <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
+              <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
+                <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
+              </span>
+            </Tooltip>
+          </div>}
         </div>
       </div>
     )
   );
 };
+

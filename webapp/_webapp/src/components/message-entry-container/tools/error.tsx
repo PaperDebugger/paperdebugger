@@ -1,4 +1,4 @@
-import { cn } from "@heroui/react";
+import { GeneralToolCard } from "./general";
 
 type ErrorToolCardProps = {
   functionName: string;
@@ -7,12 +7,10 @@ type ErrorToolCardProps = {
 };
 
 export const ErrorToolCard = ({ functionName, errorMessage, animated }: ErrorToolCardProps) => {
-  return (
-    <div className={cn("tool-card !border-red-500 noselect", { animated: animated })}>
-      <h3 className="text-xs font-semibold font-sans text-red-700 uppercase tracking-wider mb-1">
-        Error in Tool "{functionName}"
-      </h3>
-      <span className="text-xs text-red-600 canselect">{errorMessage}</span>
-    </div>
-  );
+   return <GeneralToolCard
+    functionName={"Error in " + functionName}
+    message={errorMessage}
+    animated={animated}
+    isLoading={animated}
+    />;
 };
