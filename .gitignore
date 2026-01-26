@@ -1,3 +1,5 @@
+.claude
+
 # docker image build
 .dockerignore
 node_modules

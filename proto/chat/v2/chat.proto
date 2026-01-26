@@ -52,6 +52,7 @@ message MessageTypeSystem {
 message MessageTypeAssistant {
   string content = 1;
   string model_slug = 2;
+  optional string reasoning = 3;
 }
 
 message MessageTypeUser {
@@ -81,12 +82,24 @@ message Message {
   int64 timestamp = 3;
 }
 
+message BranchInfo {
+  string id = 1;
+  int64 created_at = 2;
+  int64 updated_at = 3;
+}
+
 message Conversation {
   string id = 1;
   string title = 2;
   string model_slug = 3;
   // If list conversations, then messages length is 0.
   repeated Message messages = 4;
+
+  // Branch information
+  string current_branch_id = 5;           // ID of the branch being viewed
+  repeated BranchInfo branches = 6;       // All available branches
+  int32 current_branch_index = 7;         // 1-indexed position for UI
+  int32 total_branches = 8;               // Total number of branches
 }
 
 message ListConversationsRequest {
@@ -100,6 +113,7 @@ message ListConversationsResponse {
 
 message GetConversationRequest {
   string conversation_id = 1;
+  optional string branch_id = 2;          // Optional: specific branch to view
 }
 
 message GetConversationResponse {
@@ -165,6 +179,11 @@ message MessageChunk {
   string delta = 2; // The small piece of text
 }
 
+message ReasoningChunk {
+  string message_id = 1; // The id of the message that this chunk belongs to
+  string delta = 2; // The small piece of text
+}
+
 message IncompleteIndicator {
   string reason = 1;
   string response_id = 2;
@@ -211,6 +230,7 @@ message CreateConversationMessageStreamRequest {
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
   optional string surrounding = 8;
+  optional string parent_message_id = 9;
 }
 
 // Response for streaming a message within an existing conversation
@@ -223,5 +243,6 @@ message CreateConversationMessageStreamResponse {
     StreamPartEnd stream_part_end = 5;
     StreamFinalization stream_finalization = 6;
     StreamError stream_error = 7;
+    ReasoningChunk reasoning_chunk = 8;
   }
 }

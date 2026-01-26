@@ -44,11 +44,6 @@ func DeleteFolderTool(ctx context.Context, toolCallId string, args json.RawMessa
 		return "", "", err
 	}
 
-	recursive := false
-	if getArgs.Recursive != nil {
-		recursive = *getArgs.Recursive
-	}
-
 	// TODO: Implement actual folder deletion logic
-	return fmt.Sprintf("[DUMMY] Folder deleted: %s (recursive: %v)", getArgs.Path, recursive), "", nil
+	return "", "", fmt.Errorf("delete_folder tool is not yet implemented: cannot delete folder at %s", getArgs.Path)
 }

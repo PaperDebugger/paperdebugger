@@ -116,7 +116,8 @@ export const listSupportedModels = async (data: PlainMessage<ListSupportedModels
 };
 
 export const getConversation = async (data: PlainMessage<GetConversationRequest>) => {
-  const response = await apiclientV2.get(`/chats/conversations/${data.conversationId}`);
+  const params = data.branchId ? { branchId: data.branchId } : undefined;
+  const response = await apiclientV2.get(`/chats/conversations/${data.conversationId}`, params);
   return fromJson(GetConversationResponseSchema, response);
 };
 

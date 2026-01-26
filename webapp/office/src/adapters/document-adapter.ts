@@ -228,7 +228,7 @@ export class WordAdapter implements DocumentAdapter {
       }
     };
 
-    intervalId = setInterval(checkSelection, 500);
+    intervalId = setInterval(checkSelection, 1000);
     checkSelection();
 
     return () => {
