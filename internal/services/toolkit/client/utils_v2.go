@@ -7,7 +7,6 @@ It is used to append assistant responses to both OpenAI and in-app chat historie
 */
 import (
 	"context"
-	"fmt"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -39,7 +38,7 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 	})
 
 	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
-		MessageId: fmt.Sprintf("openai_%s", contentId),
+		MessageId: contentId,
 		Payload: &chatv2.MessagePayload{
 			MessageType: &chatv2.MessagePayload_Assistant{
 				Assistant: &chatv2.MessageTypeAssistant{
