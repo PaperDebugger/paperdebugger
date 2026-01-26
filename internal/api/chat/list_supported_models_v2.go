@@ -96,9 +96,49 @@ var allModels = []modelConfig{
 		requireOwnKey:  true,
 	},
 	{
+		name:           "DeepSeek: R1 0528 (free)",
+		slugOpenRouter: "deepseek/deepseek-r1-0528:free",
+		slugOpenAI:     "",
+		totalContext:   163800,
+		maxOutput:      163800,
+		inputPrice:     0,
+		outputPrice:    0,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "OpenAI: gpt-oss-120b (free)",
+		slugOpenRouter: "openai/gpt-oss-120b:free",
+		slugOpenAI:     "",
+		totalContext:   131072,
+		maxOutput:      131072,
+		inputPrice:     0,
+		outputPrice:    0,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "Qwen: Qwen3 Next 80B A3B Instruct (free)",
+		slugOpenRouter: "qwen/qwen3-next-80b-a3b-instruct:free",
+		slugOpenAI:     "",
+		totalContext:   262144,
+		maxOutput:      262144,
+		inputPrice:     0,
+		outputPrice:    0,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "MoonshotAI: Kimi K2 0711 (free)",
+		slugOpenRouter: "moonshotai/kimi-k2:free",
+		slugOpenAI:     "",
+		totalContext:   32768,
+		maxOutput:      32768,
+		inputPrice:     0,
+		outputPrice:    0,
+		requireOwnKey:  false,
+	},
+	{
 		name:           "Qwen Plus (balanced)",
 		slugOpenRouter: "qwen/qwen-plus",
-		slugOpenAI:     "qwen-plus", // OpenAI doesn't support Qwen, use OpenRouter slug
+		slugOpenAI:     "", // OpenAI doesn't support Qwen, use OpenRouter slug
 		totalContext:   131100,
 		maxOutput:      8200,
 		inputPrice:     40,
@@ -195,9 +235,12 @@ func (s *ChatServerV2) ListSupportedModels(
 
 	var models []*chatv2.SupportedModel
 	for _, config := range allModels {
-		// Choose the appropriate slug based on whether user has their own API key
+		// Choose the appropriate slug based on whether user has their own API key.
+		//
+		// Some models are only available via OpenRouter; for those, slugOpenAI may be empty.
+		// In that case, keep using the OpenRouter slug to avoid returning an empty model slug.
 		slug := config.slugOpenRouter
-		if hasOwnAPIKey {
+		if hasOwnAPIKey && strings.TrimSpace(config.slugOpenAI) != "" {
 			slug = config.slugOpenAI
 		}
 
