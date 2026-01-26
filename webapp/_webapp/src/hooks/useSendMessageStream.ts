@@ -3,6 +3,7 @@ import {
   ConversationType,
   CreateConversationMessageStreamRequest,
   IncompleteIndicator,
+  ReasoningChunk,
   StreamFinalization,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { PlainMessage } from "../query/types";
@@ -37,6 +38,7 @@ import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
+import { handleReasoningChunk } from "../stores/conversation/handlers/handleReasoningChunk";
 
 /**
  * Custom React hook to handle sending a message as a stream in a conversation.
@@ -143,6 +145,9 @@ export function useSendMessageStream() {
                 break;
               case "incompleteIndicator":
                 handleIncompleteIndicator(response.responsePayload.value as IncompleteIndicator);
+                break;
+              case "reasoningChunk":
+                handleReasoningChunk(response.responsePayload.value as ReasoningChunk, updateStreamingMessage);
                 break;
               default: {
                 if (response.responsePayload.value !== undefined) {

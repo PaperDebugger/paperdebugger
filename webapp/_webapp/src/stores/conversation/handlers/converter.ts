@@ -7,12 +7,16 @@ import { useConversationStore } from "../conversation-store";
 
 export const convertMessageEntryToMessage = (messageEntry: MessageEntry): Message | undefined => {
   if (messageEntry.assistant) {
+    const assistantPayload: { content: string; reasoning?: string } = {
+      content: messageEntry.assistant.content,
+    };
+    if (messageEntry.assistant.reasoning) {
+      assistantPayload.reasoning = messageEntry.assistant.reasoning;
+    }
     return fromJson(MessageSchema, {
       messageId: messageEntry.messageId,
       payload: {
-        assistant: {
-          content: messageEntry.assistant.content,
-        },
+        assistant: assistantPayload,
       },
     });
   } else if (messageEntry.toolCall) {

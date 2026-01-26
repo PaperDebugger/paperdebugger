@@ -5,6 +5,7 @@ import { getProjectId } from "../../libs/helpers";
 import MarkdownComponent from "../markdown";
 import { useAuthStore } from "../../stores/auth-store";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { GeneralToolCard } from "./tools/general";
 
 // Helper functions
 const preprocessMessage = (message: string): string | undefined => {
@@ -17,6 +18,7 @@ const preprocessMessage = (message: string): string | undefined => {
 
 export const AssistantMessageContainer = ({
   message,
+  reasoning,
   messageId,
   animated,
   prevAttachment,
@@ -24,6 +26,7 @@ export const AssistantMessageContainer = ({
   preparing,
 }: {
   message: string;
+  reasoning?: string;
   messageId: string;
   animated: boolean;
   prevAttachment: string;
@@ -49,7 +52,7 @@ export const AssistantMessageContainer = ({
     }
   }, [user?.id, projectId, processedMessage, messageId]);
 
-  const showMessage = processedMessage?.length || 0 > 0;
+  const showMessage = processedMessage?.length || 0 > 0 || reasoning?.length || 0 > 0;
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
   const writingIndicator =
     stale || !showMessage ? null : (
@@ -64,29 +67,43 @@ export const AssistantMessageContainer = ({
         )}
       />
     );
+
+  const reasoningComponent = reasoning && (
+    <div
+      key="reasoning"
+      className={cn("reasoning-container mb-3", animated && "animate-in fade-in slide-in-from-top-2 duration-300")}
+    >
+      <GeneralToolCard functionName="reasoning" message={reasoning} animated={animated} />
+    </div>
+  );
+
+  const messageComponent = processedMessage && (
+    <div className="canselect">
+      <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>
+        {processedMessage || ""}
+      </MarkdownComponent>
+    </div>
+  );
+
+  const actionComponent = (
+    <div className="actions rnd-cancel noselect">
+      <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
+        <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
+          <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
+        </span>
+      </Tooltip>
+    </div>
+  );
+
   return (
     showMessage && (
       <div className="chat-message-entry noselect">
         <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
-          {/* Message content */}
-          <div className="canselect">
-            <MarkdownComponent prevAttachment={prevAttachment} animated={animated}>
-              {processedMessage || ""}
-            </MarkdownComponent>
-          </div>
-
+          {reasoningComponent}
+          {messageComponent}
           {writingIndicator}
-
-          {/* Stale message */}
           {staleComponent}
-
-          <div className="actions rnd-cancel noselect">
-            <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
-              <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
-                <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
-              </span>
-            </Tooltip>
-          </div>
+          {actionComponent}
         </div>
       </div>
     )
