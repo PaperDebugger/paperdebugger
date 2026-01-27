@@ -35,7 +35,9 @@ const MarkdownComponent = memo(({ children, prevAttachment, animated }: Markdown
       ),
     }}
     plugins={{ code, mermaid, math, cjk }}
-    isAnimating={animated}>
+    isAnimating={animated}
+    linkSafety={{ enabled: false }}
+    >
     {children}
   </Streamdown>
 
