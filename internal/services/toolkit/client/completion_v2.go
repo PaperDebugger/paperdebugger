@@ -6,6 +6,7 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 
 	"github.com/openai/openai-go/v3"
 )
@@ -78,6 +79,18 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		has_sent_part_begin := false
 		tool_info := map[int]map[string]string{}
 		toolCalls := []openai.FinishedChatCompletionToolCall{}
+		handleReasoning := func(raw string) (string, bool) {
+			raw = strings.TrimSpace(raw)
+			if raw == "" || raw == "null" {
+				return "", false
+			}
+			var s string
+			if err := json.Unmarshal([]byte(raw), &s); err != nil || s == "" {
+				return "", false
+			}
+			return s, true
+		}
+
 		for stream.Next() {
 			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
@@ -102,21 +115,25 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				streamHandler.HandleAssistantPartBegin(chunk.ID)
 			}
 
-			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
-				var s string
-				err := json.Unmarshal([]byte(field.Raw()), &s)
-				if err == nil {
+			reasoningHandled := false
+			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok {
+				if s, ok := handleReasoning(field.Raw()); ok {
 					reasoning_content += s
 					streamHandler.HandleReasoningDelta(chunk.ID, s)
+					reasoningHandled = true
 				}
-			} else if field, ok := delta.JSON.ExtraFields["reasoning"]; ok && field.Raw() != "null" {
-				var s string
-				err := json.Unmarshal([]byte(field.Raw()), &s)
-				if err == nil {
-					reasoning_content += s
-					streamHandler.HandleReasoningDelta(chunk.ID, s)
+			}
+			if !reasoningHandled {
+				if field, ok := delta.JSON.ExtraFields["reasoning"]; ok {
+					if s, ok := handleReasoning(field.Raw()); ok {
+						reasoning_content += s
+						streamHandler.HandleReasoningDelta(chunk.ID, s)
+						reasoningHandled = true
+					}
 				}
-			} else {
+			}
+
+			if !reasoningHandled {
 				if delta.Content != "" {
 					answer_content += delta.Content
 					answer_content_id = chunk.ID
