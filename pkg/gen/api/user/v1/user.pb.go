@@ -615,6 +615,90 @@ func (*DeletePromptResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{11}
 }
 
+type CustomModel struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	ApiKey        string                 `protobuf:"bytes,3,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	ContextWindow int32                  `protobuf:"varint,4,opt,name=context_window,json=contextWindow,proto3" json:"context_window,omitempty"`
+	InputPrice    float64                `protobuf:"fixed64,5,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`
+	OutputPrice   float64                `protobuf:"fixed64,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CustomModel) Reset() {
+	*x = CustomModel{}
+	mi := &file_user_v1_user_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CustomModel) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CustomModel) ProtoMessage() {}
+
+func (x *CustomModel) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CustomModel.ProtoReflect.Descriptor instead.
+func (*CustomModel) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CustomModel) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CustomModel) GetSlug() string {
+	if x != nil {
+		return x.Slug
+	}
+	return ""
+}
+
+func (x *CustomModel) GetApiKey() string {
+	if x != nil {
+		return x.ApiKey
+	}
+	return ""
+}
+
+func (x *CustomModel) GetContextWindow() int32 {
+	if x != nil {
+		return x.ContextWindow
+	}
+	return 0
+}
+
+func (x *CustomModel) GetInputPrice() float64 {
+	if x != nil {
+		return x.InputPrice
+	}
+	return 0
+}
+
+func (x *CustomModel) GetOutputPrice() float64 {
+	if x != nil {
+		return x.OutputPrice
+	}
+	return 0
+}
+
 type Settings struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	ShowShortcutsAfterSelection  bool                   `protobuf:"varint,1,opt,name=show_shortcuts_after_selection,json=showShortcutsAfterSelection,proto3" json:"show_shortcuts_after_selection,omitempty"`
@@ -623,13 +707,14 @@ type Settings struct {
 	FullDocumentRag              bool                   `protobuf:"varint,4,opt,name=full_document_rag,json=fullDocumentRag,proto3" json:"full_document_rag,omitempty"`
 	ShowedOnboarding             bool                   `protobuf:"varint,5,opt,name=showed_onboarding,json=showedOnboarding,proto3" json:"showed_onboarding,omitempty"`
 	OpenaiApiKey                 string                 `protobuf:"bytes,6,opt,name=openai_api_key,json=openaiApiKey,proto3" json:"openai_api_key,omitempty"`
+	CustomModels                 []*CustomModel         `protobuf:"bytes,7,rep,name=custom_models,json=customModels,proto3" json:"custom_models,omitempty"`
 	unknownFields                protoimpl.UnknownFields
 	sizeCache                    protoimpl.SizeCache
 }
 
 func (x *Settings) Reset() {
 	*x = Settings{}
-	mi := &file_user_v1_user_proto_msgTypes[12]
+	mi := &file_user_v1_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -641,7 +726,7 @@ func (x *Settings) String() string {
 func (*Settings) ProtoMessage() {}
 
 func (x *Settings) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[12]
+	mi := &file_user_v1_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -654,7 +739,7 @@ func (x *Settings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Settings.ProtoReflect.Descriptor instead.
 func (*Settings) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{12}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Settings) GetShowShortcutsAfterSelection() bool {
@@ -699,6 +784,13 @@ func (x *Settings) GetOpenaiApiKey() string {
 	return ""
 }
 
+func (x *Settings) GetCustomModels() []*CustomModel {
+	if x != nil {
+		return x.CustomModels
+	}
+	return nil
+}
+
 type GetSettingsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -707,7 +799,7 @@ type GetSettingsRequest struct {
 
 func (x *GetSettingsRequest) Reset() {
 	*x = GetSettingsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[13]
+	mi := &file_user_v1_user_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -719,7 +811,7 @@ func (x *GetSettingsRequest) String() string {
 func (*GetSettingsRequest) ProtoMessage() {}
 
 func (x *GetSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[13]
+	mi := &file_user_v1_user_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -732,7 +824,7 @@ func (x *GetSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{13}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{14}
 }
 
 type GetSettingsResponse struct {
@@ -744,7 +836,7 @@ type GetSettingsResponse struct {
 
 func (x *GetSettingsResponse) Reset() {
 	*x = GetSettingsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[14]
+	mi := &file_user_v1_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -756,7 +848,7 @@ func (x *GetSettingsResponse) String() string {
 func (*GetSettingsResponse) ProtoMessage() {}
 
 func (x *GetSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[14]
+	mi := &file_user_v1_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,7 +861,7 @@ func (x *GetSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSettingsResponse.ProtoReflect.Descriptor instead.
 func (*GetSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{14}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetSettingsResponse) GetSettings() *Settings {
@@ -788,7 +880,7 @@ type UpdateSettingsRequest struct {
 
 func (x *UpdateSettingsRequest) Reset() {
 	*x = UpdateSettingsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[15]
+	mi := &file_user_v1_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -800,7 +892,7 @@ func (x *UpdateSettingsRequest) String() string {
 func (*UpdateSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[15]
+	mi := &file_user_v1_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -813,7 +905,7 @@ func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{15}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdateSettingsRequest) GetSettings() *Settings {
@@ -832,7 +924,7 @@ type UpdateSettingsResponse struct {
 
 func (x *UpdateSettingsResponse) Reset() {
 	*x = UpdateSettingsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[16]
+	mi := &file_user_v1_user_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -844,7 +936,7 @@ func (x *UpdateSettingsResponse) String() string {
 func (*UpdateSettingsResponse) ProtoMessage() {}
 
 func (x *UpdateSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[16]
+	mi := &file_user_v1_user_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -857,7 +949,7 @@ func (x *UpdateSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{16}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateSettingsResponse) GetSettings() *Settings {
@@ -875,7 +967,7 @@ type ResetSettingsRequest struct {
 
 func (x *ResetSettingsRequest) Reset() {
 	*x = ResetSettingsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[17]
+	mi := &file_user_v1_user_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -887,7 +979,7 @@ func (x *ResetSettingsRequest) String() string {
 func (*ResetSettingsRequest) ProtoMessage() {}
 
 func (x *ResetSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[17]
+	mi := &file_user_v1_user_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -900,7 +992,7 @@ func (x *ResetSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetSettingsRequest.ProtoReflect.Descriptor instead.
 func (*ResetSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{17}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{18}
 }
 
 type ResetSettingsResponse struct {
@@ -912,7 +1004,7 @@ type ResetSettingsResponse struct {
 
 func (x *ResetSettingsResponse) Reset() {
 	*x = ResetSettingsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[18]
+	mi := &file_user_v1_user_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -924,7 +1016,7 @@ func (x *ResetSettingsResponse) String() string {
 func (*ResetSettingsResponse) ProtoMessage() {}
 
 func (x *ResetSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[18]
+	mi := &file_user_v1_user_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -937,7 +1029,7 @@ func (x *ResetSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetSettingsResponse.ProtoReflect.Descriptor instead.
 func (*ResetSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{18}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ResetSettingsResponse) GetSettings() *Settings {
@@ -955,7 +1047,7 @@ type GetUserInstructionsRequest struct {
 
 func (x *GetUserInstructionsRequest) Reset() {
 	*x = GetUserInstructionsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[19]
+	mi := &file_user_v1_user_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -967,7 +1059,7 @@ func (x *GetUserInstructionsRequest) String() string {
 func (*GetUserInstructionsRequest) ProtoMessage() {}
 
 func (x *GetUserInstructionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[19]
+	mi := &file_user_v1_user_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -980,7 +1072,7 @@ func (x *GetUserInstructionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInstructionsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserInstructionsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{19}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{20}
 }
 
 type GetUserInstructionsResponse struct {
@@ -992,7 +1084,7 @@ type GetUserInstructionsResponse struct {
 
 func (x *GetUserInstructionsResponse) Reset() {
 	*x = GetUserInstructionsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[20]
+	mi := &file_user_v1_user_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1004,7 +1096,7 @@ func (x *GetUserInstructionsResponse) String() string {
 func (*GetUserInstructionsResponse) ProtoMessage() {}
 
 func (x *GetUserInstructionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[20]
+	mi := &file_user_v1_user_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1017,7 +1109,7 @@ func (x *GetUserInstructionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInstructionsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserInstructionsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{20}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetUserInstructionsResponse) GetInstructions() string {
@@ -1036,7 +1128,7 @@ type UpsertUserInstructionsRequest struct {
 
 func (x *UpsertUserInstructionsRequest) Reset() {
 	*x = UpsertUserInstructionsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[21]
+	mi := &file_user_v1_user_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1048,7 +1140,7 @@ func (x *UpsertUserInstructionsRequest) String() string {
 func (*UpsertUserInstructionsRequest) ProtoMessage() {}
 
 func (x *UpsertUserInstructionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[21]
+	mi := &file_user_v1_user_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +1153,7 @@ func (x *UpsertUserInstructionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertUserInstructionsRequest.ProtoReflect.Descriptor instead.
 func (*UpsertUserInstructionsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{21}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpsertUserInstructionsRequest) GetInstructions() string {
@@ -1080,7 +1172,7 @@ type UpsertUserInstructionsResponse struct {
 
 func (x *UpsertUserInstructionsResponse) Reset() {
 	*x = UpsertUserInstructionsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[22]
+	mi := &file_user_v1_user_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1092,7 +1184,7 @@ func (x *UpsertUserInstructionsResponse) String() string {
 func (*UpsertUserInstructionsResponse) ProtoMessage() {}
 
 func (x *UpsertUserInstructionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[22]
+	mi := &file_user_v1_user_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1105,7 +1197,7 @@ func (x *UpsertUserInstructionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertUserInstructionsResponse.ProtoReflect.Descriptor instead.
 func (*UpsertUserInstructionsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{22}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UpsertUserInstructionsResponse) GetInstructions() string {
@@ -1153,14 +1245,23 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x06prompt\x18\x01 \x01(\v2\x0f.user.v1.PromptR\x06prompt\"2\n" +
 	"\x13DeletePromptRequest\x12\x1b\n" +
 	"\tprompt_id\x18\x01 \x01(\tR\bpromptId\"\x16\n" +
-	"\x14DeletePromptResponse\"\xc3\x02\n" +
+	"\x14DeletePromptResponse\"\xb9\x01\n" +
+	"\vCustomModel\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
+	"\x04slug\x18\x02 \x01(\tR\x04slug\x12\x17\n" +
+	"\aapi_key\x18\x03 \x01(\tR\x06apiKey\x12%\n" +
+	"\x0econtext_window\x18\x04 \x01(\x05R\rcontextWindow\x12\x1f\n" +
+	"\vinput_price\x18\x05 \x01(\x01R\n" +
+	"inputPrice\x12!\n" +
+	"\foutput_price\x18\x06 \x01(\x01R\voutputPrice\"\xfe\x02\n" +
 	"\bSettings\x12C\n" +
 	"\x1eshow_shortcuts_after_selection\x18\x01 \x01(\bR\x1bshowShortcutsAfterSelection\x12F\n" +
 	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12+\n" +
 	"\x11enable_completion\x18\x03 \x01(\bR\x10enableCompletion\x12*\n" +
 	"\x11full_document_rag\x18\x04 \x01(\bR\x0ffullDocumentRag\x12+\n" +
 	"\x11showed_onboarding\x18\x05 \x01(\bR\x10showedOnboarding\x12$\n" +
-	"\x0eopenai_api_key\x18\x06 \x01(\tR\fopenaiApiKey\"\x14\n" +
+	"\x0eopenai_api_key\x18\x06 \x01(\tR\fopenaiApiKey\x129\n" +
+	"\rcustom_models\x18\a \x03(\v2\x14.user.v1.CustomModelR\fcustomModels\"\x14\n" +
 	"\x12GetSettingsRequest\"D\n" +
 	"\x13GetSettingsResponse\x12-\n" +
 	"\bsettings\x18\x01 \x01(\v2\x11.user.v1.SettingsR\bsettings\"F\n" +
@@ -1204,7 +1305,7 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_user_v1_user_proto_goTypes = []any{
 	(*User)(nil),                           // 0: user.v1.User
 	(*GetUserRequest)(nil),                 // 1: user.v1.GetUserRequest
@@ -1218,55 +1319,57 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*UpdatePromptResponse)(nil),           // 9: user.v1.UpdatePromptResponse
 	(*DeletePromptRequest)(nil),            // 10: user.v1.DeletePromptRequest
 	(*DeletePromptResponse)(nil),           // 11: user.v1.DeletePromptResponse
-	(*Settings)(nil),                       // 12: user.v1.Settings
-	(*GetSettingsRequest)(nil),             // 13: user.v1.GetSettingsRequest
-	(*GetSettingsResponse)(nil),            // 14: user.v1.GetSettingsResponse
-	(*UpdateSettingsRequest)(nil),          // 15: user.v1.UpdateSettingsRequest
-	(*UpdateSettingsResponse)(nil),         // 16: user.v1.UpdateSettingsResponse
-	(*ResetSettingsRequest)(nil),           // 17: user.v1.ResetSettingsRequest
-	(*ResetSettingsResponse)(nil),          // 18: user.v1.ResetSettingsResponse
-	(*GetUserInstructionsRequest)(nil),     // 19: user.v1.GetUserInstructionsRequest
-	(*GetUserInstructionsResponse)(nil),    // 20: user.v1.GetUserInstructionsResponse
-	(*UpsertUserInstructionsRequest)(nil),  // 21: user.v1.UpsertUserInstructionsRequest
-	(*UpsertUserInstructionsResponse)(nil), // 22: user.v1.UpsertUserInstructionsResponse
-	(*timestamppb.Timestamp)(nil),          // 23: google.protobuf.Timestamp
+	(*CustomModel)(nil),                    // 12: user.v1.CustomModel
+	(*Settings)(nil),                       // 13: user.v1.Settings
+	(*GetSettingsRequest)(nil),             // 14: user.v1.GetSettingsRequest
+	(*GetSettingsResponse)(nil),            // 15: user.v1.GetSettingsResponse
+	(*UpdateSettingsRequest)(nil),          // 16: user.v1.UpdateSettingsRequest
+	(*UpdateSettingsResponse)(nil),         // 17: user.v1.UpdateSettingsResponse
+	(*ResetSettingsRequest)(nil),           // 18: user.v1.ResetSettingsRequest
+	(*ResetSettingsResponse)(nil),          // 19: user.v1.ResetSettingsResponse
+	(*GetUserInstructionsRequest)(nil),     // 20: user.v1.GetUserInstructionsRequest
+	(*GetUserInstructionsResponse)(nil),    // 21: user.v1.GetUserInstructionsResponse
+	(*UpsertUserInstructionsRequest)(nil),  // 22: user.v1.UpsertUserInstructionsRequest
+	(*UpsertUserInstructionsResponse)(nil), // 23: user.v1.UpsertUserInstructionsResponse
+	(*timestamppb.Timestamp)(nil),          // 24: google.protobuf.Timestamp
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	0,  // 0: user.v1.GetUserResponse.user:type_name -> user.v1.User
-	23, // 1: user.v1.Prompt.created_at:type_name -> google.protobuf.Timestamp
-	23, // 2: user.v1.Prompt.updated_at:type_name -> google.protobuf.Timestamp
+	24, // 1: user.v1.Prompt.created_at:type_name -> google.protobuf.Timestamp
+	24, // 2: user.v1.Prompt.updated_at:type_name -> google.protobuf.Timestamp
 	3,  // 3: user.v1.ListPromptsResponse.prompts:type_name -> user.v1.Prompt
 	3,  // 4: user.v1.CreatePromptResponse.prompt:type_name -> user.v1.Prompt
 	3,  // 5: user.v1.UpdatePromptResponse.prompt:type_name -> user.v1.Prompt
-	12, // 6: user.v1.GetSettingsResponse.settings:type_name -> user.v1.Settings
-	12, // 7: user.v1.UpdateSettingsRequest.settings:type_name -> user.v1.Settings
-	12, // 8: user.v1.UpdateSettingsResponse.settings:type_name -> user.v1.Settings
-	12, // 9: user.v1.ResetSettingsResponse.settings:type_name -> user.v1.Settings
-	1,  // 10: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
-	4,  // 11: user.v1.UserService.ListPrompts:input_type -> user.v1.ListPromptsRequest
-	6,  // 12: user.v1.UserService.CreatePrompt:input_type -> user.v1.CreatePromptRequest
-	8,  // 13: user.v1.UserService.UpdatePrompt:input_type -> user.v1.UpdatePromptRequest
-	19, // 14: user.v1.UserService.GetUserInstructions:input_type -> user.v1.GetUserInstructionsRequest
-	21, // 15: user.v1.UserService.UpsertUserInstructions:input_type -> user.v1.UpsertUserInstructionsRequest
-	10, // 16: user.v1.UserService.DeletePrompt:input_type -> user.v1.DeletePromptRequest
-	13, // 17: user.v1.UserService.GetSettings:input_type -> user.v1.GetSettingsRequest
-	15, // 18: user.v1.UserService.UpdateSettings:input_type -> user.v1.UpdateSettingsRequest
-	17, // 19: user.v1.UserService.ResetSettings:input_type -> user.v1.ResetSettingsRequest
-	2,  // 20: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
-	5,  // 21: user.v1.UserService.ListPrompts:output_type -> user.v1.ListPromptsResponse
-	7,  // 22: user.v1.UserService.CreatePrompt:output_type -> user.v1.CreatePromptResponse
-	9,  // 23: user.v1.UserService.UpdatePrompt:output_type -> user.v1.UpdatePromptResponse
-	20, // 24: user.v1.UserService.GetUserInstructions:output_type -> user.v1.GetUserInstructionsResponse
-	22, // 25: user.v1.UserService.UpsertUserInstructions:output_type -> user.v1.UpsertUserInstructionsResponse
-	11, // 26: user.v1.UserService.DeletePrompt:output_type -> user.v1.DeletePromptResponse
-	14, // 27: user.v1.UserService.GetSettings:output_type -> user.v1.GetSettingsResponse
-	16, // 28: user.v1.UserService.UpdateSettings:output_type -> user.v1.UpdateSettingsResponse
-	18, // 29: user.v1.UserService.ResetSettings:output_type -> user.v1.ResetSettingsResponse
-	20, // [20:30] is the sub-list for method output_type
-	10, // [10:20] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	12, // 6: user.v1.Settings.custom_models:type_name -> user.v1.CustomModel
+	13, // 7: user.v1.GetSettingsResponse.settings:type_name -> user.v1.Settings
+	13, // 8: user.v1.UpdateSettingsRequest.settings:type_name -> user.v1.Settings
+	13, // 9: user.v1.UpdateSettingsResponse.settings:type_name -> user.v1.Settings
+	13, // 10: user.v1.ResetSettingsResponse.settings:type_name -> user.v1.Settings
+	1,  // 11: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
+	4,  // 12: user.v1.UserService.ListPrompts:input_type -> user.v1.ListPromptsRequest
+	6,  // 13: user.v1.UserService.CreatePrompt:input_type -> user.v1.CreatePromptRequest
+	8,  // 14: user.v1.UserService.UpdatePrompt:input_type -> user.v1.UpdatePromptRequest
+	20, // 15: user.v1.UserService.GetUserInstructions:input_type -> user.v1.GetUserInstructionsRequest
+	22, // 16: user.v1.UserService.UpsertUserInstructions:input_type -> user.v1.UpsertUserInstructionsRequest
+	10, // 17: user.v1.UserService.DeletePrompt:input_type -> user.v1.DeletePromptRequest
+	14, // 18: user.v1.UserService.GetSettings:input_type -> user.v1.GetSettingsRequest
+	16, // 19: user.v1.UserService.UpdateSettings:input_type -> user.v1.UpdateSettingsRequest
+	18, // 20: user.v1.UserService.ResetSettings:input_type -> user.v1.ResetSettingsRequest
+	2,  // 21: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
+	5,  // 22: user.v1.UserService.ListPrompts:output_type -> user.v1.ListPromptsResponse
+	7,  // 23: user.v1.UserService.CreatePrompt:output_type -> user.v1.CreatePromptResponse
+	9,  // 24: user.v1.UserService.UpdatePrompt:output_type -> user.v1.UpdatePromptResponse
+	21, // 25: user.v1.UserService.GetUserInstructions:output_type -> user.v1.GetUserInstructionsResponse
+	23, // 26: user.v1.UserService.UpsertUserInstructions:output_type -> user.v1.UpsertUserInstructionsResponse
+	11, // 27: user.v1.UserService.DeletePrompt:output_type -> user.v1.DeletePromptResponse
+	15, // 28: user.v1.UserService.GetSettings:output_type -> user.v1.GetSettingsResponse
+	17, // 29: user.v1.UserService.UpdateSettings:output_type -> user.v1.UpdateSettingsResponse
+	19, // 30: user.v1.UserService.ResetSettings:output_type -> user.v1.ResetSettingsResponse
+	21, // [21:31] is the sub-list for method output_type
+	11, // [11:21] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }
@@ -1280,7 +1383,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

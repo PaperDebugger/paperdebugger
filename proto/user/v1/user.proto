@@ -114,6 +114,15 @@ message DeletePromptRequest {
 
 message DeletePromptResponse {}
 
+message CustomModel {
+  string name = 1;
+  string slug = 2;
+  string api_key = 3;
+  int32 context_window = 4;
+  double input_price = 5;
+  double output_price = 6;
+}
+
 message Settings {
   bool show_shortcuts_after_selection = 1;
   bool full_width_paper_debugger_button = 2;
@@ -121,6 +130,7 @@ message Settings {
   bool full_document_rag = 4;
   bool showed_onboarding = 5;
   string openai_api_key = 6;
+  repeated CustomModel custom_models = 7;
 }
 
 message GetSettingsRequest {}
