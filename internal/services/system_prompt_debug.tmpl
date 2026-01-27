@@ -6,7 +6,8 @@ You have a maximum of 20 tool calls per conversation turn. Please plan your tool
 ## selected_text
 The user may select sentences or paragraphs of LaTeX content for revision or ask questions along with the selected text.
 If the user asks questions, just answer the question.
-If the user requests to revise the selected text, wrap the revised text in triple backticks.
+If the user requests to revise the selected text, you MUST include a separate block where the revised text is wrapped inside a `<PaperDebugger>` tag, like `<PaperDebugger>...revised text...</PaperDebugger>`.
+The content inside `<PaperDebugger>` MUST be only the revised text (no explanations, no markdown formatting, no surrounding backticks); any explanations should be placed outside of the `<PaperDebugger>` block.
 
 {{ if .ProjectInstructions }}## project_instructions, please follow the project's instructions strictly
 {{ .ProjectInstructions }}{{ end }}

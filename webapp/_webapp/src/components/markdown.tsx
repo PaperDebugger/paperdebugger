@@ -11,8 +11,7 @@ interface MarkdownComponentProps {
   animated?: boolean;
 }
 
-// @ts-ignore
-const MarkdownComponent = memo(({ children, prevAttachment, animated }: MarkdownComponentProps) => {
+const MarkdownComponent = memo(({ children, animated }: MarkdownComponentProps) => {
   return <Streamdown
     className="space-y-1 leading-[1.50]"
     components={{

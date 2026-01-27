@@ -24,7 +24,6 @@ type modelConfig struct {
 
 // allModels defines all available models in the system
 var allModels = []modelConfig{
-	// Free/default models (requireOwnKey = false)
 	{
 		name:           "GPT-5.1",
 		slugOpenRouter: "openai/gpt-5.1",
@@ -96,41 +95,11 @@ var allModels = []modelConfig{
 		requireOwnKey:  true,
 	},
 	{
-		name:           "DeepSeek: R1 0528 (free)",
-		slugOpenRouter: "deepseek/deepseek-r1-0528:free",
-		slugOpenAI:     "",
-		totalContext:   163800,
-		maxOutput:      163800,
-		inputPrice:     0,
-		outputPrice:    0,
-		requireOwnKey:  false,
-	},
-	{
 		name:           "OpenAI: gpt-oss-120b (free)",
 		slugOpenRouter: "openai/gpt-oss-120b:free",
 		slugOpenAI:     "",
 		totalContext:   131072,
 		maxOutput:      131072,
-		inputPrice:     0,
-		outputPrice:    0,
-		requireOwnKey:  false,
-	},
-	{
-		name:           "Qwen: Qwen3 Next 80B A3B Instruct (free)",
-		slugOpenRouter: "qwen/qwen3-next-80b-a3b-instruct:free",
-		slugOpenAI:     "",
-		totalContext:   262144,
-		maxOutput:      262144,
-		inputPrice:     0,
-		outputPrice:    0,
-		requireOwnKey:  false,
-	},
-	{
-		name:           "MoonshotAI: Kimi K2 0711 (free)",
-		slugOpenRouter: "moonshotai/kimi-k2:free",
-		slugOpenAI:     "",
-		totalContext:   32768,
-		maxOutput:      32768,
 		inputPrice:     0,
 		outputPrice:    0,
 		requireOwnKey:  false,
@@ -153,6 +122,26 @@ var allModels = []modelConfig{
 		maxOutput:      8200,
 		inputPrice:     5,
 		outputPrice:    20,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "Qwen3 Coder 480B A35B (free)",
+		slugOpenRouter: "qwen/qwen3-coder:free",
+		slugOpenAI:     "",
+		totalContext:   262000,
+		maxOutput:      262000,
+		inputPrice:     0,
+		outputPrice:    0,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "GLM 4.5 Air (free)",
+		slugOpenRouter: "z-ai/glm-4.5-air:free",
+		slugOpenAI:     "",
+		totalContext:   131072,
+		maxOutput:      131072,
+		inputPrice:     0,
+		outputPrice:    0,
 		requireOwnKey:  false,
 	},
 	{
