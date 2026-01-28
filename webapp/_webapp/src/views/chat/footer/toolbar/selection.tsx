@@ -10,6 +10,8 @@ export type SelectionItem<T> = {
   subtitle?: string;
   description?: string;
   value: T;
+  disabled?: boolean;
+  disabledReason?: string;
 };
 
 type SelectionProps<T> = {
@@ -92,23 +94,36 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
       if (e.key === "ArrowDown") {
         e.preventDefault();
         e.stopPropagation();
-        if (selectedIdx < itemCount - 1) {
-          scrollTo(selectedIdx + 1);
-          setSelectedIdx(selectedIdx + 1);
+        let nextIdx = selectedIdx + 1;
+        // Skip disabled items
+        while (nextIdx < itemCount && items[nextIdx]?.disabled) {
+          nextIdx++;
+        }
+        if (nextIdx < itemCount) {
+          scrollTo(nextIdx);
+          setSelectedIdx(nextIdx);
         }
       }
       if (e.key === "ArrowUp") {
         e.preventDefault();
         e.stopPropagation();
-        if (selectedIdx > 0) {
-          scrollTo(selectedIdx - 1);
-          setSelectedIdx(selectedIdx - 1);
+        let prevIdx = selectedIdx - 1;
+        // Skip disabled items
+        while (prevIdx >= 0 && items[prevIdx]?.disabled) {
+          prevIdx--;
+        }
+        if (prevIdx >= 0) {
+          scrollTo(prevIdx);
+          setSelectedIdx(prevIdx);
         }
       }
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
-        onSelect?.(items[selectedIdx]);
+        // Only select if not disabled
+        if (!items[selectedIdx]?.disabled) {
+          onSelect?.(items[selectedIdx]);
+        }
       }
     };
 
@@ -129,7 +144,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
       ref={scrollContainerRef}
       className={cn(
         "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white shadow-lg",
-        items && items.length > 0 ? "rounded-lg border border-gray-200 overflow-y-auto" : "max-h-[0px]",
+        items && items.length > 0 ? "rounded-lg border !border-gray-200 overflow-y-auto" : "max-h-[0px]",
         heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
     >
@@ -137,16 +152,18 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
         <div
           key={`${item.title}-${item.subtitle ?? ""}-${item.description ?? ""}`}
           className={cn(
-            "prompt-selection-item w-full flex flex-col rounded-lg cursor-pointer",
-            idx === selectedIdx && "bg-gray-100",
+            "prompt-selection-item w-full flex flex-col rounded-lg",
+            item.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+            idx === selectedIdx && !item.disabled && "bg-gray-100",
             heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
           )}
           onClick={() => {
+            if (item.disabled) return;
             googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
             onSelect?.(item);
           }}
           onMouseEnter={() => {
-            if (!isKeyboardNavigation) {
+            if (!isKeyboardNavigation && !item.disabled) {
               setSelectedIdx(idx);
             }
           }}
@@ -158,6 +175,20 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
             )}
           >
             <span>{item.title}</span>
+            {item.disabled && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-3 h-3 text-gray-400"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
             {item.subtitle && (
               <span
                 className={cn(
@@ -169,12 +200,12 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
               </span>
             )}
           </div>
-          {item.description && (
+          {(item.description || item.disabledReason) && (
             <div
               className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
               style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}
             >
-              {item.description}
+              {item.disabledReason || item.description}
             </div>
           )}
         </div>
