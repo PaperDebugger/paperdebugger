@@ -15,8 +15,8 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-secret
-      {{ if .Values.mongo.in_cluster }}
       initContainers:
+        {{- if .Values.mongo.in_cluster }}
         - name: init-mongodb
           image: mongo:latest
           command:
@@ -26,7 +26,17 @@ spec:
               "--eval",
               'db.isMaster().primary || rs.initiate({_id: "in-cluster", members: [{_id: 0, host: "mongo:27017"}]})',
             ]
-      {{ end }}
+        {{- end }}
+        - name: wait-for-xtramcp-port
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Waiting for paperdebugger-xtramcp-server:8080..."
+              until nc -z -w 2 paperdebugger-xtramcp-server 8080; do
+                sleep 2
+              done
+              echo "xtramcp port is open."
       containers:
         - name: paperdebugger
           image: {{ .Values.paperdebugger.image }}
