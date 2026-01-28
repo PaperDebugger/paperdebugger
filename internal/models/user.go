@@ -5,6 +5,7 @@ import "go.mongodb.org/mongo-driver/v2/bson"
 type CustomModel struct {
 	ID            bson.ObjectID `bson:"_id"`
 	Name          string        `bson:"name"`
+	BaseUrl       string        `bson:"base_url"`
 	Slug          string        `bson:"slug"`
 	APIKey        string        `bson:"api_key"`
 	ContextWindow int32         `bson:"context_window"`

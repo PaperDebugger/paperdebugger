@@ -115,12 +115,14 @@ message DeletePromptRequest {
 message DeletePromptResponse {}
 
 message CustomModel {
-  string name = 1;
-  string slug = 2;
-  string api_key = 3;
-  int32 context_window = 4;
-  double input_price = 5;
-  double output_price = 6;
+  string id = 1;
+  string name = 2;
+  string base_url = 3;
+  string slug = 4;
+  string api_key = 5;
+  int32 context_window = 6;
+  float input_price = 7;
+  float output_price = 8;
 }
 
 message Settings {

@@ -2,9 +2,31 @@ import { useState } from "react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { Button } from "@heroui/react";
+import { useSettingStore } from "../../../stores/setting-store";
 
 export const ApiKeySettings = () => {
+  const { updateSettings, settings } = useSettingStore();
+
   const [isShowApiKeyModal, setIsShowApiKeyModal] = useState<boolean>(false);
+
+  const handleAddModel = () => {
+    updateSettings({
+      customModels: [
+        ...Array.from(settings?.customModels || []),
+        {
+          id: "",
+          name: "Test1",
+          baseUrl: "https://example.com",
+          slug: "openai/gpt-5.2",
+          apiKey: "sk-123456789-abcdefgh",
+          contextWindow: 128000,
+          inputPrice: 2.0,
+          outputPrice: 2.0,
+        },
+      ],
+    });
+    console.log("Test");
+  };
 
   return (
     <SettingsSectionContainer>
@@ -16,34 +38,28 @@ export const ApiKeySettings = () => {
         isOpen={isShowApiKeyModal}
         onOpenChange={(isOpen) => setIsShowApiKeyModal(isOpen)}
         content={
-          <div className="flex flex-col p-4">
-            <Button size="md" variant="bordered">
+          <div className="flex flex-col h-[80vh] p-2 overflow-y-hidden">
+            <Button className="flex-shrink-0" size="md" variant="bordered" onPress={handleAddModel}>
               Add custom model
             </Button>
 
-            <CustomModelSection
-              model={{
-                name: "Custom 1",
-                baseUrl: "https://www.example.com",
-                slug: "openai/gpt-4.1",
-                apiKey: "sk-123456789-abcdefg",
-                contextWindow: 128000,
-                inputPrice: 200,
-                outputPrice: 200,
-              }}
-            />
-
-            <CustomModelSection
-              model={{
-                name: "Custom 2",
-                baseUrl: "https://www.example2.com",
-                slug: "openai/gpt-5.2",
-                apiKey: "sk-123456789-abcdefg",
-                contextWindow: 256000,
-                inputPrice: 200,
-                outputPrice: 200,
-              }}
-            />
+            <div className="flex flex-col max-h-[80vh] overflow-y-auto">
+              {Array.from(settings?.customModels || []).map((m) => (
+                <CustomModelSection
+                  key={m.id}
+                  model={{
+                    id: m.id,
+                    name: m.name,
+                    baseUrl: m.baseUrl,
+                    slug: m.slug,
+                    apiKey: m.apiKey,
+                    contextWindow: m.contextWindow,
+                    inputPrice: m.inputPrice,
+                    outputPrice: m.outputPrice,
+                  }}
+                />
+              ))}
+            </div>
           </div>
         }
       />
@@ -53,6 +69,7 @@ export const ApiKeySettings = () => {
 
 type CustomModelSectionProps = {
   model: {
+    id: string;
     name: string;
     baseUrl: string;
     slug: string;
