@@ -31,7 +31,6 @@ const shimmerStyle = {
 export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse, isLoading }: GeneralToolCardProps) => {
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showGradients, setShowGradients] = useState(false);
 
   // Use external state if provided, otherwise use internal state
   const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
@@ -42,20 +41,6 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
       setInternalIsCollapsed(externalIsCollapsed);
     }
   }, [externalIsCollapsed]);
-
-  // Check if content exceeds 4 lines to show gradients
-  useEffect(() => {
-    if (scrollContainerRef.current && !isCollapsed) {
-      const container = scrollContainerRef.current;
-      // Calculate line height: text-[11px] with default line-height ~1.5 = ~16.5px
-      const lineHeight = parseFloat(getComputedStyle(container).lineHeight) || 16.5;
-      const scrollHeight = container.scrollHeight;
-      const lineCount = scrollHeight / lineHeight;
-      setShowGradients(lineCount > 4);
-    } else {
-      setShowGradients(false);
-    }
-  }, [message, isCollapsed]);
 
   // Auto-scroll to bottom when message updates and is loading
   useEffect(() => {
@@ -132,11 +117,6 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
             "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
             isCollapsed ? "opacity-0" : "opacity-100 !border-gray-200"
           )}>
-            {/* Fade-out gradient at top - only show if content exceeds 4 lines */}
-            {showGradients && (
-              <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 rounded-t-md" />
-            )}
-
             {/* Scrollable content with max height - hide scrollbar */}
             <div
               ref={scrollContainerRef}
@@ -150,11 +130,6 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
                 {message}
               </Streamdown>
             </div>
-
-            {/* Fade-out gradient at bottom - only show if content exceeds 4 lines */}
-            {showGradients && (
-              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none z-10 rounded-b-md" />
-            )}
           </div>
         </div>
       </div>
