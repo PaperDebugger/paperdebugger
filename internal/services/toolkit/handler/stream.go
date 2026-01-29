@@ -64,7 +64,7 @@ func (h *StreamHandlerV1) HandleAddedItem(chunk responses.ResponseStreamEventUni
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{
-					MessageId: "openai_" + chunk.Item.ID,
+					MessageId: chunk.Item.ID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_Assistant{
 							Assistant: &chatv1.MessageTypeAssistant{},
@@ -77,7 +77,7 @@ func (h *StreamHandlerV1) HandleAddedItem(chunk responses.ResponseStreamEventUni
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 				StreamPartBegin: &chatv1.StreamPartBegin{
-					MessageId: "openai_" + chunk.Item.ID,
+					MessageId: chunk.Item.ID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_ToolCallPrepareArguments{
 							ToolCallPrepareArguments: &chatv1.MessageTypeToolCallPrepareArguments{
@@ -101,7 +101,7 @@ func (h *StreamHandlerV1) HandleDoneItem(chunk responses.ResponseStreamEventUnio
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
 				StreamPartEnd: &chatv1.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
+					MessageId: item.ID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_Assistant{
 							Assistant: &chatv1.MessageTypeAssistant{
@@ -116,7 +116,7 @@ func (h *StreamHandlerV1) HandleDoneItem(chunk responses.ResponseStreamEventUnio
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
 				StreamPartEnd: &chatv1.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
+					MessageId: item.ID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_ToolCallPrepareArguments{
 							ToolCallPrepareArguments: &chatv1.MessageTypeToolCallPrepareArguments{
@@ -132,7 +132,7 @@ func (h *StreamHandlerV1) HandleDoneItem(chunk responses.ResponseStreamEventUnio
 		h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 			ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
 				StreamPartEnd: &chatv1.StreamPartEnd{
-					MessageId: "openai_" + item.ID,
+					MessageId: item.ID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_Unknown{
 							Unknown: &chatv1.MessageTypeUnknown{
@@ -153,7 +153,7 @@ func (h *StreamHandlerV1) HandleTextDelta(chunk responses.ResponseStreamEventUni
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_MessageChunk{
 			MessageChunk: &chatv1.MessageChunk{
-				MessageId: "openai_" + chunk.ItemID,
+				MessageId: chunk.ItemID,
 				Delta:     chunk.Delta,
 			},
 		},
@@ -194,7 +194,7 @@ func (h *StreamHandlerV1) SendToolCallBegin(toolCall responses.ResponseFunctionT
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartBegin{
 			StreamPartBegin: &chatv1.StreamPartBegin{
-				MessageId: "openai_" + toolCall.CallID,
+				MessageId: toolCall.CallID,
 				Payload: &chatv1.MessagePayload{
 					MessageType: &chatv1.MessagePayload_ToolCall{
 						ToolCall: &chatv1.MessageTypeToolCall{
@@ -215,7 +215,7 @@ func (h *StreamHandlerV1) SendToolCallEnd(toolCall responses.ResponseFunctionToo
 	h.callbackStream.Send(&chatv1.CreateConversationMessageStreamResponse{
 		ResponsePayload: &chatv1.CreateConversationMessageStreamResponse_StreamPartEnd{
 			StreamPartEnd: &chatv1.StreamPartEnd{
-				MessageId: "openai_" + toolCall.CallID,
+				MessageId: toolCall.CallID,
 				Payload: &chatv1.MessagePayload{
 					MessageType: &chatv1.MessagePayload_ToolCall{
 						ToolCall: &chatv1.MessageTypeToolCall{

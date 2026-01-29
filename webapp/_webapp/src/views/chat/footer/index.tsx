@@ -121,7 +121,7 @@ export function PromptInput() {
   return (
     <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel relative">
       {/* Only show one popup at a time - priority: prompts > actions > model selection */}
-      {prompts.length > 0 && <PromptSelection prompts={prompts} />}
+      {prompt.startsWith("/") && <PromptSelection prompts={prompts} />}
       {prompts.length === 0 && actions.length > 0 && <ActionSelection actions={actions} />}
       {prompts.length === 0 && actions.length === 0 && showModelSelection && (
         <ModelSelection onSelectModel={handleModelSelect} />

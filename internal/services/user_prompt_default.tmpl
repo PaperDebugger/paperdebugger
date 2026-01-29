@@ -11,9 +11,10 @@ Context around the selection:
 ```
 {{- end }}
 
-If user requests to revise the selected text, wrap the revised text in triple backticks.
-Otherwise, just answer the question.
----
+If the user requests to revise the selected text, include a separate block where the revised text is wrapped inside `<PaperDebugger>` tags, like `<PaperDebugger>...revised text...</PaperDebugger>`.
+The content inside `<PaperDebugger>` MUST be only the revised text (no explanations, no markdown formatting, no surrounding backticks); any explanations should be placed outside of the `<PaperDebugger>` block.
+Otherwise, just answer the question normally.
+
 # Instruction
 {{- end }}
 {{ .UserInput }}

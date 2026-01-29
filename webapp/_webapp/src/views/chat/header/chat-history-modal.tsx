@@ -8,7 +8,7 @@ import { useDeleteConversationMutation, useListConversationsQuery } from "../../
 import { logError } from "../../../libs/logger";
 import { Modal } from "../../../components/modal";
 import googleAnalytics from "../../../libs/google-analytics";
-import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
+import { useStreamingStateMachine } from "../../../stores/streaming";
 import { getProjectId } from "../../../libs/helpers";
 import { useConversationStore } from "../../../stores/conversation/conversation-store";
 import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
@@ -110,8 +110,7 @@ export const ChatHistoryModal = () => {
         throw new Error(`Failed to load conversation ${conversationId}`);
       }
       setCurrentConversation(response.conversation);
-      useStreamingMessageStore.getState().resetStreamingMessage();
-      useStreamingMessageStore.getState().resetIncompleteIndicator();
+      useStreamingStateMachine.getState().reset();
       setShowChatHistory(false);
       promptInputRef.current?.focus();
     } catch (e) {

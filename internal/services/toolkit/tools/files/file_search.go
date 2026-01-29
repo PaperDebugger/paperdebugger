@@ -104,7 +104,7 @@ func (t *SearchFileTool) Call(ctx context.Context, toolCallId string, args json.
 				if !recursive && dir != searchPath {
 					continue
 				}
-				if recursive && !strings.HasPrefix(docPath, searchPath) {
+				if recursive && !strings.HasPrefix(docPath, searchPath+"/") {
 					continue
 				}
 			}

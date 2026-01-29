@@ -40,8 +40,5 @@ func LocateSectionTool(ctx context.Context, toolCallId string, args json.RawMess
 	}
 
 	// TODO: Implement actual section location logic
-	return fmt.Sprintf(`[DUMMY] Located section '%s':
-File: main.tex
-Start Line: 42
-End Line: 87`, getArgs.Title), "", nil
+	return "", "", fmt.Errorf("locate_section tool is not yet implemented: cannot locate section '%s'", getArgs.Title)
 }

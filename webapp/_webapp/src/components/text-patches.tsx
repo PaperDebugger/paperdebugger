@@ -77,6 +77,8 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
     processedChildren = processedChildren.map((child) => {
       return typeof child === "string" ? child.replace(/§NEWLINE§/g, "\n").trim() : child;
     });
+  } else if (typeof processedChildren === "string") {
+    processedChildren = processedChildren.replace(/§NEWLINE§/g, "\n").trim();
   }
 
   useEffect(() => {

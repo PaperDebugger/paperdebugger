@@ -35,7 +35,7 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 	}
 	openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, response)
 	*inappChatHistory = append(*inappChatHistory, chatv1.Message{
-		MessageId: "openai_" + item.ID,
+		MessageId: item.ID,
 		Payload: &chatv1.MessagePayload{
 			MessageType: &chatv1.MessagePayload_Assistant{
 				Assistant: &chatv1.MessageTypeAssistant{
