@@ -16,7 +16,7 @@ const renderSeverityLevels = (threshold: string) => {
           <code
             className={cn(
               "text-xs px-1.5 py-0.5 rounded",
-              index < thresholdIndex ? "line-through text-gray-400 bg-gray-100" : "text-gray-700 bg-gray-100"
+              index < thresholdIndex ? "line-through text-gray-400 dark:text-default-500 bg-gray-100 dark:bg-default-200" : "text-gray-700 dark:text-default-200 bg-gray-100 dark:bg-default-200"
             )}
           >
             {level}
@@ -33,7 +33,7 @@ const renderSections = (sections: Array<string>) => {
     <span>
       {sections.map((section, index) => (
         <span key={section}>
-          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 bg-gray-100">
+          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 dark:text-default-200 bg-gray-100 dark:bg-default-200">
             {section}
           </code>
           {index < sections.length - 1 && ", "}

@@ -17,10 +17,10 @@ export const SettingItemSelect = ({
   options,
   onSelectChange,
 }: SettingItemSelectProps) => (
-  <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-2 items-center">
+  <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-1 items-center">
     <div className="flex flex-col gap-0 w-full pl-3 pt-1 pb-1">
       <p className="text-xs">{label}</p>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-xs text-gray-500 dark:text-default-500">{description}</p>
     </div>
     <Select
       size="sm"

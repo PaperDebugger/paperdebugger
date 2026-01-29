@@ -20,7 +20,7 @@ export const CommentItem = ({ comment, isSelected, onToggle }: CommentItemProps)
 
   return (
     <div
-      className={cn("border-t border-b !p-3 !transition-colors", isSelected ? "!bg-primary-50/50" : "!bg-white")}
+      className={cn("border-t border-b !p-3 !transition-colors", isSelected ? "!bg-primary-50/50 dark:!bg-primary-500/20" : "!bg-white dark:!bg-default-100")}
       id={comment.commentId}
     >
       <div className="!flex !items-center !justify-between !mb-2">
@@ -55,7 +55,7 @@ export const CommentItem = ({ comment, isSelected, onToggle }: CommentItemProps)
       {comment.quoteText && (
         <div className="!mb-2">
           <div className="!text-xs font-bold !text-gray-900 !mb-1">Section: {comment.section}</div>
-          <div className="!bg-gray-100 !border-l-4 !border-primary-500 !pl-3 !py-2 !text-sm !text-gray-800 !italic">
+          <div className="!bg-gray-100 dark:!bg-default-200 !border-l-4 !border-primary-500 !pl-3 !py-2 !text-sm !text-gray-800 dark:!text-default-200 !italic">
             "{isExpanded ? comment.quoteText : truncatedQuoteText}"
             {comment.quoteText.length > 100 && (
               <button

@@ -148,7 +148,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
 
       {/* Progress Bar */}
       {estimatedSeconds > 0 && !isTimeout && !errorMessage && (
-        <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-1 bg-gray-200 dark:bg-default-300 rounded-full overflow-hidden">
           <div
             className="h-full transition-all duration-300 ease-out"
             style={{

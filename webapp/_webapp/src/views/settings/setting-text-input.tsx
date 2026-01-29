@@ -110,7 +110,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     );
 
     const inputClassName = cn(
-      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200 rounded-md w-full",
+      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200 dark:border-default-200 rounded-md w-full",
       className,
     );
 
@@ -122,7 +122,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     };
 
     const textDisplayClassName = cn(
-      "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 rounded-md content-center",
+      "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 dark:bg-default-200 rounded-md content-center",
       !value && "text-default-400 italic",
     );
 

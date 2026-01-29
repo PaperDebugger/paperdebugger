@@ -103,7 +103,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
 
                     if (isFilePath) {
                       formattedValue = (
-                        <code className="px-1 py-0.5 bg-gray-100 rounded text-gray-700 font-mono text-xs">{value}</code>
+                        <code className="px-1 py-0.5 bg-gray-100 dark:bg-default-200 rounded text-gray-700 dark:text-default-200 font-mono text-xs">{value}</code>
                       );
                     } else {
                       formattedValue = `"${value}"`;

@@ -15,7 +15,7 @@ export const Login = () => {
   const [showEndpointSettings, setShowEndpointSettings] = useState(false);
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50 noselect py-12">
+    <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50 dark:bg-default-50 noselect py-12">
       {!showEndpointSettings && (
         <>
           <Logo className="mb-4" />

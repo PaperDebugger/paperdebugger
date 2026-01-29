@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from "../../stores/auth-store";
 import { useSelectionStore } from "../../stores/selection-store";
 import { useSettingStore } from "../../stores/setting-store";
+import { useThemeSync } from "../../hooks/useThemeSync";
 
 import "../../index.css";
 
@@ -76,6 +77,8 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
   const { initFromStorage: initAuthFromStorage, login } = useAuthStore();
   const { initLocalSettings } = useSettingStore();
   const [isInitialized, setIsInitialized] = useState(false);
+
+  useThemeSync();
 
   // Initialize stores from storage on mount
   // This must happen before the main UI renders to restore login state and settings

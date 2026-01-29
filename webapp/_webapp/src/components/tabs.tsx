@@ -173,7 +173,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
           isVertical
           variant="light"
           classNames={{
-            tabList: "bg-gray-100",
+            tabList: "bg-gray-100 dark:bg-default-100",
             tab: cn("justify-start", minimalistMode ? "text-xs" : ""),
           }}
           selectedKey={activeTab}

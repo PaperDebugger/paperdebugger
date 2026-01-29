@@ -115,8 +115,12 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
         <div className="overflow-hidden">
           <div className={cn(
             "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
-            isCollapsed ? "opacity-0" : "opacity-100 !border-gray-200"
-          )}>
+            isCollapsed ? "opacity-0" : "opacity-100"
+          )}
+          style={{
+            borderColor: "var(--pd-border-color) !important",
+          }}
+          >
             {/* Scrollable content with max height - hide scrollbar */}
             <div
               ref={scrollContainerRef}

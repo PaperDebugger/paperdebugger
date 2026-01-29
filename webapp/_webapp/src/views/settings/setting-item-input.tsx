@@ -19,12 +19,12 @@ export const SettingItemInput = ({
   showResetButton,
   onReset,
 }: SettingItemInputProps) => (
-  <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-2 items-center">
+  <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-1 items-center">
     <div className="flex flex-col gap-0 w-full pl-3 pt-1 pb-1">
       <p className="text-xs">{label}</p>
       <div className="flex flex-row gap-2">
         <input
-          className={cn(className, "w-full text-xs bg-transparent p-2 rnd-cancel border border-gray-200 rounded-md")}
+          className={cn(className, "w-full text-xs bg-transparent p-2 rnd-cancel border border-gray-200 dark:border-default-200 rounded-md")}
           aria-label={label}
           value={value}
           onChange={(e) => {
@@ -37,8 +37,8 @@ export const SettingItemInput = ({
           </Button>
         )}
       </div>
-      <p className="text-xs text-gray-500">Current Value: {value}</p>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-xs text-gray-500 dark:text-default-500">Current Value: {value}</p>
+      <p className="text-xs text-gray-500 dark:text-default-500">{description}</p>
     </div>
   </div>
 );
