@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, cn } from "@heroui/react";
 import { useSettingStore } from "../../stores/setting-store";
 import { Settings } from "../../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../../query/types";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { listSupportedModels } from "../../query/api";
+import { queryKeys } from "../../query/keys";
 
 type SettingKey = keyof PlainMessage<Settings>;
 
@@ -28,6 +30,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     multiline = true,
     password = false,
   }: SettingsTextInputProps) {
+    const queryClient = useQueryClient();
     const { settings, isUpdating, updateSettings } = useSettingStore();
     const { setCurrentConversation } = useConversationStore();
     const [value, setValue] = useState<string>("");
@@ -55,9 +58,10 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
       setOriginalValue(value.trim());
       setIsEditing(false);
 
-      // If openaiApiKey was updated, fetch new model list and update current model slug
+      // If openaiApiKey was updated, fetch new model list, update React Query cache (so chat UI shows correct disabled state e.g. grey out BYOK-only models when key is removed), and update current model slug
       if (settingKey === "openaiApiKey") {
         const response = await listSupportedModels({});
+        queryClient.setQueryData(queryKeys.chats.listSupportedModels().queryKey, response);
         if (response.models?.length) {
           const { currentConversation: latest } = useConversationStore.getState();
           // try to find a model that matches the current slug
@@ -78,7 +82,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           }
         }
       }
-    }, [value, settingKey, updateSettings]); // settingKey is an outer scope value, not a dependency
+    }, [value, updateSettings, queryClient, setCurrentConversation]); // settingKey is an outer scope value, not a dependency
 
     const handleEdit = useCallback(() => {
       setIsEditing(true);
