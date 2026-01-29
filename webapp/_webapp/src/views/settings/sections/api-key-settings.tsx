@@ -7,45 +7,45 @@ import { useSettingStore } from "../../../stores/setting-store";
 export const ApiKeySettings = () => {
   const { updateSettings, settings } = useSettingStore();
 
-  const [isShowApiKeyModal, setIsShowApiKeyModal] = useState<boolean>(false);
+  const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
-  const handleAddModel = () => {
+  const handleCustomModelChange = (newModel: CustomModel) => {
+    const existingCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
     updateSettings({
       customModels: [
-        ...Array.from(settings?.customModels || []),
+        ...existingCustomModels,
         {
-          id: "",
-          name: "Test1",
-          baseUrl: "https://example.com",
-          slug: "openai/gpt-5.2",
-          apiKey: "sk-123456789-abcdefgh",
-          contextWindow: 128000,
-          inputPrice: 2.0,
-          outputPrice: 2.0,
+          id: newModel.id,
+          name: newModel.name,
+          baseUrl: newModel.baseUrl,
+          slug: newModel.slug,
+          apiKey: newModel.apiKey,
+          contextWindow: newModel.contextWindow,
+          inputPrice: newModel.inputPrice,
+          outputPrice: newModel.outputPrice,
         },
       ],
     });
-    console.log("Test");
   };
 
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>Bring Your Own Key (BYOK)</SettingsSectionTitle>
-      <Button size="sm" variant="bordered" onPress={() => setIsShowApiKeyModal((i) => !i)} className="shrink-0">
+      <Button size="sm" variant="bordered" onPress={() => setIsShowModal((i) => !i)} className="shrink-0">
         Edit
       </Button>
       <Modal
-        isOpen={isShowApiKeyModal}
-        onOpenChange={(isOpen) => setIsShowApiKeyModal(isOpen)}
+        isOpen={isShowModal}
+        onOpenChange={(isOpen) => setIsShowModal(isOpen)}
         content={
-          <div className="flex flex-col h-[80vh] p-2 overflow-y-hidden">
-            <Button className="flex-shrink-0" size="md" variant="bordered" onPress={handleAddModel}>
-              Add custom model
-            </Button>
-
-            <div className="flex flex-col max-h-[80vh] overflow-y-auto">
-              {Array.from(settings?.customModels || []).map((m) => (
+          <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
+            <CustomModelSection key={"newModel"} isNew onChange={handleCustomModelChange} />
+            {Array.from(settings?.customModels || [])
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((m) => (
                 <CustomModelSection
+                  isNew={false}
+                  onChange={handleCustomModelChange}
                   key={m.id}
                   model={{
                     id: m.id,
@@ -59,7 +59,6 @@ export const ApiKeySettings = () => {
                   }}
                 />
               ))}
-            </div>
           </div>
         }
       />
@@ -67,42 +66,95 @@ export const ApiKeySettings = () => {
   );
 };
 
-type CustomModelSectionProps = {
-  model: {
-    id: string;
-    name: string;
-    baseUrl: string;
-    slug: string;
-    apiKey: string;
-    contextWindow: number;
-    inputPrice: number;
-    outputPrice: number;
-  };
+type CustomModel = {
+  id: string;
+  name: string;
+  baseUrl: string;
+  slug: string;
+  apiKey: string;
+  contextWindow: number;
+  inputPrice: number;
+  outputPrice: number;
 };
 
-const CustomModelSection = ({ model }: CustomModelSectionProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [modelName, setModelName] = useState(model.name);
-  const [baseUrl, setBaseUrl] = useState(model.baseUrl);
-  const [slug, setSlug] = useState(model.slug);
-  const [apiKey, setApiKey] = useState(model.apiKey);
-  const [contextWindow, setContextWindow] = useState<number>(model.contextWindow);
-  const [inputPrice, setInputPrice] = useState<number>(model.inputPrice);
-  const [outputPrice, setOutputPrice] = useState<number>(model.outputPrice);
+type NewCustomModelSectionProps = {
+  isNew: true;
+  onChange: (model: CustomModel) => void;
+  model?: never;
+};
+
+type ExistingCustomModelSectionProps = {
+  isNew: false;
+  onChange: (model: CustomModel) => void;
+  model: CustomModel;
+};
+
+type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelSectionProps;
+
+const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps) => {
+  const [isEditing, setIsEditing] = useState(isNew);
+  const [modelName, setModelName] = useState(isNew ? "New Model" : model.name);
+  const [baseUrl, setBaseUrl] = useState(model?.baseUrl || "");
+  const [slug, setSlug] = useState(model?.slug || "");
+  const [apiKey, setApiKey] = useState(model?.apiKey || "");
+  const [contextWindow, setContextWindow] = useState<number>(model?.contextWindow || 0);
+  const [inputPrice, setInputPrice] = useState<number>(model?.inputPrice || 0);
+  const [outputPrice, setOutputPrice] = useState<number>(model?.outputPrice || 0);
 
   const baseInputClassName = "hover:cursor-pointer bg-transparent p-1 focus:outline-none";
   const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-bold`;
   const labelClassName = `${baseInputClassName} text-xs text-default-900 w-auto`;
   const detailInputClassName = `${baseInputClassName} text-xs text-default-400 font-normal flex-1`;
 
+  const handleOnChange = () => {
+    // TODO: Input validation
+    // TODO: Add loader
+
+    onChange({
+      id: isNew ? "" : model.id,
+      name: modelName,
+      baseUrl: baseUrl,
+      slug: slug,
+      apiKey: apiKey,
+      contextWindow: contextWindow,
+      inputPrice: inputPrice,
+      outputPrice: outputPrice,
+    });
+
+    if (isNew) {
+      setModelName("New Model");
+      setBaseUrl("");
+      setSlug("");
+      setApiKey("");
+      setContextWindow(0);
+      setInputPrice(0);
+      setOutputPrice(0);
+    }
+  };
+
   return (
-    <div className="flex flex-col w-full mt-5">
-      <Button size="sm" onPress={() => setIsEditing(true)}>
-        Edit (TODO)
-      </Button>
-      <Button size="sm" onPress={() => setIsEditing(false)}>
-        Save (TODO)
-      </Button>
+    <div className="flex flex-col w-full">
+      {isNew ? (
+        <Button size="sm" onPress={handleOnChange}>
+          Add (TODO)
+        </Button>
+      ) : (
+        <>
+          <Button size="sm" onPress={() => setIsEditing(true)}>
+            Edit (TODO)
+          </Button>
+          <Button
+            size="sm"
+            onPress={() => {
+              setIsEditing(false);
+              handleOnChange();
+            }}
+          >
+            Save (TODO)
+          </Button>
+        </>
+      )}
+
       <input
         className={nameInputClassName}
         value={modelName}
