@@ -120,9 +120,10 @@ message CustomModel {
   string base_url = 3;
   string slug = 4;
   string api_key = 5;
-  int64 context_window = 6;
-  int64 input_price = 7;
-  int64 output_price = 8;
+  int32 context_window = 6;
+  int32 max_output = 7;
+  int32 input_price = 8;
+  int32 output_price = 9;
 }
 
 message Settings {

@@ -10,6 +10,7 @@ export const ApiKeySettings = () => {
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
   const handleCustomModelChange = (newModel: CustomModel) => {
+    console.log("hi");
     const existingCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
     updateSettings({
       customModels: [
@@ -21,6 +22,7 @@ export const ApiKeySettings = () => {
           slug: newModel.slug,
           apiKey: newModel.apiKey,
           contextWindow: newModel.contextWindow,
+          maxOutput: newModel.maxOutput,
           inputPrice: newModel.inputPrice,
           outputPrice: newModel.outputPrice,
         },
@@ -54,6 +56,7 @@ export const ApiKeySettings = () => {
                     slug: m.slug,
                     apiKey: m.apiKey,
                     contextWindow: m.contextWindow,
+                    maxOutput: m.maxOutput,
                     inputPrice: m.inputPrice,
                     outputPrice: m.outputPrice,
                   }}
@@ -73,6 +76,7 @@ type CustomModel = {
   slug: string;
   apiKey: string;
   contextWindow: number;
+  maxOutput: number;
   inputPrice: number;
   outputPrice: number;
 };
@@ -98,6 +102,7 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
   const [slug, setSlug] = useState(model?.slug || "");
   const [apiKey, setApiKey] = useState(model?.apiKey || "");
   const [contextWindow, setContextWindow] = useState<number>(model?.contextWindow || 0);
+  const [maxOutput, setMaxOutput] = useState<number>(model?.maxOutput || 0);
   const [inputPrice, setInputPrice] = useState<number>(model?.inputPrice || 0);
   const [outputPrice, setOutputPrice] = useState<number>(model?.outputPrice || 0);
 
@@ -117,6 +122,7 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
       slug: slug,
       apiKey: apiKey,
       contextWindow: contextWindow,
+      maxOutput: maxOutput,
       inputPrice: inputPrice,
       outputPrice: outputPrice,
     });
@@ -127,6 +133,7 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
       setSlug("");
       setApiKey("");
       setContextWindow(0);
+      setMaxOutput(0);
       setInputPrice(0);
       setOutputPrice(0);
     }
@@ -199,10 +206,21 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
         <label className={labelClassName}>Context Window</label>
         <input
           className={detailInputClassName}
-          value={contextWindow}
-          type="number"
+          value={String(contextWindow)}
+          type="text"
           disabled={!isEditing}
           onChange={(e) => setContextWindow(e.target.valueAsNumber)}
+        />
+      </div>
+
+      <div className="flex flex-row">
+        <label className={labelClassName}>Max Output</label>
+        <input
+          className={detailInputClassName}
+          value={String(maxOutput)}
+          type="text"
+          disabled={!isEditing}
+          onChange={(e) => setMaxOutput(e.target.valueAsNumber)}
         />
       </div>
 
@@ -210,8 +228,8 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
         <label className={labelClassName}>Input Price</label>
         <input
           className={detailInputClassName}
-          value={inputPrice}
-          type="number"
+          value={String(inputPrice)}
+          type="text"
           disabled={!isEditing}
           onChange={(e) => setInputPrice(e.target.valueAsNumber)}
         />
@@ -221,8 +239,8 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
         <label className={labelClassName}>Output Price</label>
         <input
           className={detailInputClassName}
-          value={outputPrice}
-          type="number"
+          value={String(outputPrice)}
+          type="text"
           disabled={!isEditing}
           onChange={(e) => setOutputPrice(e.target.valueAsNumber)}
         />

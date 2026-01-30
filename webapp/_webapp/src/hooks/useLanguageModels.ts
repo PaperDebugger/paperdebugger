@@ -12,6 +12,7 @@ export type Model = {
   maxOutput: number;
   inputPrice: number;
   outputPrice: number;
+  customModelId: string;
 };
 
 // Extract provider from model slug (e.g., "openai/gpt-4.1" -> "openai")
@@ -30,6 +31,7 @@ const fallbackModels: Model[] = [
     maxOutput: 32800,
     inputPrice: 200,
     outputPrice: 800,
+    customModelId: "",
   },
 ];
 
@@ -41,6 +43,7 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
   maxOutput: Number(supportedModel.maxOutput),
   inputPrice: Number(supportedModel.inputPrice),
   outputPrice: Number(supportedModel.outputPrice),
+  customModelId: supportedModel.customModelId,
 });
 
 export const useLanguageModels = () => {

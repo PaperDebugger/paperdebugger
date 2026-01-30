@@ -8,9 +8,10 @@ type CustomModel struct {
 	BaseUrl       string        `bson:"base_url"`
 	Slug          string        `bson:"slug"`
 	APIKey        string        `bson:"api_key"`
-	ContextWindow int64         `bson:"context_window"`
-	InputPrice    int64         `bson:"input_price"`
-	OutputPrice   int64         `bson:"output_price"`
+	ContextWindow int32         `bson:"context_window"`
+	MaxOutput     int32         `bson:"max_output"`
+	InputPrice    int32         `bson:"input_price"`
+	OutputPrice   int32         `bson:"output_price"`
 }
 
 type Settings struct {

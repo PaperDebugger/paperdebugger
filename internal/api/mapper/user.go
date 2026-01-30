@@ -24,6 +24,7 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 			Slug:          m.Slug,
 			APIKey:        m.ApiKey,
 			ContextWindow: m.ContextWindow,
+			MaxOutput:     m.MaxOutput,
 			InputPrice:    m.InputPrice,
 			OutputPrice:   m.OutputPrice,
 		}

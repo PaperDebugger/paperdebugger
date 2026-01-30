@@ -1024,6 +1024,7 @@ type SupportedModel struct {
 	MaxOutput     int64                  `protobuf:"varint,4,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
 	InputPrice    int64                  `protobuf:"varint,5,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`    // in cents per 1M tokens
 	OutputPrice   int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"` // in cents per 1M tokens
+	CustomModelId string                 `protobuf:"bytes,7,opt,name=custom_model_id,json=customModelId,proto3" json:"custom_model_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1098,6 +1099,13 @@ func (x *SupportedModel) GetOutputPrice() int64 {
 		return x.OutputPrice
 	}
 	return 0
+}
+
+func (x *SupportedModel) GetCustomModelId() string {
+	if x != nil {
+		return x.CustomModelId
+	}
+	return ""
 }
 
 type ListSupportedModelsRequest struct {
@@ -1867,7 +1875,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"\xc0\x01\n" +
+	"\x1aDeleteConversationResponse\"\xe8\x01\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
@@ -1876,7 +1884,8 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"max_output\x18\x04 \x01(\x03R\tmaxOutput\x12\x1f\n" +
 	"\vinput_price\x18\x05 \x01(\x03R\n" +
 	"inputPrice\x12!\n" +
-	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\"\x1c\n" +
+	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\x12&\n" +
+	"\x0fcustom_model_id\x18\a \x01(\tR\rcustomModelId\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
 	"\x06models\x18\x01 \x03(\v2\x17.chat.v2.SupportedModelR\x06models\"^\n" +
