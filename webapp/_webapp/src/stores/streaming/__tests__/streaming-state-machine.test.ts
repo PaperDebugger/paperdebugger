@@ -5,19 +5,11 @@
  */
 
 import { describe, it, expect } from "bun:test";
-import {
-  getMessageTypeHandler,
-  isValidMessageRole,
-  messageTypeHandlers,
-} from "../message-type-handlers";
+import { getMessageTypeHandler, isValidMessageRole, messageTypeHandlers } from "../message-type-handlers";
 import { InternalMessage, MessageRole } from "../types";
 
 // Mock protobuf types
-const createMockStreamPartBegin = (
-  messageId: string,
-  role: MessageRole,
-  value: Record<string, unknown>
-) => ({
+const createMockStreamPartBegin = (messageId: string, role: MessageRole, value: Record<string, unknown>) => ({
   messageId,
   payload: {
     messageType: {
@@ -27,11 +19,7 @@ const createMockStreamPartBegin = (
   },
 });
 
-const createMockStreamPartEnd = (
-  messageId: string,
-  role: MessageRole,
-  value: Record<string, unknown>
-) => ({
+const createMockStreamPartEnd = (messageId: string, role: MessageRole, value: Record<string, unknown>) => ({
   messageId,
   payload: {
     messageType: {
@@ -69,14 +57,7 @@ describe("Message Type Handlers", () => {
 
   describe("getMessageTypeHandler", () => {
     it("should return correct handler for each role", () => {
-      const roles: MessageRole[] = [
-        "assistant",
-        "toolCallPrepareArguments",
-        "toolCall",
-        "user",
-        "system",
-        "unknown",
-      ];
+      const roles: MessageRole[] = ["assistant", "toolCallPrepareArguments", "toolCall", "user", "system", "unknown"];
 
       for (const role of roles) {
         const handler = getMessageTypeHandler(role);
@@ -165,14 +146,10 @@ describe("Message Type Handlers", () => {
 
     describe("onPartBegin", () => {
       it("should create toolCallPrepare message from StreamPartBegin", () => {
-        const partBegin = createMockStreamPartBegin(
-          "tool-prep-1",
-          "toolCallPrepareArguments",
-          {
-            name: "search",
-            args: '{"query":',
-          }
-        );
+        const partBegin = createMockStreamPartBegin("tool-prep-1", "toolCallPrepareArguments", {
+          name: "search",
+          args: '{"query":',
+        });
 
         const result = handler.onPartBegin(partBegin as any);
 
@@ -196,14 +173,10 @@ describe("Message Type Handlers", () => {
           data: { name: "search", args: "" },
         };
 
-        const partEnd = createMockStreamPartEnd(
-          "tool-prep-1",
-          "toolCallPrepareArguments",
-          {
-            name: "search",
-            args: '{"query": "test"}',
-          }
-        );
+        const partEnd = createMockStreamPartEnd("tool-prep-1", "toolCallPrepareArguments", {
+          name: "search",
+          args: '{"query": "test"}',
+        });
 
         const result = handler.onPartEnd(partEnd as any, existingMessage);
 
@@ -222,14 +195,10 @@ describe("Message Type Handlers", () => {
           data: { content: "Hello" },
         };
 
-        const partEnd = createMockStreamPartEnd(
-          "msg-1",
-          "toolCallPrepareArguments",
-          {
-            name: "search",
-            args: "{}",
-          }
-        );
+        const partEnd = createMockStreamPartEnd("msg-1", "toolCallPrepareArguments", {
+          name: "search",
+          args: "{}",
+        });
 
         const result = handler.onPartEnd(partEnd as any, existingMessage);
         expect(result).toBeNull();
@@ -367,14 +336,7 @@ describe("Message Type Handlers", () => {
 
   describe("Handler Registry", () => {
     it("should have handlers for all valid roles", () => {
-      const roles: MessageRole[] = [
-        "assistant",
-        "toolCallPrepareArguments",
-        "toolCall",
-        "user",
-        "system",
-        "unknown",
-      ];
+      const roles: MessageRole[] = ["assistant", "toolCallPrepareArguments", "toolCall", "user", "system", "unknown"];
 
       for (const role of roles) {
         expect(messageTypeHandlers[role]).toBeDefined();

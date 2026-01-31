@@ -583,8 +583,6 @@ describe("Message Converters", () => {
         expect(result.data.description).toBe("Something went wrong");
       }
     });
-
-
   });
 
   describe("Round-trip conversion", () => {

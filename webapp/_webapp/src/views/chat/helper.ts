@@ -1,8 +1,4 @@
-import {
-  Conversation,
-  Message,
-  MessageTypeUser,
-} from "../../pkg/gen/apiclient/chat/v2/chat_pb";
+import { Conversation, Message, MessageTypeUser } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useMessageStore } from "../../stores/message-store";
 import { DisplayMessage } from "../../stores/types";
 import { fromApiMessage } from "../../utils/message-converters";
@@ -69,10 +65,7 @@ export function messageToInternalMessage(message: Message): InternalMessage | nu
 /**
  * Get the previous user message's selected text from a DisplayMessage array.
  */
-export function getPrevUserSelectedText(
-  messages: DisplayMessage[],
-  currentIndex: number
-): string | undefined {
+export function getPrevUserSelectedText(messages: DisplayMessage[], currentIndex: number): string | undefined {
   let selectedText = undefined;
   for (let i = currentIndex - 1; i >= 0; i--) {
     if (messages[i].type === "user") {
@@ -88,13 +81,10 @@ export function getPrevUserSelectedText(
 /**
  * Check if a DisplayMessage is the last user message in the array.
  */
-export function isLastUserMessage(
-  messages: DisplayMessage[],
-  index: number
-): boolean {
+export function isLastUserMessage(messages: DisplayMessage[], index: number): boolean {
   const msg = messages[index];
   if (msg.type !== "user") return false;
-  
+
   // Check if there are any user messages after this one
   for (let i = index + 1; i < messages.length; i++) {
     if (messages[i].type === "user") {
@@ -115,4 +105,3 @@ export function findLastUserMessageIndex(messages: DisplayMessage[]): number {
   }
   return -1;
 }
-

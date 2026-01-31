@@ -31,11 +31,9 @@ export async function registerContentScripts(origins?: string[]) {
         runAt: "document_start",
       },
     ]);
-
     // eslint-disable-next-line no-console
     console.log("[PaperDebugger] Registration complete", resolvedOrigins);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error("[PaperDebugger] Failed to register content scripts", error);
   }
 }

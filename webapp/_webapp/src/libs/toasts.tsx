@@ -25,5 +25,5 @@ export function errorToast(description: string, title: string = "Error") {
     color: "danger",
     timeout: 10000,
   });
-  console.error(title, description); // eslint-disable-line no-console
+  console.error(title, description);
 }

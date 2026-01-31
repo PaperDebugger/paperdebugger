@@ -4,12 +4,10 @@ export function logInfo(...data: unknown[]) {
 }
 
 export function logWarn(...data: unknown[]) {
-  // eslint-disable-next-line no-console
   console.warn("[PaperDebugger]", ...data);
 }
 
 export function logError(...data: unknown[]) {
-  // eslint-disable-next-line no-console
   console.error("[PaperDebugger]", ...data);
 }
 

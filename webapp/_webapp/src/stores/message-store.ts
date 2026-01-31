@@ -22,11 +22,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { Message, Conversation } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { InternalMessage } from "./streaming/types";
 import { DisplayMessage } from "./types";
-import {
-  messageToDisplayMessage,
-  internalMessageToDisplayMessage,
-  filterDisplayMessages,
-} from "./converters";
+import { messageToDisplayMessage, internalMessageToDisplayMessage, filterDisplayMessages } from "./converters";
 import { useConversationStore } from "./conversation/conversation-store";
 import { useStreamingStateMachine } from "./streaming";
 
@@ -78,9 +74,7 @@ interface MessageStoreSelectors {
   hasStaleMessages: () => boolean;
 }
 
-export type MessageStore = MessageStoreState &
-  MessageStoreActions &
-  MessageStoreSelectors;
+export type MessageStore = MessageStoreState & MessageStoreActions & MessageStoreSelectors;
 
 // ============================================================================
 // Initial State
@@ -102,12 +96,10 @@ const initialState: MessageStoreState = {
 
 function computeDisplayMessages(
   messages: Message[],
-  streamingEntries: InternalMessage[]
+  streamingEntries: InternalMessage[],
 ): { all: DisplayMessage[]; visible: DisplayMessage[] } {
   // Convert finalized messages
-  const finalizedDisplayMessages = messages
-    .map(messageToDisplayMessage)
-    .filter((m): m is DisplayMessage => m !== null);
+  const finalizedDisplayMessages = messages.map(messageToDisplayMessage).filter((m): m is DisplayMessage => m !== null);
 
   // Convert streaming entries
   const streamingDisplayMessages = streamingEntries
@@ -179,7 +171,7 @@ export const useMessageStore = create<MessageStore>()(
         (conversation) => {
           get().setConversation(conversation);
         },
-        { fireImmediately: true }
+        { fireImmediately: true },
       );
 
       // Subscribe to streaming-state-machine for streaming entries
@@ -188,7 +180,7 @@ export const useMessageStore = create<MessageStore>()(
         (streamingMessage) => {
           get().setStreamingEntries(streamingMessage.parts);
         },
-        { fireImmediately: true }
+        { fireImmediately: true },
       );
 
       set({ _subscriptionsInitialized: true });
@@ -246,10 +238,7 @@ export const useMessageStore = create<MessageStore>()(
       }
 
       // Waiting if last finalized is user and no streaming entries
-      if (
-        lastFinalized?.payload?.messageType.case === "user" &&
-        state.streamingEntries.length === 0
-      ) {
+      if (lastFinalized?.payload?.messageType.case === "user" && state.streamingEntries.length === 0) {
         return true;
       }
 
@@ -257,31 +246,24 @@ export const useMessageStore = create<MessageStore>()(
     },
 
     hasStaleMessages: () => {
-      return get().streamingEntries.some(
-        (entry) => entry.status === "stale"
-      );
+      return get().streamingEntries.some((entry) => entry.status === "stale");
     },
-  }))
+  })),
 );
 
 // ============================================================================
 // Convenience Selectors
 // ============================================================================
 
-export const selectAllDisplayMessages = (state: MessageStore) =>
-  state.allDisplayMessages;
+export const selectAllDisplayMessages = (state: MessageStore) => state.allDisplayMessages;
 
-export const selectVisibleDisplayMessages = (state: MessageStore) =>
-  state.visibleDisplayMessages;
+export const selectVisibleDisplayMessages = (state: MessageStore) => state.visibleDisplayMessages;
 
-export const selectHasStreamingMessages = (state: MessageStore) =>
-  state.hasStreamingMessages();
+export const selectHasStreamingMessages = (state: MessageStore) => state.hasStreamingMessages();
 
-export const selectIsWaitingForResponse = (state: MessageStore) =>
-  state.isWaitingForResponse();
+export const selectIsWaitingForResponse = (state: MessageStore) => state.isWaitingForResponse();
 
-export const selectHasStaleMessages = (state: MessageStore) =>
-  state.hasStaleMessages();
+export const selectHasStaleMessages = (state: MessageStore) => state.hasStaleMessages();
 
 export const selectConversationId = (state: MessageStore) => state.conversationId;
 

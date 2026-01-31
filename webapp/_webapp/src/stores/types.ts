@@ -36,25 +36,25 @@ export type DisplayMessageType = "user" | "assistant" | "toolCall" | "toolCallPr
 export interface DisplayMessage {
   /** Unique message identifier */
   id: string;
-  
+
   /** Message type */
   type: DisplayMessageType;
-  
+
   /** Current status */
   status: DisplayMessageStatus;
-  
+
   /** Main content (text for user/assistant, empty for tool calls) */
   content: string;
-  
+
   /** Reasoning content (for assistant messages with thinking) */
   reasoning?: string;
-  
+
   // Tool call specific fields
   toolName?: string;
   toolArgs?: string;
   toolResult?: string;
   toolError?: string;
-  
+
   // User message specific fields
   selectedText?: string;
 }

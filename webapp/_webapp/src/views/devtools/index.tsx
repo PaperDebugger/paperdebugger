@@ -136,7 +136,7 @@ export const DevTools = () => {
           ? {
               ...part,
               data: { ...part.data, content: "User Message Prepared" },
-              status: part.status === "streaming" ? "complete" as const : part.status,
+              status: part.status === "streaming" ? ("complete" as const) : part.status,
             }
           : part,
       ) as InternalMessage[];
@@ -144,19 +144,16 @@ export const DevTools = () => {
     });
   };
   const handleAddStreamingToolPrepare = () => {
-    const newMessage = createToolCallPrepareMessage(
-      randomUUID(),
-      "paper_score",
-      JSON.stringify({ paper_id: "123" }),
-      { status: "streaming" }
-    );
+    const newMessage = createToolCallPrepareMessage(randomUUID(), "paper_score", JSON.stringify({ paper_id: "123" }), {
+      status: "streaming",
+    });
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
       const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
         part.id === newMessage.id
           ? {
               ...part,
-              status: part.status === "streaming" ? "complete" as const : part.status,
+              status: part.status === "streaming" ? ("complete" as const) : part.status,
             }
           : part,
       ) as InternalMessage[];
@@ -182,20 +179,17 @@ export const DevTools = () => {
         return {
           ...part,
           status: "complete" as const,
-          data: isGreeting
-            ? { ...part.data, result: "Hello, Junyi!" }
-            : part.data,
+          data: isGreeting ? { ...part.data, result: "Hello, Junyi!" } : part.data,
         };
       }) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
   const handleAddStreamingAssistant = () => {
-    const newMessage = createAssistantMessage(
-      randomUUID(),
-      "Assistant Response Preparing " + randomText(),
-      { modelSlug: "gpt-4.1", status: "streaming" }
-    );
+    const newMessage = createAssistantMessage(randomUUID(), "Assistant Response Preparing " + randomText(), {
+      modelSlug: "gpt-4.1",
+      status: "streaming",
+    });
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
       const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) => {
@@ -300,16 +294,13 @@ export const DevTools = () => {
             <div className="text-xs text-gray-600 flex flex-wrap gap-1">
               <span>({streamingMessage.parts.length} total,</span>
               <span className="text-orange-600">
-                {streamingMessage.parts.filter((part) => part.status === "streaming").length}{" "}
-                preparing,
+                {streamingMessage.parts.filter((part) => part.status === "streaming").length} preparing,
               </span>
               <span className="text-green-600">
-                {streamingMessage.parts.filter((part) => part.status === "complete").length}{" "}
-                finalized,
+                {streamingMessage.parts.filter((part) => part.status === "complete").length} finalized,
               </span>
               <span className="text-red-600">
-                {streamingMessage.parts.filter((part) => part.status === "error").length}{" "}
-                error,
+                {streamingMessage.parts.filter((part) => part.status === "error").length} error,
               </span>
               <span className="text-gray-500">
                 {streamingMessage.parts.filter((part) => part.status === "stale").length} stale

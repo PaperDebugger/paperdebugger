@@ -39,7 +39,6 @@ import {
 } from "../pkg/gen/apiclient/project/v1/project_pb";
 import { useAuthStore } from "../stores/auth-store";
 
-
 export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {
   return useQuery({
     queryKey: queryKeys.projects.getProject(projectId).queryKey,

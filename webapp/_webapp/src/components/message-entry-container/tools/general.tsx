@@ -28,7 +28,14 @@ const shimmerStyle = {
   backgroundPositionX: "-100%",
 } as const;
 
-export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: externalIsCollapsed, onToggleCollapse, isLoading }: GeneralToolCardProps) => {
+export const GeneralToolCard = ({
+  functionName,
+  message,
+  animated,
+  isCollapsed: externalIsCollapsed,
+  onToggleCollapse,
+  isLoading,
+}: GeneralToolCardProps) => {
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -104,33 +111,43 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <h3 className={cn("tool-card-title", isLoading && "loading-shimmer")} style={isLoading ? shimmerStyle : undefined}>{pascalCase(functionName)}</h3>
+        <h3
+          className={cn("tool-card-title", isLoading && "loading-shimmer")}
+          style={isLoading ? shimmerStyle : undefined}
+        >
+          {pascalCase(functionName)}
+        </h3>
       </div>
-
 
       <div
         className="grid transition-[grid-template-rows] duration-200 ease-in-out"
         style={{ gridTemplateRows: isCollapsed ? "0fr" : "1fr" }}
       >
         <div className="overflow-hidden">
-          <div className={cn(
-            "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
-            isCollapsed ? "opacity-0" : "opacity-100"
-          )}
-          style={{
-            borderColor: "var(--pd-border-color) !important",
-          }}
+          <div
+            className={cn(
+              "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
+              isCollapsed ? "opacity-0" : "opacity-100",
+            )}
+            style={{
+              borderColor: "var(--pd-border-color) !important",
+            }}
           >
             {/* Scrollable content with max height - hide scrollbar */}
             <div
               ref={scrollContainerRef}
               className="max-h-[100px] overflow-y-auto scrollbar-hide"
               style={{
-                scrollbarWidth: 'none', // Firefox
-                msOverflowStyle: 'none', // IE and Edge
+                scrollbarWidth: "none", // Firefox
+                msOverflowStyle: "none", // IE and Edge
               }}
             >
-              <Streamdown className="text-[11px] text-gray-400" plugins={{ code, mermaid, math, cjk }} isAnimating={isLoading} linkSafety={{ enabled: false }}>
+              <Streamdown
+                className="text-[11px] text-gray-400"
+                plugins={{ code, mermaid, math, cjk }}
+                isAnimating={isLoading}
+                linkSafety={{ enabled: false }}
+              >
                 {message}
               </Streamdown>
             </div>

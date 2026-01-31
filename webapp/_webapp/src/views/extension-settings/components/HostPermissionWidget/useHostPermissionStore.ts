@@ -57,7 +57,6 @@ interface HostPermissionState {
 }
 
 const handleError = (error: unknown, defaultMessage: string): string => {
-  // eslint-disable-next-line no-console
   console.error(defaultMessage, error);
   return error instanceof Error ? error.message : defaultMessage;
 };

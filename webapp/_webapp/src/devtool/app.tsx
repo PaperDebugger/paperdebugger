@@ -25,7 +25,7 @@ const App = () => {
   const [csrfToken, setCsrfToken] = useState(storage.getItem("pd.auth.csrfToken") ?? "");
 
   const { showTool } = useDevtoolStore();
-  
+
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
@@ -114,9 +114,7 @@ const App = () => {
           </div>
         </TooltipArea>
       </div>
-      <div className="flex flex-col gap-2 flex-1 min-w-0">
-      {import.meta.env.DEV && showTool && <DevTools />}
-      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">{import.meta.env.DEV && showTool && <DevTools />}</div>
     </main>
   );
 };

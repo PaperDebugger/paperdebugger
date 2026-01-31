@@ -106,7 +106,11 @@ export const SettingsFooter = () => {
           Website
         </a>
         <div>|</div>
-        <a href="https://www.paperdebugger.com/blog/terms/" target="_blank" className="hover:text-primary-600 text-gray-500">
+        <a
+          href="https://www.paperdebugger.com/blog/terms/"
+          target="_blank"
+          className="hover:text-primary-600 text-gray-500"
+        >
           Terms of Service
         </a>
         <div>|</div>

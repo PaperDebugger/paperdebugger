@@ -32,9 +32,7 @@ export const VariableInput = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
-      <div className="flex flex-col gap-2 items-start text-xs text-gray-500 break-all max-w-full">
-        current: {value}
-      </div>
+      <div className="flex flex-col gap-2 items-start text-xs text-gray-500 break-all max-w-full">current: {value}</div>
     </div>
   );
 };

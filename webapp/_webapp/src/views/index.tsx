@@ -11,7 +11,6 @@ import { WindowController } from "./window-controller";
 import { Body } from "./body";
 import { EmbedSidebar } from "./embed-sidebar";
 
-
 export const MainDrawer = () => {
   const { displayMode, isOpen } = useConversationUiStore();
   const { floatingWidth, floatingHeight, setFloatingWidth, setFloatingHeight } = useConversationUiStore();

@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MessageCard } from "../../../components/message-card";
 import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
-import {
-  isEmptyConversation,
-  getPrevUserSelectedText,
-  findLastUserMessageIndex,
-} from "../helper";
+import { isEmptyConversation, getPrevUserSelectedText, findLastUserMessageIndex } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
 import { useMessageStore } from "../../../stores/message-store";
@@ -36,7 +32,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
 
   // Use the unified message store to get all display messages
   const allDisplayMessages = useMessageStore((s) => s.allDisplayMessages);
-  
+
   // Filter visible messages (non-empty user/assistant, all tool calls)
   const visibleMessages = useMemo(() => {
     return allDisplayMessages.filter((msg: DisplayMessage) => {
@@ -48,10 +44,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   }, [allDisplayMessages]);
 
   // Find the last user message index for scroll behavior
-  const lastUserMessageIndex = useMemo(
-    () => findLastUserMessageIndex(visibleMessages),
-    [visibleMessages]
-  );
+  const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(visibleMessages), [visibleMessages]);
 
   // Get the last user message ID to track when it changes
   const lastUserMessageId = useMemo(() => {
@@ -62,10 +55,10 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   // Scroll the last user message to the top of the viewport (container only)
   const scrollToLastUserMessage = useCallback(() => {
     if (!lastUserMsgRef.current || !chatContainerRef.current) return;
-    
+
     const container = chatContainerRef.current;
     const target = lastUserMsgRef.current;
-    
+
     container.scrollTo({
       top: target.offsetTop,
       behavior: "smooth",
@@ -75,7 +68,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   // Auto-scroll only when a new user message is added
   useEffect(() => {
     if (!lastUserMessageId) return;
-    
+
     // Use requestAnimationFrame to ensure DOM has updated
     requestAnimationFrame(() => {
       scrollToLastUserMessage();
@@ -90,10 +83,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
         const isLastUserMsg = index === lastUserMessageIndex;
 
         return (
-          <div
-            key={msg.id}
-            ref={isLastUserMsg ? lastUserMsgRef : undefined}
-          >
+          <div key={msg.id} ref={isLastUserMsg ? lastUserMsgRef : undefined}>
             <MessageCard
               animated={isStreaming}
               message={msg}
@@ -102,7 +92,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
           </div>
         );
       }),
-    [visibleMessages, lastUserMessageIndex]
+    [visibleMessages, lastUserMessageIndex],
   );
 
   if (isEmptyConversation()) {
@@ -113,14 +103,12 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
     <div className="pd-app-tab-content-body" id="pd-chat-item-container" ref={chatContainerRef}>
       {/* Spacer that pushes content down and provides scroll space for last user message */}
       <div className="flex-1 min-h-0" aria-hidden="true" />
-      
-      <div className="pd-chat-item-container-messages">
-        {messageCards}
-      </div>
+
+      <div className="pd-chat-item-container-messages">{messageCards}</div>
 
       <div id="pd-chat-item-container-status" className="relative">
         <StatusIndicator conversation={conversation} />
-        
+
         {isDebugMode && (
           <div className="text-xs text-default-300 dark:!text-default-300 noselect">
             <span>* Debug mode is enabled, </span>
@@ -150,13 +138,9 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
           </div>
         )}
       </div>
-      
+
       {/* Bottom spacer to allow scrolling the last user message to the top */}
-      <div 
-        className="flex-shrink-0" 
-        style={{ minHeight: "calc(100% - 80px)" }}
-        aria-hidden="true" 
-      />
+      <div className="flex-shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
     </div>
   );
 };

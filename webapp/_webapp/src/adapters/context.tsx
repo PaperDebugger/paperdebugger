@@ -37,4 +37,3 @@ export function useAdapter(): DocumentAdapter {
 export function useAdapterOptional(): DocumentAdapter | null {
   return useContext(AdapterContext);
 }
-

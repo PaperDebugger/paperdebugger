@@ -22,7 +22,7 @@ export const useConversationStore = create<ConversationStore>()(
     startFromScratch: () => set({ currentConversation: newConversation() }),
     isStreaming: false,
     setIsStreaming: (isStreaming: boolean) => set({ isStreaming }),
-  }))
+  })),
 );
 
 export function newConversation(): Conversation {

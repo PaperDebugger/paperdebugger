@@ -16,7 +16,6 @@ export const ShowHistory = () => {
   useConversationUiStore.getState().setShowChatHistory(true);
 };
 
-
 export const ChatHeader = () => {
   const currentConversation = useConversationStore((s) => s.currentConversation);
   const showChatHistory = useConversationUiStore((s) => s.showChatHistory);

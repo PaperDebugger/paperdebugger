@@ -20,7 +20,10 @@ export const CommentItem = ({ comment, isSelected, onToggle }: CommentItemProps)
 
   return (
     <div
-      className={cn("border-t border-b !p-3 !transition-colors", isSelected ? "!bg-primary-50/50 dark:!bg-primary-500/20" : "!bg-white dark:!bg-default-100")}
+      className={cn(
+        "border-t border-b !p-3 !transition-colors",
+        isSelected ? "!bg-primary-50/50 dark:!bg-primary-500/20" : "!bg-white dark:!bg-default-100",
+      )}
       id={comment.commentId}
     >
       <div className="!flex !items-center !justify-between !mb-2">

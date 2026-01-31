@@ -50,8 +50,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     const valueChanged = value !== originalValue;
 
     // helper normalizes model by retrieving the model (assumed to be the last segment, if '/' present)
-    const normalizeModelId = (modelSlug: string) =>
-      modelSlug.toLowerCase().trim().split("/").filter(Boolean).pop()!;
+    const normalizeModelId = (modelSlug: string) => modelSlug.toLowerCase().trim().split("/").filter(Boolean).pop()!;
 
     const saveSettings = useCallback(async () => {
       await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
@@ -68,9 +67,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           // we don't do exact match but attempt exact suffix match (case insensitive); as per convention
           // we don't assume any provided prefix (e.g. openai/, quen/) but fair to assume model name is suffix
           const currentId = normalizeModelId(latest.modelSlug);
-          const matchingModel = response.models.find(m =>
-             normalizeModelId(m.name) === currentId
-          );
+          const matchingModel = response.models.find((m) => normalizeModelId(m.name) === currentId);
           // fall back to the first model in the list
           const newSlug = matchingModel?.slug ?? response.models[0].slug;
 

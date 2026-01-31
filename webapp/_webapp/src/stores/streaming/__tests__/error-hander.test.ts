@@ -4,7 +4,7 @@
  * Tests error handling, recovery strategies, and retry logic.
  */
 
-import { describe, it, expect, beforeEach, mock, spyOn } from "bun:test";
+import { describe, it, expect, beforeEach, mock } from "bun:test";
 import {
   createStreamingError,
   getRecoveryStrategy,
@@ -120,7 +120,7 @@ describe("Error Handler", () => {
     });
 
     it("should use default code when message doesn't match known patterns", () => {
-      // When error message doesn't match any known pattern, 
+      // When error message doesn't match any known pattern,
       // detectErrorCodeFromMessage returns UNKNOWN (not the default code)
       // This is because the string "Something" doesn't contain any error keywords
       const error = createStreamingError("Something", "SERVER_ERROR");
@@ -364,10 +364,7 @@ describe("Error Handler", () => {
 
   describe("withStreamingErrorHandler", () => {
     it("should return result on success", async () => {
-      const result = await withStreamingErrorHandler(
-        async () => "success",
-        { sync: async () => ({ success: true }) }
-      );
+      const result = await withStreamingErrorHandler(async () => "success", { sync: async () => ({ success: true }) });
 
       expect(result).toBe("success");
     });
@@ -389,7 +386,7 @@ describe("Error Handler", () => {
             syncCalled = true;
             return { success: true };
           },
-        }
+        },
       );
 
       expect(syncCalled).toBe(true);
@@ -409,7 +406,7 @@ describe("Error Handler", () => {
           onGiveUp: () => {
             gaveUp = true;
           },
-        }
+        },
       );
 
       expect(result).toBeUndefined();
@@ -428,7 +425,7 @@ describe("Error Handler", () => {
           onGiveUp: () => {
             gaveUp = true;
           },
-        }
+        },
       );
 
       expect(result).toBeUndefined();

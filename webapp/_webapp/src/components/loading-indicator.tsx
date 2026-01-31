@@ -67,10 +67,14 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
     // 1x = standard duration. 2x = half duration.
     const getSpeedMultiplier = (currentPhase: Phase) => {
       switch (currentPhase) {
-        case "green": return 1;   // Takes full duration
-        case "orange": return 2;  // Takes half duration (50%)
-        case "red": return 2;     // Takes half duration (50%)
-        default: return 1;
+        case "green":
+          return 1; // Takes full duration
+        case "orange":
+          return 2; // Takes half duration (50%)
+        case "red":
+          return 2; // Takes half duration (50%)
+        default:
+          return 1;
       }
     };
 
@@ -88,7 +92,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
 
       // Calculate progress with natural fluctuation
       const speedMultiplier = getSpeedMultiplier(phase);
-      // the math 
+      // the math
       const baseIncrement = (deltaTime / (estimatedSeconds * 1000)) * 100 * speedMultiplier;
       const fluctuation = baseIncrement * (Math.random() - 0.5);
       const increment = Math.max(0, baseIncrement + fluctuation);

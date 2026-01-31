@@ -44,11 +44,7 @@ import { useSettingStore } from "../stores/setting-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
 import { getProjectId } from "../libs/helpers";
-import {
-  useStreamingStateMachine,
-  InternalMessage,
-  withStreamingErrorHandler,
-} from "../stores/streaming";
+import { useStreamingStateMachine, InternalMessage, withStreamingErrorHandler } from "../stores/streaming";
 import { createUserMessage } from "../types/message";
 import { buildStreamRequest, StreamRequestParams } from "../utils/stream-request-builder";
 import { mapResponseToStreamEvent } from "../utils/stream-event-mapper";
@@ -96,15 +92,11 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
    */
   const addUserMessageToStream = useCallback(
     (message: string, selectedText: string) => {
-      const newUserMessage: InternalMessage = createUserMessage(
-        `pending-${crypto.randomUUID()}`,
-        message,
-        {
-          selectedText,
-          surrounding: surroundingText ?? undefined,
-          status: "streaming",
-        }
-      );
+      const newUserMessage: InternalMessage = createUserMessage(`pending-${crypto.randomUUID()}`, message, {
+        selectedText,
+        surrounding: surroundingText ?? undefined,
+        status: "streaming",
+      });
 
       useStreamingStateMachine.setState((state) => ({
         streamingMessage: {
@@ -113,7 +105,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
         },
       }));
     },
-    [surroundingText]
+    [surroundingText],
   );
 
   /**
@@ -132,9 +124,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
         return;
       }
 
-      const parentIndex = currentConversation.messages.findIndex(
-        (m) => m.messageId === parentMessageId
-      );
+      const parentIndex = currentConversation.messages.findIndex((m) => m.messageId === parentMessageId);
 
       if (parentIndex !== -1) {
         // Truncate messages to include only up to parentMessage
@@ -144,7 +134,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
         }));
       }
     },
-    [currentConversation.messages]
+    [currentConversation.messages],
   );
 
   /**
@@ -154,19 +144,14 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
     message: string,
     selectedText: string,
     parentMessageId?: string,
-    options?: { isRetry?: boolean }
+    options?: { isRetry?: boolean },
   ) => Promise<void>;
 
   // Break circular hook dependencies for retry callbacks.
   const sendMessageStreamImplRef = useRef<SendMessageStreamImpl | null>(null);
 
   const sendMessageStreamImpl = useCallback<SendMessageStreamImpl>(
-    async (
-      message: string,
-      selectedText: string,
-      parentMessageId?: string,
-      options?: { isRetry?: boolean }
-    ) => {
+    async (message: string, selectedText: string, parentMessageId?: string, options?: { isRetry?: boolean }) => {
       // Validate input
       if (!message?.trim()) {
         logWarn("No message to send");
@@ -225,8 +210,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
                 // IMPORTANT: pass a retry-aware sender so the state machine's sync-and-retry
                 // recovery doesn't reset itself back to attempt 1.
                 sendMessageStream: (m, s) =>
-                  sendMessageStreamImplRef.current?.(m, s, parentMessageId, { isRetry: true }) ??
-                  Promise.resolve(),
+                  sendMessageStreamImplRef.current?.(m, s, parentMessageId, { isRetry: true }) ?? Promise.resolve(),
               });
             }
           }),
@@ -252,7 +236,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
             userId: user?.id,
             operation: "send-message",
           },
-        }
+        },
       );
     },
     // Reduced dependencies: 5 main dependencies instead of 11
@@ -269,7 +253,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       surroundingText,
       addUserMessageToStream,
       truncateConversationIfEditing,
-    ]
+    ],
   );
 
   // Keep ref updated for retry callbacks.
@@ -279,11 +263,8 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
     async (message: string, selectedText: string, parentMessageId?: string) => {
       return sendMessageStreamImpl(message, selectedText, parentMessageId, { isRetry: false });
     },
-    [sendMessageStreamImpl]
+    [sendMessageStreamImpl],
   );
 
-  return useMemo(
-    () => ({ sendMessageStream, isStreaming }),
-    [sendMessageStream, isStreaming]
-  );
+  return useMemo(() => ({ sendMessageStream, isStreaming }), [sendMessageStream, isStreaming]);
 }

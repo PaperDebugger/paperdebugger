@@ -14,13 +14,7 @@
 import { ErrorCode, Error as RequestError } from "../../pkg/gen/apiclient/shared/v1/shared_pb";
 import { logError, logWarn, logInfo } from "../../libs/logger";
 import { errorToast } from "../../libs/toasts";
-import {
-  StreamingError,
-  StreamingErrorCode,
-  RecoveryStrategy,
-  ErrorContext,
-  ErrorResolution,
-} from "./types";
+import { StreamingError, StreamingErrorCode, RecoveryStrategy, ErrorContext, ErrorResolution } from "./types";
 
 // ============================================================================
 // Error Code Mapping
@@ -59,7 +53,7 @@ function mapErrorCode(code?: ErrorCode): StreamingErrorCode {
  */
 export function createStreamingError(
   error: Error | RequestError | string | unknown,
-  defaultCode: StreamingErrorCode = "UNKNOWN"
+  defaultCode: StreamingErrorCode = "UNKNOWN",
 ): StreamingError {
   const timestamp = Date.now();
 
@@ -127,7 +121,11 @@ function detectErrorCodeFromMessage(message: string): StreamingErrorCode {
   if (lowerMessage.includes("rate limit") || lowerMessage.includes("too many requests")) {
     return "RATE_LIMITED";
   }
-  if (lowerMessage.includes("unauthorized") || lowerMessage.includes("authentication") || lowerMessage.includes("token")) {
+  if (
+    lowerMessage.includes("unauthorized") ||
+    lowerMessage.includes("authentication") ||
+    lowerMessage.includes("token")
+  ) {
     return "AUTHENTICATION_ERROR";
   }
   if (lowerMessage.includes("server error") || lowerMessage.includes("internal")) {
@@ -269,10 +267,7 @@ export class StreamingErrorHandler {
   /**
    * Handles a streaming error with appropriate recovery strategy.
    */
-  async handle(
-    error: Error | RequestError | string | unknown,
-    context: ErrorContext
-  ): Promise<ErrorResolution> {
+  async handle(error: Error | RequestError | string | unknown, context: ErrorContext): Promise<ErrorResolution> {
     const streamingError = createStreamingError(error);
     const strategy = getRecoveryStrategy(streamingError);
 
@@ -311,7 +306,7 @@ export class StreamingErrorHandler {
   private async handleRetry(
     error: StreamingError,
     context: ErrorContext,
-    strategy: Extract<RecoveryStrategy, { type: "retry" }>
+    strategy: Extract<RecoveryStrategy, { type: "retry" }>,
   ): Promise<ErrorResolution> {
     // Increment retry count at the beginning
     const currentAttempt = context.retryCount + 1;
@@ -355,11 +350,10 @@ export class StreamingErrorHandler {
   private async handleSyncAndRetry(
     error: StreamingError,
     context: ErrorContext,
-    strategy: Extract<RecoveryStrategy, { type: "sync-and-retry" }>
+    strategy: Extract<RecoveryStrategy, { type: "sync-and-retry" }>,
   ): Promise<ErrorResolution> {
     // Increment retry count at the beginning
     const currentAttempt = context.retryCount + 1;
-    console.log("handleSyncAndRetry called, currentAttempt:", currentAttempt);
     if (currentAttempt > strategy.maxRetries) {
       logWarn(`Max sync-and-retry attempts (${strategy.maxRetries}) reached`);
       this.showErrorToUser(error, "Project sync failed");
@@ -400,7 +394,7 @@ export class StreamingErrorHandler {
    */
   private handleShowError(
     error: StreamingError,
-    strategy: Extract<RecoveryStrategy, { type: "show-error" }>
+    strategy: Extract<RecoveryStrategy, { type: "show-error" }>,
   ): ErrorResolution {
     const message = strategy.message || error.message;
     this.showErrorToUser(error, message);
@@ -416,10 +410,7 @@ export class StreamingErrorHandler {
   /**
    * Handle abort - stop processing and optionally cleanup.
    */
-  private handleAbort(
-    error: StreamingError,
-    strategy: Extract<RecoveryStrategy, { type: "abort" }>
-  ): ErrorResolution {
+  private handleAbort(error: StreamingError, strategy: Extract<RecoveryStrategy, { type: "abort" }>): ErrorResolution {
     logError("Aborting due to error:", error.message);
 
     return {
@@ -444,10 +435,7 @@ export class StreamingErrorHandler {
   /**
    * Calculate delay based on retry strategy.
    */
-  private calculateDelay(
-    retryCount: number,
-    strategy: Extract<RecoveryStrategy, { type: "retry" }>
-  ): number {
+  private calculateDelay(retryCount: number, strategy: Extract<RecoveryStrategy, { type: "retry" }>): number {
     if (strategy.backoff === "exponential") {
       // Exponential backoff: delay * 2^retryCount
       return strategy.delayMs * Math.pow(2, retryCount);
@@ -510,7 +498,7 @@ export async function handleStreamingError(
     sync?: () => Promise<{ success: boolean; error?: Error }>;
     retry?: () => Promise<void>;
     context?: Partial<ErrorContext>;
-  }
+  },
 ): Promise<ErrorResolution> {
   const currentAttempt = options.context?.retryCount || 0;
   const streamingError = createStreamingError(error);
@@ -553,7 +541,7 @@ export async function withStreamingErrorHandler<T>(
     sync: () => Promise<{ success: boolean; error?: Error }>;
     onGiveUp?: () => void;
     context?: Partial<ErrorContext>;
-  }
+  },
 ): Promise<T | undefined> {
   try {
     return await operation();

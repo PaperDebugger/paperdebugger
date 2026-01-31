@@ -26,13 +26,19 @@ body {
 }
 
 /* Overleaf Compatibility Fixes (tricks) */
-img, svg {
+img,
+svg {
   display: inline-block;
   vertical-align: middle;
 }
 
 /* Block-level media elements */
-video, canvas, audio, iframe, embed, object {
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
   display: block;
 }
 
@@ -40,7 +46,6 @@ video, canvas, audio, iframe, embed, object {
   visibility: visible !important;
 }
 /* Overleaf Compatibility Fixes (tricks) */
-
 
 /* Others */
 .noselect {
@@ -647,7 +652,9 @@ video, canvas, audio, iframe, embed, object {
   width: 8px;
   cursor: col-resize;
   background-color: transparent;
-  transition: background-color 0.2s, opacity 0.2s;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
   z-index: 10000;
   pointer-events: auto;
   display: flex;
@@ -681,7 +688,9 @@ video, canvas, audio, iframe, embed, object {
   width: 8px;
   cursor: col-resize;
   background-color: transparent;
-  transition: background-color 0.2s, opacity 0.2s;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
   z-index: 1000;
   pointer-events: auto;
   display: flex;

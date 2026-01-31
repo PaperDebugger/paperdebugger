@@ -7,10 +7,12 @@ type ErrorToolCardProps = {
 };
 
 export const ErrorToolCard = ({ functionName, errorMessage, animated }: ErrorToolCardProps) => {
-   return <GeneralToolCard
-    functionName={"Error in " + functionName}
-    message={errorMessage}
-    animated={animated}
-    isLoading={animated}
-    />;
+  return (
+    <GeneralToolCard
+      functionName={"Error in " + functionName}
+      message={errorMessage}
+      animated={animated}
+      isLoading={animated}
+    />
+  );
 };

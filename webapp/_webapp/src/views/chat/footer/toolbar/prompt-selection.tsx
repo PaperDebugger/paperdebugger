@@ -42,6 +42,6 @@ export function PromptSelection({ prompts }: PromptSelectionProps) {
       </div>
     );
   }
-  
+
   return <Selection items={items} onSelect={onSelect} onClose={onClose} />;
 }

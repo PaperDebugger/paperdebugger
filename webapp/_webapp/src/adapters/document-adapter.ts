@@ -138,4 +138,3 @@ export function getOverleafAdapter(): OverleafAdapter {
   }
   return overleafAdapterInstance;
 }
-

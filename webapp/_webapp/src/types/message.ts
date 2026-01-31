@@ -32,13 +32,7 @@ export type MessageStatus = "streaming" | "complete" | "error" | "stale";
 /**
  * All possible message roles.
  */
-export type MessageRole =
-  | "user"
-  | "assistant"
-  | "toolCall"
-  | "toolCallPrepare"
-  | "system"
-  | "unknown";
+export type MessageRole = "user" | "assistant" | "toolCall" | "toolCallPrepare" | "system" | "unknown";
 
 // ============================================================================
 // Role-Specific Data
@@ -212,7 +206,7 @@ export function createUserMessage(
     selectedText?: string;
     surrounding?: string;
     status?: MessageStatus;
-  }
+  },
 ): UserMessage {
   return {
     id,
@@ -236,7 +230,7 @@ export function createAssistantMessage(
     reasoning?: string;
     modelSlug?: string;
     status?: MessageStatus;
-  }
+  },
 ): AssistantMessage {
   return {
     id,
@@ -261,7 +255,7 @@ export function createToolCallMessage(
     result?: string;
     error?: string;
     status?: MessageStatus;
-  }
+  },
 ): ToolCallMessage {
   return {
     id,
@@ -285,7 +279,7 @@ export function createToolCallPrepareMessage(
   args: string,
   options?: {
     status?: MessageStatus;
-  }
+  },
 ): ToolCallPrepareMessage {
   return {
     id,

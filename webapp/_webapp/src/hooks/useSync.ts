@@ -58,7 +58,7 @@ export function useSync() {
               cookieOverleafSession2: session,
               cookieGCLB: gclb,
             },
-            "unused"
+            "unused",
           );
           return { success: true };
         } else if (adapter.platform === "word") {
@@ -73,7 +73,7 @@ export function useSync() {
         return { success: false, error: error as Error };
       }
     },
-    [adapter, user?.id, overleafSync]
+    [adapter, user?.id, overleafSync],
   );
 
   return {
@@ -90,11 +90,11 @@ export function useSync() {
 async function syncWordDocument(
   projectId: string,
   adapter: ReturnType<typeof useAdapter>,
-  options?: SyncOptions
+  options?: SyncOptions,
 ): Promise<SyncResult> {
   logInfo(`[Word Sync] Starting sync for project: ${projectId}`);
   options?.onProgress?.(10);
-  
+
   // Get full document content
   const fullText = await adapter.getFullText();
   options?.onProgress?.(50);
@@ -133,7 +133,7 @@ async function syncWordDocument(
 async function syncGenericDocument(
   projectId: string,
   adapter: ReturnType<typeof useAdapter>,
-  options?: SyncOptions
+  options?: SyncOptions,
 ): Promise<SyncResult> {
   logInfo(`[Generic Sync] Starting sync for project: ${projectId}`);
   options?.onProgress?.(10);
@@ -166,5 +166,3 @@ async function syncGenericDocument(
     return { success: false, error: error as Error };
   }
 }
-
-

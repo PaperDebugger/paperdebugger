@@ -43,13 +43,13 @@ initializeFaro({
     // Tracing package to get end-to-end visibility for HTTP requests.
     new TracingInstrumentation(),
   ],
-  ignoreUrls:[
+  ignoreUrls: [
     /overleaf\.com/,
     /compiles\.overleafusercontent\.com/,
     /writefull\.ai/,
     /bugsnag\.com/,
     /google-analytics\.com/,
-  ]
+  ],
 });
 
 export const Main = () => {
@@ -241,7 +241,7 @@ if (!import.meta.env.DEV) {
         <AdapterProvider adapter={adapter}>
           <Main />
         </AdapterProvider>
-      </Providers>
+      </Providers>,
     );
     googleAnalytics.firePageViewEvent(
       "unknown",

@@ -9,11 +9,7 @@ import { useDevtoolStore } from "../../../stores/devtool-store";
 import { storage } from "../../../libs/storage";
 
 // Keys to preserve during reset
-const PRESERVED_KEY_PREFIXES = [
-  "pd.auth.",
-  "pd.devtool.",
-  "pd.projectId",
-];
+const PRESERVED_KEY_PREFIXES = ["pd.auth.", "pd.devtool.", "pd.projectId"];
 
 export const RealDeveloperTools = () => {
   const {
@@ -103,21 +99,21 @@ export const RealDeveloperTools = () => {
           onPress={() => {
             // Get all keys from storage
             const allKeys = storage.keys();
-            
+
             // Identify keys to preserve (auth, devtool, projectId)
             const keysToPreserve = allKeys.filter((key) =>
-              PRESERVED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
+              PRESERVED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix)),
             );
-            
+
             // Save values of keys to preserve
             const preservedValues: Record<string, string | null> = {};
             keysToPreserve.forEach((key) => {
               preservedValues[key] = storage.getItem(key);
             });
-            
+
             // Clear all storage
             storage.clear();
-            
+
             // Restore preserved values
             Object.entries(preservedValues).forEach(([key, value]) => {
               if (value !== null) {

@@ -18,14 +18,14 @@ const parseMessage = (message: string): ParsedMessage => {
   const regex = /<PaperDebugger>([\s\S]*?)<\/PaperDebugger>/g;
   const paperDebuggerContents: string[] = [];
   let regularContent = message;
-  
+
   // Extract all PaperDebugger blocks
   regularContent = message.replace(regex, (_, content) => {
     const processedContent = content.replace(/\n/g, "§NEWLINE§");
     paperDebuggerContents.push(processedContent);
     return ""; // Remove the tag from regular content
   });
-  
+
   return {
     regularContent: regularContent.trim(),
     paperDebuggerContent: paperDebuggerContents,
@@ -86,7 +86,10 @@ export const AssistantMessageContainer = ({
     }
   }, [user?.id, projectId, message, messageId]);
 
-  const showMessage = (parsedMessage.regularContent?.length ?? 0) > 0 || parsedMessage.paperDebuggerContent.length > 0 || (reasoning?.length ?? 0) > 0;
+  const showMessage =
+    (parsedMessage.regularContent?.length ?? 0) > 0 ||
+    parsedMessage.paperDebuggerContent.length > 0 ||
+    (reasoning?.length ?? 0) > 0;
   const staleComponent = stale && <div className="message-box-stale-description">This message is stale.</div>;
   const writingIndicator =
     stale || !showMessage ? null : (
@@ -103,15 +106,14 @@ export const AssistantMessageContainer = ({
     );
 
   const reasoningComponent = reasoning && (
-      <GeneralToolCard
-        functionName="reasoning"
-        message={reasoning}
-        animated={animated}
-        isCollapsed={isReasoningCollapsed}
-        onToggleCollapse={() => setIsReasoningCollapsed(!isReasoningCollapsed)}
-        isLoading={preparing}
-      />
-
+    <GeneralToolCard
+      functionName="reasoning"
+      message={reasoning}
+      animated={animated}
+      isCollapsed={isReasoningCollapsed}
+      onToggleCollapse={() => setIsReasoningCollapsed(!isReasoningCollapsed)}
+      isLoading={preparing}
+    />
   );
   return (
     showMessage && (
@@ -128,7 +130,7 @@ export const AssistantMessageContainer = ({
                 {parsedMessage.regularContent}
               </MarkdownComponent>
             )}
-            
+
             {/* PaperDebugger blocks */}
             {parsedMessage.paperDebuggerContent.map((content, index) => (
               <TextPatches key={index} attachment={prevAttachment}>
@@ -142,17 +144,17 @@ export const AssistantMessageContainer = ({
           {/* Stale message */}
           {staleComponent}
 
-          { ((parsedMessage.regularContent?.length || 0) > 0 || parsedMessage.paperDebuggerContent.length > 0) &&
-          <div className="actions rnd-cancel noselect">
-            <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
-              <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
-                <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
-              </span>
-            </Tooltip>
-          </div>}
+          {((parsedMessage.regularContent?.length || 0) > 0 || parsedMessage.paperDebuggerContent.length > 0) && (
+            <div className="actions rnd-cancel noselect">
+              <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
+                <span onClick={handleCopy} tabIndex={0} role="button" aria-label="Copy message">
+                  <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
+                </span>
+              </Tooltip>
+            </div>
+          )}
         </div>
       </div>
     )
   );
 };
-

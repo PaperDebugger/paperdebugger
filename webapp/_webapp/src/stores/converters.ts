@@ -8,10 +8,7 @@
 import { Message } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { InternalMessage } from "./streaming/types";
 import { DisplayMessage } from "./types";
-import {
-  fromApiMessage,
-  toDisplayMessage,
-} from "../utils/message-converters";
+import { fromApiMessage, toDisplayMessage } from "../utils/message-converters";
 
 // ============================================================================
 // Message → DisplayMessage (for finalized messages from server)
