@@ -118,7 +118,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .tool-card.narrow {
-  @apply px-2 py-1 my-1 bg-transparent;
+  @apply !px-0 py-1 my-1 bg-transparent;
 }
 
 .tool-card.animated {
@@ -128,7 +128,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .tool-card-title {
-  @apply text-xs font-semibold font-sans text-primary-700 tracking-wider noselect;
+  @apply text-[10px] font-semibold font-sans text-primary-700 tracking-wider noselect;
 }
 
 .tool-card-title {
@@ -735,5 +735,9 @@ video, canvas, audio, iframe, embed, object {
 }
 
 [data-streamdown="mermaid-block"] {
+  @apply !border-default-200 dark:!border-default-200;
+}
+
+[data-streamdown="horizontal-rule"] {
   @apply !border-default-200 dark:!border-default-200;
 }

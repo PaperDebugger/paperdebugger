@@ -90,7 +90,7 @@ export const GeneralToolCard = ({ functionName, message, animated, isCollapsed: 
     <div className={cn("tool-card noselect compact", { animated: animated })}>
       <div className="flex items-center gap-1 cursor-pointer" onClick={toggleCollapse}>
         <button
-          className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded"
+          className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"
           aria-label={isCollapsed ? "Expand" : "Collapse"}
         >
           <svg
