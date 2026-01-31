@@ -73,12 +73,16 @@ export function getPrevUserSelectedText(
   messages: DisplayMessage[],
   currentIndex: number
 ): string | undefined {
+  let selectedText = undefined;
   for (let i = currentIndex - 1; i >= 0; i--) {
     if (messages[i].type === "user") {
-      return messages[i].selectedText;
+      selectedText = messages[i].selectedText;
+      if (selectedText) {
+        break;
+      }
     }
   }
-  return undefined;
+  return selectedText;
 }
 
 /**
