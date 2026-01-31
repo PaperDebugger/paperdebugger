@@ -122,10 +122,10 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
         <StatusIndicator conversation={conversation} />
         
         {isDebugMode && (
-          <div className="text-xs text-gray-300 noselect">
+          <div className="text-xs text-default-300 dark:!text-default-300 noselect">
             <span>* Debug mode is enabled, </span>
             <span
-              className={`${reloadSuccess ? "text-emerald-300" : "text-gray-300"} underline cursor-pointer rnd-cancel`}
+              className={`${reloadSuccess ? "text-emerald-300" : "text-default-300 dark:!text-default-300"} underline cursor-pointer rnd-cancel`}
               onClick={async () => {
                 try {
                   const response = await getConversation({ conversationId: conversation?.id ?? "" });

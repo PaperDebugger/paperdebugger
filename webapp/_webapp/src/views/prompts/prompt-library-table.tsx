@@ -37,7 +37,7 @@ export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibrary
     </div>
   ) : (
     <div className="flex flex-col gap-2">
-      <div className="w-full flex flex-row gap-2 items-center px-4 py-2 border-1 border-gray-200 dark:border-default-200 bg-gray-50 dark:bg-default-100 rounded-md noselect">
+      <div className="w-full flex flex-row gap-2 items-center px-4 py-2 border-1 !border-gray-200 dark:!border-default-200 bg-gray-50 dark:!bg-default-100 rounded-md noselect">
         <input
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -45,14 +45,14 @@ export function PromptLibraryTable({ onDelete, onUpdate, onView }: PromptLibrary
           className="w-full text-xs border-none focus:outline-none text-center bg-transparent noselect"
         />
       </div>
-      <div className="w-full flex flex-col bg-gray-50 dark:bg-default-100">
+      <div className="w-full flex flex-col bg-gray-50 dark:!bg-default-100">
         {filteredPrompts.map((prompt) => (
           <div
             key={prompt.id}
             className={cn(
               "w-full flex flex-row gap-2 items-center px-4 py-2 noselect",
-              "border-l-1 border-r-1 border-gray-200 dark:border-default-200",
-              "first:border-t-1 last:border-b-1 first:rounded-t-md last:rounded-b-md border-t border-gray-200 dark:border-default-200",
+              "border-l-1 border-r-1 !border-gray-200 dark:!border-default-200",
+              "first:border-t-1 last:border-b-1 first:rounded-t-md last:rounded-b-md border-t !border-gray-200 dark:!border-default-200",
             )}
           >
             <div className="flex-grow flex flex-col gap-1 min-w-0">

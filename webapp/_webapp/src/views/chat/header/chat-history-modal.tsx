@@ -274,7 +274,7 @@ const ActionButtons = ({
       <Icon
         icon="tabler:pencil"
         width={24}
-        className="dark:bg-default-50 rounded-md cursor-pointer hover:bg-default-200 p-[4px]"
+        className="dark:!bg-default-50 rounded-md cursor-pointer hover:bg-default-200 p-[4px]"
         onClick={(e) => {
           e.stopPropagation();
           onEdit(e);

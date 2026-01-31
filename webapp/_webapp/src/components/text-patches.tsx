@@ -123,12 +123,12 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
 
   return (
     <div className="my-2 w-full flex flex-col gap-2">
-      <pre className="w-full p-2 rounded-md bg-gray-200 dark:bg-default-200 text-sm whitespace-pre-wrap" id="text-patches-diff-display">
+      <pre className="w-full p-2 rounded-md bg-gray-200 dark:!bg-default-200 text-sm whitespace-pre-wrap" id="text-patches-diff-display">
         {showDiff ? mappedNodes : processedChildren}
       </pre>
       <pre
         ref={preRef}
-        className="w-full p-2 rounded-md bg-gray-200 dark:bg-default-200 text-sm whitespace-pre-wrap hidden"
+        className="w-full p-2 rounded-md bg-gray-200 dark:!bg-default-200 text-sm whitespace-pre-wrap hidden"
         id="text-patches-pre-raw"
       >
         {processedChildren}

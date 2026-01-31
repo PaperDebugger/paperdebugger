@@ -19,7 +19,7 @@ export const CodeBlock = ({ code, className }: CodeBlockProps) => {
 
   return (
     <pre
-      className={`p-2 rounded-md bg-gray-200 dark:bg-default-200 text-sm text-wrap break-words ${className}`}
+      className={`p-2 rounded-md bg-gray-200 dark:!bg-default-200 text-sm text-wrap break-words ${className}`}
       dangerouslySetInnerHTML={{ __html: highlightedCode }}
     />
   );

@@ -113,7 +113,7 @@ video, canvas, audio, iframe, embed, object {
 
 /* Tool Card Begin */
 .tool-card {
-  @apply bg-white dark:bg-default-100 overflow-hidden max-w-xl p-4 my-2;
+  @apply overflow-hidden max-w-xl p-4 my-2;
   border-color: var(--pd-border-color) !important;
 }
 
@@ -211,14 +211,14 @@ video, canvas, audio, iframe, embed, object {
   display: flex;
   flex-direction: column;
   border-radius: 0.75rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid;
   background-color: transparent;
   overflow: hidden;
-  @apply overflow-hidden w-full h-full dark:border-default-200;
+  @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200;
 }
 
 .pd-app-control-title-bar {
-  @apply bg-gray-100 dark:bg-default-100;
+  @apply bg-gray-100 dark:!bg-default-100;
   flex: 0;
   overflow: hidden;
   position: fixed;
@@ -248,7 +248,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-app-header-container {
-  @apply bg-red-100 dark:bg-default-100;
+  @apply bg-red-100 dark:!bg-default-100;
   flex: 0;
 }
 
@@ -269,7 +269,7 @@ video, canvas, audio, iframe, embed, object {
   align-items: center;
   border-right: 1px solid var(--pd-border-color);
   gap: 1rem;
-  @apply bg-gray-100 dark:bg-default-100 px-3 pb-3 pt-12;
+  @apply bg-gray-100 dark:!bg-default-100 px-3 pb-3 pt-12;
   z-index: 888;
   position: relative;
   flex-shrink: 0;
@@ -290,7 +290,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header {
-  @apply bg-gray-100 dark:bg-default-100 pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
+  @apply bg-gray-100 dark:!bg-default-100 pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
@@ -299,7 +299,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header.collapsed {
-  @apply bg-gray-100 dark:bg-default-100 px-3 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
+  @apply bg-gray-100 dark:!bg-default-100 px-3 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
@@ -315,7 +315,7 @@ video, canvas, audio, iframe, embed, object {
   min-width: 0;
   flex: 1;
   overflow-anchor: none;
-  @apply bg-gray-50 dark:bg-default-50 p-2;
+  @apply bg-gray-50 dark:!bg-default-50 p-2;
 }
 
 .pd-app-tab-content .pd-app-tab-content-footer {
@@ -325,12 +325,12 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .chat-prompt-input .pd-selected-text-indicator {
-  @apply w-full rounded-lg !rounded-b-none border-gray-200 dark:border-default-200 border !border-b-0 text-gray-500 dark:text-default-500 text-nowrap text-ellipsis overflow-hidden max-h-[32px] cursor-pointer bg-gray-50 dark:bg-default-100 hover:bg-gray-100 dark:hover:bg-default-200;
+  @apply w-full rounded-lg !rounded-b-none !border-gray-200 dark:!border-default-200 border !border-b-0 text-gray-500 dark:text-default-500 text-nowrap text-ellipsis overflow-hidden max-h-[32px] cursor-pointer bg-gray-50 dark:!bg-default-100 hover:bg-gray-100 dark:hover:bg-default-200;
   @apply transition-all;
 }
 
 .chat-prompt-input .pd-selected-text-indicator-clear {
-  @apply rounded-full w-4 h-4 p-0.5 flex items-center justify-center text-gray-500 dark:text-default-500 cursor-pointer bg-gray-50 dark:bg-default-100 hover:bg-red-200 dark:hover:bg-danger-200 hover:text-red-500 dark:hover:text-danger transition-all;
+  @apply rounded-full w-4 h-4 p-0.5 flex items-center justify-center text-gray-500 dark:text-default-500 cursor-pointer bg-gray-50 dark:!bg-default-100 hover:bg-red-200 dark:hover:bg-danger-200 hover:text-red-500 dark:hover:text-danger transition-all;
   @apply absolute top-1/2 right-4 -translate-y-1/2;
 }
 
@@ -384,16 +384,16 @@ video, canvas, audio, iframe, embed, object {
   min-width: 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  @apply text-sm text-default-800 px-3 py-2 border border-transparent rounded-xl;
+  @apply text-sm text-default-800 px-3 py-2 border !border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply bg-gray-200 dark:bg-default-200;
+  @apply bg-gray-200 dark:!bg-default-200;
 }
 
 .chat-message-entry .message-box-assistant {
   align-self: flex-start;
   max-width: min(95%, 700px);
   min-width: 0;
-  @apply text-sm text-default-800 border border-transparent rounded-xl;
+  @apply text-sm text-default-800 border !border-transparent rounded-xl;
   @apply transition-all duration-500 ease-in-out;
 }
 
@@ -444,7 +444,7 @@ video, canvas, audio, iframe, embed, object {
 
 .chat-prompt-input {
   @apply p-2;
-  @apply bg-gray-50 dark:bg-default-50;
+  @apply bg-gray-50 dark:!bg-default-50;
 }
 
 .chat-prompt-input .pd-chat-toolbar {
@@ -456,7 +456,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-avatar {
-  @apply w-10 h-10 rounded-xl outline outline-2 border-2 border-white dark:border-default-100 outline-gray-300 dark:outline-default-200 transition-all;
+  @apply w-10 h-10 rounded-xl outline outline-2 border-2 border-white dark:!border-default-100 outline-gray-300 dark:outline-default-200 transition-all;
 }
 
 .pd-avatar-fallback {
@@ -484,7 +484,7 @@ video, canvas, audio, iframe, embed, object {
 }
 
 .pd-context-menu {
-  @apply bg-white dark:bg-default-100 rounded-md shadow-md border border-gray-200 dark:border-default-200 max-w-[150px] absolute top-8 left-4 hidden;
+  @apply bg-white dark:!bg-default-100 rounded-md shadow-md border !border-gray-200 dark:!border-default-200 max-w-[150px] absolute top-8 left-4 hidden;
   @apply p-2;
 }
 
@@ -496,7 +496,7 @@ video, canvas, audio, iframe, embed, object {
   @apply flex flex-col gap-2;
 }
 .pd-context-menu-item {
-  @apply p-2 rounded-md text-sm font-medium text-gray-700 dark:text-default-200 cursor-pointer border border-gray-100 dark:border-default-200;
+  @apply p-2 rounded-md text-sm font-medium text-gray-700 dark:text-default-200 cursor-pointer border !border-gray-100 dark:!border-default-200;
   @apply hover:bg-gray-100 dark:hover:bg-default-200;
 }
 
@@ -705,25 +705,35 @@ video, canvas, audio, iframe, embed, object {
   opacity: 1 !important;
 }
 
+/* List item: keep ::marker and first <p> on same line (Tailwind doesn't scan streamdown, so [&>p]:inline has no effect) */
+[data-streamdown="list-item"] > p {
+  display: inline;
+}
+
 [data-streamdown="inline-code"] {
-  @apply px-1 py-0 !text-xs !bg-gray-200 dark:!bg-default-200 rounded-md font-mono;
+  @apply !px-1 !py-0 !text-xs !bg-gray-200 dark:!bg-default-200 rounded-md font-mono text-default-800 dark:!text-default-800;
 }
 
 [data-streamdown="code-block"] {
   border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .dark [data-streamdown="code-block"] {
-  border-color: oklch(35% 0 0);
+  @apply !border-default-200 dark:!border-default-200;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 [data-streamdown="code-block-header"] {
-  @apply py-1 px-2;
+  @apply !border-default-200 dark:!border-default-200;
+  @apply !py-1 !px-2;
 }
 
 [data-streamdown="code-block-body"] {
-  @apply py-2 px-3 text-xs;
+  @apply !border-default-200 dark:!border-default-200;
+  @apply !py-2 !px-3 !text-xs;
+}
+
+[data-streamdown="mermaid-block"] {
+  @apply !border-default-200 dark:!border-default-200;
 }

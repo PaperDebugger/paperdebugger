@@ -57,13 +57,13 @@ export const ChatButton = ({
         noBorder ? "" : "border",
         disableAnimation ? "" : "transition-all duration-100",
         showText ? "max-w-full" : "max-w-[42px]",
-        isHovered ? (variant === "danger" ? "bg-danger-50" : "bg-gray-100 dark:bg-default-200") : "",
+        isHovered ? (variant === "danger" ? "bg-danger-50" : "bg-gray-100 dark:!bg-default-200") : "",
         disabled ? "opacity-30" : "",
         disabled
-          ? "text-gray-400 dark:text-default-400 border-gray-200 dark:border-default-200"
+          ? "text-gray-400 dark:text-default-400 !border-gray-200 dark:!border-default-200"
           : variant === "danger"
             ? "text-danger dark:text-danger-500 border-danger-200"
-            : "text-gray-500 dark:text-default-500 border-gray-100 dark:border-default-200 hover:border-gray-200 dark:hover:border-default-300",
+            : "text-gray-500 dark:text-default-500 !border-gray-100 dark:!border-default-200 hover:border-gray-200 dark:hover:border-default-300",
         iconLoaded ? "opacity-100" : "opacity-0",
       )}
       onClick={() => {

@@ -143,7 +143,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
     <div
       ref={scrollContainerRef}
       className={cn(
-        "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:bg-default-100 shadow-lg",
+        "transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:!bg-default-100 shadow-lg",
         items && items.length > 0 ? "rounded-lg border !border-gray-200 dark:!border-default-200 overflow-y-auto" : "max-h-[0px]",
         heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
@@ -154,7 +154,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
           className={cn(
             "prompt-selection-item w-full flex flex-col rounded-lg",
             item.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-            idx === selectedIdx && !item.disabled && "bg-gray-100 dark:bg-default-200",
+            idx === selectedIdx && !item.disabled && "bg-gray-100 dark:!bg-default-200",
             heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
           )}
           onClick={() => {

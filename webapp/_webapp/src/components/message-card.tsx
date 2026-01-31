@@ -23,7 +23,7 @@ export const STYLES = {
   messageBox: {
     base: cn(),
     assistant: "px-3 pt-3 pb-1 my-2 !border !border-transparent",
-    user: "px-3 py-2 bg-gray-100 dark:bg-default-200 self-end my-2",
+    user: "px-3 py-2 bg-gray-100 dark:!bg-default-200 self-end my-2",
     indicator: "px-3",
   },
   attachment: {

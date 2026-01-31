@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSettingStore, type ThemeMode } from "../stores/setting-store";
+import { useSettingStore } from "../stores/setting-store";
 
 const THEME_ROOT_ID = "paper-debugger-root";
 
@@ -7,11 +7,24 @@ function getThemeRoot(): HTMLElement {
   return document.getElementById(THEME_ROOT_ID) ?? document.documentElement;
 }
 
-function applyTheme(root: HTMLElement, isDark: boolean): void {
+function applyThemeToElement(el: HTMLElement, isDark: boolean): void {
   if (isDark) {
-    root.classList.add("dark");
+    el.classList.add("dark");
   } else {
-    root.classList.remove("dark");
+    el.classList.remove("dark");
+  }
+}
+
+/**
+ * Apply theme to all elements that may contain our UI.
+ * In Overleaf embed mode, the sidebar is rendered via portal into #pd-embed-sidebar
+ * (inside .ide-redesign-body), which is outside #paper-debugger-root. So we must
+ * also set the theme on documentElement so that portal content gets dark mode.
+ */
+function applyTheme(root: HTMLElement, isDark: boolean): void {
+  applyThemeToElement(root, isDark);
+  if (root.id === THEME_ROOT_ID && root !== document.documentElement) {
+    applyThemeToElement(document.documentElement, isDark);
   }
 }
 
