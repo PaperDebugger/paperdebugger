@@ -109,7 +109,7 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
         </div>
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
-        <div className="canselect text-sm mt-2">
+        <div className="canselect text-sm">
           <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>
