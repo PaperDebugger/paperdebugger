@@ -10,6 +10,14 @@ export const EmptyView = () => (
       <p className="text-sm text-center max-w-[400px] text-gray-300 dark:text-default-300">
         Be careful of the generated content, PaperDebugger will never modify your content without your permission.
       </p>
+      <a
+        href="https://github.com/PaperDebugger/paperdebugger/issues/new?template=bug_report.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 text-sm text-default-300 dark:text-default-300 hover:text-default-400 dark:hover:text-default-400 underline"
+      >
+        Report Bug
+      </a>
     </div>
   </div>
 );
