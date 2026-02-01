@@ -103,20 +103,31 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 }
 
 export async function completion(_state: EditorState): Promise<string> {
+  const triggerWord = "\\cite{";
+
   // Only trigger when setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
     return "";
   }
 
-  // Only trigger for if text before is "\cite{"
+  // Only trigger if text before is the trigger word
   const cursorPos = _state.selection.main.head;
-  const textBefore = _state.doc.sliceString(Math.max(0, cursorPos - 6), cursorPos);
-  if (!(textBefore === "\\cite{")) {
+  const textBefore = _state.doc.sliceString(Math.max(0, cursorPos - triggerWord.length), cursorPos);
+  if (!(textBefore === triggerWord)) {
     return "";
   }
 
-  return "Unsupported Feature";
+  // Extract last sentence and only trigger if last sentence exists
+  // Last sentence is used in prompt as context for citation suggestion
+  const fullTextBefore = _state.doc.sliceString(0, cursorPos - triggerWord.length);
+  const sentences = fullTextBefore.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+  const lastSentence = sentences.slice(-1).join(" ");
+  if (!lastSentence) {
+    return "";
+  }
+  console.log("lastSentence:", lastSentence);
+  return lastSentence;
 }
 
 /**
