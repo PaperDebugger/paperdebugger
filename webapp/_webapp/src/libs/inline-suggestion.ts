@@ -34,9 +34,7 @@ import {
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
 import { useConversationStore } from "../stores/conversation/conversation-store";
-import { createConversationMessageStream } from "../query/api";
-import { CreateConversationMessageStreamResponse } from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { buildStreamRequest } from "../utils/stream-request-builder";
+import { getCitationKeys } from "../query/api";
 
 export enum SuggestionAcceptance {
   REJECTED = 0,
@@ -135,60 +133,21 @@ export async function completion(_state: EditorState): Promise<string> {
     return "";
   }
 
-  // Call LLM to get citation suggestion
-  const prompt = `You are an expert LaTeX assistant. Given the context of the last sentence in a research paper and the bibliography entries, suggest the most relevant citation key(s) to cite. If multiple citations are relevant, separate them with commas. If no citations are relevant, return "none".
-
-  Context Sentence:
-  "${lastSentence}"
-
-  Bibliography Entries:
-  ${bibliography}
-
-  Provide only the citation key(s) without any additional text. If no relevant citations are found, respond with "none".`;
-
-  // Get citation suggestion
+  // Get citation suggestion using GetCitationKeys API
   const conversationStore = useConversationStore.getState();
   const { currentConversation } = conversationStore;
 
-  return new Promise((resolve) => {
-    let result = "";
-
-    const request = buildStreamRequest({
-      message: prompt,
-      selectedText: "",
-      projectId: "inline-completion",
-      conversationId: currentConversation.id,
+  try {
+    const response = await getCitationKeys({
+      sentence: lastSentence,
+      bibliography: bibliography,
       modelSlug: currentConversation.modelSlug,
-      conversationMode: "debug",
     });
-
-    createConversationMessageStream(
-      request,
-      (response: CreateConversationMessageStreamResponse) => {
-        const payload = response.responsePayload;
-
-        switch (payload.case) {
-          case "messageChunk": {
-            result += payload.value.delta;
-            break
-          }
-          case "streamFinalization":  {
-            const suggestion = result.trim();
-            resolve(suggestion === "none" ? "" : suggestion);
-            break
-          }
-          case "streamError": {
-            logError("inline completion: stream error", payload.value.errorMessage);
-            resolve("");
-            break
-          }
-        }
-      },
-    ).catch((err) => {
-      logError("inline completion: failed", err);
-      resolve("");
-    });
-  });
+    return response.citationKeys || "";
+  } catch (err) {
+    logError("inline completion: failed", err);
+    return "";
+  }
 }
 
 export function getBibliography() : string {

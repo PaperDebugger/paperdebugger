@@ -21,6 +21,8 @@ import {
   ListSupportedModelsResponseSchema,
   UpdateConversationRequest,
   UpdateConversationResponseSchema,
+  GetCitationKeysRequest,
+  GetCitationKeysResponseSchema,
 } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import {
   GetProjectRequest,
@@ -144,6 +146,11 @@ export const getProject = async (data: PlainMessage<GetProjectRequest>) => {
   });
   return fromJson(GetProjectResponseSchema, response);
 };
+
+export const getCitationKeys = async (data: PlainMessage<GetCitationKeysRequest>) => {
+  const response = await apiclientV2.post(`/chats/citation-keys`, data);
+  return fromJson(GetCitationKeysResponseSchema, response);
+}
 
 export const upsertProject = async (data: PlainMessage<UpsertProjectRequest>) => {
   const response = await apiclient.put(`/projects/${data.projectId}`, data);

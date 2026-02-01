@@ -1897,6 +1897,113 @@ func (*CreateConversationMessageStreamResponse_StreamError) isCreateConversation
 func (*CreateConversationMessageStreamResponse_ReasoningChunk) isCreateConversationMessageStreamResponse_ResponsePayload() {
 }
 
+// Request to suggest citation keys based on context
+type GetCitationKeysRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sentence      string                 `protobuf:"bytes,1,opt,name=sentence,proto3" json:"sentence,omitempty"`
+	Bibliography  string                 `protobuf:"bytes,2,opt,name=bibliography,proto3" json:"bibliography,omitempty"`
+	ModelSlug     *string                `protobuf:"bytes,3,opt,name=model_slug,json=modelSlug,proto3,oneof" json:"model_slug,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCitationKeysRequest) Reset() {
+	*x = GetCitationKeysRequest{}
+	mi := &file_chat_v2_chat_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCitationKeysRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCitationKeysRequest) ProtoMessage() {}
+
+func (x *GetCitationKeysRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v2_chat_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCitationKeysRequest.ProtoReflect.Descriptor instead.
+func (*GetCitationKeysRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetCitationKeysRequest) GetSentence() string {
+	if x != nil {
+		return x.Sentence
+	}
+	return ""
+}
+
+func (x *GetCitationKeysRequest) GetBibliography() string {
+	if x != nil {
+		return x.Bibliography
+	}
+	return ""
+}
+
+func (x *GetCitationKeysRequest) GetModelSlug() string {
+	if x != nil && x.ModelSlug != nil {
+		return *x.ModelSlug
+	}
+	return ""
+}
+
+// Response containing the suggested citation keys
+type GetCitationKeysResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// A comma-separated string of keys, or empty if none found
+	CitationKeys  string `protobuf:"bytes,1,opt,name=citation_keys,json=citationKeys,proto3" json:"citation_keys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCitationKeysResponse) Reset() {
+	*x = GetCitationKeysResponse{}
+	mi := &file_chat_v2_chat_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCitationKeysResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCitationKeysResponse) ProtoMessage() {}
+
+func (x *GetCitationKeysResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v2_chat_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCitationKeysResponse.ProtoReflect.Descriptor instead.
+func (*GetCitationKeysResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v2_chat_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetCitationKeysResponse) GetCitationKeys() string {
+	if x != nil {
+		return x.CitationKeys
+	}
+	return ""
+}
+
 var File_chat_v2_chat_proto protoreflect.FileDescriptor
 
 const file_chat_v2_chat_proto_rawDesc = "" +
@@ -2030,17 +2137,26 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x13stream_finalization\x18\x06 \x01(\v2\x1b.chat.v2.StreamFinalizationH\x00R\x12streamFinalization\x129\n" +
 	"\fstream_error\x18\a \x01(\v2\x14.chat.v2.StreamErrorH\x00R\vstreamError\x12B\n" +
 	"\x0freasoning_chunk\x18\b \x01(\v2\x17.chat.v2.ReasoningChunkH\x00R\x0ereasoningChunkB\x12\n" +
-	"\x10response_payload*R\n" +
+	"\x10response_payload\"\x8b\x01\n" +
+	"\x16GetCitationKeysRequest\x12\x1a\n" +
+	"\bsentence\x18\x01 \x01(\tR\bsentence\x12\"\n" +
+	"\fbibliography\x18\x02 \x01(\tR\fbibliography\x12\"\n" +
+	"\n" +
+	"model_slug\x18\x03 \x01(\tH\x00R\tmodelSlug\x88\x01\x01B\r\n" +
+	"\v_model_slug\">\n" +
+	"\x17GetCitationKeysResponse\x12#\n" +
+	"\rcitation_keys\x18\x01 \x01(\tR\fcitationKeys*R\n" +
 	"\x10ConversationType\x12!\n" +
 	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
-	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xa8\a\n" +
+	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xab\b\n" +
 	"\vChatService\x12\x83\x01\n" +
 	"\x11ListConversations\x12!.chat.v2.ListConversationsRequest\x1a\".chat.v2.ListConversationsResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/_pd/api/v2/chats/conversations\x12\x8f\x01\n" +
 	"\x0fGetConversation\x12\x1f.chat.v2.GetConversationRequest\x1a .chat.v2.GetConversationResponse\"9\x82\xd3\xe4\x93\x023\x121/_pd/api/v2/chats/conversations/{conversation_id}\x12\xc2\x01\n" +
 	"\x1fCreateConversationMessageStream\x12/.chat.v2.CreateConversationMessageStreamRequest\x1a0.chat.v2.CreateConversationMessageStreamResponse\":\x82\xd3\xe4\x93\x024:\x01*\"//_pd/api/v2/chats/conversations/messages/stream0\x01\x12\x9b\x01\n" +
 	"\x12UpdateConversation\x12\".chat.v2.UpdateConversationRequest\x1a#.chat.v2.UpdateConversationResponse\"<\x82\xd3\xe4\x93\x026:\x01*21/_pd/api/v2/chats/conversations/{conversation_id}\x12\x98\x01\n" +
 	"\x12DeleteConversation\x12\".chat.v2.DeleteConversationRequest\x1a#.chat.v2.DeleteConversationResponse\"9\x82\xd3\xe4\x93\x023*1/_pd/api/v2/chats/conversations/{conversation_id}\x12\x82\x01\n" +
-	"\x13ListSupportedModels\x12#.chat.v2.ListSupportedModelsRequest\x1a$.chat.v2.ListSupportedModelsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/_pd/api/v2/chats/modelsB\x7f\n" +
+	"\x13ListSupportedModels\x12#.chat.v2.ListSupportedModelsRequest\x1a$.chat.v2.ListSupportedModelsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/_pd/api/v2/chats/models\x12\x80\x01\n" +
+	"\x0fGetCitationKeys\x12\x1f.chat.v2.GetCitationKeysRequest\x1a .chat.v2.GetCitationKeysResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/_pd/api/v2/chats/citation-keysB\x7f\n" +
 	"\vcom.chat.v2B\tChatProtoP\x01Z(paperdebugger/pkg/gen/api/chat/v2;chatv2\xa2\x02\x03CXX\xaa\x02\aChat.V2\xca\x02\aChat\\V2\xe2\x02\x13Chat\\V2\\GPBMetadata\xea\x02\bChat::V2b\x06proto3"
 
 var (
@@ -2056,7 +2172,7 @@ func file_chat_v2_chat_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v2_chat_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v2_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_chat_v2_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_chat_v2_chat_proto_goTypes = []any{
 	(ConversationType)(0),                           // 0: chat.v2.ConversationType
 	(*MessageTypeToolCall)(nil),                     // 1: chat.v2.MessageTypeToolCall
@@ -2089,6 +2205,8 @@ var file_chat_v2_chat_proto_goTypes = []any{
 	(*StreamError)(nil),                             // 28: chat.v2.StreamError
 	(*CreateConversationMessageStreamRequest)(nil),  // 29: chat.v2.CreateConversationMessageStreamRequest
 	(*CreateConversationMessageStreamResponse)(nil), // 30: chat.v2.CreateConversationMessageStreamResponse
+	(*GetCitationKeysRequest)(nil),                  // 31: chat.v2.GetCitationKeysRequest
+	(*GetCitationKeysResponse)(nil),                 // 32: chat.v2.GetCitationKeysResponse
 }
 var file_chat_v2_chat_proto_depIdxs = []int32{
 	3,  // 0: chat.v2.MessagePayload.system:type_name -> chat.v2.MessageTypeSystem
@@ -2120,14 +2238,16 @@ var file_chat_v2_chat_proto_depIdxs = []int32{
 	14, // 26: chat.v2.ChatService.UpdateConversation:input_type -> chat.v2.UpdateConversationRequest
 	16, // 27: chat.v2.ChatService.DeleteConversation:input_type -> chat.v2.DeleteConversationRequest
 	19, // 28: chat.v2.ChatService.ListSupportedModels:input_type -> chat.v2.ListSupportedModelsRequest
-	11, // 29: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
-	13, // 30: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
-	30, // 31: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
-	15, // 32: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
-	17, // 33: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
-	20, // 34: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
-	29, // [29:35] is the sub-list for method output_type
-	23, // [23:29] is the sub-list for method input_type
+	31, // 29: chat.v2.ChatService.GetCitationKeys:input_type -> chat.v2.GetCitationKeysRequest
+	11, // 30: chat.v2.ChatService.ListConversations:output_type -> chat.v2.ListConversationsResponse
+	13, // 31: chat.v2.ChatService.GetConversation:output_type -> chat.v2.GetConversationResponse
+	30, // 32: chat.v2.ChatService.CreateConversationMessageStream:output_type -> chat.v2.CreateConversationMessageStreamResponse
+	15, // 33: chat.v2.ChatService.UpdateConversation:output_type -> chat.v2.UpdateConversationResponse
+	17, // 34: chat.v2.ChatService.DeleteConversation:output_type -> chat.v2.DeleteConversationResponse
+	20, // 35: chat.v2.ChatService.ListSupportedModels:output_type -> chat.v2.ListSupportedModelsResponse
+	32, // 36: chat.v2.ChatService.GetCitationKeys:output_type -> chat.v2.GetCitationKeysResponse
+	30, // [30:37] is the sub-list for method output_type
+	23, // [23:30] is the sub-list for method input_type
 	23, // [23:23] is the sub-list for extension type_name
 	23, // [23:23] is the sub-list for extension extendee
 	0,  // [0:23] is the sub-list for field type_name
@@ -2161,13 +2281,14 @@ func file_chat_v2_chat_proto_init() {
 		(*CreateConversationMessageStreamResponse_StreamError)(nil),
 		(*CreateConversationMessageStreamResponse_ReasoningChunk)(nil),
 	}
+	file_chat_v2_chat_proto_msgTypes[30].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v2_chat_proto_rawDesc), len(file_chat_v2_chat_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   30,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
