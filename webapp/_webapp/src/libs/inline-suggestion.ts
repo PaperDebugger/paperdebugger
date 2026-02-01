@@ -33,8 +33,10 @@ import {
 
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
+import { useConversationStore } from "../stores/conversation/conversation-store";
 import { createConversationMessageStream } from "../query/api";
-import { ConversationType, CreateConversationMessageStreamResponse } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { CreateConversationMessageStreamResponse } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { buildStreamRequest } from "../utils/stream-request-builder";
 
 export enum SuggestionAcceptance {
   REJECTED = 0,
@@ -144,41 +146,46 @@ export async function completion(_state: EditorState): Promise<string> {
 
   Provide only the citation key(s) without any additional text. If no relevant citations are found, respond with "none".`;
 
-  // Call backend LLM to get citation suggestion
-  const suggestion = await getLLMResponse(prompt);
-  if (!suggestion || suggestion === "none") {
-    return "";
-  }
-  return suggestion;
-}
+  // Get citation suggestion
+  const conversationStore = useConversationStore.getState();
+  const { currentConversation } = conversationStore;
 
-/**
- * Helper that calls the backend LLM API
- */
-async function getLLMResponse(prompt: string): Promise<string> {
   return new Promise((resolve) => {
     let result = "";
 
+    const request = buildStreamRequest({
+      message: prompt,
+      selectedText: "",
+      projectId: "inline-completion",
+      conversationId: currentConversation.id,
+      modelSlug: currentConversation.modelSlug,
+      conversationMode: "default",
+    });
+
     createConversationMessageStream(
-      {
-        projectId: "inline-completion",
-        modelSlug: "gpt-4o-mini",
-        userMessage: prompt,
-        conversationType: ConversationType.DEBUG,
-      },
+      request,
       (response: CreateConversationMessageStreamResponse) => {
         const payload = response.responsePayload;
-        if (payload.case === "messageChunk") {
-          result += payload.value.delta;
-        } else if (payload.case === "streamFinalization") {
-          resolve(result.trim());
-        } else if (payload.case === "streamError") {
-          logError("getLLMResponse: stream error", payload.value.errorMessage);
-          resolve("");
+
+        switch (payload.case) {
+          case "messageChunk": {
+            result += payload.value.delta;
+            break
+          }
+          case "streamFinalization":  {
+            const suggestion = result.trim();
+            resolve(suggestion === "none" ? "" : suggestion);
+            break
+          }
+          case "streamError": {
+            logError("inline completion: stream error", payload.value.errorMessage);
+            resolve("");
+            break
+          }
         }
       },
     ).catch((err) => {
-      logError("getLLMResponse: failed", err);
+      logError("inline completion: failed", err);
       resolve("");
     });
   });
