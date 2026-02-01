@@ -126,7 +126,6 @@ export async function completion(_state: EditorState): Promise<string> {
   if (!lastSentence) {
     return "";
   }
-  console.log("lastSentence:", lastSentence);
   return lastSentence;
 }
 
