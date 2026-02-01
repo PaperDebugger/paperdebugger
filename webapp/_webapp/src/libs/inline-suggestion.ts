@@ -33,6 +33,8 @@ import {
 
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
+import { createConversationMessageStream } from "../query/api";
+import { ConversationType, CreateConversationMessageStreamResponse } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 
 export enum SuggestionAcceptance {
   REJECTED = 0,
@@ -126,7 +128,95 @@ export async function completion(_state: EditorState): Promise<string> {
   if (!lastSentence) {
     return "";
   }
-  return lastSentence;
+
+  // Get bibliography entries
+  const bibliography = getBibliography();
+  if (!bibliography) {
+    return "";
+  }
+
+  // Call LLM to get citation suggestion
+  const prompt = `You are an expert LaTeX assistant. Given the context of the last sentence in a research paper and the bibliography entries, suggest the most relevant citation key(s) to cite. If multiple citations are relevant, separate them with commas. If no citations are relevant, return "none".
+
+  Context Sentence:
+  "${lastSentence}"
+
+  Bibliography Entries:
+  ${bibliography}
+
+  Provide only the citation key(s) without any additional text. If no relevant citations are found, respond with "none".`;
+
+  // Call backend LLM to get citation suggestion
+  const suggestion = await simpleCompletion(prompt);
+  if (!suggestion || suggestion === "none") {
+    return "";
+  }
+  return suggestion;
+}
+
+/**
+ * Simple completion helper that calls the backend LLM API
+ * Uses createConversationMessageStream in debug mode for lightweight completion
+ */
+async function simpleCompletion(prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    let result = "";
+
+    createConversationMessageStream(
+      {
+        projectId: "inline-completion",
+        modelSlug: "gpt-4o-mini",
+        userMessage: prompt,
+        conversationType: ConversationType.DEBUG,
+      },
+      (response: CreateConversationMessageStreamResponse) => {
+        const payload = response.responsePayload;
+        if (payload.case === "messageChunk") {
+          result += payload.value.delta;
+        } else if (payload.case === "streamFinalization") {
+          resolve(result.trim());
+        } else if (payload.case === "streamError") {
+          logError("simpleCompletion: stream error", payload.value.errorMessage);
+          resolve("");
+        }
+      },
+    ).catch((err) => {
+      logError("simpleCompletion: failed", err);
+      resolve("");
+    });
+  });
+}
+
+export function getBibliography() : string {
+  // TODO: Placeholder function to get bibliography entries
+  // In real implementation, this would fetch from the document's bibliography database
+  return `
+  % and inbook with text in chapter
+  @inproceedings{sarrafzadeh2020stageaware,
+    author    = {Sarrafzadeh, Bahareh and et al.},
+    title     = {Characterizing Stage-Aware Writing Assistance in Collaborative Document Authoring},
+    booktitle = {CSCW},
+    year      = {2020},
+  }
+
+
+  % and inbook with a num and type field
+  @Inbook{Kong:2006:IEC:887006.887010,
+    author =      {Kong, Wei-Chang},
+    editor =      {Theerasak Thanasankit},
+    title =       {E-commerce and cultural values (Inbook-num chap)},
+    chapter =     {22},
+    year =        {2006},
+    address =     {Hershey, PA, USA},
+    publisher =   {IGI Publishing},
+    url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
+    type =        {Chapter (in type field)},
+    pages =       {51--74},
+    numpages =    {24},
+    acmid =       {887010},
+    isbn =        {1-59140-056-2},
+  }
+  `;
 }
 
 /**
