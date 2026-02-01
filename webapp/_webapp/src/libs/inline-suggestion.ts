@@ -103,8 +103,16 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 }
 
 export async function completion(_state: EditorState): Promise<string> {
+  // Only trigger when setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
+    return "";
+  }
+
+  // Only trigger for if text before is "\cite{"
+  const cursorPos = _state.selection.main.head;
+  const textBefore = _state.doc.sliceString(Math.max(0, cursorPos - 6), cursorPos);
+  if (!(textBefore === "\\cite{")) {
     return "";
   }
 
@@ -438,15 +446,15 @@ export function createSuggestionFetchPlugin(
 
           // Check if the docChange is due to an remote collaborator
           // @ts-expect-error - changedRanges is only available in the Overleaf version of CodeMirror
-          const updatePos = update.changedRanges[0].toB;
+          const changedRanges = update.changedRanges;
           const localPos = update.view.state.selection.main.head;
-          if (updatePos !== localPos) {
-            return;
-          }
 
-          const isAutocompleted = update.transactions.some((t) => t.isUserEvent("input.complete"));
-          if (isAutocompleted) {
-            return;
+          // Local changes should have the cursor within or at the end of the changed range
+          if (changedRanges && changedRanges.length > 0) {
+            const changedRange = changedRanges[0];
+            if (localPos < changedRange.fromB || localPos > changedRange.toB) {
+              return;
+            }
           }
 
           const config = update.state.field<SuggestionConfig>(suggestionConfig);
