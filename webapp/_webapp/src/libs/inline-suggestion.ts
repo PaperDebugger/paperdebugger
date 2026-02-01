@@ -145,7 +145,7 @@ export async function completion(_state: EditorState): Promise<string> {
   Provide only the citation key(s) without any additional text. If no relevant citations are found, respond with "none".`;
 
   // Call backend LLM to get citation suggestion
-  const suggestion = await simpleCompletion(prompt);
+  const suggestion = await getLLMResponse(prompt);
   if (!suggestion || suggestion === "none") {
     return "";
   }
@@ -153,10 +153,9 @@ export async function completion(_state: EditorState): Promise<string> {
 }
 
 /**
- * Simple completion helper that calls the backend LLM API
- * Uses createConversationMessageStream in debug mode for lightweight completion
+ * Helper that calls the backend LLM API
  */
-async function simpleCompletion(prompt: string): Promise<string> {
+async function getLLMResponse(prompt: string): Promise<string> {
   return new Promise((resolve) => {
     let result = "";
 
