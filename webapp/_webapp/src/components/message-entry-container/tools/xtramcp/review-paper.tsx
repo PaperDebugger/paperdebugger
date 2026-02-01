@@ -6,9 +6,9 @@ import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, Coll
 
 // Helper function to render severity levels with strikethrough
 const renderSeverityLevels = (threshold: string) => {
-  const levels = ['nit', 'minor', 'major', 'blocker'];
+  const levels = ["nit", "minor", "major", "blocker"];
   const thresholdIndex = levels.indexOf(threshold.toLowerCase());
-  
+
   return (
     <div className="inline-flex items-center gap-1 flex-wrap">
       {levels.map((level, index) => (
@@ -16,7 +16,9 @@ const renderSeverityLevels = (threshold: string) => {
           <code
             className={cn(
               "text-xs px-1.5 py-0.5 rounded",
-              index < thresholdIndex ? "line-through text-gray-400 bg-gray-100" : "text-gray-700 bg-gray-100"
+              index < thresholdIndex
+                ? "line-through text-gray-400 dark:text-default-500 bg-gray-100 dark:!bg-default-200"
+                : "text-gray-700 dark:text-default-200 bg-gray-100 dark:!bg-default-200",
             )}
           >
             {level}
@@ -33,7 +35,7 @@ const renderSections = (sections: Array<string>) => {
     <span>
       {sections.map((section, index) => (
         <span key={section}>
-          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 bg-gray-100">
+          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 dark:text-default-200 bg-gray-100 dark:!bg-default-200">
             {section}
           </code>
           {index < sections.length - 1 && ", "}
@@ -77,11 +79,17 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
     return (
       <div className={cn("tool-card noselect narrow", { animated: animated })}>
         {/* Header with Error label and arrow button */}
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+        >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
+            />
           </div>
         </div>
 
@@ -103,15 +111,21 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
         {/* COMPACT TOOL CARD - Just title + metadata dropdown */}
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}>
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          >
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton isCollapsed={isMetadataCollapsed} ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"} />
+            <CollapseArrowButton
+              isCollapsed={isMetadataCollapsed}
+              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
+            />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
                 {/* Informational note */}
                 <div className="mb-2 text-gray-600">
                   <MarkdownComponent animated={animated}>
@@ -123,17 +137,20 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                 {/* Custom metadata rendering */}
                 {result.metadata.target_venue !== undefined && (
                   <div className="mb-2">
-                    <span className="font-medium">Checked for:</span> "{result.metadata.target_venue || "General review"}"
+                    <span className="font-medium">Checked for:</span> "
+                    {result.metadata.target_venue || "General review"}"
                   </div>
                 )}
                 {result.metadata.severity_threshold && (
                   <div className="mb-2">
-                    <span className="font-medium">Filtered:</span> {renderSeverityLevels(result.metadata.severity_threshold)}
+                    <span className="font-medium">Filtered:</span>{" "}
+                    {renderSeverityLevels(result.metadata.severity_threshold)}
                   </div>
                 )}
                 {result.metadata.sections_reviewed && (
                   <div>
-                    <span className="font-medium">Sections reviewed:</span> {renderSections(result.metadata.sections_reviewed)}
+                    <span className="font-medium">Sections reviewed:</span>{" "}
+                    {renderSections(result.metadata.sections_reviewed)}
                   </div>
                 )}
               </div>
@@ -143,9 +160,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
         <div className="canselect text-sm mt-2">
-          <MarkdownComponent animated={animated}>
-            {result.content}
-          </MarkdownComponent>
+          <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>
     );

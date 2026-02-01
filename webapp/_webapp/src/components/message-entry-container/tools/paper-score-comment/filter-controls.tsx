@@ -79,7 +79,7 @@ export const FilterControls = ({
                   "!px-2 !py-1 !text-xs !rounded !border !transition-colors",
                   filterImportance === importance
                     ? "!bg-primary-100 !text-primary-800 !border-primary-300"
-                    : "!bg-gray-100 !text-gray-600 !border-gray-300 hover:!bg-gray-200",
+                    : "!bg-gray-100 dark:!bg-default-200 !text-gray-600 dark:!text-default-300 !border-gray-300 dark:!border-default-200 hover:!bg-gray-200 dark:hover:!bg-default-300",
                 )}
               >
                 {importance}

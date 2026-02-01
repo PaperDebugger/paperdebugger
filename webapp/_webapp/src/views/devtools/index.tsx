@@ -1,12 +1,17 @@
 import { useSelectionStore } from "../../stores/selection-store";
 import { Button, Input } from "@heroui/react";
-import { useStreamingMessageStore } from "../../stores/streaming-message-store";
-import { MessageEntry, MessageEntryStatus } from "../../stores/conversation/types";
+import { useStreamingStateMachine, InternalMessage } from "../../stores/streaming";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { fromJson } from "../../libs/protobuf-utils";
 import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation } from "../chat/helper";
 import { useState } from "react";
+import {
+  createUserMessage,
+  createAssistantMessage,
+  createToolCallMessage,
+  createToolCallPrepareMessage,
+} from "../../types/message";
 
 // --- Utility functions ---
 const loremIpsum =
@@ -27,9 +32,19 @@ const randomUUID = () => {
 export const DevTools = () => {
   // State management
   const { selectedText, setSelectedText, setSelectionRange } = useSelectionStore();
-  const { streamingMessage, setStreamingMessage, updateStreamingMessage } = useStreamingMessageStore();
+  const streamingMessage = useStreamingStateMachine((s) => s.streamingMessage);
   const { startFromScratch, currentConversation, setCurrentConversation } = useConversationStore();
   const [preparingDelay, setPreparingDelay] = useState(2);
+
+  // Helper functions to update streaming message
+  const setStreamingMessage = (message: typeof streamingMessage) => {
+    useStreamingStateMachine.setState({ streamingMessage: message });
+  };
+  const updateStreamingMessage = (updater: (prev: typeof streamingMessage) => typeof streamingMessage) => {
+    useStreamingStateMachine.setState((state) => ({
+      streamingMessage: updater(state.streamingMessage),
+    }));
+  };
 
   // --- Event handlers ---
   // Conversation related
@@ -78,7 +93,7 @@ export const DevTools = () => {
     });
   const handleStaleLastConversationMessage = () => {
     const newMessages = currentConversation.messages.map((msg, _, arr) =>
-      msg.messageId === arr[arr.length - 1]?.messageId ? { ...msg, status: MessageEntryStatus.STALE } : msg,
+      msg.messageId === arr[arr.length - 1]?.messageId ? { ...msg, status: "stale" } : msg,
     );
     setCurrentConversation({ ...currentConversation, messages: newMessages });
   };
@@ -96,10 +111,10 @@ export const DevTools = () => {
   // StreamingMessage related
   const handleClearStreamingMessage = () => setStreamingMessage({ ...streamingMessage, parts: [] });
   const handleStaleLastStreamingMessage = () => {
-    const newParts = useStreamingMessageStore
+    const newParts = useStreamingStateMachine
       .getState()
       .streamingMessage.parts.map((part, _, arr) =>
-        part.messageId === arr[arr.length - 1]?.messageId ? { ...part, status: MessageEntryStatus.STALE } : part,
+        part.id === arr[arr.length - 1]?.id ? { ...part, status: "stale" as const } : part,
       );
     setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
   };
@@ -110,129 +125,94 @@ export const DevTools = () => {
   };
   // StreamingMessage add various message types
   const handleAddStreamingUserMessage = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      user: {
-        content: "User Message Preparing",
-        selectedText: selectedText ?? "",
-        $typeName: "chat.v2.MessageTypeUser",
-      },
-    };
-    setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, messageEntry] });
+    const newMessage = createUserMessage(randomUUID(), "User Message Preparing", {
+      selectedText: selectedText ?? "",
+      status: "streaming",
+    });
+    setStreamingMessage({ ...streamingMessage, parts: [...streamingMessage.parts, newMessage] });
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
+        part.id === newMessage.id
           ? {
               ...part,
-              user: { ...part.user, content: "User Message Prepared", $typeName: "chat.v2.MessageTypeUser" },
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
+              data: { ...part.data, content: "User Message Prepared" },
+              status: part.status === "streaming" ? ("complete" as const) : part.status,
             }
           : part,
-      ) as MessageEntry[];
+      ) as InternalMessage[];
       setStreamingMessage({ ...streamingMessage, parts: [...newParts] });
     });
   };
   const handleAddStreamingToolPrepare = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      toolCallPrepareArguments: {
-        name: "paper_score",
-        args: JSON.stringify({ paper_id: "123" }),
-        $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
-      },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = createToolCallPrepareMessage(randomUUID(), "paper_score", JSON.stringify({ paper_id: "123" }), {
+      status: "streaming",
+    });
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) =>
+        part.id === newMessage.id
           ? {
               ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCallPrepareArguments: {
-                name: "paper_score",
-                args: JSON.stringify({ paper_id: "123" }),
-                $typeName: "chat.v2.MessageTypeToolCallPrepareArguments",
-              },
+              status: part.status === "streaming" ? ("complete" as const) : part.status,
             }
           : part,
-      ) as MessageEntry[];
+      ) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
   const handleAddStreamingToolCall = (type: "greeting" | "paper_score") => {
     const isGreeting = type === "greeting";
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      toolCall: isGreeting
-        ? {
-            name: "greeting",
-            args: JSON.stringify({ name: "Junyi" }),
-            result: "preparing",
-            error: "",
-            $typeName: "chat.v2.MessageTypeToolCall",
-          }
-        : {
-            name: "paper_score",
-            args: JSON.stringify({ paper_id: "123" }),
-            result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
-            error: "",
-            $typeName: "chat.v2.MessageTypeToolCall",
-          },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = isGreeting
+      ? createToolCallMessage(randomUUID(), "greeting", JSON.stringify({ name: "Junyi" }), {
+          result: "preparing",
+          status: "streaming",
+        })
+      : createToolCallMessage(randomUUID(), "paper_score", JSON.stringify({ paper_id: "123" }), {
+          result: '<RESULT>{ "percentile": 0.74829 }</RESULT><INSTRUCTION>123</INSTRUCTION>',
+          status: "streaming",
+        });
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
-          ? {
-              ...part,
-              status: part.status === MessageEntryStatus.PREPARING ? MessageEntryStatus.FINALIZED : part.status,
-              toolCall: isGreeting
-                ? { ...part.toolCall, result: "Hello, Junyi!", $typeName: "chat.v2.MessageTypeToolCall" }
-                : { ...part.toolCall, $typeName: "chat.v2.MessageTypeToolCall" },
-            }
-          : part,
-      ) as MessageEntry[];
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) => {
+        if (part.id !== newMessage.id) return part;
+        if (part.role !== "toolCall") return part;
+        return {
+          ...part,
+          status: "complete" as const,
+          data: isGreeting ? { ...part.data, result: "Hello, Junyi!" } : part.data,
+        };
+      }) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
   const handleAddStreamingAssistant = () => {
-    const messageEntry: MessageEntry = {
-      messageId: randomUUID(),
-      status: MessageEntryStatus.PREPARING,
-      assistant: {
-        content: "Assistant Response Preparing " + randomText(),
-        modelSlug: "gpt-4.1",
-        $typeName: "chat.v2.MessageTypeAssistant",
-      },
-    };
-    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, messageEntry] }));
+    const newMessage = createAssistantMessage(randomUUID(), "Assistant Response Preparing " + randomText(), {
+      modelSlug: "gpt-4.1",
+      status: "streaming",
+    });
+    updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));
     withDelay(() => {
-      const newParts = useStreamingMessageStore.getState().streamingMessage.parts.map((part) =>
-        part.messageId === messageEntry.messageId
-          ? {
-              ...part,
-              status: MessageEntryStatus.FINALIZED,
-              assistant: {
-                ...part.assistant,
-                content: "Assistant Response Finalized " + randomText(),
-                modelSlug: "gpt-4.1",
-                $typeName: "chat.v2.MessageTypeAssistant",
-              },
-            }
-          : part,
-      ) as MessageEntry[];
+      const newParts = useStreamingStateMachine.getState().streamingMessage.parts.map((part) => {
+        if (part.id !== newMessage.id) return part;
+        if (part.role !== "assistant") return part;
+        return {
+          ...part,
+          status: "complete" as const,
+          data: {
+            ...part.data,
+            content: "Assistant Response Finalized " + randomText(),
+          },
+        };
+      }) as InternalMessage[];
       updateStreamingMessage((prev) => ({ ...prev, parts: [...newParts] }));
     });
   };
 
   // --- Render ---
   return (
-    <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 border-orange-600 rounded-lg overflow-hidden">
+    <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 !border-orange-600 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-3 bg-orange-100 border-b-2 border-orange-600">
+      <div className="flex-shrink-0 px-4 py-3 bg-orange-100 border-b-2 !border-orange-600">
         <h1 className="text-2xl font-bold text-center text-orange-700">DevTools</h1>
       </div>
 
@@ -240,7 +220,7 @@ export const DevTools = () => {
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
         <div className="flex flex-col gap-4">
           {/* Conversation section */}
-          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200">
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border !border-orange-200">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-orange-700 flex items-center gap-2">
                 Conversation (
@@ -274,7 +254,7 @@ export const DevTools = () => {
             </div>
 
             {/* Finalized Messages */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200">
+            <div className="flex flex-col gap-2 pt-2 border-t !border-orange-200">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-gray-700">
                   Finalized Messages ({currentConversation.messages.length})
@@ -304,7 +284,7 @@ export const DevTools = () => {
           </div>
 
           {/* Streaming Message section */}
-          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200">
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border !border-orange-200">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <h3 className="text-sm font-semibold text-gray-700">Streaming Message</h3>
               <Button size="sm" variant="light" onPress={handleClearStreamingMessage} className="h-7 min-w-16">
@@ -314,25 +294,22 @@ export const DevTools = () => {
             <div className="text-xs text-gray-600 flex flex-wrap gap-1">
               <span>({streamingMessage.parts.length} total,</span>
               <span className="text-orange-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.PREPARING).length}{" "}
-                preparing,
+                {streamingMessage.parts.filter((part) => part.status === "streaming").length} preparing,
               </span>
               <span className="text-green-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.FINALIZED).length}{" "}
-                finalized,
+                {streamingMessage.parts.filter((part) => part.status === "complete").length} finalized,
               </span>
-              <span className="text-blue-600">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.INCOMPLETE).length}{" "}
-                incomplete,
+              <span className="text-red-600">
+                {streamingMessage.parts.filter((part) => part.status === "error").length} error,
               </span>
               <span className="text-gray-500">
-                {streamingMessage.parts.filter((part) => part.status === MessageEntryStatus.STALE).length} stale
+                {streamingMessage.parts.filter((part) => part.status === "stale").length} stale
               </span>
               <span>)</span>
             </div>
 
             {/* Preparing delay */}
-            <div className="flex flex-row gap-2 items-center pt-2 border-t border-orange-200">
+            <div className="flex flex-row gap-2 items-center pt-2 border-t !border-orange-200">
               <label className="text-sm text-gray-700 whitespace-nowrap">Preparing delay (seconds):</label>
               <Input
                 size="sm"
@@ -345,7 +322,7 @@ export const DevTools = () => {
             </div>
 
             {/* Streaming buttons */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200">
+            <div className="flex flex-col gap-2 pt-2 border-t !border-orange-200">
               <Button size="sm" onPress={handleAddStreamingUserMessage} className="w-full">
                 Add User Message
               </Button>

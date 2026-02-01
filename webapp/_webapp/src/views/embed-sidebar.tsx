@@ -37,7 +37,7 @@ export const EmbedSidebar = () => {
         document.removeEventListener("mouseup", mouseUpHandlerRef.current);
         mouseUpHandlerRef.current = null;
       }
-      
+
       // Restore body styles
       if (originalCursorRef.current !== "") {
         document.body.style.cursor = originalCursorRef.current;
@@ -47,7 +47,7 @@ export const EmbedSidebar = () => {
         document.body.style.userSelect = originalUserSelectRef.current;
         originalUserSelectRef.current = "";
       }
-      
+
       // Reset resizing state
       isResizingRef.current = false;
     };
@@ -75,7 +75,7 @@ export const EmbedSidebar = () => {
         ideBody.appendChild(ideInner);
       }
     }
-    
+
     // Set flex properties for ide-redesign-inner
     ideInner.style.flex = "1";
     ideInner.style.minWidth = "0";
@@ -87,7 +87,7 @@ export const EmbedSidebar = () => {
     if (container) {
       container.style.width = `${embedWidth}px`;
     }
-    
+
     // Also update layout when embedWidth changes
     if (isOpen) {
       const ideBody = document.querySelector(".ide-redesign-body") as HTMLElement | null;
@@ -173,7 +173,7 @@ export const EmbedSidebar = () => {
         ideBody.style.width = "";
         ideBody.style.height = "";
         ideBody.style.overflow = "";
-        
+
         // Restore ide-redesign-inner flex properties
         const ideInner = ideBody.querySelector(".ide-redesign-inner") as HTMLElement | null;
         if (ideInner) {
@@ -188,65 +188,68 @@ export const EmbedSidebar = () => {
   }, [isOpen, updateMainContentFlex]);
 
   // Handle resize drag
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Clean up any existing handlers first
-    if (mouseMoveHandlerRef.current) {
-      document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
-    }
-    if (mouseUpHandlerRef.current) {
-      document.removeEventListener("mouseup", mouseUpHandlerRef.current);
-    }
-    
-    isResizingRef.current = true;
-    const startX = e.clientX;
-    const startWidth = embedWidthRef.current;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizingRef.current) return;
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
       e.preventDefault();
-      const delta = e.clientX - startX;
-      const maxWidth = window.innerWidth * 0.8; // 80% of window width
-      const newWidth = Math.max(300, Math.min(maxWidth, startWidth - delta)); // min 300px, max 80% of window
-      setEmbedWidth(newWidth);
-    };
+      e.stopPropagation();
 
-    const handleMouseUp = () => {
-      isResizingRef.current = false;
-      
-      // Remove event listeners
+      // Clean up any existing handlers first
       if (mouseMoveHandlerRef.current) {
         document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
-        mouseMoveHandlerRef.current = null;
       }
       if (mouseUpHandlerRef.current) {
         document.removeEventListener("mouseup", mouseUpHandlerRef.current);
-        mouseUpHandlerRef.current = null;
       }
-      
-      // Restore body styles (including clearing inline styles when originally unset)
-      document.body.style.cursor = originalCursorRef.current;
-      document.body.style.userSelect = originalUserSelectRef.current;
-      originalCursorRef.current = "";
-      originalUserSelectRef.current = "";
-    };
 
-    // Store handlers in refs for cleanup
-    mouseMoveHandlerRef.current = handleMouseMove;
-    mouseUpHandlerRef.current = handleMouseUp;
+      isResizingRef.current = true;
+      const startX = e.clientX;
+      const startWidth = embedWidthRef.current;
 
-    // Save original body styles
-    originalCursorRef.current = document.body.style.cursor || "";
-    originalUserSelectRef.current = document.body.style.userSelect || "";
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isResizingRef.current) return;
+        e.preventDefault();
+        const delta = e.clientX - startX;
+        const maxWidth = window.innerWidth * 0.8; // 80% of window width
+        const newWidth = Math.max(300, Math.min(maxWidth, startWidth - delta)); // min 300px, max 80% of window
+        setEmbedWidth(newWidth);
+      };
 
-    // Apply new styles and attach listeners
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }, [setEmbedWidth]);
+      const handleMouseUp = () => {
+        isResizingRef.current = false;
+
+        // Remove event listeners
+        if (mouseMoveHandlerRef.current) {
+          document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
+          mouseMoveHandlerRef.current = null;
+        }
+        if (mouseUpHandlerRef.current) {
+          document.removeEventListener("mouseup", mouseUpHandlerRef.current);
+          mouseUpHandlerRef.current = null;
+        }
+
+        // Restore body styles (including clearing inline styles when originally unset)
+        document.body.style.cursor = originalCursorRef.current;
+        document.body.style.userSelect = originalUserSelectRef.current;
+        originalCursorRef.current = "";
+        originalUserSelectRef.current = "";
+      };
+
+      // Store handlers in refs for cleanup
+      mouseMoveHandlerRef.current = handleMouseMove;
+      mouseUpHandlerRef.current = handleMouseUp;
+
+      // Save original body styles
+      originalCursorRef.current = document.body.style.cursor || "";
+      originalUserSelectRef.current = document.body.style.userSelect || "";
+
+      // Apply new styles and attach listeners
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [setEmbedWidth],
+  );
 
   if (!container || !isOpen) return null;
 
@@ -261,11 +264,7 @@ export const EmbedSidebar = () => {
       }}
     >
       {/* Resize handle on the left */}
-      <div
-        ref={resizeHandleRef}
-        className="pd-embed-resize-handle"
-        onMouseDown={handleMouseDown}
-      >
+      <div ref={resizeHandleRef} className="pd-embed-resize-handle" onMouseDown={handleMouseDown}>
         {/* Visual indicator line */}
         <div className="resize-handle-indicator" />
       </div>

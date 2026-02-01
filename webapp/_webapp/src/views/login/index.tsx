@@ -15,7 +15,7 @@ export const Login = () => {
   const [showEndpointSettings, setShowEndpointSettings] = useState(false);
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50 noselect py-12">
+    <div className="flex flex-col h-full w-full items-center justify-center bg-gray-50 dark:!bg-default-50 noselect py-12">
       {!showEndpointSettings && (
         <>
           <Logo className="mb-4" />
@@ -62,7 +62,7 @@ export const Login = () => {
       )}
 
       {errorMessage && <div className="text-xs text-red-500 mt-2 text-center max-w-xs">{errorMessage}</div>}
-      <div className="text-xs text-gray-500 mt-4 text-center max-w-xs">
+      <div className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center max-w-xs">
         By login-in, you agree to PaperDebugger's <br />
         <a
           href="https://www.paperdebugger.com/blog/terms/"

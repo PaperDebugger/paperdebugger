@@ -18,7 +18,7 @@ var defaultPrompts = []*userv1.Prompt{
 		CreatedAt:    timestamppb.New(time.Time{}),
 		UpdatedAt:    timestamppb.New(time.Time{}),
 		Title:        "Tool List",
-		Content:      "List available MCP tools with a brief description for each tool.",
+		Content:      "List available tools with a brief description for each tool.",
 		IsUserPrompt: false,
 	},
 	{

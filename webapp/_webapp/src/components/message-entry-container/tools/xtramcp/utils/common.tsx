@@ -32,7 +32,7 @@ const XTRA_MCP_TOOL_NAMES = [
   // "enhance_academic_writing",
   // OPENREVIEW ONLINE TOOLS
   "search_user",
-  "get_user_papers"
+  "get_user_papers",
 ];
 
 export const isXtraMcpTool = (functionName: string): boolean => {

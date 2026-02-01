@@ -27,14 +27,12 @@ export const VariableInput = ({
       </div>
       <div className="text-xs text-gray-500">{description}</div>
       <input
-        className="border border-gray-200 rounded-md px-2 py-1"
+        className="border !border-gray-200 rounded-md px-2 py-1"
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
-      <div className="flex flex-col gap-2 items-start text-xs text-gray-500 break-all max-w-full">
-        current: {value}
-      </div>
+      <div className="flex flex-col gap-2 items-start text-xs text-gray-500 break-all max-w-full">current: {value}</div>
     </div>
   );
 };

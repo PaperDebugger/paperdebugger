@@ -6,7 +6,7 @@ type LogoProps = {
 
 export function Logo({ className }: LogoProps) {
   return (
-    <div className={cn("bg-gray-100 rounded-full p-4 mb-3", className)}>
+    <div className={cn("bg-gray-100 dark:!bg-default-200 rounded-full p-4 mb-3", className)}>
       <svg width="64" height="64" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="320" height="320" fill="transparent" />
         <rect x="81" y="81" width="144" height="152" fill="transparent" />

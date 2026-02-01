@@ -6,7 +6,7 @@ interface HostPermissionItemProps {
 
 export const HostPermissionListItem = ({ item }: HostPermissionItemProps) => {
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-md p-4 flex justify-between items-center">
+    <div className="bg-gray-50 border !border-gray-200 rounded-md p-4 flex justify-between items-center">
       <div className="flex-1">
         <div className="font-medium mb-1 text-gray-900">Host Permission</div>
         <div className="font-mono text-sm text-blue-600">{item.origin}</div>

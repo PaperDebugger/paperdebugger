@@ -193,7 +193,6 @@ export const upsertUserInstructions = async (data: PlainMessage<UpsertUserInstru
   return fromJson(UpsertUserInstructionsResponseSchema, response);
 };
 
-
 export const getProjectInstructions = async (data: PlainMessage<GetProjectInstructionsRequest>) => {
   if (!apiclient.hasToken()) {
     throw new Error("No token");

@@ -121,7 +121,7 @@ export function PromptInput() {
   return (
     <div className="pd-app-tab-content-footer chat-prompt-input noselect rnd-cancel relative">
       {/* Only show one popup at a time - priority: prompts > actions > model selection */}
-      {prompts.length > 0 && <PromptSelection prompts={prompts} />}
+      {prompt.startsWith("/") && <PromptSelection prompts={prompts} />}
       {prompts.length === 0 && actions.length > 0 && <ActionSelection actions={actions} />}
       {prompts.length === 0 && actions.length === 0 && showModelSelection && (
         <ModelSelection onSelectModel={handleModelSelect} />
@@ -132,7 +132,7 @@ export function PromptInput() {
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
-        <div className="border border-gray-100 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white transition-all">
+        <div className="border !border-gray-100 dark:!border-default-200 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white dark:!bg-default-100 transition-all">
           <textarea
             onMouseDown={(e) => e.stopPropagation()}
             onFocus={() => setShowModelSelection(false)}
@@ -145,6 +145,7 @@ export function PromptInput() {
             style={{
               fontSize: heightCollapseRequired || minimalistMode ? "12px" : "14px",
               transition: "font-size 0.2s ease-in-out",
+              backgroundColor: "transparent",
             }}
             rows={heightCollapseRequired || minimalistMode ? 1 : 3}
             placeholder={
