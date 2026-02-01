@@ -173,12 +173,12 @@ async function getLLMResponse(prompt: string): Promise<string> {
         } else if (payload.case === "streamFinalization") {
           resolve(result.trim());
         } else if (payload.case === "streamError") {
-          logError("simpleCompletion: stream error", payload.value.errorMessage);
+          logError("getLLMResponse: stream error", payload.value.errorMessage);
           resolve("");
         }
       },
     ).catch((err) => {
-      logError("simpleCompletion: failed", err);
+      logError("getLLMResponse: failed", err);
       resolve("");
     });
   });
