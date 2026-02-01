@@ -33,7 +33,6 @@ import {
 
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
-import { useConversationStore } from "../stores/conversation/conversation-store";
 import { getCitationKeys } from "../query/api";
 
 export enum SuggestionAcceptance {
@@ -134,14 +133,10 @@ export async function completion(_state: EditorState): Promise<string> {
   }
 
   // Get citation suggestion using GetCitationKeys API
-  const conversationStore = useConversationStore.getState();
-  const { currentConversation } = conversationStore;
-
   try {
     const response = await getCitationKeys({
       sentence: lastSentence,
       bibliography: bibliography,
-      modelSlug: currentConversation.modelSlug,
     });
     return response.citationKeys || "";
   } catch (err) {
