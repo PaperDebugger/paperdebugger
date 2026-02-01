@@ -32,11 +32,11 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              echo "Waiting for paperdebugger-xtramcp-server:8080..."
-              until nc -z -w 2 paperdebugger-xtramcp-server 8080; do
+              echo "Waiting for xtramcp health endpoint..."
+              until wget -q --spider http://paperdebugger-xtramcp-server:8080/health; do
                 sleep 2
               done
-              echo "xtramcp port is open."
+              echo "xtramcp is healthy."
       containers:
         - name: paperdebugger
           image: {{ .Values.paperdebugger.image }}
