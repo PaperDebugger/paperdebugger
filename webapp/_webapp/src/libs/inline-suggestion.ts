@@ -159,7 +159,7 @@ export async function completion(_state: EditorState): Promise<string> {
       projectId: "inline-completion",
       conversationId: currentConversation.id,
       modelSlug: currentConversation.modelSlug,
-      conversationMode: "default",
+      conversationMode: "debug",
     });
 
     createConversationMessageStream(
