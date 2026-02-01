@@ -107,7 +107,7 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 export async function completion(_state: EditorState): Promise<string> {
   const triggerWord = "\\cite{";
 
-  // Only trigger when setting is on
+  // Only trigger when enable completion setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
     return "";
