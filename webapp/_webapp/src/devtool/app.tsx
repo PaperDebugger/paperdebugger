@@ -5,34 +5,54 @@ import { getCookies } from "../intermediate";
 import { TooltipArea } from "./tooltip";
 import { DevTools } from "../views/devtools";
 import { useDevtoolStore } from "../stores/devtool-store";
+import { storage } from "../libs/storage";
+
+const updateCsrfTokenMeta = (csrfToken: string) => {
+  let metaTag = document.querySelector('meta[name="ol-csrfToken"]') as HTMLMetaElement | null;
+  if (!metaTag) {
+    metaTag = document.createElement("meta");
+    metaTag.name = "ol-csrfToken";
+    document.head.appendChild(metaTag);
+  }
+  metaTag.content = csrfToken;
+};
 
 const App = () => {
   const { token, refreshToken, setToken, setRefreshToken } = useAuthStore();
-  const [projectId, setProjectId] = useState(localStorage.getItem("pd.projectId") ?? "");
-  const [overleafSession, setOverleafSession] = useState(localStorage.getItem("pd.auth.overleafSession") ?? "");
-  const [gclb, setGclb] = useState(localStorage.getItem("pd.auth.gclb") ?? "");
+  const [projectId, setProjectId] = useState(storage.getItem("pd.projectId") ?? "");
+  const [overleafSession, setOverleafSession] = useState(storage.getItem("pd.auth.overleafSession") ?? "");
+  const [gclb, setGclb] = useState(storage.getItem("pd.auth.gclb") ?? "");
+  const [csrfToken, setCsrfToken] = useState(storage.getItem("pd.auth.csrfToken") ?? "");
+
   const { showTool } = useDevtoolStore();
-  
+
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
-      setOverleafSession(cookies.session ?? localStorage.getItem("pd.auth.overleafSession") ?? "");
-      setGclb(cookies.gclb ?? localStorage.getItem("pd.auth.gclb") ?? "");
+      setOverleafSession(cookies.session ?? storage.getItem("pd.auth.overleafSession") ?? "");
+      setGclb(cookies.gclb ?? storage.getItem("pd.auth.gclb") ?? "");
     });
   }, []);
 
   const setProjectId_ = useCallback((projectId: string) => {
-    localStorage.setItem("pd.projectId", projectId);
+    storage.setItem("pd.projectId", projectId);
     setProjectId(projectId);
   }, []);
 
   const setOverleafSession_ = useCallback((overleafSession: string) => {
-    localStorage.setItem("pd.auth.overleafSession", overleafSession);
+    storage.setItem("pd.auth.overleafSession", overleafSession);
     setOverleafSession(overleafSession);
   }, []);
 
   const setGclb_ = useCallback((gclb: string) => {
-    localStorage.setItem("pd.auth.gclb", gclb);
+    storage.setItem("pd.auth.gclb", gclb);
     setGclb(gclb);
+  }, []);
+
+  const setCsrfToken_ = useCallback((csrfToken: string) => {
+    storage.setItem("pd.auth.csrfToken", csrfToken);
+    setCsrfToken(csrfToken);
+    // Update meta tag in DOM
+    updateCsrfTokenMeta(csrfToken);
   }, []);
 
   return (
@@ -69,6 +89,12 @@ const App = () => {
             value={refreshToken}
             setValue={setRefreshToken}
           />
+          <VariableInput
+            title="CSRF Token"
+            description="Overleaf → Request Headers → X-CSRF-Token (also creates meta[name='ol-csrfToken'])"
+            value={csrfToken}
+            setValue={setCsrfToken_}
+          />
         </div>
       </div>
       <div className="flex flex-col gap-2 flex-1 min-w-0">
@@ -88,9 +114,7 @@ const App = () => {
           </div>
         </TooltipArea>
       </div>
-      <div className="flex flex-col gap-2 flex-1 min-w-0">
-      {import.meta.env.DEV && showTool && <DevTools />}
-      </div>
+      <div className="flex flex-col gap-2 flex-1 min-w-0">{import.meta.env.DEV && showTool && <DevTools />}</div>
     </main>
   );
 };

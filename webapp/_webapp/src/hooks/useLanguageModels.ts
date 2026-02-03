@@ -12,6 +12,8 @@ export type Model = {
   maxOutput: number;
   inputPrice: number;
   outputPrice: number;
+  disabled: boolean;
+  disabledReason?: string;
   customModelId: string;
 };
 
@@ -31,6 +33,7 @@ const fallbackModels: Model[] = [
     maxOutput: 32800,
     inputPrice: 200,
     outputPrice: 800,
+    disabled: false,
     customModelId: "",
   },
 ];
@@ -43,6 +46,8 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
   maxOutput: Number(supportedModel.maxOutput),
   inputPrice: Number(supportedModel.inputPrice),
   outputPrice: Number(supportedModel.outputPrice),
+  disabled: supportedModel.disabled,
+  disabledReason: supportedModel.disabledReason,
   customModelId: supportedModel.customModelId,
 });
 

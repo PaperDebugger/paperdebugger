@@ -15,6 +15,7 @@ import { useAuthStore } from "./stores/auth-store";
 import { useConversationUiStore } from "./stores/conversation/conversation-ui-store";
 import { useSelectionStore } from "./stores/selection-store";
 import { useSettingStore } from "./stores/setting-store";
+import { useThemeSync } from "./hooks/useThemeSync";
 import { MainDrawer } from "./views";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
@@ -42,13 +43,13 @@ initializeFaro({
     // Tracing package to get end-to-end visibility for HTTP requests.
     new TracingInstrumentation(),
   ],
-  ignoreUrls:[
+  ignoreUrls: [
     /overleaf\.com/,
     /compiles\.overleafusercontent\.com/,
     /writefull\.ai/,
     /bugsnag\.com/,
     /google-analytics\.com/,
-  ]
+  ],
 });
 
 export const Main = () => {
@@ -67,13 +68,16 @@ export const Main = () => {
   } = useSelectionStore();
   const [menuElement, setMenuElement] = useState<Element | null>(null);
   const { isOpen, setIsOpen } = useConversationUiStore();
-  const { settings, loadSettings, disableLineWrap } = useSettingStore();
+  const { settings, loadSettings, disableLineWrap, initLocalSettings } = useSettingStore();
   const { login } = useAuthStore();
   const { loadPrompts } = usePromptLibraryStore();
+
+  useThemeSync();
 
   useEffect(() => {
     apiclient.updateBaseURL(getEndpointFromLocalStorage(), "v1");
     apiclientV2.updateBaseURL(getEndpointFromLocalStorage(), "v2");
+    initLocalSettings();
     login();
     loadSettings();
     loadPrompts();
@@ -230,13 +234,14 @@ if (!import.meta.env.DEV) {
 
     const root = createRoot(div);
     const adapter = getOverleafAdapter();
+    useSettingStore.getState().initLocalSettings();
     // This block only runs in production (!DEV), so always render without StrictMode
     root.render(
       <Providers>
         <AdapterProvider adapter={adapter}>
           <Main />
         </AdapterProvider>
-      </Providers>
+      </Providers>,
     );
     googleAnalytics.firePageViewEvent(
       "unknown",

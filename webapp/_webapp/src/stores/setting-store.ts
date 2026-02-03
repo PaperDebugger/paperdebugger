@@ -13,7 +13,10 @@ const LOCAL_STORAGE_KEY = {
   MINIMALIST_MODE: "pd.ui.minimalistMode",
   HIDE_AVATAR: "pd.ui.hideAvatar",
   ALLOW_OUT_OF_BOUNDS: "pd.ui.allowOutOfBounds",
+  THEME_MODE: "pd.ui.themeMode",
 };
+
+export type ThemeMode = "auto" | "light" | "dark";
 
 export interface SettingStore {
   settings: PlainMessage<Settings> | null;
@@ -48,6 +51,9 @@ export interface SettingStore {
 
   allowOutOfBounds: boolean;
   setAllowOutOfBounds: (enable: boolean) => void;
+
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
 }
 
 const defaultSettings: PlainMessage<Settings> = {
@@ -150,6 +156,7 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
     const minimalistMode = storage.getItem(LOCAL_STORAGE_KEY.MINIMALIST_MODE) === "true";
     const hideAvatar = storage.getItem(LOCAL_STORAGE_KEY.HIDE_AVATAR) === "true";
     const allowOutOfBounds = storage.getItem(LOCAL_STORAGE_KEY.ALLOW_OUT_OF_BOUNDS) === "true";
+    const themeMode = (storage.getItem(LOCAL_STORAGE_KEY.THEME_MODE) as ThemeMode) || "auto";
 
     set({
       enableUserDeveloperTools,
@@ -158,6 +165,7 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
       minimalistMode,
       hideAvatar,
       allowOutOfBounds,
+      themeMode,
     });
   },
 
@@ -197,5 +205,11 @@ export const useSettingStore = create<SettingStore>()((set, get) => ({
   setAllowOutOfBounds: (enable: boolean) => {
     storage.setItem(LOCAL_STORAGE_KEY.ALLOW_OUT_OF_BOUNDS, enable.toString());
     set({ allowOutOfBounds: enable });
+  },
+
+  themeMode: "auto",
+  setThemeMode: (mode: ThemeMode) => {
+    storage.setItem(LOCAL_STORAGE_KEY.THEME_MODE, mode);
+    set({ themeMode: mode });
   },
 }));

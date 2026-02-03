@@ -195,6 +195,7 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 	}
 
 	var latexFullSource string
+	var projectInstructions string = ""
 	switch conversationType {
 	case chatv2.ConversationType_CONVERSATION_TYPE_DEBUG:
 		latexFullSource = "latex_full_source is not available in debug mode"
@@ -207,6 +208,8 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 		if err != nil {
 			return ctx, nil, nil, err
 		}
+
+		projectInstructions = project.Instructions
 	}
 
 	var conversation *models.Conversation
@@ -217,7 +220,7 @@ func (s *ChatServerV2) prepare(ctx context.Context, projectId string, conversati
 			actor.ID,
 			projectId,
 			latexFullSource,
-			project.Instructions,
+			projectInstructions,
 			userInstructions,
 			userMessage,
 			userSelectedText,

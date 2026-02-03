@@ -12,11 +12,7 @@
 
 // Re-export types and implementations from adapters
 export type { StorageAdapter } from "../adapters/types";
-export {
-  LocalStorageAdapter,
-  MemoryStorageAdapter,
-  createStorageAdapter,
-} from "../adapters/storage-adapter";
+export { LocalStorageAdapter, MemoryStorageAdapter, createStorageAdapter } from "../adapters/storage-adapter";
 
 import type { StorageAdapter } from "../adapters/types";
 import { createStorageAdapter } from "../adapters/storage-adapter";
@@ -60,7 +56,7 @@ export class TypedStorage<T> {
   constructor(
     private key: string,
     private defaultValue: T,
-    private adapter: StorageAdapter = getStorage()
+    private adapter: StorageAdapter = getStorage(),
   ) {}
 
   get(): T {

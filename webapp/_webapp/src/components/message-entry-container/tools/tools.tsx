@@ -70,7 +70,12 @@ export default function Tools({ messageId, functionName, message, error, prepari
       );
     } else if (functionName === "generate_citations") {
       return (
-        <GenerateCitationsCard functionName={functionName} message={message} preparing={preparing} animated={animated} />
+        <GenerateCitationsCard
+          functionName={functionName}
+          message={message}
+          preparing={preparing}
+          animated={animated}
+        />
       );
     }
 

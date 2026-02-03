@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, cn } from "@heroui/react";
 import { useSettingStore } from "../../stores/setting-store";
 import { Settings } from "../../pkg/gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../../query/types";
 import { useConversationStore } from "../../stores/conversation/conversation-store";
 import { listSupportedModels } from "../../query/api";
+import { queryKeys } from "../../query/keys";
 
 type SettingKey = keyof PlainMessage<Settings>;
 
@@ -28,6 +30,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     multiline = true,
     password = false,
   }: SettingsTextInputProps) {
+    const queryClient = useQueryClient();
     const { settings, isUpdating, updateSettings } = useSettingStore();
     const { setCurrentConversation } = useConversationStore();
     const [value, setValue] = useState<string>("");
@@ -47,26 +50,24 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     const valueChanged = value !== originalValue;
 
     // helper normalizes model by retrieving the model (assumed to be the last segment, if '/' present)
-    const normalizeModelId = (modelSlug: string) =>
-      modelSlug.toLowerCase().trim().split("/").filter(Boolean).pop()!;
+    const normalizeModelId = (modelSlug: string) => modelSlug.toLowerCase().trim().split("/").filter(Boolean).pop()!;
 
     const saveSettings = useCallback(async () => {
       await updateSettings({ [settingKey]: value.trim() } as Partial<PlainMessage<Settings>>);
       setOriginalValue(value.trim());
       setIsEditing(false);
 
-      // If openaiApiKey was updated, fetch new model list and update current model slug
+      // If openaiApiKey was updated, fetch new model list, update React Query cache (so chat UI shows correct disabled state e.g. grey out BYOK-only models when key is removed), and update current model slug
       if (settingKey === "openaiApiKey") {
         const response = await listSupportedModels({});
+        queryClient.setQueryData(queryKeys.chats.listSupportedModels().queryKey, response);
         if (response.models?.length) {
           const { currentConversation: latest } = useConversationStore.getState();
           // try to find a model that matches the current slug
           // we don't do exact match but attempt exact suffix match (case insensitive); as per convention
           // we don't assume any provided prefix (e.g. openai/, quen/) but fair to assume model name is suffix
           const currentId = normalizeModelId(latest.modelSlug);
-          const matchingModel = response.models.find(m =>
-             normalizeModelId(m.name) === currentId
-          );
+          const matchingModel = response.models.find((m) => normalizeModelId(m.name) === currentId);
           // fall back to the first model in the list
           const newSlug = matchingModel?.slug ?? response.models[0].slug;
 
@@ -78,7 +79,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           }
         }
       }
-    }, [value, settingKey, updateSettings]); // settingKey is an outer scope value, not a dependency
+    }, [value, updateSettings, queryClient, setCurrentConversation]); // settingKey is an outer scope value, not a dependency
 
     const handleEdit = useCallback(() => {
       setIsEditing(true);
@@ -106,7 +107,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     );
 
     const inputClassName = cn(
-      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200 rounded-md w-full",
+      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md w-full",
       className,
     );
 
@@ -118,7 +119,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     };
 
     const textDisplayClassName = cn(
-      "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 rounded-md content-center",
+      "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 dark:!bg-default-200 rounded-md content-center",
       !value && "text-default-400 italic",
     );
 

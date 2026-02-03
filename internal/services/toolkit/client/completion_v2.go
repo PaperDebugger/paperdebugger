@@ -6,6 +6,7 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 
 	"github.com/openai/openai-go/v3"
 )
@@ -75,9 +76,21 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		reasoning_content := ""
 		answer_content := ""
 		answer_content_id := ""
-		is_answering := false
+		has_sent_part_begin := false
 		tool_info := map[int]map[string]string{}
 		toolCalls := []openai.FinishedChatCompletionToolCall{}
+		handleReasoning := func(raw string) (string, bool) {
+			raw = strings.TrimSpace(raw)
+			if raw == "" || raw == "null" {
+				return "", false
+			}
+			var s string
+			if err := json.Unmarshal([]byte(raw), &s); err != nil || s == "" {
+				return "", false
+			}
+			return s, true
+		}
+
 		for stream.Next() {
 			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
@@ -90,21 +103,37 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 			delta := chunk.Choices[0].Delta
 
-			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok && field.Raw() != "null" {
-				var s string
-				err := json.Unmarshal([]byte(field.Raw()), &s)
-				if err != nil {
-					// fmt.Println(err)
-				}
-				reasoning_content += s
-				// fmt.Print(s)
-			} else {
-				if !is_answering {
-					is_answering = true
-					// fmt.Println("\n\n========== Response ==========")
-					streamHandler.HandleAddedItem(chunk)
-				}
+			// Send StreamPartBegin before any content (reasoning or answer) to ensure
+			// the frontend has created the assistant message part before receiving chunks.
+			// This is critical for models that send reasoning_content before regular content.
+			// We use HandleAssistantPartBegin instead of HandleAddedItem because the first
+			// chunk with reasoning content may not have delta.Role set to "assistant".
+			_, hasReasoningContent := delta.JSON.ExtraFields["reasoning_content"]
+			_, hasReasoning := delta.JSON.ExtraFields["reasoning"]
+			if !has_sent_part_begin && (delta.Role == "assistant" || delta.Content != "" || hasReasoningContent || hasReasoning) {
+				has_sent_part_begin = true
+				streamHandler.HandleAssistantPartBegin(chunk.ID)
+			}
 
+			reasoningHandled := false
+			if field, ok := delta.JSON.ExtraFields["reasoning_content"]; ok {
+				if s, ok := handleReasoning(field.Raw()); ok {
+					reasoning_content += s
+					streamHandler.HandleReasoningDelta(chunk.ID, s)
+					reasoningHandled = true
+				}
+			}
+			if !reasoningHandled {
+				if field, ok := delta.JSON.ExtraFields["reasoning"]; ok {
+					if s, ok := handleReasoning(field.Raw()); ok {
+						reasoning_content += s
+						streamHandler.HandleReasoningDelta(chunk.ID, s)
+						reasoningHandled = true
+					}
+				}
+			}
+
+			if !reasoningHandled {
 				if delta.Content != "" {
 					answer_content += delta.Content
 					answer_content_id = chunk.ID
@@ -155,7 +184,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
 				// answer_content += chunk.Choices[0].Delta.Content
 				// fmt.Printf("answer_content: %s\n", answer_content)
-				streamHandler.HandleTextDoneItem(chunk, answer_content)
+				streamHandler.HandleTextDoneItem(chunk, answer_content, reasoning_content)
 				break
 			}
 		}

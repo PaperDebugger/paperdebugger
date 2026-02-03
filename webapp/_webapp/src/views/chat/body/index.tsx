@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MessageCard } from "../../../components/message-card";
-import { Conversation, Message } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { filterVisibleMessages, getPrevUserMessage, isEmptyConversation, messageToMessageEntry } from "../helper";
+import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
+import { isEmptyConversation, getPrevUserSelectedText, findLastUserMessageIndex } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
-import { useStreamingMessageStore } from "../../../stores/streaming-message-store";
+import { useMessageStore } from "../../../stores/message-store";
 import { useSettingStore } from "../../../stores/setting-store";
 import { useConversationStore } from "../../../stores/conversation/conversation-store";
+import { useStreamingStateMachine } from "../../../stores/streaming";
 import { getConversation } from "../../../query/api";
+import { DisplayMessage } from "../../../stores/types";
 
 interface ChatBodyProps {
   conversation?: Conversation;
@@ -23,120 +25,95 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
   const setCurrentConversation = useConversationStore((s) => s.setCurrentConversation);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
-  const expanderRef = useRef<HTMLDivElement>(null);
-  const streamingMessage = useStreamingMessageStore((s) => s.streamingMessage);
-  const visibleMessages = useMemo(() => filterVisibleMessages(conversation), [conversation]);
   const [reloadSuccess, setReloadSuccess] = useState(ReloadStatus.Default);
 
   const conversationMode = useSettingStore((s) => s.conversationMode);
   const isDebugMode = conversationMode === "debug";
 
-  // Scroll to the top of the last user message
+  // Use the unified message store to get all display messages
+  const allDisplayMessages = useMessageStore((s) => s.allDisplayMessages);
+
+  // Filter visible messages (non-empty user/assistant, all tool calls)
+  const visibleMessages = useMemo(() => {
+    return allDisplayMessages.filter((msg: DisplayMessage) => {
+      if (msg.type === "user") return msg.content.length > 0;
+      if (msg.type === "assistant") return msg.content.length > 0 || (msg.reasoning?.length ?? 0) > 0;
+      if (msg.type === "toolCall" || msg.type === "toolCallPrepare") return true;
+      return false;
+    });
+  }, [allDisplayMessages]);
+
+  // Find the last user message index for scroll behavior
+  const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(visibleMessages), [visibleMessages]);
+
+  // Get the last user message ID to track when it changes
+  const lastUserMessageId = useMemo(() => {
+    if (lastUserMessageIndex === -1) return null;
+    return visibleMessages[lastUserMessageIndex]?.id ?? null;
+  }, [visibleMessages, lastUserMessageIndex]);
+
+  // Scroll the last user message to the top of the viewport (container only)
+  const scrollToLastUserMessage = useCallback(() => {
+    if (!lastUserMsgRef.current || !chatContainerRef.current) return;
+
+    const container = chatContainerRef.current;
+    const target = lastUserMsgRef.current;
+
+    container.scrollTo({
+      top: target.offsetTop,
+      behavior: "smooth",
+    });
+  }, []);
+
+  // Auto-scroll only when a new user message is added
   useEffect(() => {
-    if (expanderRef.current) {
-      expanderRef.current.style.height = "1000px";
-    }
+    if (!lastUserMessageId) return;
 
-    const chatContainerHeight = chatContainerRef.current?.clientHeight ?? 0;
-    const expanderViewOffset =
-      (expanderRef.current?.getBoundingClientRect().top ?? 0) -
-      (chatContainerRef.current?.getBoundingClientRect().y ?? 0);
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      scrollToLastUserMessage();
+    });
+  }, [lastUserMessageId, scrollToLastUserMessage]);
 
-    let expanderHeight: number;
-    if (expanderViewOffset < 0) {
-      expanderHeight = 0; // The expander's position is absolute and renders independently from stream markdown. When stream markdown renders, the expander may scroll above the chatContainer due to user scrolling, causing expander.y < 0. In this case, we don't need the expander.
-    } else {
-      expanderHeight = chatContainerHeight - expanderViewOffset;
-    }
-
-    if (expanderRef.current) {
-      const lastUserMsgHeight = lastUserMsgRef.current?.clientHeight ?? 0;
-      expanderRef.current.style.height = chatContainerHeight - lastUserMsgHeight - 8 + "px";
-    }
-
-    if (lastUserMsgRef.current && chatContainerRef.current) {
-      const container = chatContainerRef.current;
-      const target = lastUserMsgRef.current;
-      container.scrollTo({
-        top: target.offsetTop,
-        behavior: "smooth",
-      });
-    } else {
-      if (expanderRef.current) {
-        expanderRef.current.style.height = (expanderHeight < 0 ? 0 : expanderHeight) + "px";
-      }
-    }
-  }, [visibleMessages.length]);
-
-  const finalizedMessageCards = useMemo(
+  // Render all messages using the unified DisplayMessage array
+  const messageCards = useMemo(
     () =>
-      visibleMessages.map((message: Message, index: number) => (
-        <div
-          key={index}
-          ref={
-            index === visibleMessages.length - 1 && message.payload?.messageType.case === "user"
-              ? lastUserMsgRef
-              : undefined
-          }
-        >
-          <MessageCard
-            animated={false}
-            messageEntry={messageToMessageEntry(message)}
-            prevAttachment={getPrevUserMessage(visibleMessages, index)?.selectedText}
-          />
-        </div>
-      )),
-    [visibleMessages],
-  );
+      visibleMessages.map((msg: DisplayMessage, index: number) => {
+        const isStreaming = msg.status === "streaming";
+        const isLastUserMsg = index === lastUserMessageIndex;
 
-  const streamingMessageCards = useMemo(
-    () =>
-      streamingMessage.parts.map((entry) => (
-        <MessageCard key={`streaming-${entry.messageId}`} animated={true} messageEntry={entry} />
-      )),
-    [streamingMessage.parts],
+        return (
+          <div key={msg.id} ref={isLastUserMsg ? lastUserMsgRef : undefined}>
+            <MessageCard
+              animated={isStreaming}
+              message={msg}
+              prevAttachment={getPrevUserSelectedText(visibleMessages, index)}
+            />
+          </div>
+        );
+      }),
+    [visibleMessages, lastUserMessageIndex],
   );
 
   if (isEmptyConversation()) {
     return <EmptyView />;
   }
 
-  const expander = (
-    <div
-      style={{
-        height: "0px",
-        backgroundColor: "transparent",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 0,
-        pointerEvents: "none",
-      }}
-      aria-hidden="true"
-      id="expander"
-      ref={expanderRef}
-    />
-  );
-
   return (
     <div className="pd-app-tab-content-body" id="pd-chat-item-container" ref={chatContainerRef}>
-      <div id="pd-chat-item-container-previous-messages" style={{ zIndex: 3 }}>
-        {finalizedMessageCards}
-      </div>
+      {/* Spacer that pushes content down and provides scroll space for last user message */}
+      <div className="flex-1 min-h-0" aria-hidden="true" />
 
-      <div id="pd-chat-item-container-current-messages" style={{ position: "relative" }}>
-        <div id="pd-chat-item-container-current-messages-entries" style={{ position: "relative", zIndex: 2 }}>
-          {streamingMessageCards}
-          <StatusIndicator conversation={conversation} />
-        </div>
+      <div className="pd-chat-item-container-messages">{messageCards}</div>
 
-        {expander}
+      <div id="pd-chat-item-container-status" className="relative">
+        <StatusIndicator conversation={conversation} />
+
         {isDebugMode && (
-          <div className="text-xs text-gray-300 z-1 noselect">
+          <div className="text-xs text-default-300 dark:!text-default-300 noselect">
             <span>* Debug mode is enabled, </span>
             <span
-              className={`${reloadSuccess ? "text-emerald-300" : "text-gray-300"} underline cursor-pointer rnd-cancel`}
+              className={`${reloadSuccess ? "text-emerald-300" : "text-default-300 dark:!text-default-300"} underline cursor-pointer rnd-cancel`}
               onClick={async () => {
                 try {
                   const response = await getConversation({ conversationId: conversation?.id ?? "" });
@@ -144,8 +121,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
                     throw new Error(`Failed to load conversation ${conversation?.id ?? "unknown"}`);
                   }
                   setCurrentConversation(response.conversation);
-                  useStreamingMessageStore.getState().resetStreamingMessage();
-                  useStreamingMessageStore.getState().resetIncompleteIndicator();
+                  useStreamingStateMachine.getState().reset();
                   setReloadSuccess(ReloadStatus.Success);
                 } catch {
                   setReloadSuccess(ReloadStatus.Failed);
@@ -162,6 +138,9 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
           </div>
         )}
       </div>
+
+      {/* Bottom spacer to allow scrolling the last user message to the top */}
+      <div className="flex-shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
     </div>
   );
 };

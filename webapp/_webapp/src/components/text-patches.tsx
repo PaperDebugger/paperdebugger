@@ -77,6 +77,8 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
     processedChildren = processedChildren.map((child) => {
       return typeof child === "string" ? child.replace(/§NEWLINE§/g, "\n").trim() : child;
     });
+  } else if (typeof processedChildren === "string") {
+    processedChildren = processedChildren.replace(/§NEWLINE§/g, "\n").trim();
   }
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
         nodeStyles = "text-xs bg-green-200 text-green-800 px-[3px] py-px rounded-md";
         cntAdded++;
       } else if (removed) {
-        nodeStyles = "text-xs bg-red-200 text-red-800 px-[3px] py-px rounded-md";
+        nodeStyles = "text-xs bg-red-200 dark:bg-danger-200/50 text-red-800 dark:text-danger px-[3px] py-px rounded-md";
         cntRemoved++;
       } else {
         nodeStyles = "text-xs text-gray-800";
@@ -121,12 +123,15 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
 
   return (
     <div className="my-2 w-full flex flex-col gap-2">
-      <pre className="w-full p-2 rounded-md bg-gray-200 text-sm whitespace-pre-wrap" id="text-patches-diff-display">
+      <pre
+        className="w-full p-2 rounded-md bg-gray-200 dark:!bg-default-200 text-sm whitespace-pre-wrap"
+        id="text-patches-diff-display"
+      >
         {showDiff ? mappedNodes : processedChildren}
       </pre>
       <pre
         ref={preRef}
-        className="w-full p-2 rounded-md bg-gray-200 text-sm whitespace-pre-wrap hidden"
+        className="w-full p-2 rounded-md bg-gray-200 dark:!bg-default-200 text-sm whitespace-pre-wrap hidden"
         id="text-patches-pre-raw"
       >
         {processedChildren}

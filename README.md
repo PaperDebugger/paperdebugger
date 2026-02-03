@@ -1,12 +1,11 @@
-![branding](docs/imgs/branding.png)
 
-**Explore the demo paper’s supporting assets in the [/demo](/demo/) folder.**
+<a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="docs/imgs/branding.png" alt="PaperDebugger"/></a>
 
 <div align="center">
 <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/users/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Users" alt="Chrome Web Store Users"/></a>
 <a href="https://chromewebstore.google.com/detail/paperdebugger/dfkedikhakpapbfcnbpmfhpklndgiaog" target="_blank"><img src="https://img.shields.io/chrome-web-store/v/dfkedikhakpapbfcnbpmfhpklndgiaog?label=Chrome%20Web%20Store&logo=google-chrome&logoColor=white" alt="Chrome Web Store Version"/></a>
 <a href="https://github.com/PaperDebugger/paperdebugger/releases" target="_blank"><img src="https://img.shields.io/github/v/release/PaperDebugger/paperdebugger?label=Latest%20Release" alt="GitHub Release"/></a>
-<a href="https://github.com/PaperDebugger/paperdebugger/actions/workflows/release.yml" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/PaperDebugger/paperdebugger/build.yml?branch=main" alt="Build Status"/></a>
+<a href="https://github.com/PaperDebugger/paperdebugger/actions/workflows/build-backend-prd.yml" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/PaperDebugger/paperdebugger/build-backend-prd.yml?branch=main" alt="Build Status"/></a>
 <a href="https://github.com/PaperDebugger/PaperDebugger?tab=AGPL-3.0-1-ov-file"><img src="https://img.shields.io/github/license/PaperDebugger/paperdebugger" alt="License"/></a>
 </div>
 
@@ -64,7 +63,7 @@ https://github.com/user-attachments/assets/6c20924d-1eb6-44d5-95b0-207bd08b718b
 2. **Ready to use**
    - Open any Overleaf project
    - Click the PaperDebugger icon on the top-left
-   - Begin chatting with your LaTeX assistant!
+   - Begin chatting with your LaTeX document!
 
 ### Custom Endpoint Configuration
 
@@ -72,10 +71,12 @@ If you want to use a **self-hosted** PaperDebugger backend, you can configure a 
 
 1. Open the PaperDebugger extension
 
-    (a.) Go to Settings, click the version number 5 times to enable "Developer Tools" 
+    (a.) Go to Settings, click the version number **5 times** to enable "Developer Tools" 
 
     (b.) Enter your backend URL in the "Backend Endpoint" field 
 2. Refresh the page
+
+   Note: you can only use "Login by Overleaf" if you are self-hosting the backend.
 
 If you encounter endpoint errors after refresh, use the "Advanced Options" at the bottom of the login page to reconfigure.
 

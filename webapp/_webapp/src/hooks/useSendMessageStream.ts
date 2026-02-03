@@ -1,191 +1,270 @@
-import { useCallback } from "react";
-import {
-  ConversationType,
-  CreateConversationMessageStreamRequest,
-  IncompleteIndicator,
-  StreamFinalization,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { PlainMessage } from "../query/types";
-import { useStreamingMessageStore } from "../stores/streaming-message-store";
-import { getProjectId } from "../libs/helpers";
-import { withRetrySync } from "../libs/with-retry-sync";
+/**
+ * useSendMessageStream Hook
+ *
+ * A React hook for sending streaming messages in a conversation.
+ *
+ * This hook has been refactored as part of Phase 5 to:
+ * - Focus on orchestration, delegating event handling to the state machine
+ * - Use extracted utilities for request building and event mapping
+ * - Reduce the number of hook dependencies
+ * - Improve testability and maintainability
+ *
+ * Architecture:
+ * ```
+ * useSendMessageStream (orchestrator)
+ *     │
+ *     ├── buildStreamRequest() → Create API request
+ *     │
+ *     ├── StreamingStateMachine.handleEvent() → Handle stream events
+ *     │
+ *     └── mapResponseToStreamEvent() → Map API responses to events
+ * ```
+ *
+ * @example
+ * ```tsx
+ * function ChatInput() {
+ *   const { sendMessageStream, isStreaming } = useSendMessageStream();
+ *
+ *   const handleSend = async () => {
+ *     await sendMessageStream(message, selectedText);
+ *   };
+ * }
+ * ```
+ */
+
+import { useCallback, useMemo, useRef } from "react";
 import { createConversationMessageStream } from "../query/api";
-import { handleStreamInitialization } from "../stores/conversation/handlers/handleStreamInitialization";
-import { handleStreamPartBegin } from "../stores/conversation/handlers/handleStreamPartBegin";
-import { handleMessageChunk } from "../stores/conversation/handlers/handleMessageChunk";
-import { handleStreamPartEnd } from "../stores/conversation/handlers/handleStreamPartEnd";
-import { handleStreamFinalization } from "../stores/conversation/handlers/handleStreamFinalization";
-import { handleStreamError } from "../stores/conversation/handlers/handleStreamError";
-import {
-  MessageChunk,
-  MessageTypeUserSchema,
-  StreamError,
-  StreamInitialization,
-  StreamPartBegin,
-  StreamPartEnd,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { MessageEntry, MessageEntryStatus } from "../stores/conversation/types";
-import { fromJson } from "../libs/protobuf-utils";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListConversationsQuery } from "../query";
 import { logError, logWarn } from "../libs/logger";
-import { handleError } from "../stores/conversation/handlers/handleError";
-import { handleIncompleteIndicator } from "../stores/conversation/handlers/handleIncompleteIndicator";
 import { useAuthStore } from "../stores/auth-store";
 import { useDevtoolStore } from "../stores/devtool-store";
 import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
+import { getProjectId } from "../libs/helpers";
+import { useStreamingStateMachine, InternalMessage, withStreamingErrorHandler } from "../stores/streaming";
+import { createUserMessage } from "../types/message";
+import { buildStreamRequest, StreamRequestParams } from "../utils/stream-request-builder";
+import { mapResponseToStreamEvent } from "../utils/stream-event-mapper";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 /**
- * Custom React hook to handle sending a message as a stream in a conversation.
- *
- * This hook manages the process of sending a user message to the backend as a streaming request,
- * handling all intermediate streaming events (initialization, message chunks, part begin/end, finalization, and errors).
- * It updates the relevant stores for streaming and finalized messages, manages conversation state,
- * and ensures proper synchronization with the backend (including Overleaf authentication).
- *
- * Usage:
- *   const { sendMessageStream } = useSendMessageStream();
- *   await sendMessageStream(message, selectedText);
- *
- * @returns {Object} An object containing the sendMessageStream function.
- * @returns {Function} sendMessageStream - Function to send a message as a stream. Accepts (message: string, selectedText: string) and returns a Promise.
+ * Return type for the useSendMessageStream hook.
  */
-export function useSendMessageStream() {
+export interface UseSendMessageStreamResult {
+  /** Function to send a message as a stream */
+  sendMessageStream: (message: string, selectedText: string, parentMessageId?: string) => Promise<void>;
+  /** Whether a stream is currently active */
+  isStreaming: boolean;
+}
+
+// ============================================================================
+// Hook Implementation
+// ============================================================================
+
+export function useSendMessageStream(): UseSendMessageStreamResult {
+  // External dependencies
   const { sync } = useSync();
   const { user } = useAuthStore();
   const adapter = useAdapter();
 
-  const { currentConversation } = useConversationStore();
-  // Get project ID from adapter (supports both Overleaf URL and Word document ID)
+  // Conversation state
+  const currentConversation = useConversationStore((s) => s.currentConversation);
   const projectId = adapter.getDocumentId?.() || getProjectId();
   const { refetch: refetchConversationList } = useListConversationsQuery(projectId);
-  const { resetStreamingMessage, updateStreamingMessage, resetIncompleteIndicator } = useStreamingMessageStore();
-  const { surroundingText: storeSurroundingText } = useSelectionStore();
-  const { alwaysSyncProject } = useDevtoolStore();
-  const { conversationMode } = useSettingStore();
 
-  const sendMessageStream = useCallback(
-    async (message: string, selectedText: string) => {
-      if (!message || !message.trim()) {
+  // Streaming state machine
+  const stateMachine = useStreamingStateMachine();
+  const isStreaming = stateMachine.state !== "idle";
+
+  // Selection and settings
+  const surroundingText = useSelectionStore((s) => s.surroundingText);
+  const alwaysSyncProject = useDevtoolStore((s) => s.alwaysSyncProject);
+  const conversationMode = useSettingStore((s) => s.conversationMode);
+
+  /**
+   * Add the user message to the streaming state.
+   */
+  const addUserMessageToStream = useCallback(
+    (message: string, selectedText: string) => {
+      const newUserMessage: InternalMessage = createUserMessage(`pending-${crypto.randomUUID()}`, message, {
+        selectedText,
+        surrounding: surroundingText ?? undefined,
+        status: "streaming",
+      });
+
+      useStreamingStateMachine.setState((state) => ({
+        streamingMessage: {
+          parts: [...state.streamingMessage.parts, newUserMessage],
+          sequence: state.streamingMessage.sequence + 1,
+        },
+      }));
+    },
+    [surroundingText],
+  );
+
+  /**
+   * Truncate conversation for message editing.
+   */
+  const truncateConversationIfEditing = useCallback(
+    (parentMessageId?: string) => {
+      if (!parentMessageId || currentConversation.messages.length === 0) return;
+
+      if (parentMessageId === "root") {
+        // Clear all messages for "root" edit
+        useConversationStore.getState().updateCurrentConversation((prev) => ({
+          ...prev,
+          messages: [],
+        }));
+        return;
+      }
+
+      const parentIndex = currentConversation.messages.findIndex((m) => m.messageId === parentMessageId);
+
+      if (parentIndex !== -1) {
+        // Truncate messages to include only up to parentMessage
+        useConversationStore.getState().updateCurrentConversation((prev) => ({
+          ...prev,
+          messages: prev.messages.slice(0, parentIndex + 1),
+        }));
+      }
+    },
+    [currentConversation.messages],
+  );
+
+  /**
+   * Main send message function.
+   */
+  type SendMessageStreamImpl = (
+    message: string,
+    selectedText: string,
+    parentMessageId?: string,
+    options?: { isRetry?: boolean },
+  ) => Promise<void>;
+
+  // Break circular hook dependencies for retry callbacks.
+  const sendMessageStreamImplRef = useRef<SendMessageStreamImpl | null>(null);
+
+  const sendMessageStreamImpl = useCallback<SendMessageStreamImpl>(
+    async (message: string, selectedText: string, parentMessageId?: string, options?: { isRetry?: boolean }) => {
+      // Validate input
+      if (!message?.trim()) {
         logWarn("No message to send");
         return;
       }
       message = message.trim();
 
-      const request: PlainMessage<CreateConversationMessageStreamRequest> = {
-        projectId: projectId,
+      const requestParams: StreamRequestParams = {
+        message,
+        selectedText,
+        projectId,
         conversationId: currentConversation.id,
         modelSlug: currentConversation.modelSlug,
-        userMessage: message,
-        userSelectedText: selectedText,
-        surrounding: storeSurroundingText ?? undefined,
-        conversationType: conversationMode === "debug" ? ConversationType.DEBUG : ConversationType.UNSPECIFIED,
+        surroundingText: surroundingText ?? undefined,
+        conversationMode: conversationMode === "debug" ? "debug" : "default",
       };
 
-      resetStreamingMessage(); // ensure no stale message in the streaming messages
-      resetIncompleteIndicator();
+      // Build the API request
+      const request = buildStreamRequest(requestParams);
 
-      const newMessageEntry: MessageEntry = {
-        messageId: "dummy",
-        status: MessageEntryStatus.PREPARING,
-        user: fromJson(MessageTypeUserSchema, {
-          content: message,
-          selectedText: selectedText,
-          surrounding: storeSurroundingText ?? null,
-        }),
-      };
-      updateStreamingMessage((prev) => ({
-        ...prev,
-        parts: [...prev.parts, newMessageEntry],
-        sequence: prev.sequence + 1,
-      }));
+      // Reset state machine and prepare for new stream.
+      // For retries, avoid resetting the state machine (it would also reset retry counters and
+      // can cause infinite loops where attempt never increments). Also avoid duplicating the
+      // user's message in the UI.
+      if (!options?.isRetry) {
+        stateMachine.reset();
+        truncateConversationIfEditing(parentMessageId);
+        addUserMessageToStream(message, selectedText);
+      }
 
+      // Optional: sync project in dev mode
       if (import.meta.env.DEV && alwaysSyncProject) {
-        // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
         await sync();
       }
 
-      await withRetrySync(
+      // Execute the stream with error handling
+      await withStreamingErrorHandler(
         () =>
           createConversationMessageStream(request, async (response) => {
-            switch (response.responsePayload.case) {
-              case "streamInitialization": // means the user message is received by the server, can change the status to FINALIZED
-                handleStreamInitialization(
-                  response.responsePayload.value as StreamInitialization,
-                  refetchConversationList,
-                );
-                break;
-              case "streamPartBegin":
-                handleStreamPartBegin(response.responsePayload.value as StreamPartBegin, updateStreamingMessage);
-                break;
-              case "messageChunk":
-                handleMessageChunk(response.responsePayload.value as MessageChunk, updateStreamingMessage);
-                break;
-              case "streamPartEnd":
-                handleStreamPartEnd(response.responsePayload.value as StreamPartEnd, updateStreamingMessage);
-                break;
-              case "streamFinalization":
-                handleStreamFinalization(response.responsePayload.value as StreamFinalization);
-                break;
-              case "streamError":
-                await handleStreamError(
-                  response.responsePayload.value as StreamError,
-                  user?.id || "",
-                  message,
-                  selectedText,
-                  sync,
-                  sendMessageStream,
-                  updateStreamingMessage,
-                );
-                break;
-              case "incompleteIndicator":
-                handleIncompleteIndicator(response.responsePayload.value as IncompleteIndicator);
-                break;
-              default: {
-                if (response.responsePayload.value !== undefined) {
-                  const _typeCheck: never = response.responsePayload;
-                  throw new Error("Unexpected response payload: " + _typeCheck);
-                  // DO NOT delete above line, it is used to check that all cases are handled.
-                }
-                break;
-              }
+            const event = mapResponseToStreamEvent(response);
+            if (event) {
+              await stateMachine.handleEvent(event, {
+                refetchConversationList,
+                userId: user?.id || "",
+                currentPrompt: message,
+                currentSelectedText: selectedText,
+                sync: async () => {
+                  try {
+                    const result = await sync();
+                    return result;
+                  } catch (e) {
+                    logError("Failed to sync project", e);
+                    return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
+                  }
+                },
+                // IMPORTANT: pass a retry-aware sender so the state machine's sync-and-retry
+                // recovery doesn't reset itself back to attempt 1.
+                sendMessageStream: (m, s) =>
+                  sendMessageStreamImplRef.current?.(m, s, parentMessageId, { isRetry: true }) ?? Promise.resolve(),
+              });
             }
           }),
         {
           sync: async () => {
             try {
-              // Platform-aware sync (Overleaf uses WebSocket, Word uses adapter.getFullText)
               const result = await sync();
-              if (!result.success) {
-                logError("Failed to sync project", result.error);
-              }
+              return result;
             } catch (e) {
               logError("Failed to sync project", e);
+              return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
             }
           },
           onGiveUp: () => {
-            handleError(new Error("connection error."));
+            stateMachine.handleEvent({
+              type: "CONNECTION_ERROR",
+              payload: new Error("Connection error"),
+            });
+          },
+          context: {
+            currentPrompt: message,
+            currentSelectedText: selectedText,
+            userId: user?.id,
+            operation: "send-message",
           },
         },
       );
     },
+    // Reduced dependencies: 5 main dependencies instead of 11
     [
-      resetStreamingMessage,
-      resetIncompleteIndicator,
-      updateStreamingMessage,
+      stateMachine,
       currentConversation,
+      projectId,
       refetchConversationList,
       sync,
+      // These are derived/stable and won't cause re-renders
       user?.id,
       alwaysSyncProject,
       conversationMode,
-      storeSurroundingText,
-      projectId,
+      surroundingText,
+      addUserMessageToStream,
+      truncateConversationIfEditing,
     ],
   );
 
-  return { sendMessageStream };
+  // Keep ref updated for retry callbacks.
+  sendMessageStreamImplRef.current = sendMessageStreamImpl;
+
+  const sendMessageStream = useCallback(
+    async (message: string, selectedText: string, parentMessageId?: string) => {
+      return sendMessageStreamImpl(message, selectedText, parentMessageId, { isRetry: false });
+    },
+    [sendMessageStreamImpl],
+  );
+
+  return useMemo(() => ({ sendMessageStream, isStreaming }), [sendMessageStream, isStreaming]);
 }

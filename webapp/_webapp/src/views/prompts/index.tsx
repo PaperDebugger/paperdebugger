@@ -23,7 +23,7 @@ export function Prompts() {
             <Tooltip content="Create New Prompt" placement="bottom" size="sm" delay={500}>
               <Icon
                 icon="tabler:plus"
-                className="w-4 h-4 text-gray-500 cursor-pointer hover:bg-gray-300 rounded-full transition-all duration-300"
+                className="w-4 h-4 text-gray-500 dark:text-default-400 cursor-pointer hover:bg-gray-300 dark:hover:bg-default-300 rounded-full transition-all duration-300"
                 onClick={onCreateOpen}
               />
             </Tooltip>
