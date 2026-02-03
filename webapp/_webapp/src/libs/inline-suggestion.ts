@@ -133,17 +133,10 @@ export async function completion(_state: EditorState): Promise<string> {
     return "";
   }
 
-  // Get bibliography entries
-  const bibliography = getBibliography();
-  if (!bibliography) {
-    return "";
-  }
-
   // Get citation suggestion using GetCitationKeys API
   try {
     const response = await getCitationKeys({
       sentence: lastSentence,
-      bibliography: bibliography,
       projectId: projectId,
     });
     return response.citationKeys || "";
@@ -151,38 +144,6 @@ export async function completion(_state: EditorState): Promise<string> {
     logError("inline completion: failed", err);
     return "";
   }
-}
-
-export function getBibliography() : string {
-  // TODO: Placeholder function to get bibliography entries
-  // In real implementation, this would fetch from the document's bibliography database
-  return `
-  % and inbook with text in chapter
-  @inproceedings{sarrafzadeh2020stageaware,
-    author    = {Sarrafzadeh, Bahareh and et al.},
-    title     = {Characterizing Stage-Aware Writing Assistance in Collaborative Document Authoring},
-    booktitle = {CSCW},
-    year      = {2020},
-  }
-
-
-  % and inbook with a num and type field
-  @Inbook{Kong:2006:IEC:887006.887010,
-    author =      {Kong, Wei-Chang},
-    editor =      {Theerasak Thanasankit},
-    title =       {E-commerce and cultural values (Inbook-num chap)},
-    chapter =     {22},
-    year =        {2006},
-    address =     {Hershey, PA, USA},
-    publisher =   {IGI Publishing},
-    url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-    type =        {Chapter (in type field)},
-    pages =       {51--74},
-    numpages =    {24},
-    acmid =       {887010},
-    isbn =        {1-59140-056-2},
-  }
-  `;
 }
 
 /**

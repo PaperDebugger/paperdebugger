@@ -29,7 +29,6 @@ func (s *ChatServerV2) GetCitationKeys(
 	citationKeys, err := s.aiClientV2.GetCitationKeys(
 		ctx,
 		req.GetSentence(),
-		req.GetBibliography(),
 		actor.ID,
 		req.GetProjectId(),
 		llmProvider,

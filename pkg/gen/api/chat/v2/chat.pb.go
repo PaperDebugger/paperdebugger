@@ -1901,9 +1901,8 @@ func (*CreateConversationMessageStreamResponse_ReasoningChunk) isCreateConversat
 type GetCitationKeysRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Sentence      string                 `protobuf:"bytes,1,opt,name=sentence,proto3" json:"sentence,omitempty"`
-	Bibliography  string                 `protobuf:"bytes,2,opt,name=bibliography,proto3" json:"bibliography,omitempty"`
-	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	ModelSlug     *string                `protobuf:"bytes,4,opt,name=model_slug,json=modelSlug,proto3,oneof" json:"model_slug,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	ModelSlug     *string                `protobuf:"bytes,3,opt,name=model_slug,json=modelSlug,proto3,oneof" json:"model_slug,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1941,13 +1940,6 @@ func (*GetCitationKeysRequest) Descriptor() ([]byte, []int) {
 func (x *GetCitationKeysRequest) GetSentence() string {
 	if x != nil {
 		return x.Sentence
-	}
-	return ""
-}
-
-func (x *GetCitationKeysRequest) GetBibliography() string {
-	if x != nil {
-		return x.Bibliography
 	}
 	return ""
 }
@@ -2145,14 +2137,13 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x13stream_finalization\x18\x06 \x01(\v2\x1b.chat.v2.StreamFinalizationH\x00R\x12streamFinalization\x129\n" +
 	"\fstream_error\x18\a \x01(\v2\x14.chat.v2.StreamErrorH\x00R\vstreamError\x12B\n" +
 	"\x0freasoning_chunk\x18\b \x01(\v2\x17.chat.v2.ReasoningChunkH\x00R\x0ereasoningChunkB\x12\n" +
-	"\x10response_payload\"\xaa\x01\n" +
+	"\x10response_payload\"\x86\x01\n" +
 	"\x16GetCitationKeysRequest\x12\x1a\n" +
-	"\bsentence\x18\x01 \x01(\tR\bsentence\x12\"\n" +
-	"\fbibliography\x18\x02 \x01(\tR\fbibliography\x12\x1d\n" +
+	"\bsentence\x18\x01 \x01(\tR\bsentence\x12\x1d\n" +
 	"\n" +
-	"project_id\x18\x03 \x01(\tR\tprojectId\x12\"\n" +
+	"project_id\x18\x02 \x01(\tR\tprojectId\x12\"\n" +
 	"\n" +
-	"model_slug\x18\x04 \x01(\tH\x00R\tmodelSlug\x88\x01\x01B\r\n" +
+	"model_slug\x18\x03 \x01(\tH\x00R\tmodelSlug\x88\x01\x01B\r\n" +
 	"\v_model_slug\">\n" +
 	"\x17GetCitationKeysResponse\x12#\n" +
 	"\rcitation_keys\x18\x01 \x01(\tR\fcitationKeys*R\n" +
