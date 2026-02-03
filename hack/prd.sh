@@ -6,7 +6,7 @@ ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." &>/dev/null && pwd)
 cd $ROOT_DIR
 
 OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
-OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy-OPENAI_API_KEY}
+OPENAI_API_KEY=${OPENAI_API_KEY:-}
 INFERENCE_BASE_URL=${INFERENCE_BASE_URL:-https://inference.paperdebugger.workers.dev}
 INFERENCE_API_KEY=${INFERENCE_API_KEY:-sk-dummy-OPEN-ROUTER}
 MCP_BASIC_KEY=${MCP_BASIC_KEY:-sk-dummy-MCP_BASIC_KEY}

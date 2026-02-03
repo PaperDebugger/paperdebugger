@@ -1,12 +1,21 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { useSettingStore } from "../../../stores/setting-store";
 import { SettingItem } from "../setting-items";
+import { SettingItemSelect } from "../setting-item-select";
+
+const THEME_OPTIONS: Record<string, string> = {
+  auto: "Auto",
+  light: "Light",
+  dark: "Dark",
+};
 
 export const UISettings = () => {
   const {
     settings,
     isUpdating,
     updateSettings,
+    themeMode,
+    setThemeMode,
     disableLineWrap,
     setDisableLineWrap,
     minimalistMode,
@@ -20,6 +29,13 @@ export const UISettings = () => {
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>UI</SettingsSectionTitle>
+      <SettingItemSelect
+        label="Appearance"
+        description="Follow system, light, or dark mode"
+        selected={themeMode}
+        options={THEME_OPTIONS}
+        onSelectChange={(value) => setThemeMode(value as "auto" | "light" | "dark")}
+      />
       <SettingItem
         label="Show shortcuts after selecting text"
         description="Display shortcuts after text selection"

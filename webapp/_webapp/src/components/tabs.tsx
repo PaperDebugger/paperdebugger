@@ -29,17 +29,11 @@ const COLLAPSE_THRESHOLD = 113; // Width threshold to auto-collapse text
 
 export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
   const { user } = useAuthStore();
-  const { 
-    activeTab, 
-    setActiveTab, 
-    sidebarCollapsed, 
-    setSidebarCollapsed,
-    tabItemsWidth,
-    setTabItemsWidth
-  } = useConversationUiStore();
+  const { activeTab, setActiveTab, sidebarCollapsed, setSidebarCollapsed, tabItemsWidth, setTabItemsWidth } =
+    useConversationUiStore();
   const { hideAvatar } = useSettingStore();
   const { minimalistMode } = useSettingStore();
-  
+
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const isResizingRef = useRef(false);
   const tabItemsWidthRef = useRef(tabItemsWidth);
@@ -95,38 +89,41 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
   }, [cleanupResizeState]);
 
   // Handle resize drag
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    isResizingRef.current = true;
-    const startX = e.clientX;
-    const startWidth = tabItemsWidthRef.current;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizingRef.current) return;
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
       e.preventDefault();
-      const delta = e.clientX - startX;
-      const newWidth = Math.max(MIN_TAB_ITEMS_WIDTH, Math.min(MAX_TAB_ITEMS_WIDTH, startWidth + delta));
-      setTabItemsWidth(newWidth);
-    };
+      e.stopPropagation();
 
-    const handleMouseUp = () => {
-      cleanupResizeState();
-    };
+      isResizingRef.current = true;
+      const startX = e.clientX;
+      const startWidth = tabItemsWidthRef.current;
 
-    // Store handlers in refs so they can be cleaned up on unmount
-    mouseMoveHandlerRef.current = handleMouseMove;
-    mouseUpHandlerRef.current = handleMouseUp;
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isResizingRef.current) return;
+        e.preventDefault();
+        const delta = e.clientX - startX;
+        const newWidth = Math.max(MIN_TAB_ITEMS_WIDTH, Math.min(MAX_TAB_ITEMS_WIDTH, startWidth + delta));
+        setTabItemsWidth(newWidth);
+      };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    if (resizeHandleRef.current) {
-      resizeHandleRef.current.classList.add("resizing");
-    }
-  }, [setTabItemsWidth, cleanupResizeState]);
+      const handleMouseUp = () => {
+        cleanupResizeState();
+      };
+
+      // Store handlers in refs so they can be cleaned up on unmount
+      mouseMoveHandlerRef.current = handleMouseMove;
+      mouseUpHandlerRef.current = handleMouseUp;
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      if (resizeHandleRef.current) {
+        resizeHandleRef.current.classList.add("resizing");
+      }
+    },
+    [setTabItemsWidth, cleanupResizeState],
+  );
 
   const renderTabItem = useCallback(
     (item: TabItem) => {
@@ -152,16 +149,9 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
 
   return (
     <>
-      <div 
-        className="pd-app-tab-items noselect relative"
-        style={{ width: `${tabItemsWidth}px` }}
-      >
+      <div className="pd-app-tab-items noselect relative" style={{ width: `${tabItemsWidth}px` }}>
         {/* Resize handle on the right edge */}
-        <div
-          ref={resizeHandleRef}
-          className="pd-tab-items-resize-handle"
-          onMouseDown={handleMouseDown}
-        >
+        <div ref={resizeHandleRef} className="pd-tab-items-resize-handle" onMouseDown={handleMouseDown}>
           {/* Visual indicator line */}
           <div className="resize-handle-indicator" />
         </div>
@@ -173,7 +163,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
           isVertical
           variant="light"
           classNames={{
-            tabList: "bg-gray-100",
+            tabList: "bg-gray-100 dark:!bg-default-100",
             tab: cn("justify-start", minimalistMode ? "text-xs" : ""),
           }}
           selectedKey={activeTab}

@@ -136,7 +136,7 @@ function AccessMethodItem({
 }
 
 function KeyboardShortcut({ children }: { children: React.ReactNode }) {
-  return <code className="bg-gray-100 px-2 py-1 rounded">{children}</code>;
+  return <code className="bg-gray-100 dark:!bg-default-200 px-2 py-1 rounded">{children}</code>;
 }
 
 function OnboardingHeader({ title, description }: OnboardingHeaderProps) {
@@ -172,7 +172,7 @@ function OnboardingFooter({
           <div
             key={index}
             className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-              index === currentStep ? "bg-primary-500" : "bg-gray-300"
+              index === currentStep ? "bg-primary-500" : "bg-gray-300 dark:!bg-default-300"
             }`}
           />
         ))}

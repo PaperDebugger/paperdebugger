@@ -2,7 +2,7 @@ import { cn } from "@heroui/react";
 import { LoadingIndicator } from "../../../loading-indicator";
 import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
-import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
+import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseWrapper } from "./utils/common";
 
 export const GenerateCitationsCard = ({ functionName, message, preparing, animated }: XtraMcpToolCardProps) => {
   const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(false);
@@ -45,10 +45,6 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
             <span className="text-red-500 text-sm font-medium">Error</span>
-            <CollapseArrowButton
-              isCollapsed={isMetadataCollapsed}
-              ariaLabel={isMetadataCollapsed ? "Expand error" : "Collapse error"}
-            />
           </div>
         </div>
 
@@ -71,22 +67,37 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
         <div className={cn("tool-card noselect narrow", { animated: animated })}>
           {/* Header with arrow button */}
           <div
-            className="flex items-center justify-between cursor-pointer"
+            className="flex items-center cursor-pointer gap-1"
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
           >
+            <button
+              className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"
+              aria-label={isMetadataCollapsed ? "Expand" : "Collapse"}
+            >
+              <svg
+                className={cn("w-3 h-3 transition-transform duration-200 rotate-[-90deg]", {
+                  "rotate-0": !isMetadataCollapsed,
+                })}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
             <h3 className="tool-card-title">{functionName}</h3>
-            <CollapseArrowButton
-              isCollapsed={isMetadataCollapsed}
-              ariaLabel={isMetadataCollapsed ? "Expand metadata" : "Collapse metadata"}
-            />
           </div>
 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200">
+              <div className="text-xs !text-gray-600 dark:!text-gray-400 mt-2 pt-2 border-t !border-default-200 dark:!border-default-200">
                 {/* Custom metadata rendering */}
-                <div className="mb-2 italic">⚠️ [Experimental Feature] Some BibTeX entries may not be able to be generated.<br />Report if you encounter an unknown issue.</div>
+                <div className="mb-2 italic">
+                  ⚠️ [Experimental Feature] Some BibTeX entries may not be able to be generated.
+                  <br />
+                  Report if you encounter an unknown issue.
+                </div>
                 {result.metadata.total_links !== undefined && (
                   <div>
                     <span className="font-medium">Total Links/IDs/Info:</span> {result.metadata.total_links}
@@ -98,7 +109,7 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
         </div>
 
         {/* CONTENT - OUTSIDE/BELOW the tool card, always visible */}
-        <div className="canselect text-sm mt-2">
+        <div className="canselect text-sm">
           <MarkdownComponent animated={animated}>{result.content}</MarkdownComponent>
         </div>
       </>

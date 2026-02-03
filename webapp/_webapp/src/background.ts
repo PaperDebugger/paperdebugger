@@ -89,7 +89,6 @@ const registerContentScriptsIfPermitted = async () => {
     }
     await registerContentScripts(origins);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error("[PaperDebugger] Unable to register content scripts", error);
   }
 };

@@ -68,7 +68,7 @@ func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, outputs []respons
 				// If there was an error, append an error output to OpenAI chat history and in-app chat history.
 				openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, responses.ResponseInputItemParamOfFunctionCallOutput(toolCall.CallID, "Error: "+err.Error()))
 				inappChatHistory = append(inappChatHistory, chatv1.Message{
-					MessageId: "openai_" + toolCall.CallID,
+					MessageId: toolCall.CallID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_ToolCall{
 							ToolCall: &chatv1.MessageTypeToolCall{
@@ -83,7 +83,7 @@ func (h *ToolCallHandler) HandleToolCalls(ctx context.Context, outputs []respons
 				// On success, append the result to both OpenAI and in-app chat histories.
 				openaiChatHistory.OfInputItemList = append(openaiChatHistory.OfInputItemList, responses.ResponseInputItemParamOfFunctionCallOutput(toolCall.CallID, result))
 				inappChatHistory = append(inappChatHistory, chatv1.Message{
-					MessageId: "openai_" + toolCall.CallID,
+					MessageId: toolCall.CallID,
 					Payload: &chatv1.MessagePayload{
 						MessageType: &chatv1.MessagePayload_ToolCall{
 							ToolCall: &chatv1.MessageTypeToolCall{

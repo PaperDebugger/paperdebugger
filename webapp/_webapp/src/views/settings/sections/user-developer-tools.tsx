@@ -20,7 +20,7 @@ export const UserDeveloperTools = () => {
   return (
     <SettingsSectionContainer>
       <SettingsSectionTitle>
-        <b className="text-blue-600">Developer</b> Tools *
+        <b className="text-blue-600 dark:text-blue-400">Developer</b> Tools *
       </SettingsSectionTitle>
 
       <SettingItemSelect
@@ -48,10 +48,10 @@ export const UserDeveloperTools = () => {
         }}
       />
 
-      <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-2 items-center">
+      <div className="flex flex-row gap-2 w-full bg-content2 rounded-medium p-1 items-center">
         <div className="flex flex-col gap-0 w-full pl-3 pt-1 pb-1">
-          <p className="text-sm">Document ID</p>
-          <p className="text-xs text-gray-500 font-mono select-all">{documentId}</p>
+          <p className="text-xs">Document ID</p>
+          <p className="text-xs text-gray-500 dark:text-default-500 font-mono select-all">{documentId}</p>
         </div>
       </div>
 

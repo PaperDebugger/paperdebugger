@@ -102,9 +102,7 @@ const configs: Record<string, UserConfig> = {
     draft.build.emptyOutDir = true;
     draft.build.outDir = "dist/office";
     draft.plugins.push(
-      generateOfficeBundleCopyPlugin(
-        path.resolve(process.cwd(), "../office/src/paperdebugger/office.js"),
-      ),
+      generateOfficeBundleCopyPlugin(path.resolve(process.cwd(), "../office/src/paperdebugger/office.js")),
     );
   }),
   background: generateConfig("./src/background.ts", "background"),

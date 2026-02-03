@@ -7,12 +7,13 @@ It is used to append assistant responses to both OpenAI and in-app chat historie
 */
 import (
 	"context"
-	"fmt"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
+	filetools "paperdebugger/internal/services/toolkit/tools/files"
+	latextools "paperdebugger/internal/services/toolkit/tools/latex"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strings"
@@ -39,7 +40,7 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 	})
 
 	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
-		MessageId: fmt.Sprintf("openai_%s", contentId),
+		MessageId: contentId,
 		Payload: &chatv2.MessagePayload{
 			MessageType: &chatv2.MessagePayload_Assistant{
 				Assistant: &chatv2.MessageTypeAssistant{
@@ -117,33 +118,29 @@ func initializeToolkitV2(
 	// toolRegistry.Register("delete_folder", filetools.DeleteFolderToolDescriptionV2, filetools.DeleteFolderTool)
 
 	// Register file tools with ProjectService injection
-	// readFileTool := filetools.NewReadFileTool(projectService)
-	// toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, readFileTool.Call)
+	readFileTool := filetools.NewReadFileTool(projectService)
+	toolRegistry.Register("read_file", filetools.ReadFileToolDescriptionV2, readFileTool.Call)
 
-	// listFolderTool := filetools.NewListFolderTool(projectService)
-	// toolRegistry.Register("list_folder", filetools.ListFolderToolDescriptionV2, listFolderTool.Call)
+	listFolderTool := filetools.NewListFolderTool(projectService)
+	toolRegistry.Register("list_folder", filetools.ListFolderToolDescriptionV2, listFolderTool.Call)
 
-	// searchStringTool := filetools.NewSearchStringTool(projectService)
-	// toolRegistry.Register("search_string", filetools.SearchStringToolDescriptionV2, searchStringTool.Call)
+	searchStringFromTheFileTool := filetools.NewSearchStringTool(projectService)
+	toolRegistry.Register("searchStringFromTheFile", filetools.SearchStringToolDescriptionV2, searchStringFromTheFileTool.Call)
 
-	// searchFileTool := filetools.NewSearchFileTool(projectService)
-	// toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, searchFileTool.Call)
-
-	logger.Info("[AI Client V2] Registered static file tools", "count", 0)
+	searchFileTool := filetools.NewSearchFileTool(projectService)
+	toolRegistry.Register("search_file", filetools.SearchFileToolDescriptionV2, searchFileTool.Call)
 
 	// Register LaTeX tools with ProjectService injection
-	// documentStructureTool := latextools.NewDocumentStructureTool(projectService)
-	// toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, documentStructureTool.Call)
+	documentStructureTool := latextools.NewDocumentStructureTool(projectService)
+	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, documentStructureTool.Call)
 
-	// toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
+	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
 
-	// readSectionSourceTool := latextools.NewReadSectionSourceTool(projectService)
-	// toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, readSectionSourceTool.Call)
+	readSectionSourceTool := latextools.NewReadSectionSourceTool(projectService)
+	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, readSectionSourceTool.Call)
 
-	// readSourceLineRangeTool := latextools.NewReadSourceLineRangeTool(projectService)
-	// toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, readSourceLineRangeTool.Call)
-
-	logger.Info("[AI Client V2] Registered static LaTeX tools", "count", 0)
+	readSourceLineRangeTool := latextools.NewReadSourceLineRangeTool(projectService)
+	toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, readSourceLineRangeTool.Call)
 
 	// Load tools dynamically from backend
 	xtraMCPLoader := xtramcp.NewXtraMCPLoaderV2(db, projectService, cfg.XtraMCPURI)
