@@ -7,13 +7,12 @@
 package chatv2
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -1035,7 +1034,7 @@ type SupportedModel struct {
 	OutputPrice    int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`               // in cents per 1M tokens
 	Disabled       bool                   `protobuf:"varint,7,opt,name=disabled,proto3" json:"disabled,omitempty"`                                        // If true, the model is disabled and cannot be used
 	DisabledReason *string                `protobuf:"bytes,8,opt,name=disabled_reason,json=disabledReason,proto3,oneof" json:"disabled_reason,omitempty"` // The reason why the model is disabled
-	CustomModelId  string                 `protobuf:"bytes,7,opt,name=custom_model_id,json=customModelId,proto3" json:"custom_model_id,omitempty"`
+	CustomModelId  string                 `protobuf:"bytes,9,opt,name=custom_model_id,json=customModelId,proto3" json:"custom_model_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1324,8 +1323,7 @@ func (x *StreamPartBegin) GetPayload() *MessagePayload {
 }
 
 // Note: After the StreamPartBegin of tool_call, there can be no MessageChunk,
-//
-//	and the StreamPartEnd can be directly called when the result is ready.
+//       and the StreamPartEnd can be directly called when the result is ready.
 type MessageChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"` // The id of the message that this chunk belongs to
@@ -1625,8 +1623,7 @@ func (x *StreamError) GetErrorMessage() string {
 
 // This message should be the same as CreateConversationMessageRequest
 // Note: If conversation_id is provided,
-//
-//	the conversation will be created and returned.
+//       the conversation will be created and returned.
 type CreateConversationMessageStreamRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	ProjectId        string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
@@ -1972,7 +1969,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"\xc0\x01\n" +
+	"\x1aDeleteConversationResponse\"\xc6\x02\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
@@ -1983,9 +1980,9 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"inputPrice\x12!\n" +
 	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\x12\x1a\n" +
 	"\bdisabled\x18\a \x01(\bR\bdisabled\x12,\n" +
-	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01B\x12\n" +
-	"\x10_disabled_reason\x12&\n" +
-	"\x0fcustom_model_id\x18\a \x01(\tR\rcustomModelId\"\x1c\n" +
+	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01\x12&\n" +
+	"\x0fcustom_model_id\x18\t \x01(\tR\rcustomModelIdB\x12\n" +
+	"\x10_disabled_reason\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
 	"\x06models\x18\x01 \x03(\v2\x17.chat.v2.SupportedModelR\x06models\"^\n" +

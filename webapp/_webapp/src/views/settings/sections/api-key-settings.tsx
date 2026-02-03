@@ -1,33 +1,40 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { Button } from "@heroui/react";
 import { useSettingStore } from "../../../stores/setting-store";
+import { useLanguageModels } from "../../../hooks/useLanguageModels";
 
 export const ApiKeySettings = () => {
   const { updateSettings, settings } = useSettingStore();
 
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
-  const handleCustomModelChange = (newModel: CustomModel) => {
-    console.log("hi");
-    const existingCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
-    updateSettings({
-      customModels: [
-        ...existingCustomModels,
-        {
-          id: newModel.id,
-          name: newModel.name,
-          baseUrl: newModel.baseUrl,
-          slug: newModel.slug,
-          apiKey: newModel.apiKey,
-          contextWindow: newModel.contextWindow,
-          maxOutput: newModel.maxOutput,
-          inputPrice: newModel.inputPrice,
-          outputPrice: newModel.outputPrice,
-        },
-      ],
-    });
+  const handleCustomModelChange = (newModel: CustomModel, isDelete: boolean) => {
+    const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
+
+    if (isDelete) {
+      updateSettings({
+        customModels: otherCustomModels,
+      });
+    } else {
+      updateSettings({
+        customModels: [
+          ...otherCustomModels,
+          {
+            id: newModel.id,
+            name: newModel.name,
+            baseUrl: newModel.baseUrl,
+            slug: newModel.slug,
+            apiKey: newModel.apiKey,
+            contextWindow: newModel.contextWindow,
+            maxOutput: newModel.maxOutput,
+            inputPrice: newModel.inputPrice,
+            outputPrice: newModel.outputPrice,
+          },
+        ],
+      });
+    }
   };
 
   return (
@@ -83,49 +90,56 @@ type CustomModel = {
 
 type NewCustomModelSectionProps = {
   isNew: true;
-  onChange: (model: CustomModel) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => void;
   model?: never;
 };
 
 type ExistingCustomModelSectionProps = {
   isNew: false;
-  onChange: (model: CustomModel) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => void;
   model: CustomModel;
 };
 
 type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelSectionProps;
 
-const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps) => {
+const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
+  const { models } = useLanguageModels();
+  const { settings } = useSettingStore();
+
   const [isEditing, setIsEditing] = useState(isNew);
-  const [modelName, setModelName] = useState(isNew ? "New Model" : model.name);
-  const [baseUrl, setBaseUrl] = useState(model?.baseUrl || "");
-  const [slug, setSlug] = useState(model?.slug || "");
-  const [apiKey, setApiKey] = useState(model?.apiKey || "");
-  const [contextWindow, setContextWindow] = useState<number>(model?.contextWindow || 0);
-  const [maxOutput, setMaxOutput] = useState<number>(model?.maxOutput || 0);
-  const [inputPrice, setInputPrice] = useState<number>(model?.inputPrice || 0);
-  const [outputPrice, setOutputPrice] = useState<number>(model?.outputPrice || 0);
+  const [modelName, setModelName] = useState(isNew ? "New Model" : customModel.name);
+  const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
+  const [slug, setSlug] = useState(customModel?.slug || "");
+  const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
+  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow || 0);
+  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
+  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
+  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
+  const isModelNameEdited = useRef(false);
 
   const baseInputClassName = "hover:cursor-pointer bg-transparent p-1 focus:outline-none";
   const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-bold`;
   const labelClassName = `${baseInputClassName} text-xs text-default-900 w-auto`;
   const detailInputClassName = `${baseInputClassName} text-xs text-default-400 font-normal flex-1`;
 
-  const handleOnChange = () => {
+  const handleOnChange = (isDelete: boolean) => {
     // TODO: Input validation
     // TODO: Add loader
 
-    onChange({
-      id: isNew ? "" : model.id,
-      name: modelName,
-      baseUrl: baseUrl,
-      slug: slug,
-      apiKey: apiKey,
-      contextWindow: contextWindow,
-      maxOutput: maxOutput,
-      inputPrice: inputPrice,
-      outputPrice: outputPrice,
-    });
+    onChange(
+      {
+        id: isNew ? "" : customModel.id,
+        name: modelName,
+        baseUrl: baseUrl,
+        slug: slug,
+        apiKey: apiKey,
+        contextWindow: contextWindow,
+        maxOutput: maxOutput,
+        inputPrice: inputPrice,
+        outputPrice: outputPrice,
+      },
+      isDelete,
+    );
 
     if (isNew) {
       setModelName("New Model");
@@ -139,14 +153,19 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
     }
   };
 
+  // TODO: Disable base url input for non-openai
+  // TODO: 1 key per model
   return (
     <div className="flex flex-col w-full">
       {isNew ? (
-        <Button size="sm" onPress={handleOnChange}>
+        <Button size="sm" onPress={() => handleOnChange(false)}>
           Add (TODO)
         </Button>
       ) : (
         <>
+          <Button size="sm" onPress={() => handleOnChange(true)}>
+            Delete (TODO)
+          </Button>
           <Button size="sm" onPress={() => setIsEditing(true)}>
             Edit (TODO)
           </Button>
@@ -154,7 +173,7 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
             size="sm"
             onPress={() => {
               setIsEditing(false);
-              handleOnChange();
+              handleOnChange(false);
             }}
           >
             Save (TODO)
@@ -167,8 +186,33 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
         value={modelName}
         type="text"
         disabled={!isEditing}
-        onChange={(e) => setModelName(e.target.value)}
+        onChange={(e) => {
+          isModelNameEdited.current = true;
+          setModelName(e.target.value);
+        }}
       ></input>
+
+      <div className="flex flex-row">
+        <label className={labelClassName}>Slug</label>
+        <select
+          className={detailInputClassName}
+          disabled={!isEditing}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            if (!isModelNameEdited.current) {
+              // Custom name not yet defined, default to the selected model's name
+              setModelName(models.filter((m) => m.slug == e.target.value)[0].name);
+            }
+          }}
+        >
+          {models.map((m) => (
+            <option selected={slug == m.slug} key={m.slug} value={m.slug}>
+              {m.slug}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="flex flex-row">
         <label className={labelClassName}>Base URL</label>
         <input
@@ -177,17 +221,6 @@ const CustomModelSection = ({ isNew, onChange, model }: CustomModelSectionProps)
           type="text"
           disabled={!isEditing}
           onChange={(e) => setBaseUrl(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-row">
-        <label className={labelClassName}>Slug</label>
-        <input
-          className={detailInputClassName}
-          value={slug}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setSlug(e.target.value)}
         />
       </div>
 
