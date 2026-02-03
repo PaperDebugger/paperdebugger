@@ -30,6 +30,8 @@ func (s *ChatServerV2) GetCitationKeys(
 		ctx,
 		req.GetSentence(),
 		req.GetBibliography(),
+		actor.ID,
+		req.GetProjectId(),
 		llmProvider,
 	)
 	if err != nil {

@@ -34,6 +34,7 @@ import {
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
 import { getCitationKeys } from "../query/api";
+import { getProjectId } from "./helpers";
 
 export enum SuggestionAcceptance {
   REJECTED = 0,
@@ -126,6 +127,12 @@ export async function completion(_state: EditorState): Promise<string> {
     return "";
   }
 
+  // Get project ID
+  const projectId = getProjectId();
+  if (!projectId) {
+    return "";
+  }
+
   // Get bibliography entries
   const bibliography = getBibliography();
   if (!bibliography) {
@@ -137,6 +144,7 @@ export async function completion(_state: EditorState): Promise<string> {
     const response = await getCitationKeys({
       sentence: lastSentence,
       bibliography: bibliography,
+      projectId: projectId,
     });
     return response.citationKeys || "";
   } catch (err) {
