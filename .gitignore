@@ -50,3 +50,6 @@ overleaf.kubeconfig
 # coverage report
 coverage.out
 coverage.html
+
+# claude code
+CLAUDE.md
