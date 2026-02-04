@@ -36,6 +36,38 @@ import { useSettingStore } from "../stores/setting-store";
 import { getCitationKeys } from "../query/api";
 import { getProjectId } from "./helpers";
 
+const TRIGGER_WORD = "\\cite{";
+
+/** Returns true when the cursor sits right after the trigger word. */
+function isTriggerWordAtCursor(state: EditorState): boolean {
+  const cursorPos = state.selection.main.head;
+  return (
+    state.doc.sliceString(Math.max(0, cursorPos - TRIGGER_WORD.length), cursorPos) === TRIGGER_WORD
+  );
+}
+
+/** Inserts a suggestion into the editor and dispatches the acceptance effect. */
+function acceptSuggestion(
+  view: EditorView,
+  suggestionText: string,
+  suggestionAcceptanceEffect: StateEffectType<SuggestionAcceptanceState>,
+) {
+  view.dispatch({
+    ...insertCompletionText(
+      view.state,
+      suggestionText,
+      view.state.selection.main.head,
+      view.state.selection.main.head,
+    ),
+  });
+
+  view.dispatch({
+    effects: suggestionAcceptanceEffect.of({
+      acceptance: SuggestionAcceptance.ACCEPTED,
+    }),
+  });
+}
+
 export enum SuggestionAcceptance {
   REJECTED = 0,
   ACCEPTED = 1,
@@ -105,8 +137,6 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 }
 
 export async function completion(_state: EditorState): Promise<string> {
-  const triggerWord = "\\cite{";
-
   // Only trigger when enable completion setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
@@ -114,14 +144,14 @@ export async function completion(_state: EditorState): Promise<string> {
   }
 
   // Only trigger if text before is the trigger word
-  const cursorPos = _state.selection.main.head;
-  if (!(_state.doc.sliceString(Math.max(0, cursorPos - triggerWord.length), cursorPos) === triggerWord)) {
+  if (!isTriggerWordAtCursor(_state)) {
     return "";
   }
 
   // Extract last sentence and only trigger if last sentence exists
   // Last sentence is used in prompt as context for citation suggestion
-  const textBefore = _state.doc.sliceString(0, cursorPos - triggerWord.length);
+  const cursorPos = _state.selection.main.head;
+  const textBefore = _state.doc.sliceString(0, cursorPos - TRIGGER_WORD.length);
   const lastSentence = textBefore.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0).slice(-1)[0];
   if (!lastSentence) {
     return "";
@@ -246,28 +276,13 @@ class InlineSuggestionWidget extends WidgetType {
     return span;
   }
   accept(e: MouseEvent, view: EditorView) {
-    const suggestionText = this.suggestion;
     const config = view.state.field<SuggestionConfig>(this.configState);
     if (!config.acceptOnClick) return;
 
     e.stopPropagation();
     e.preventDefault();
 
-    view.dispatch({
-      ...insertCompletionText(
-        view.state,
-        suggestionText,
-        view.state.selection.main.head,
-        view.state.selection.main.head,
-      ),
-    });
-
-    view.dispatch({
-      effects: this.suggestionAcceptanceEffect.of({
-        acceptance: SuggestionAcceptance.ACCEPTED,
-      }),
-    });
-
+    acceptSuggestion(view, this.suggestion, this.suggestionAcceptanceEffect);
     return true;
   }
 }
@@ -335,14 +350,7 @@ export function createExtensionKeymapBinding(
               return false;
             }
 
-            view.dispatch({
-              ...insertCompletionText(
-                view.state,
-                suggestionText,
-                view.state.selection.main.head,
-                view.state.selection.main.head,
-              ),
-            });
+            acceptSuggestion(view, suggestionText, suggestionAcceptanceEffect);
             logInfo("tab handler: suggestion accepted");
             return true;
           } catch (e) {
@@ -565,6 +573,87 @@ export function createRenderInlineSuggestionPlugin(
   );
 }
 
+/**
+ * Creates a CodeMirror ViewPlugin that suppresses Overleaf's built-in
+ * autocomplete when our inline citation suggestion is active or pending
+ * (i.e. `\cite{` was just typed).
+ *
+ * Three mechanisms work together:
+ * 1. A dynamically injected `<style>` element hides all `.cm-tooltip` dropdowns
+ *    as soon as the trigger word is detected or a suggestion is present, before
+ *    the API even returns.
+ * 2. A capture-phase `keydown` listener on the editor DOM intercepts Tab before
+ *    Overleaf's autocomplete can consume it, inserting the suggestion text and
+ *    dispatching a {@link suggestionAcceptanceEffect} to mark it as accepted.
+ * 3. The plugin's `update` hook continuously checks whether suppression should
+ *    be active (suggestion present or cursor right after `\cite{`) and toggles
+ *    the CSS injection accordingly. On `destroy`, all listeners and injected
+ *    styles are cleaned up.
+ */
+export function createAutocompleteSuppressor(
+  overleafCm: OverleafCodeMirror,
+  suggestionState: StateField<SuggestionState>,
+  suggestionAcceptanceEffect: StateEffectType<SuggestionAcceptanceState>,
+) {
+  let styleEl: HTMLStyleElement | null = null;
+
+  function suppress() {
+    if (styleEl) return;
+    styleEl = document.createElement("style");
+    styleEl.textContent = `.cm-tooltip { display: none !important; }`;
+    document.head.appendChild(styleEl);
+  }
+
+  function unsuppress() {
+    if (!styleEl) return;
+    styleEl.remove();
+    styleEl = null;
+  }
+
+  return overleafCm.ViewPlugin.fromClass(
+    class AutocompleteSuppressor {
+      private view: EditorView;
+      private handleKeydown: (e: KeyboardEvent) => void;
+
+      constructor(view: EditorView) {
+        this.view = view;
+
+        // Capture-phase listener fires before any other handler on child
+        // elements (including Overleaf's autocomplete DOM handler).
+        this.handleKeydown = (e: KeyboardEvent) => {
+          if (e.key !== "Tab") return;
+
+          const suggestion =
+            this.view.state.field<SuggestionState>(suggestionState);
+          if (!suggestion?.suggestion) return;
+
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          acceptSuggestion(this.view, suggestion.suggestion, suggestionAcceptanceEffect);
+        };
+
+        this.view.dom.addEventListener("keydown", this.handleKeydown, true);
+      }
+
+      update(update: ViewUpdate) {
+        const suggestion =
+          update.state.field<SuggestionState>(suggestionState);
+        if (suggestion?.suggestion || isTriggerWordAtCursor(update.state)) {
+          suppress();
+        } else {
+          unsuppress();
+        }
+      }
+
+      destroy() {
+        unsuppress();
+        this.view.dom.removeEventListener("keydown", this.handleKeydown, true);
+      }
+    },
+  );
+}
+
 export function createSuggestionExtension(overleafCm: OverleafCodeMirror, config: SuggestionConfig): Extension[] {
   // CodeMirror's StateEffect basically equals to PostMessage.
   const suggestionFetchedEffect: StateEffectType<SuggestionFetchState> =
@@ -586,6 +675,7 @@ export function createSuggestionExtension(overleafCm: OverleafCodeMirror, config
   );
 
   const keymapBindingExtension = createExtensionKeymapBinding(overleafCm, suggestionAcceptanceEffect, suggestionState);
+  const autocompleteSuppressor = createAutocompleteSuppressor(overleafCm, suggestionState, suggestionAcceptanceEffect);
 
-  return [suggestionState, pluginConfigState, suggestionFetchPlugin, suggestionRenderingPlugin, keymapBindingExtension];
+  return [suggestionState, pluginConfigState, suggestionFetchPlugin, suggestionRenderingPlugin, keymapBindingExtension, autocompleteSuppressor];
 }
