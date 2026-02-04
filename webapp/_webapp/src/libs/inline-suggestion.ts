@@ -33,6 +33,8 @@ import {
 
 import { logDebug, logError, logInfo } from "./logger";
 import { useSettingStore } from "../stores/setting-store";
+import { getCitationKeys } from "../query/api";
+import { getProjectId } from "./helpers";
 
 export enum SuggestionAcceptance {
   REJECTED = 0,
@@ -103,12 +105,45 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 }
 
 export async function completion(_state: EditorState): Promise<string> {
+  const triggerWord = "\\cite{";
+
+  // Only trigger when enable completion setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
     return "";
   }
 
-  return "Unsupported Feature";
+  // Only trigger if text before is the trigger word
+  const cursorPos = _state.selection.main.head;
+  if (!(_state.doc.sliceString(Math.max(0, cursorPos - triggerWord.length), cursorPos) === triggerWord)) {
+    return "";
+  }
+
+  // Extract last sentence and only trigger if last sentence exists
+  // Last sentence is used in prompt as context for citation suggestion
+  const textBefore = _state.doc.sliceString(0, cursorPos - triggerWord.length);
+  const lastSentence = textBefore.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0).slice(-1)[0];
+  if (!lastSentence) {
+    return "";
+  }
+
+  // Get project ID
+  const projectId = getProjectId();
+  if (!projectId) {
+    return "";
+  }
+
+  // Get citation suggestion using GetCitationKeys API
+  try {
+    const response = await getCitationKeys({
+      sentence: lastSentence,
+      projectId: projectId,
+    });
+    return response.citationKeys || "";
+  } catch (err) {
+    logError("inline completion: failed", err);
+    return "";
+  }
 }
 
 /**
@@ -438,15 +473,15 @@ export function createSuggestionFetchPlugin(
 
           // Check if the docChange is due to an remote collaborator
           // @ts-expect-error - changedRanges is only available in the Overleaf version of CodeMirror
-          const updatePos = update.changedRanges[0].toB;
+          const changedRanges = update.changedRanges;
           const localPos = update.view.state.selection.main.head;
-          if (updatePos !== localPos) {
-            return;
-          }
 
-          const isAutocompleted = update.transactions.some((t) => t.isUserEvent("input.complete"));
-          if (isAutocompleted) {
-            return;
+          // Local changes should have the cursor within or at the end of the changed range
+          if (changedRanges && changedRanges.length > 0) {
+            const changedRange = changedRanges[0];
+            if (localPos < changedRange.fromB || localPos > changedRange.toB) {
+              return;
+            }
           }
 
           const config = update.state.field<SuggestionConfig>(suggestionConfig);

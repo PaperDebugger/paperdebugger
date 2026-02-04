@@ -25,6 +25,7 @@ const (
 	ChatService_UpdateConversation_FullMethodName              = "/chat.v2.ChatService/UpdateConversation"
 	ChatService_DeleteConversation_FullMethodName              = "/chat.v2.ChatService/DeleteConversation"
 	ChatService_ListSupportedModels_FullMethodName             = "/chat.v2.ChatService/ListSupportedModels"
+	ChatService_GetCitationKeys_FullMethodName                 = "/chat.v2.ChatService/GetCitationKeys"
 )
 
 // ChatServiceClient is the client API for ChatService service.
@@ -37,6 +38,7 @@ type ChatServiceClient interface {
 	UpdateConversation(ctx context.Context, in *UpdateConversationRequest, opts ...grpc.CallOption) (*UpdateConversationResponse, error)
 	DeleteConversation(ctx context.Context, in *DeleteConversationRequest, opts ...grpc.CallOption) (*DeleteConversationResponse, error)
 	ListSupportedModels(ctx context.Context, in *ListSupportedModelsRequest, opts ...grpc.CallOption) (*ListSupportedModelsResponse, error)
+	GetCitationKeys(ctx context.Context, in *GetCitationKeysRequest, opts ...grpc.CallOption) (*GetCitationKeysResponse, error)
 }
 
 type chatServiceClient struct {
@@ -116,6 +118,16 @@ func (c *chatServiceClient) ListSupportedModels(ctx context.Context, in *ListSup
 	return out, nil
 }
 
+func (c *chatServiceClient) GetCitationKeys(ctx context.Context, in *GetCitationKeysRequest, opts ...grpc.CallOption) (*GetCitationKeysResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCitationKeysResponse)
+	err := c.cc.Invoke(ctx, ChatService_GetCitationKeys_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility.
@@ -126,6 +138,7 @@ type ChatServiceServer interface {
 	UpdateConversation(context.Context, *UpdateConversationRequest) (*UpdateConversationResponse, error)
 	DeleteConversation(context.Context, *DeleteConversationRequest) (*DeleteConversationResponse, error)
 	ListSupportedModels(context.Context, *ListSupportedModelsRequest) (*ListSupportedModelsResponse, error)
+	GetCitationKeys(context.Context, *GetCitationKeysRequest) (*GetCitationKeysResponse, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -153,6 +166,9 @@ func (UnimplementedChatServiceServer) DeleteConversation(context.Context, *Delet
 }
 func (UnimplementedChatServiceServer) ListSupportedModels(context.Context, *ListSupportedModelsRequest) (*ListSupportedModelsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSupportedModels not implemented")
+}
+func (UnimplementedChatServiceServer) GetCitationKeys(context.Context, *GetCitationKeysRequest) (*GetCitationKeysResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCitationKeys not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 func (UnimplementedChatServiceServer) testEmbeddedByValue()                     {}
@@ -276,6 +292,24 @@ func _ChatService_ListSupportedModels_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_GetCitationKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCitationKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).GetCitationKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_GetCitationKeys_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).GetCitationKeys(ctx, req.(*GetCitationKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -302,6 +336,10 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSupportedModels",
 			Handler:    _ChatService_ListSupportedModels_Handler,
+		},
+		{
+			MethodName: "GetCitationKeys",
+			Handler:    _ChatService_GetCitationKeys_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

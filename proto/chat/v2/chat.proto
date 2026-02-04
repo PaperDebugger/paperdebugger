@@ -31,6 +31,12 @@ service ChatService {
   rpc ListSupportedModels(ListSupportedModelsRequest) returns (ListSupportedModelsResponse) {
     option (google.api.http) = {get: "/_pd/api/v2/chats/models"};
   }
+  rpc GetCitationKeys(GetCitationKeysRequest) returns (GetCitationKeysResponse) {
+    option (google.api.http) = {
+      post: "/_pd/api/v2/chats/citation-keys"
+      body: "*"
+    };
+  }
 }
 
 message MessageTypeToolCall {
@@ -233,4 +239,17 @@ message CreateConversationMessageStreamResponse {
     StreamError stream_error = 7;
     ReasoningChunk reasoning_chunk = 8;
   }
+}
+
+// Request to suggest citation keys based on context
+message GetCitationKeysRequest {
+  string sentence = 1;
+  string project_id = 2;
+  optional string model_slug = 3;
+}
+
+// Response containing the suggested citation keys
+message GetCitationKeysResponse {
+  // A comma-separated string of keys, or empty if none found
+  string citation_keys = 1;
 }
