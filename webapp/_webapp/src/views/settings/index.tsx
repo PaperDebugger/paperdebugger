@@ -28,7 +28,7 @@ export const Settings = () => {
   }
 
   return (
-    <div className="pd-app-tab-content noselect !min-w-[400px]">
+    <div className="pd-app-tab-content noselect min-w-[400px]!">
       <SettingsHeader />
       <div className="pd-app-tab-content-body">
         <UISettings />

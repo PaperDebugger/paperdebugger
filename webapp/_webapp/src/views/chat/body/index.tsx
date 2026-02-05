@@ -110,10 +110,10 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
         <StatusIndicator conversation={conversation} />
 
         {isDebugMode && (
-          <div className="text-xs text-default-300 dark:!text-default-300 noselect">
+          <div className="text-xs text-default-300 dark:text-default-300! noselect">
             <span>* Debug mode is enabled, </span>
             <span
-              className={`${reloadSuccess ? "text-emerald-300" : "text-default-300 dark:!text-default-300"} underline cursor-pointer rnd-cancel`}
+              className={`${reloadSuccess ? "text-emerald-300" : "text-default-300 dark:text-default-300!"} underline cursor-pointer rnd-cancel`}
               onClick={async () => {
                 try {
                   const response = await getConversation({ conversationId: conversation?.id ?? "" });
@@ -140,7 +140,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
       </div>
 
       {/* Bottom spacer to allow scrolling the last user message to the top */}
-      <div className="flex-shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
+      <div className="shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
     </div>
   );
 };

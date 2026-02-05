@@ -101,7 +101,7 @@ export const GeneralToolCard = ({
           aria-label={isCollapsed ? "Expand" : "Collapse"}
         >
           <svg
-            className={cn("w-3 h-3 transition-transform duration-200 rotate-[-90deg]", {
+            className={cn("w-3 h-3 transition-transform duration-200 -rotate-90", {
               "rotate-0": !isCollapsed,
             })}
             fill="none"
@@ -126,7 +126,7 @@ export const GeneralToolCard = ({
         <div className="overflow-hidden">
           <div
             className={cn(
-              "canselect rounded-md !border px-2 py-1 mt-1 transition-opacity duration-200 relative",
+              "canselect rounded-md border! px-2 py-1 mt-1 transition-opacity duration-200 relative",
               isCollapsed ? "opacity-0" : "opacity-100",
             )}
             style={{

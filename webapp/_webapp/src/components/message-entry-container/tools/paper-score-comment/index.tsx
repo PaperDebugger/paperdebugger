@@ -82,9 +82,9 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
     if (comments.length === 0) {
       return (
         <CardBody>
-          <div className="!text-gray-500">
-            <Icon icon="tabler:file-like" className="!w-12 !h-12 !mx-auto !mb-2" />
-            <p className="!text-sm !text-gray-600 !text-center">No comments left for this paper.</p>
+          <div className="text-gray-500!">
+            <Icon icon="tabler:file-like" className="w-12! h-12! mx-auto! mb-2!" />
+            <p className="text-sm! text-gray-600! text-center!">No comments left for this paper.</p>
           </div>
         </CardBody>
       );

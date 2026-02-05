@@ -83,7 +83,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200!">
                 {/* Generic metadata rendering - display all fields */}
                 {Object.entries(result.metadata).map(([key, value], index) => {
                   const isLastItem = index === Object.entries(result.metadata!).length - 1;
@@ -103,7 +103,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
 
                     if (isFilePath) {
                       formattedValue = (
-                        <code className="px-1 py-0.5 bg-gray-100 dark:!bg-default-200 rounded text-gray-700 dark:text-default-200 font-mono text-xs">
+                        <code className="px-1 py-0.5 bg-gray-100 dark:bg-default-200! rounded text-gray-700 dark:text-default-200 font-mono text-xs">
                           {value}
                         </code>
                       );

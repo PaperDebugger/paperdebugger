@@ -19,27 +19,27 @@ const MarkdownComponent = memo(({ children, animated }: MarkdownComponentProps) 
       shikiTheme={["github-light", "ayu-dark"]}
       components={{
         h1: ({ children }) => (
-          <h1 className="text-lg font-bold mt-2 !text-default-800 dark:!text-default-800">{children}</h1>
+          <h1 className="text-lg font-bold mt-2 text-default-800! dark:text-default-800!">{children}</h1>
         ),
 
         h2: ({ children }) => (
-          <h2 className="text-base font-bold mt-2 mb-1 !text-default-800 dark:!text-default-800">{children}</h2>
+          <h2 className="text-base font-bold mt-2 mb-1 text-default-800! dark:text-default-800!">{children}</h2>
         ),
 
         h3: ({ children }) => (
-          <h3 className="text-sm font-bold mt-2 !text-default-800 dark:!text-default-800">{children}</h3>
+          <h3 className="text-sm font-bold mt-2 text-default-800! dark:text-default-800!">{children}</h3>
         ),
 
         h4: ({ children }) => (
-          <h4 className="text-xs font-bold mt-2 !text-default-800 dark:!text-default-800">{children}</h4>
+          <h4 className="text-xs font-bold mt-2 text-default-800! dark:text-default-800!">{children}</h4>
         ),
 
         h5: ({ children }) => (
-          <h5 className="text-xs font-bold mt-2 !text-default-800 dark:!text-default-800">{children}</h5>
+          <h5 className="text-xs font-bold mt-2 text-default-800! dark:text-default-800!">{children}</h5>
         ),
 
         h6: ({ children }) => (
-          <h6 className="text-xs font-bold mt-2 !text-default-800 dark:!text-default-800">{children}</h6>
+          <h6 className="text-xs font-bold mt-2 text-default-800! dark:text-default-800!">{children}</h6>
         ),
       }}
       plugins={{ code, mermaid, math, cjk }}

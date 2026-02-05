@@ -37,18 +37,18 @@ export const FilterControls = ({
   return (
     <div>
       <div
-        className="!flex !items-center !justify-between !mb-1 !px-2 cursor-pointer"
+        className="flex! items-center! justify-between! mb-1! px-2! cursor-pointer"
         onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
       >
-        <button className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-800 hover:!text-gray-600 !transition-colors truncate">
+        <button className="flex! items-center! gap-2! text-sm! font-semibold! text-gray-800! hover:text-gray-600! transition-colors! truncate">
           <Icon
             icon={isSuggestionsExpanded ? "tabler:chevron-down" : "tabler:chevron-right"}
-            className="!w-4 !h-4 !transition-transform"
+            className="w-4! h-4! transition-transform!"
           />
           Detailed Suggestions
         </button>
-        <div className="!flex !items-center !gap-2" id="filter-controls-count">
-          <div className="!text-xs !text-gray-500 overflow-hidden truncate">
+        <div className="flex! items-center! gap-2!" id="filter-controls-count">
+          <div className="text-xs! text-gray-500! overflow-hidden truncate">
             {filteredCount === comments.length
               ? `Total ${comments.length} suggestions`
               : `Showing ${filteredCount}/${comments.length} suggestions`}
@@ -59,7 +59,7 @@ export const FilterControls = ({
                 setSearchTerm("");
                 setFilterImportance("");
               }}
-              className="!text-xs !text-primary-600 !underline hover:!text-primary-800"
+              className="text-xs! text-primary-600! underline! hover:text-primary-800!"
             >
               Clear Filter
             </button>
@@ -68,18 +68,18 @@ export const FilterControls = ({
       </div>
 
       {isSuggestionsExpanded && showFilters && (
-        <div className="!mb-2 !flex !flex-wrap !gap-2 !items-center px-2">
-          <div className="!flex !items-center !gap-2">
-            <span className="!text-xs !text-gray-600">Importance:</span>
+        <div className="mb-2! flex! flex-wrap! gap-2! items-center! px-2">
+          <div className="flex! items-center! gap-2!">
+            <span className="text-xs! text-gray-600!">Importance:</span>
             {["Critical", "High", "Medium"].map((importance) => (
               <button
                 key={importance}
                 onClick={() => setFilterImportance(filterImportance === importance ? "" : importance)}
                 className={cn(
-                  "!px-2 !py-1 !text-xs !rounded !border !transition-colors",
+                  "px-2! py-1! text-xs! rounded! border! transition-colors!",
                   filterImportance === importance
-                    ? "!bg-primary-100 !text-primary-800 !border-primary-300"
-                    : "!bg-gray-100 dark:!bg-default-200 !text-gray-600 dark:!text-default-300 !border-gray-300 dark:!border-default-200 hover:!bg-gray-200 dark:hover:!bg-default-300",
+                    ? "bg-primary-100! text-primary-800! border-primary-300!"
+                    : "bg-gray-100! dark:bg-default-200! text-gray-600! dark:text-default-300! border-gray-300! dark:border-default-200! hover:bg-gray-200! dark:hover:bg-default-300!",
                 )}
               >
                 {importance}
@@ -91,7 +91,7 @@ export const FilterControls = ({
             placeholder="Search suggestions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="!px-2 !py-1 !text-xs !border !rounded !flex-1 !min-w-0"
+            className="px-2! py-1! text-xs! border! rounded! flex-1! min-w-0!"
           />
         </div>
       )}

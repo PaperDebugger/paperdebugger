@@ -11,7 +11,7 @@ export const SettingsFooter = () => {
   const { enableUserDeveloperTools, setEnableUserDeveloperTools } = useSettingStore();
 
   return (
-    <div className="pd-end-of-settings flex flex-col items-center justify-center gap-2 mt-8 text-default-400 dark:!text-default-500">
+    <div className="pd-end-of-settings flex flex-col items-center justify-center gap-2 mt-8 text-default-400 dark:text-default-500!">
       <div className="flex flex-col items-center justify-center">
         <span className="ml-1 text-exo-2 toolbar-label">
           <span className="font-light">Paper</span>

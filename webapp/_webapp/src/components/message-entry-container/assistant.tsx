@@ -96,11 +96,11 @@ export const AssistantMessageContainer = ({
       <Icon
         icon="tabler:pencil"
         className={cn(
-          "!w-4 !h-4 !text-[14px] !text-gray-400  !animate-bounce",
-          "!transition-all !duration-300 !ease-in-out",
-          "!inline-block !align-middle !ml-1",
-          preparing && "!opacity-100",
-          !preparing && "!opacity-0 !hidden",
+          "w-4! h-4! text-[14px]! text-gray-400!  animate-bounce!",
+          "transition-all! duration-300! ease-in-out!",
+          "inline-block! align-middle! ml-1!",
+          preparing && "opacity-100!",
+          !preparing && "opacity-0! hidden!",
         )}
       />
     );
@@ -118,7 +118,7 @@ export const AssistantMessageContainer = ({
   return (
     showMessage && (
       <div className="chat-message-entry noselect">
-        <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
+        <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "text-red-500!")}>
           {/* Reasoning content */}
           {reasoningComponent}
 

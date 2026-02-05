@@ -17,8 +17,8 @@ const renderSeverityLevels = (threshold: string) => {
             className={cn(
               "text-xs px-1.5 py-0.5 rounded",
               index < thresholdIndex
-                ? "line-through text-gray-400 dark:text-default-500 bg-gray-100 dark:!bg-default-200"
-                : "text-gray-700 dark:text-default-200 bg-gray-100 dark:!bg-default-200",
+                ? "line-through text-gray-400 dark:text-default-500 bg-gray-100 dark:bg-default-200!"
+                : "text-gray-700 dark:text-default-200 bg-gray-100 dark:bg-default-200!",
             )}
           >
             {level}
@@ -35,7 +35,7 @@ const renderSections = (sections: Array<string>) => {
     <span>
       {sections.map((section, index) => (
         <span key={section}>
-          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 dark:text-default-200 bg-gray-100 dark:!bg-default-200">
+          <code className="text-xs px-1.5 py-0.5 rounded text-gray-700 dark:text-default-200 bg-gray-100 dark:bg-default-200!">
             {section}
           </code>
           {index < sections.length - 1 && ", "}
@@ -125,7 +125,7 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200!">
                 {/* Informational note */}
                 <div className="mb-2 text-gray-600">
                   <MarkdownComponent animated={animated}>

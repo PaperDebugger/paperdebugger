@@ -1,9 +1,103 @@
-@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap')
+layer(base);
+@import 'tailwindcss';
+
+@import 'tailwindcss' layer(utilities);
+
 @source "../node_modules/streamdown/dist/*.js";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  /* Primary colors */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-950: #082f49;
+
+  /* Default colors (neutral/gray) */
+  --color-default-50: #fafafa;
+  --color-default-100: #f4f4f5;
+  --color-default-200: #e4e4e7;
+  --color-default-300: #d4d4d8;
+  --color-default-400: #a1a1aa;
+  --color-default-500: #71717a;
+  --color-default-600: #52525b;
+  --color-default-700: #3f3f46;
+  --color-default-800: #27272a;
+  --color-default-900: #18181b;
+  --color-default-950: #09090b;
+
+  --color-danger: #ef4444; /* defaults to danger-500 */
+  --color-primary: #0ea5e9;
+  --color-default: #71717a;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-secondary: #a855f7;
+
+  /* Danger colors (red) */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+  --color-danger-950: #450a0a;
+
+  /* Success colors (green) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  /* Warning colors (yellow/amber) */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+  --color-warning-950: #451a03;
+
+  /* Secondary colors (purple) */
+  --color-secondary-50: #faf5ff;
+  --color-secondary-100: #f3e8ff;
+  --color-secondary-200: #e9d5ff;
+  --color-secondary-300: #d8b4fe;
+  --color-secondary-400: #c084fc;
+  --color-secondary-500: #a855f7;
+  --color-secondary-600: #9333ea;
+  --color-secondary-700: #7e22ce;
+  --color-secondary-800: #6b21a8;
+  --color-secondary-900: #581c87;
+  --color-secondary-950: #3b0764;
+
+  --font-exo-2: 'Exo 2', sans-serif;
+}
+
+@layer utilities {
+  @reference "tailwindcss";
+}
 
 :root {
   --pd-border-color: oklch(92.2% 0 0); /* --color-neutral-100 */
@@ -77,7 +171,7 @@ object {
 }
 
 .text-exo-2 {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo-2);
   font-optical-sizing: auto;
   font-style: normal;
 }
@@ -123,7 +217,7 @@ object {
 }
 
 .tool-card.narrow {
-  @apply !px-0 py-1 my-1 bg-transparent;
+  @apply px-0! py-1 my-1 bg-transparent;
 }
 
 .tool-card.animated {
@@ -133,7 +227,7 @@ object {
 }
 
 .tool-card-title {
-  @apply text-[10px] font-semibold font-sans text-primary-700 tracking-wider noselect;
+  @apply text-[10px] font-semibold font-sans text-primary-700 tracking-wider select-none;
 }
 
 .tool-card-title {
@@ -141,7 +235,7 @@ object {
 }
 
 .tool-card.compact {
-  @apply px-[0px] py-[0px] my-0.5 bg-transparent text-xs border-0;
+  @apply px-0 py-0 my-0.5 bg-transparent text-xs border-0;
 }
 
 .tool-card.compact .tool-card-title {
@@ -219,11 +313,11 @@ object {
   border: 1px solid;
   background-color: transparent;
   overflow: hidden;
-  @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200;
+  @apply overflow-hidden w-full h-full dark:border-default-200! border-default-200!;
 }
 
 .pd-app-control-title-bar {
-  @apply bg-gray-100 dark:!bg-default-100;
+  @apply bg-gray-100 dark:bg-default-100!;
   flex: 0;
   overflow: hidden;
   position: fixed;
@@ -253,7 +347,7 @@ object {
 }
 
 .pd-app-header-container {
-  @apply bg-red-100 dark:!bg-default-100;
+  @apply bg-red-100 dark:bg-default-100!;
   flex: 0;
 }
 
@@ -274,7 +368,7 @@ object {
   align-items: center;
   border-right: 1px solid var(--pd-border-color);
   gap: 1rem;
-  @apply bg-gray-100 dark:!bg-default-100 px-3 pb-3 pt-12;
+  @apply bg-gray-100 dark:bg-default-100! px-3 pb-3 pt-12;
   z-index: 888;
   position: relative;
   flex-shrink: 0;
@@ -295,7 +389,7 @@ object {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header {
-  @apply bg-gray-100 dark:!bg-default-100 pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
+  @apply bg-gray-100 dark:bg-default-100! pl-3 pr-1 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
@@ -304,7 +398,7 @@ object {
 }
 
 .pd-app-tab-content .pd-app-tab-content-header.collapsed {
-  @apply bg-gray-100 dark:!bg-default-100 px-3 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
+  @apply bg-gray-100 dark:bg-default-100! px-3 py-2 gap-2 items-center w-full h-4 text-xs transition-all;
   flex: 0;
   flex-direction: row;
   display: flex;
@@ -320,7 +414,7 @@ object {
   min-width: 0;
   flex: 1;
   overflow-anchor: none;
-  @apply bg-gray-50 dark:!bg-default-50 p-2;
+  @apply bg-gray-50 dark:bg-default-50! p-2;
 }
 
 .pd-app-tab-content .pd-app-tab-content-footer {
@@ -330,12 +424,12 @@ object {
 }
 
 .chat-prompt-input .pd-selected-text-indicator {
-  @apply w-full rounded-lg !rounded-b-none !border-gray-200 dark:!border-default-200 border !border-b-0 text-gray-500 dark:text-default-500 text-nowrap text-ellipsis overflow-hidden max-h-[32px] cursor-pointer bg-gray-50 dark:!bg-default-100 hover:bg-gray-100 dark:hover:bg-default-200;
+  @apply w-full rounded-lg rounded-b-none! border-gray-200! dark:border-default-200! border border-b-0! text-gray-500 dark:text-default-500 text-nowrap text-ellipsis overflow-hidden max-h-[32px] cursor-pointer bg-gray-50 dark:bg-default-100! hover:bg-gray-100 dark:hover:bg-default-200;
   @apply transition-all;
 }
 
 .chat-prompt-input .pd-selected-text-indicator-clear {
-  @apply rounded-full w-4 h-4 p-0.5 flex items-center justify-center text-gray-500 dark:text-default-500 cursor-pointer bg-gray-50 dark:!bg-default-100 hover:bg-red-200 dark:hover:bg-danger-200 hover:text-red-500 dark:hover:text-danger transition-all;
+  @apply rounded-full w-4 h-4 p-0.5 flex items-center justify-center text-gray-500 dark:text-default-500 cursor-pointer bg-gray-50 dark:bg-default-100! hover:bg-red-200 dark:hover:bg-danger-200 hover:text-red-500 dark:hover:text-danger transition-all;
   @apply absolute top-1/2 right-4 -translate-y-1/2;
 }
 
@@ -346,8 +440,9 @@ object {
 }
 
 .chat-message-entry .indicator {
-  @apply transition-all duration-300 ease-in-out fade-in noselect;
+  @apply transition-all duration-300 ease-in-out select-none;
   @apply bg-transparent px-2;
+  animation: fadeIn 0.5s ease-in-out forwards;
   text-wrap-style: balance;
   overflow: hidden;
   pointer-events: none;
@@ -389,16 +484,16 @@ object {
   min-width: 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  @apply text-sm text-default-800 px-3 py-2 border !border-transparent rounded-xl;
+  @apply text-sm text-default-800 px-3 py-2 border border-transparent! rounded-xl;
   @apply transition-all duration-500 ease-in-out;
-  @apply bg-gray-200 dark:!bg-default-200;
+  @apply bg-gray-200 dark:bg-default-200!;
 }
 
 .chat-message-entry .message-box-assistant {
   align-self: flex-start;
   max-width: min(95%, 700px);
   min-width: 0;
-  @apply text-sm text-default-800 border !border-transparent rounded-xl;
+  @apply text-sm text-default-800 border border-transparent! rounded-xl;
   @apply transition-all duration-500 ease-in-out;
 }
 
@@ -428,12 +523,13 @@ object {
 }
 
 .message-box-stale {
-  @apply !bg-red-50 dark:!bg-danger-50/30 !border;
+  @apply bg-red-50! dark:bg-danger-50/30! border!;
   border-color: var(--pd-border-color-error) !important;
 }
 
 .message-box-stale-description {
-  @apply !text-sm !text-red-400 !border-t !mt-2 !pt-1 fade-in;
+  @apply text-sm! text-red-400! border-t! mt-2! pt-1!;
+  animation: fadeIn 0.5s ease-in-out forwards;
   border-color: var(--pd-border-color-error) !important;
 }
 
@@ -449,7 +545,7 @@ object {
 
 .chat-prompt-input {
   @apply p-2;
-  @apply bg-gray-50 dark:!bg-default-50;
+  @apply bg-gray-50 dark:bg-default-50!;
 }
 
 .chat-prompt-input .pd-chat-toolbar {
@@ -461,7 +557,7 @@ object {
 }
 
 .pd-avatar {
-  @apply w-10 h-10 rounded-xl outline outline-2 border-2 border-white dark:!border-default-100 outline-gray-300 dark:outline-default-200 transition-all;
+  @apply w-10 h-10 rounded-xl outline outline-2 border-2 border-white dark:border-default-100! outline-gray-300 dark:outline-default-200 transition-all;
 }
 
 .pd-avatar-fallback {
@@ -469,8 +565,11 @@ object {
 }
 
 .pd-bottom-logo-group {
-  @apply text-exo-2 font-bold flex flex-wrap flex-col text-gray-500 dark:text-default-500;
+  @apply font-bold flex flex-wrap flex-col text-gray-500 dark:text-default-500;
   @apply transition-all;
+  font-family: var(--font-exo-2);
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
 .pd-rnd {
@@ -489,7 +588,7 @@ object {
 }
 
 .pd-context-menu {
-  @apply bg-white dark:!bg-default-100 rounded-md shadow-md border !border-gray-200 dark:!border-default-200 max-w-[150px] absolute top-8 left-4 hidden;
+  @apply bg-white dark:bg-default-100! rounded-md shadow-md border border-gray-200! dark:border-default-200! max-w-[150px] absolute top-8 left-4 hidden;
   @apply p-2;
 }
 
@@ -501,7 +600,7 @@ object {
   @apply flex flex-col gap-2;
 }
 .pd-context-menu-item {
-  @apply p-2 rounded-md text-sm font-medium text-gray-700 dark:text-default-200 cursor-pointer border !border-gray-100 dark:!border-default-200;
+  @apply p-2 rounded-md text-sm font-medium text-gray-700 dark:text-default-200 cursor-pointer border border-gray-100! dark:border-default-200!;
   @apply hover:bg-gray-100 dark:hover:bg-default-200;
 }
 
@@ -720,7 +819,7 @@ object {
 }
 
 [data-streamdown="inline-code"] {
-  @apply !px-1 !py-0 !text-xs !bg-gray-200 dark:!bg-default-200 rounded-md font-mono text-default-800 dark:!text-default-800;
+  @apply px-1! py-0! text-xs! bg-gray-200! dark:bg-default-200! rounded-md font-mono text-default-800 dark:text-default-800!;
 }
 
 [data-streamdown="code-block"] {
@@ -729,24 +828,24 @@ object {
 }
 
 .dark [data-streamdown="code-block"] {
-  @apply !border-default-200 dark:!border-default-200;
+  @apply border-default-200! dark:border-default-200!;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 [data-streamdown="code-block-header"] {
-  @apply !border-default-200 dark:!border-default-200;
-  @apply !py-1 !px-2;
+  @apply border-default-200! dark:border-default-200!;
+  @apply py-1! px-2!;
 }
 
 [data-streamdown="code-block-body"] {
-  @apply !border-default-200 dark:!border-default-200;
-  @apply !py-2 !px-3 !text-xs;
+  @apply border-default-200! dark:border-default-200!;
+  @apply py-2! px-3! text-xs!;
 }
 
 [data-streamdown="mermaid-block"] {
-  @apply !border-default-200 dark:!border-default-200;
+  @apply border-default-200! dark:border-default-200!;
 }
 
 [data-streamdown="horizontal-rule"] {
-  @apply !border-default-200 dark:!border-default-200;
+  @apply border-default-200! dark:border-default-200!;
 }
