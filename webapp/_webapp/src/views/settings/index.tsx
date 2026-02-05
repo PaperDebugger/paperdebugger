@@ -1,8 +1,6 @@
 import { Spinner } from "@heroui/react";
 import { useEffect } from "react";
 import { useSettingStore } from "../../stores/setting-store";
-
-import { SettingsHeader } from "./settings-header";
 import { UserDeveloperTools } from "./sections/user-developer-tools";
 import { AccountSettings } from "./sections/account-settings";
 import { UISettings } from "./sections/ui-settings";

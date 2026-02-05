@@ -21,7 +21,7 @@ export interface SettingsSectionProps {
   /** Additional className */
   className?: string
   /** Variant for different visual treatments */
-  variant?: 'default' | 'danger'
+  variant?: 'default' | 'danger' | 'info'
   /** Optional action element (e.g., Edit button) shown at the right of the header */
   action?: React.ReactNode
 }
@@ -49,7 +49,8 @@ export function SettingsSection({
           <h3
             className={cn(
               'text-base font-semibold',
-              variant === 'danger' && 'text-destructive'
+              variant === 'danger' && 'text-destructive',
+              variant === 'info' && 'text-blue-600 dark:text-blue-400'
             )}
           >
             {title}
