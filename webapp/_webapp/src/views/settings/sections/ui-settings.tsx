@@ -4,7 +4,7 @@ import { SettingsCard } from "@/components/settings/SettingsCard";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsToggle } from "@/components/settings/SettingsToggle";
 import { SettingsSegmentedControl } from "@/components/settings/SettingsSegmentedControl";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Palette, Sun } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const UISettings = () => {
@@ -27,7 +27,7 @@ export const UISettings = () => {
     setThemeMode(value as ThemeMode);
   };
   return (
-    <SettingsSection title="Appearance">
+    <SettingsSection title="Appearance" icon={<Palette className="w-4 h-4" />}>
       <SettingsCard>
         <SettingsRow label="Color theme">
           <SettingsSegmentedControl

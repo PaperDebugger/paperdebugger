@@ -8,6 +8,7 @@ import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSegmentedControl } from "@/components/settings/SettingsSegmentedControl";
 import { SettingsInput } from "@/components/settings/SettingsInput";
 import { Button } from "@/components/ui/button";
+import { Code } from "lucide-react";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
@@ -21,7 +22,7 @@ export const UserDeveloperTools = () => {
   }, [endpoint]);
 
   return (
-    <SettingsSection title="Developer Tools" variant="info">
+    <SettingsSection title="Developer Tools" icon={<Code className="w-4 h-4" />} variant="info">
       <SettingsCard divided>
         <SettingsRow label={
           conversationMode === "debug" ? "Chat Without Document" : "Chat With Document"

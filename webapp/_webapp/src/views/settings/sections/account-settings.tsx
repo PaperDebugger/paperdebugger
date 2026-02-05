@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { getManifest } from "../../../libs/manifest";
 import { useSettingStore } from "../../..//stores/setting-store";
+import { User } from "lucide-react";
 
 export const AccountSettings = () => {
   const { logout, user } = useAuthStore();
@@ -54,7 +55,7 @@ export const AccountSettings = () => {
   }, []);
 
   return (
-    <SettingsSection title="Account">
+    <SettingsSection title="Account" icon={<User className="w-4 h-4" />}>
       <SettingsCard>
         <SettingsRow label="Status" description="The current status of the app">
           <div className="flex flex-col gap-0 text-xs text-default-500">

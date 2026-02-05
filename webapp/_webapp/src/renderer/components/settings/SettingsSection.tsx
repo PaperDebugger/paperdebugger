@@ -23,7 +23,8 @@ export interface SettingsSectionProps {
   /** Variant for different visual treatments */
   variant?: 'default' | 'danger' | 'info'
   /** Optional action element (e.g., Edit button) shown at the right of the header */
-  action?: React.ReactNode
+  action?: React.ReactNode,
+  icon?: React.ReactNode,
 }
 
 /**
@@ -41,6 +42,7 @@ export function SettingsSection({
   className,
   variant = 'default',
   action,
+  icon,
 }: SettingsSectionProps) {
   return (
     <section className={cn('space-y-3', className)}>
@@ -53,6 +55,7 @@ export function SettingsSection({
               variant === 'info' && 'text-blue-600 dark:text-blue-400'
             )}
           >
+            {icon && <span className="w-4 h-4 mr-2">{icon}</span>}
             {title}
           </h3>
           {description && (
