@@ -16,6 +16,11 @@ function generateConfig(
   return produce<UserConfig>(
     {
       base: "/_pd/webapp",
+      resolve: {
+        alias: {
+          "@": path.resolve(__dirname, "src/renderer"),
+        },
+      },
       plugins: [
         tailwindcss(),
         react(),

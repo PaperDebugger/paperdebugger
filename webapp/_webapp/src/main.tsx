@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { OnboardingGuide } from "./components/onboarding-guide";
 import { ToolbarButton } from "./components/toolbar-button";
 import "./index.css";
+import "./renderer/index.css";
 import googleAnalytics from "./libs/google-analytics";
 import { generateSHA1Hash, onElementAdded, onElementAppeared } from "./libs/helpers";
 import { OverleafCodeMirror, completion, createSuggestionExtension } from "./libs/inline-suggestion";

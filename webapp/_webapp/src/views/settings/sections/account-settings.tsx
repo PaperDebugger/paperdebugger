@@ -1,20 +1,51 @@
-import { Button, cn } from "@heroui/react";
-import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import CellWrapper from "../../../components/cell-wrapper";
-import { useSettingStore } from "../../../stores/setting-store";
 import { useAuthStore } from "../../../stores/auth-store";
 import { useEffect, useState } from "react";
 import { getCookies } from "../../../intermediate";
 import { useAdapterOptional } from "../../../adapters/context";
+import { SettingsCard } from "@/components/settings/SettingsCard";
+import { SettingsSection } from "@/components/settings/SettingsSection";
+import { SettingsRow } from "@/components/settings/SettingsRow";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { getManifest } from "../../../libs/manifest";
+import { useSettingStore } from "../../..//stores/setting-store";
 
 export const AccountSettings = () => {
-  const { updateSettings } = useSettingStore();
   const { logout, user } = useAuthStore();
   const [overleafSession, setOverleafSession] = useState("");
   const [gclb, setGclb] = useState("");
   const adapter = useAdapterOptional();
   const isWord = adapter?.platform === "word";
+  const manifest = getManifest();
+  // @ts-expect-error we don't use this variable versionClickCount
+  const [versionClickCount, setVersionClickCount] = useState(0); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [versionClickTimeout, setVersionClickTimeout] = useState<NodeJS.Timeout | null>(null);
+  const { enableUserDeveloperTools, setEnableUserDeveloperTools } = useSettingStore();
+  const Link = ({ href, children }: { href: string; children: React.ReactNode }) => {
+    return (
+      <a href={href} target="_blank" className="hover:text-primary-600">
+        {children}
+      </a>
+    );
+  };
 
+  const onVersionClick = () => {
+    setVersionClickCount((prev: number) => {
+      const next = prev + 1;
+      if (next >= 5) {
+        setEnableUserDeveloperTools(!enableUserDeveloperTools);
+        return 0;
+      }
+      return next;
+    });
+    if (versionClickTimeout) {
+      clearTimeout(versionClickTimeout);
+    }
+    const timeout = setTimeout(() => {
+      setVersionClickCount(0);
+    }, 1500);
+    setVersionClickTimeout(timeout);
+  };
   useEffect(() => {
     getCookies(window.location.hostname).then((cookies) => {
       setOverleafSession(cookies.session);
@@ -23,65 +54,58 @@ export const AccountSettings = () => {
   }, []);
 
   return (
-    <SettingsSectionContainer>
-      <SettingsSectionTitle>Account</SettingsSectionTitle>
-      {!isWord && (
-        <CellWrapper>
-          <div className="flex flex-col">
-            <div className="text-xs">View onboarding guide</div>
-            <div className="text-xs text-default-500">Learn how to use PaperDebugger effectively</div>
+    <SettingsSection title="Account">
+      <SettingsCard>
+        <SettingsRow label="Status" description="The current status of the app">
+          <div className="flex flex-col gap-0 text-xs text-default-500">
+            <div className="flex flex-row gap-2 items-center">
+              <div className={cn("rounded-full w-2 h-2", user ? "bg-green-500" : "bg-red-500")}></div>User
+            </div>
+            {!isWord && (
+              <>
+                <div className="flex flex-row gap-2 items-center">
+                  <div
+                    className={cn(
+                      "rounded-full w-2 h-2",
+                      overleafSession && overleafSession.length > 0 ? "bg-green-500" : "bg-red-500",
+                    )}
+                  ></div>
+                  Session
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  <div
+                    className={cn("rounded-full w-2 h-2", gclb && gclb.length > 0 ? "bg-green-500" : "bg-red-500")}
+                  ></div>
+                  GCLB
+                </div>
+              </>
+            )}
           </div>
-          <Button
-            size="sm"
-            color="primary"
-            radius="full"
-            onPress={() => {
-              updateSettings({ showedOnboarding: false });
-            }}
-          >
-            View
+        </SettingsRow>
+        <SettingsRow label="Logout">
+          <Button size="sm" variant="outline" onClick={logout}>
+            Log out
           </Button>
-        </CellWrapper>
-      )}
-      <CellWrapper>
-        <div className="flex flex-col flex-1">
-          <div className="text-xs">Status</div>
-          <div className="text-xs text-default-500">The current status of the app</div>
-        </div>
-        <div className="flex flex-col gap-0 text-xs text-default-500">
-          <div className="flex flex-row gap-2 items-center">
-            <div className={cn("rounded-full w-2 h-2", user ? "bg-primary-500" : "bg-red-500")}></div>User
+        </SettingsRow>
+        <SettingsRow label="Version" onClick={onVersionClick}>
+          <div className="text-xs font-light select-none flex flex-col gap-1 text-muted-foreground text-right">
+            <div className="flex flex-row gap-2 justify-end">
+              <div className="ml-1 text-exo-2 toolbar-label">
+                <span className="font-light">Paper</span>
+                <span className="font-bold">Debugger</span>
+              </div>
+              {manifest?.version_name || "unknown"}
+            </div>
+            <div className="flex flex-row gap-2 items-center justify-end">
+              <Link href="https://github.com/PaperDebugger/paperdebugger/issues">Feedback</Link>
+              <div>|</div>
+              <Link href="https://www.paperdebugger.com/blog/terms/">Terms of Service</Link>
+              <div>|</div>
+              <Link href="https://www.paperdebugger.com/blog/privacy/">Privacy Policy</Link>
+            </div>
           </div>
-          {!isWord && (
-            <>
-              <div className="flex flex-row gap-2 items-center">
-                <div
-                  className={cn(
-                    "rounded-full w-2 h-2",
-                    overleafSession && overleafSession.length > 0 ? "bg-primary-500" : "bg-red-500",
-                  )}
-                ></div>
-                Session
-              </div>
-              <div className="flex flex-row gap-2 items-center">
-                <div
-                  className={cn("rounded-full w-2 h-2", gclb && gclb.length > 0 ? "bg-primary-500" : "bg-red-500")}
-                ></div>
-                GCLB
-              </div>
-            </>
-          )}
-        </div>
-      </CellWrapper>
-      <CellWrapper>
-        <div className="flex flex-col">
-          <div className="text-xs">Log out</div>
-          <div className="text-xs text-default-500">Log out of your account and clear all your data</div>
-        </div>
-        <Button size="sm" color="danger" radius="full" variant="flat" onPress={logout}>
-          Log out
-        </Button>
-      </CellWrapper>
-    </SettingsSectionContainer>
+        </SettingsRow>
+      </SettingsCard>
+    </SettingsSection>
   );
 };

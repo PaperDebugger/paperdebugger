@@ -1,13 +1,11 @@
-import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import { useSettingStore } from "../../../stores/setting-store";
-import { SettingItem } from "../setting-items";
-import { SettingItemSelect } from "../setting-item-select";
-
-const THEME_OPTIONS: Record<string, string> = {
-  auto: "Auto",
-  light: "Light",
-  dark: "Dark",
-};
+import { ThemeMode, useSettingStore } from "../../../stores/setting-store";
+import { SettingsSection } from "@/components/settings/SettingsSection";
+import { SettingsCard } from "@/components/settings/SettingsCard";
+import { SettingsRow } from "@/components/settings/SettingsRow";
+import { SettingsToggle } from "@/components/settings/SettingsToggle";
+import { SettingsSegmentedControl } from "@/components/settings/SettingsSegmentedControl";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const UISettings = () => {
   const {
@@ -25,55 +23,68 @@ export const UISettings = () => {
     allowOutOfBounds,
     setAllowOutOfBounds,
   } = useSettingStore();
-
+  const handleThemeModeChange = (value: string) => {
+    setThemeMode(value as ThemeMode);
+  };
   return (
-    <SettingsSectionContainer>
-      <SettingsSectionTitle>UI</SettingsSectionTitle>
-      <SettingItemSelect
-        label="Appearance"
-        description="Follow system, light, or dark mode"
-        selected={themeMode}
-        options={THEME_OPTIONS}
-        onSelectChange={(value) => setThemeMode(value as "auto" | "light" | "dark")}
-      />
-      <SettingItem
-        label="Show shortcuts after selecting text"
-        description="Display shortcuts after text selection"
-        isLoading={isUpdating.showShortcutsAfterSelection}
-        selected={settings?.showShortcutsAfterSelection ?? false}
-        onSelectChange={(selected) => updateSettings({ showShortcutsAfterSelection: selected })}
-      />
-      <SettingItem
-        label="Full width button"
-        description="Affects the top left corner button width"
-        isLoading={isUpdating.fullWidthPaperDebuggerButton}
-        selected={settings?.fullWidthPaperDebuggerButton ?? false}
-        onSelectChange={(selected) => updateSettings({ fullWidthPaperDebuggerButton: selected })}
-      />
-      <SettingItem
-        label="Minimalist mode"
-        description="Always collapse the header and footer"
-        selected={minimalistMode}
-        onSelectChange={(selected) => setMinimalistMode(selected)}
-      />
-      <SettingItem
-        label="Hide avatar"
-        description="Hide the avatar in the header"
-        selected={hideAvatar}
-        onSelectChange={(selected) => setHideAvatar(selected)}
-      />
-      <SettingItem
-        label="Allow window out of bounds"
-        description="You can right-click the PaperDebugger button to reset position if the window is lost."
-        selected={allowOutOfBounds}
-        onSelectChange={(selected) => setAllowOutOfBounds(selected)}
-      />
-      <SettingItem
-        label="Disable line wrap"
-        description="Disable Overleaf's line wrap feature."
-        selected={disableLineWrap}
-        onSelectChange={(selected) => setDisableLineWrap(selected)}
-      />
-    </SettingsSectionContainer>
+    <SettingsSection title="Appearance">
+      <SettingsCard>
+        <SettingsRow label="Color theme">
+          <SettingsSegmentedControl
+            value={themeMode}
+            onValueChange={handleThemeModeChange}
+            options={[
+              { value: "auto", label: "System", icon: <Monitor className="w-4 h-4" /> },
+              { value: "light", label: "Light", icon: <Sun className="w-4 h-4" /> },
+              { value: "dark", label: "Dark", icon: <Moon className="w-4 h-4" /> },
+            ]}
+          />
+        </SettingsRow>
+        <SettingsToggle
+          label="Show shortcuts after selecting text"
+          description="Display shortcuts after text selection"
+          checked={settings?.showShortcutsAfterSelection ?? false}
+          disabled={isUpdating.showShortcutsAfterSelection}
+          loading={isUpdating.showShortcutsAfterSelection}
+          onCheckedChange={() =>
+            updateSettings({ showShortcutsAfterSelection: !settings?.showShortcutsAfterSelection })
+          }
+        />
+        <SettingsToggle
+          label="Full width button"
+          description="Affects the top left corner button width"
+          checked={settings?.fullWidthPaperDebuggerButton ?? true}
+          disabled={isUpdating.fullWidthPaperDebuggerButton}
+          loading={isUpdating.fullWidthPaperDebuggerButton}
+          onCheckedChange={() =>
+            updateSettings({ fullWidthPaperDebuggerButton: !settings?.fullWidthPaperDebuggerButton })
+          }
+        />
+        <SettingsToggle
+          label="Minimalist mode"
+          description="Always collapse the header and footer"
+          checked={minimalistMode}
+          onCheckedChange={() => setMinimalistMode(!minimalistMode)}
+        />
+        <SettingsToggle
+          label="Hide avatar"
+          description="Hide the avatar in the header"
+          checked={hideAvatar}
+          onCheckedChange={() => setHideAvatar(!hideAvatar)}
+        />
+        <SettingsToggle
+          label="Allow window out of bounds"
+          description="You can right-click the PaperDebugger button to reset position if the window is lost."
+          checked={allowOutOfBounds}
+          onCheckedChange={() => setAllowOutOfBounds(!allowOutOfBounds)}
+        />
+        <SettingsToggle
+          label="Disable line wrap"
+          description="Disable Overleaf's line wrap feature."
+          checked={disableLineWrap}
+          onCheckedChange={() => setDisableLineWrap(!disableLineWrap)}
+        />
+      </SettingsCard>
+    </SettingsSection>
   );
 };

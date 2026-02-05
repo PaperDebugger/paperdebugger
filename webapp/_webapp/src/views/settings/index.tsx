@@ -7,11 +7,15 @@ import { UserDeveloperTools } from "./sections/user-developer-tools";
 import { AccountSettings } from "./sections/account-settings";
 import { UISettings } from "./sections/ui-settings";
 import { RealDeveloperTools } from "./sections/real-developer-tools";
-import { SettingsFooter } from "./sections/footer";
 import { ApiKeySettings } from "./sections/api-key-settings";
+import { cn } from "@/lib/utils";
+import { PanelHeader } from "@/components/app-shell/PanelHeader";
+import { HeaderMenu } from "@/components/ui/HeaderMenu";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Settings = () => {
-  const { settings, isLoading, loadSettings, enableUserDeveloperTools } = useSettingStore();
+  const { settings, isLoading, loadSettings, enableUserDeveloperTools, resetSettings } = useSettingStore();
 
   useEffect(() => {
     if (!settings) {
@@ -26,17 +30,44 @@ export const Settings = () => {
       </div>
     );
   }
-
+  const effectiveFocusMode = true;
+  const isRightSidebarVisible = true;
   return (
     <div className="pd-app-tab-content noselect min-w-[400px]!">
-      <SettingsHeader />
       <div className="pd-app-tab-content-body">
-        <UISettings />
-        <ApiKeySettings />
-        <AccountSettings />
-        <SettingsFooter />
-        {enableUserDeveloperTools && <UserDeveloperTools />}
-        {import.meta.env.DEV && <RealDeveloperTools />}
+        <div
+          className={cn(
+            "flex-1 overflow-hidden min-w-0 bg-foreground-2 shadow-middle",
+            effectiveFocusMode ? "rounded-l-[14px]" : "rounded-l-[10px]",
+            isRightSidebarVisible ? "rounded-r-[10px]" : "rounded-r-[14px]",
+          )}
+        >
+          <div className="h-full flex flex-col">
+            <PanelHeader
+              title="Settings"
+              actions={
+                <HeaderMenu>
+                  <Button variant="outline" onClick={() => resetSettings()}>
+                    Reset Settings
+                  </Button>
+                </HeaderMenu>
+              }
+            />
+            <div className="flex-1 min-h-0 mask-fade-y">
+              <ScrollArea className="h-full">
+                <div className="px-5 py-7 max-w-3xl mx-auto">
+                  <div className="space-y-8">
+                    <UISettings />
+                    <ApiKeySettings />
+                    <AccountSettings />
+                    {enableUserDeveloperTools && <UserDeveloperTools />}
+                    {import.meta.env.DEV && <RealDeveloperTools />}
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

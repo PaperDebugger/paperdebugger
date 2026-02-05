@@ -1,10 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { resolve } from "path";
+import path from "path";
 
 // Simplified development configuration
 export default defineConfig({
   root: "src/devtool",
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src/renderer"),
+    },
+  },
   plugins: [react()],
   server: {
     port: 3000,
@@ -53,7 +58,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "src/devtool/index.html"),
+        main: path.resolve(__dirname, "src/devtool/index.html"),
       },
     },
   },
