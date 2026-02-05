@@ -3,6 +3,7 @@ import { Tabs } from "./components/tabs";
 import { Settings } from "./views/settings";
 import { Prompts } from "./views/prompts";
 import { PdAppBodyContainer } from "./components/pd-app-body-container";
+import { MessageSquare, Notebook, Settings as SettingsIcon } from "lucide-react";
 
 export const PaperDebugger = () => {
   return (
@@ -12,21 +13,21 @@ export const PaperDebugger = () => {
           {
             key: "chat",
             title: "Chat",
-            icon: "tabler:message",
+            icon: <MessageSquare />,
             children: <Chat />,
             tooltip: "Chat",
           },
           {
             key: "prompts",
             title: "Prompts",
-            icon: "tabler:notebook",
+            icon: <Notebook />,
             children: <Prompts />,
             tooltip: "Prompt Library",
           },
           {
             key: "settings",
             title: "Settings",
-            icon: "tabler:settings",
+            icon: <SettingsIcon />,
             children: <Settings />,
             tooltip: "Settings",
           },

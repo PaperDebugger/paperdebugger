@@ -1,186 +1,201 @@
-import { cn, Tab, Tabs as NextTabs } from "@heroui/react";
-import { Icon } from "@iconify/react";
-import { ReactNode, forwardRef, useImperativeHandle, useCallback, useRef, useEffect } from "react";
-import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
-import { useAuthStore } from "../stores/auth-store";
+import type { LucideIcon } from "lucide-react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 import { Avatar } from "./avatar";
+import { useAuthStore } from "../stores/auth-store";
 import { useSettingStore } from "../stores/setting-store";
 
-type TabItem = {
+export interface TabItem {
+  /** Unique key for the tab */
   key: string;
+  /** Display title */
   title: string;
-  icon: string;
-  children?: ReactNode;
+  /** Icon component or element */
+  icon: LucideIcon | React.ReactNode;
+  /** Optional icon color (CSS color string) */
+  iconColor?: string;
+  /** Whether the icon responds to color (uses currentColor). Default true for Lucide icons. */
+  iconColorable?: boolean;
+  /** Tab content */
+  children: React.ReactNode;
+  /** Optional tooltip text */
   tooltip?: string;
-};
+  /** Optional badge (e.g., count) */
+  label?: string;
+  /** Disabled state */
+  disabled?: boolean;
+}
 
-type TabRef = {
-  setSelectedTab: (key: string) => void;
-};
-
-type TabProps = {
+export interface TabsProps {
+  /** Array of tab items */
   items: TabItem[];
-};
+  /** Controlled active tab key */
+  activeKey?: string;
+  /** Default active tab key (uncontrolled) */
+  defaultActiveKey?: string;
+  /** Callback when tab changes */
+  onChange?: (key: string) => void;
+  /** Custom className for the tabs container */
+  className?: string;
+  /** Custom className for the content area */
+  contentClassName?: string;
+}
 
-// Constants for width limits
-const MIN_TAB_ITEMS_WIDTH = 64; // Minimum width (w-16 = 64px)
-const MAX_TAB_ITEMS_WIDTH = 200; // Maximum width
-const COLLAPSE_THRESHOLD = 113; // Width threshold to auto-collapse text
+/**
+ * Tabs - Horizontal tab navigation with icon support
+ *
+ * Matches LeftSidebar styling for consistency:
+ * - py-[5px] px-2 text-[13px] rounded-[6px]
+ * - Icon: h-3.5 w-3.5
+ *
+ * Usage:
+ * ```tsx
+ * <Tabs
+ *   items={[
+ *     {
+ *       key: "chat",
+ *       title: "Chat",
+ *       icon: <MessageSquare />,
+ *       children: <Chat />,
+ *       tooltip: "Chat",
+ *     },
+ *   ]}
+ * />
+ * ```
+ */
+export function Tabs({ items, activeKey, defaultActiveKey, onChange, className, contentClassName }: TabsProps) {
+  // Uncontrolled state management
+  const [internalActiveKey, setInternalActiveKey] = React.useState(defaultActiveKey || items[0]?.key);
 
-export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
+  // Use controlled key if provided, otherwise use internal state
+  const currentActiveKey = activeKey !== undefined ? activeKey : internalActiveKey;
+
+  const handleTabClick = React.useCallback(
+    (key: string, disabled?: boolean) => {
+      if (disabled) return;
+
+      if (activeKey === undefined) {
+        setInternalActiveKey(key);
+      }
+      onChange?.(key);
+    },
+    [activeKey, onChange],
+  );
+
+  // Find active tab content
+  const activeTab = items.find((item) => item.key === currentActiveKey);
   const { user } = useAuthStore();
-  const { activeTab, setActiveTab, sidebarCollapsed, setSidebarCollapsed, tabItemsWidth, setTabItemsWidth } =
-    useConversationUiStore();
   const { hideAvatar } = useSettingStore();
-  const { minimalistMode } = useSettingStore();
-
-  const resizeHandleRef = useRef<HTMLDivElement>(null);
-  const isResizingRef = useRef(false);
-  const tabItemsWidthRef = useRef(tabItemsWidth);
-  const mouseMoveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
-  const mouseUpHandlerRef = useRef<(() => void) | null>(null);
-
-  // Keep ref in sync with tabItemsWidth
-  useEffect(() => {
-    tabItemsWidthRef.current = tabItemsWidth;
-  }, [tabItemsWidth]);
-
-  // Auto-collapse based on width
-  useEffect(() => {
-    const shouldCollapse = tabItemsWidth < COLLAPSE_THRESHOLD;
-    // Get current state to avoid stale closure
-    const currentCollapsed = useConversationUiStore.getState().sidebarCollapsed;
-    // Only update if the state doesn't match the desired state
-    if (shouldCollapse !== currentCollapsed) {
-      setSidebarCollapsed(shouldCollapse);
-    }
-  }, [tabItemsWidth, setSidebarCollapsed]); // Only depend on tabItemsWidth to avoid loops
-
-  useImperativeHandle(ref, () => ({
-    setSelectedTab: setActiveTab,
-  }));
-
-  // Cleanup function to reset resize state and remove event listeners
-  const cleanupResizeState = useCallback(() => {
-    isResizingRef.current = false;
-    document.body.style.cursor = "default";
-    document.body.style.userSelect = "";
-    if (resizeHandleRef.current) {
-      resizeHandleRef.current.classList.remove("resizing");
-    }
-    // Remove event listeners if they exist
-    if (mouseMoveHandlerRef.current) {
-      document.removeEventListener("mousemove", mouseMoveHandlerRef.current);
-      mouseMoveHandlerRef.current = null;
-    }
-    if (mouseUpHandlerRef.current) {
-      document.removeEventListener("mouseup", mouseUpHandlerRef.current);
-      mouseUpHandlerRef.current = null;
-    }
-  }, []);
-
-  // Cleanup on unmount to prevent leaks if component unmounts during resize
-  useEffect(() => {
-    return () => {
-      if (isResizingRef.current) {
-        cleanupResizeState();
-      }
-    };
-  }, [cleanupResizeState]);
-
-  // Handle resize drag
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      isResizingRef.current = true;
-      const startX = e.clientX;
-      const startWidth = tabItemsWidthRef.current;
-
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!isResizingRef.current) return;
-        e.preventDefault();
-        const delta = e.clientX - startX;
-        const newWidth = Math.max(MIN_TAB_ITEMS_WIDTH, Math.min(MAX_TAB_ITEMS_WIDTH, startWidth + delta));
-        setTabItemsWidth(newWidth);
-      };
-
-      const handleMouseUp = () => {
-        cleanupResizeState();
-      };
-
-      // Store handlers in refs so they can be cleaned up on unmount
-      mouseMoveHandlerRef.current = handleMouseMove;
-      mouseUpHandlerRef.current = handleMouseUp;
-
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-      if (resizeHandleRef.current) {
-        resizeHandleRef.current.classList.add("resizing");
-      }
-    },
-    [setTabItemsWidth, cleanupResizeState],
-  );
-
-  const renderTabItem = useCallback(
-    (item: TabItem) => {
-      const tabTitle = (
-        <div className="flex flex-row items-center space-x-2" id="pd-tab-item">
-          <div className="flex flex-col items-center justify-center flex-1 h-full">
-            <Icon className="transition-all duration-300" icon={item.icon} fontSize={18} />
-          </div>
-          <div
-            className={cn(
-              "transition-all duration-300 whitespace-nowrap overflow-hidden",
-              sidebarCollapsed ? "opacity-0 max-w-0 mx-0!" : "opacity-100 max-w-[100px]",
-            )}
-          >
-            {item.title}
-          </div>
-        </div>
-      );
-      return <Tab key={item.key} title={tabTitle} />;
-    },
-    [sidebarCollapsed],
-  );
-
   return (
-    <>
-      <div className="pd-app-tab-items noselect relative" style={{ width: `${tabItemsWidth}px` }}>
-        {/* Resize handle on the right edge */}
-        <div ref={resizeHandleRef} className="pd-tab-items-resize-handle" onMouseDown={handleMouseDown}>
-          {/* Visual indicator line */}
-          <div className="resize-handle-indicator" />
-        </div>
-
+    <div className={cn("flex flex-row h-full", className)}>
+      <div className="flex flex-col mt-[48px] items-center">
         {!hideAvatar && <Avatar name={user?.name || "User"} src={user?.picture} className="pd-avatar" />}
-
-        <NextTabs
-          aria-label="Options"
-          isVertical
-          variant="light"
-          classNames={{
-            tabList: "bg-gray-100 dark:bg-default-100!",
-            tab: cn("justify-start", minimalistMode ? "text-xs" : ""),
-          }}
-          selectedKey={activeTab}
-          onSelectionChange={(e) => {
-            setActiveTab(e as string);
-          }}
+        {/* Tab Navigation - Vertical */}
+        <nav
+          className="flex flex-col gap-0.5 px-2 py-1 border-r border-foreground/5 mt-2 h-full"
+          role="tablist"
+          aria-label="Main navigation"
         >
-          {items.map((item) => renderTabItem(item))}
-        </NextTabs>
+          {items.map((item) => {
+            const isActive = item.key === currentActiveKey;
 
-        <div className="flex-1"></div>
-        <div className={cn("pd-bottom-logo-group", sidebarCollapsed ? "text-[8px]" : "text-md px-3")}>
-          <span className="font-light!">Paper</span>
-          <span className="font-bold!">Debugger</span>
-        </div>
+            return (
+              <TabButton
+                key={item.key}
+                item={item}
+                isActive={isActive}
+                onClick={() => handleTabClick(item.key, item.disabled)}
+              />
+            );
+          })}
+        </nav>
       </div>
-      {items.find((item) => item.key === activeTab)?.children}
-    </>
+
+      {/* Tab Content */}
+      <div
+        className={cn("flex-1 overflow-auto", contentClassName)}
+        role="tabpanel"
+        aria-labelledby={`tab-${currentActiveKey}`}
+      >
+        {activeTab?.children}
+      </div>
+    </div>
   );
-});
+}
+
+// ============================================================
+// TabButton - Individual tab button component
+// ============================================================
+
+interface TabButtonProps {
+  item: TabItem;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function TabButton({ item, isActive, onClick }: TabButtonProps) {
+  return (
+    <button
+      id={`tab-${item.key}`}
+      role="tab"
+      aria-selected={isActive}
+      aria-controls={`tabpanel-${item.key}`}
+      disabled={item.disabled}
+      onClick={onClick}
+      title={item.tooltip}
+      className={cn(
+        "group flex items-center gap-2 rounded-[6px] text-[13px] select-none outline-none",
+        "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring",
+        "py-[5px] px-2 transition-colors",
+        isActive ? "bg-foreground/[0.07]" : "hover:bg-sidebar-hover",
+        item.disabled && "opacity-50 cursor-not-allowed",
+      )}
+    >
+      {/* Icon */}
+      <span className="relative h-3.5 w-3.5 shrink-0 flex items-center justify-center">{renderIcon(item)}</span>
+
+      {/* Title */}
+      <span>{item.title}</span>
+
+      {/* Label Badge */}
+      {item.label && <span className="ml-1 text-xs text-foreground/30">{item.label}</span>}
+    </button>
+  );
+}
+
+// ============================================================
+// Icon Rendering Helper
+// ============================================================
+
+/**
+ * Helper to render icon - either component (function/forwardRef) or React element.
+ * Colors are always applied via inline style.
+ */
+function renderIcon(item: TabItem) {
+  const isComponent =
+    typeof item.icon === "function" || (typeof item.icon === "object" && item.icon !== null && "render" in item.icon);
+
+  // Default color for items without explicit iconColor (foreground at 60% opacity)
+  const defaultColor = "color-mix(in oklch, var(--foreground) 60%, transparent)";
+
+  // Lucide components are always colorable; ReactNode icons check iconColorable
+  // Default to true for backwards compatibility (most icons are colorable)
+  const applyColor = item.iconColorable !== false;
+  const colorStyle = applyColor ? { color: item.iconColor || defaultColor } : undefined;
+
+  if (isComponent) {
+    const Icon = item.icon as React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    return <Icon className="h-3.5 w-3.5 shrink-0" style={colorStyle} />;
+  }
+
+  // Already a React element or primitive ReactNode
+  const iconElement = item.icon as React.ReactNode;
+  return (
+    <span
+      className="h-3.5 w-3.5 shrink-0 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+      style={colorStyle}
+    >
+      {iconElement}
+    </span>
+  );
+}

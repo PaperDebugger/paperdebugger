@@ -28,16 +28,13 @@ export const Settings = () => {
       </div>
     );
   }
-  const effectiveFocusMode = true;
-  const isRightSidebarVisible = true;
+
   return (
-    <div className="pd-app-tab-content noselect min-w-[400px]!">
+    <div className="pd-app-tab-content noselect">
       <div className="pd-app-tab-content-body">
         <div
           className={cn(
-            "flex-1 overflow-hidden min-w-0 bg-foreground-2 shadow-middle",
-            effectiveFocusMode ? "rounded-l-[14px]" : "rounded-l-[10px]",
-            isRightSidebarVisible ? "rounded-r-[10px]" : "rounded-r-[14px]",
+            "flex-1 overflow-hidden min-w-0 bg-foreground-2 shadow-middle rounded-l-[14px] rounded-r-[14px]",
           )}
         >
           <div className="h-full flex flex-col">
@@ -53,7 +50,7 @@ export const Settings = () => {
             />
             <div className="flex-1 min-h-0 mask-fade-y">
               <ScrollArea className="h-full">
-                <div className="px-5 py-7 max-w-3xl mx-auto">
+                <div className="px-5 py-7 max-w-full mx-auto">
                   <div className="space-y-8">
                     <UISettings />
                     <ApiKeySettings />
