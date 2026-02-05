@@ -36,14 +36,59 @@ import { useSettingStore } from "../stores/setting-store";
 import { getCitationKeys } from "../query/api";
 import { getProjectId } from "./helpers";
 
-const TRIGGER_WORD = "\\cite{";
+/** A completion trigger associates a pattern with a handler function. */
+type CompletionTrigger = {
+  pattern: string;
+  handler: (state: EditorState, triggerPattern: string) => Promise<string>;
+};
 
-/** Returns true when the cursor sits right after the trigger word. */
-function isTriggerWordAtCursor(state: EditorState): boolean {
+/** Completion handler for citation keys (triggered by \cite{). */
+async function completeCitationKeys(state: EditorState, triggerPattern: string): Promise<string> {
   const cursorPos = state.selection.main.head;
-  return (
-    state.doc.sliceString(Math.max(0, cursorPos - TRIGGER_WORD.length), cursorPos) === TRIGGER_WORD
-  );
+  const textBefore = state.doc.sliceString(0, cursorPos - triggerPattern.length);
+  const lastSentence = textBefore
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => s.trim().length > 0)
+    .slice(-1)[0];
+  if (!lastSentence) {
+    return "";
+  }
+
+  const projectId = getProjectId();
+  if (!projectId) {
+    return "";
+  }
+
+  try {
+    const response = await getCitationKeys({
+      sentence: lastSentence,
+      projectId: projectId,
+    });
+    return response.citationKeys || "";
+  } catch (err) {
+    logError("inline completion: failed", err);
+    return "";
+  }
+}
+
+/** Registry of completion triggers. Add new triggers here to extend functionality. */
+const COMPLETION_TRIGGERS: CompletionTrigger[] = [{ pattern: "\\cite{", handler: completeCitationKeys }];
+
+/** Returns the trigger that matches at cursor position, or null if none. */
+function getTriggerAtCursor(state: EditorState): CompletionTrigger | null {
+  const cursorPos = state.selection.main.head;
+  for (const trigger of COMPLETION_TRIGGERS) {
+    const start = Math.max(0, cursorPos - trigger.pattern.length);
+    if (state.doc.sliceString(start, cursorPos) === trigger.pattern) {
+      return trigger;
+    }
+  }
+  return null;
+}
+
+/** Returns true when the cursor sits right after any registered trigger pattern. */
+function isTriggerAtCursor(state: EditorState): boolean {
+  return getTriggerAtCursor(state) !== null;
 }
 
 /** Inserts a suggestion into the editor and dispatches the acceptance effect. */
@@ -136,44 +181,21 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
   };
 }
 
-export async function completion(_state: EditorState): Promise<string> {
+/** Main completion function that dispatches to the appropriate handler based on trigger. */
+export async function completion(state: EditorState): Promise<string> {
   // Only trigger when enable completion setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
     return "";
   }
 
-  // Only trigger if text before is the trigger word
-  if (!isTriggerWordAtCursor(_state)) {
+  // Find matching trigger and call its handler
+  const trigger = getTriggerAtCursor(state);
+  if (!trigger) {
     return "";
   }
 
-  // Extract last sentence and only trigger if last sentence exists
-  // Last sentence is used in prompt as context for citation suggestion
-  const cursorPos = _state.selection.main.head;
-  const textBefore = _state.doc.sliceString(0, cursorPos - TRIGGER_WORD.length);
-  const lastSentence = textBefore.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0).slice(-1)[0];
-  if (!lastSentence) {
-    return "";
-  }
-
-  // Get project ID
-  const projectId = getProjectId();
-  if (!projectId) {
-    return "";
-  }
-
-  // Get citation suggestion using GetCitationKeys API
-  try {
-    const response = await getCitationKeys({
-      sentence: lastSentence,
-      projectId: projectId,
-    });
-    return response.citationKeys || "";
-  } catch (err) {
-    logError("inline completion: failed", err);
-    return "";
-  }
+  return trigger.handler(state, trigger.pattern);
 }
 
 /**
@@ -639,7 +661,7 @@ export function createAutocompleteSuppressor(
       update(update: ViewUpdate) {
         const suggestion =
           update.state.field<SuggestionState>(suggestionState);
-        if (suggestion?.suggestion || isTriggerWordAtCursor(update.state)) {
+        if (suggestion?.suggestion || isTriggerAtCursor(update.state)) {
           suppress();
         } else {
           unsuppress();
