@@ -5,6 +5,7 @@ import { produce } from "immer";
 import path from "path";
 import { defineConfig, Plugin, type UserConfig } from "vite";
 import { getManifest } from "./src/libs/manifest";
+import tailwindcss from '@tailwindcss/postcss'
 
 function generateConfig(
   entry: string,
@@ -16,6 +17,7 @@ function generateConfig(
     {
       base: "/_pd/webapp",
       plugins: [
+        tailwindcss(),
         react(),
         faroUploader({
           appName: "PaperDebugger",
