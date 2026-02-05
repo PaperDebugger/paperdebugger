@@ -2,6 +2,11 @@
 layer(base);
 @import 'tailwindcss';
 
+/* TODO: Deprecation: these two lines should be removed after migrated to RadixUI */
+@import "tailwindcss";
+@config "../tailwind.config.js";
+/* Deprecation: above two lines should be removed after migrated to RadixUI */
+
 @import 'tailwindcss' layer(utilities);
 
 @source "../node_modules/streamdown/dist/*.js";

@@ -1,3 +1,4 @@
+// TODO: remove this file completely to upgrade to Tailwind CSS v4
 // tailwind.config.js
 const { heroui } = require("@heroui/react");
 
