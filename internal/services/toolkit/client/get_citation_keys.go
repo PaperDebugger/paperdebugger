@@ -87,7 +87,7 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 
 func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userId bson.ObjectID, projectId string, llmProvider *models.LLMProviderConfig) (string, error) {
 	bibliography, err := a.GetBibliographyForCitation(ctx, userId, projectId)
-	a.logger.Info(bibliography)
+
 	if err != nil {
 		return "", err
 	}
