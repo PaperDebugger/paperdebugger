@@ -241,7 +241,7 @@ message CreateConversationMessageStreamResponse {
   }
 }
 
-// Request to suggest citation keys based on context
+// Request to get citation keys suggestion based on project bibliography
 message GetCitationKeysRequest {
   string sentence = 1;
   string project_id = 2;
