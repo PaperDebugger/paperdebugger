@@ -35,6 +35,9 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 	excludeBraceRe = regexp.MustCompile(`(?i)^\s*(` + fieldsPattern + `)\s*=\s*\{`)
 	excludeQuoteRe = regexp.MustCompile(`(?i)^\s*(` + fieldsPattern + `)\s*=\s*"`)
 
+	// Match @String{ entries
+	stringEntryRe := regexp.MustCompile(`^\s*@String\s*\{`)
+
 	var bibLines []string
 	for _, doc := range project.Docs {
 		if doc.Filepath == "" || !strings.HasSuffix(doc.Filepath, ".bib") {
@@ -42,8 +45,19 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 		}
 		braceDepth := 0
 		inQuote := false
+		inStringEntry := false
+		stringEntryBraceDepth := 0
 		for _, line := range doc.Lines {
-			// Handle ongoing multi-line exclusion
+			// Handle ongoing @String{...} entry (which can span multiple lines)
+			if inStringEntry {
+				stringEntryBraceDepth += strings.Count(line, "{") - strings.Count(line, "}")
+				if stringEntryBraceDepth <= 0 {
+					inStringEntry = false
+					stringEntryBraceDepth = 0
+				}
+				continue
+			}
+			// Handle ongoing exclusion of some fields (which can span multiple lines)
 			if braceDepth > 0 {
 				braceDepth += strings.Count(line, "{") - strings.Count(line, "}")
 				continue
@@ -60,6 +74,14 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 			}
 			// Skip empty lines
 			if strings.TrimSpace(line) == "" {
+				continue
+			}
+			// Skip @String{...} entries
+			if stringEntryRe.MatchString(line) {
+				stringEntryBraceDepth = strings.Count(line, "{") - strings.Count(line, "}")
+				if stringEntryBraceDepth > 0 {
+					inStringEntry = true
+				}
 				continue
 			}
 			// Skip excluded fields
