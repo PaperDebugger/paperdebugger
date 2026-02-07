@@ -113,7 +113,7 @@ func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userI
 
 	citationKeys := strings.TrimSpace(resp[0].Payload.GetAssistant().GetContent())
 
-	if citationKeys == emptyCitation {
+	if citationKeys == "" || citationKeys == emptyCitation {
 		return "", nil
 	}
 
