@@ -182,7 +182,7 @@ export function debouncePromise<T extends (...args: any[]) => any>( // eslint-di
 }
 
 /** Main completion function that dispatches to the appropriate handler based on trigger. */
-export async function completion(state: EditorState): Promise<string> {
+export async function completion(_state: EditorState): Promise<string> {
   // Only trigger when enable completion setting is on
   const settings = useSettingStore.getState().settings;
   if (!settings?.enableCompletion) {
@@ -190,12 +190,12 @@ export async function completion(state: EditorState): Promise<string> {
   }
 
   // Find matching trigger and call its handler
-  const trigger = getTriggerAtCursor(state);
+  const trigger = getTriggerAtCursor(_state);
   if (!trigger) {
     return "";
   }
 
-  return trigger.handler(state, trigger.triggerText);
+  return trigger.handler(_state, trigger.triggerText);
 }
 
 /**
