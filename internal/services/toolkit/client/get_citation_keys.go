@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// GetBibliography extracts bibliography content from a project's .bib files.
+// GetBibliographyForCitation extracts bibliography content from a project's .bib files.
 // It excludes non-essential fields to save tokens when extracting relevant citation keys.
 func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson.ObjectID, projectId string) (string, error) {
 	project, err := a.projectService.GetProject(ctx, userId, projectId)
