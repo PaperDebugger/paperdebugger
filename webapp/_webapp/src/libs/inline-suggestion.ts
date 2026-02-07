@@ -2,8 +2,8 @@
  * This file is brand new implementation of inline-suggestion
  * for Overleaf
  *
- * Author: @Junyi-99
- * Date: Mar 12, 2025
+ * Author: @Junyi-99 and @wjiayis
+ * Date: Feb 7, 2026
  *
  */
 
@@ -36,19 +36,19 @@ import { useSettingStore } from "../stores/setting-store";
 import { getCitationKeys } from "../query/api";
 import { getProjectId } from "./helpers";
 
-/** A completion trigger associates a pattern with a handler function. */
+/** A completion trigger associates a trigger text (eg "\cite{") with a handler function. */
 type CompletionTrigger = {
-  pattern: string;
-  handler: (state: EditorState, triggerPattern: string) => Promise<string>;
+  triggerText: string;
+  handler: (state: EditorState, triggerText: string) => Promise<string>;
 };
 
-/** Completion handler for citation keys (triggered by \cite{). */
-async function completeCitationKeys(state: EditorState, triggerPattern: string): Promise<string> {
+/** Completion handler for citation keys (triggered by "\cite{"). */
+async function completeCitationKeys(state: EditorState, triggerText: string): Promise<string> {
   const cursorPos = state.selection.main.head;
-  const textBefore = state.doc.sliceString(0, cursorPos - triggerPattern.length);
+  const textBefore = state.doc.sliceString(0, cursorPos - triggerText.length);
   const lastSentence = textBefore
     .split(/(?<=[.!?])\s+/)
-    .filter((s) => s.trim().length > 0)
+    .filter((s) => s.trim().length > 0) // filter out empty sentences
     .slice(-1)[0];
   if (!lastSentence) {
     return "";
@@ -64,29 +64,29 @@ async function completeCitationKeys(state: EditorState, triggerPattern: string):
       sentence: lastSentence,
       projectId: projectId,
     });
-    return response.citationKeys || "";
+    return response.citationKeys;
   } catch (err) {
     logError("inline completion: failed", err);
     return "";
   }
 }
 
-/** Registry of completion triggers. Add new triggers here to extend functionality. */
-const COMPLETION_TRIGGERS: CompletionTrigger[] = [{ pattern: "\\cite{", handler: completeCitationKeys }];
+/** Registry of completion triggers. */
+const COMPLETION_TRIGGERS: CompletionTrigger[] = [{ triggerText: "\\cite{", handler: completeCitationKeys }];
 
 /** Returns the trigger that matches at cursor position, or null if none. */
 function getTriggerAtCursor(state: EditorState): CompletionTrigger | null {
   const cursorPos = state.selection.main.head;
   for (const trigger of COMPLETION_TRIGGERS) {
-    const start = Math.max(0, cursorPos - trigger.pattern.length);
-    if (state.doc.sliceString(start, cursorPos) === trigger.pattern) {
+    const start = Math.max(0, cursorPos - trigger.triggerText.length);
+    if (state.doc.sliceString(start, cursorPos) === trigger.triggerText) {
       return trigger;
     }
   }
   return null;
 }
 
-/** Returns true when the cursor sits right after any registered trigger pattern. */
+/** Returns true when the cursor is right after any registered trigger text. */
 function isTriggerAtCursor(state: EditorState): boolean {
   return getTriggerAtCursor(state) !== null;
 }
@@ -195,7 +195,7 @@ export async function completion(state: EditorState): Promise<string> {
     return "";
   }
 
-  return trigger.handler(state, trigger.pattern);
+  return trigger.handler(state, trigger.triggerText);
 }
 
 /**
