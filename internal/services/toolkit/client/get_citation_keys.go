@@ -63,7 +63,7 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 				continue
 			}
 			// Skip excluded fields
-			if excludeRe != nil && excludeRe.MatchString(line) {
+			if excludeRe.MatchString(line) {
 				if excludeBraceRe.MatchString(line) {
 					braceDepth = strings.Count(line, "{") - strings.Count(line, "}")
 				} else if excludeQuoteRe.MatchString(line) && strings.Count(line, `"`)%2 == 1 {
