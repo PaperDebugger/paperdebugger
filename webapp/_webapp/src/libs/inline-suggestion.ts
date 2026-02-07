@@ -91,28 +91,6 @@ function isTriggerAtCursor(state: EditorState): boolean {
   return getTriggerAtCursor(state) !== null;
 }
 
-/** Inserts a suggestion into the editor and dispatches the acceptance effect. */
-function acceptSuggestion(
-  view: EditorView,
-  suggestionText: string,
-  suggestionAcceptanceEffect: StateEffectType<SuggestionAcceptanceState>,
-) {
-  view.dispatch({
-    ...insertCompletionText(
-      view.state,
-      suggestionText,
-      view.state.selection.main.head,
-      view.state.selection.main.head,
-    ),
-  });
-
-  view.dispatch({
-    effects: suggestionAcceptanceEffect.of({
-      acceptance: SuggestionAcceptance.ACCEPTED,
-    }),
-  });
-}
-
 export enum SuggestionAcceptance {
   REJECTED = 0,
   ACCEPTED = 1,
@@ -298,13 +276,28 @@ class InlineSuggestionWidget extends WidgetType {
     return span;
   }
   accept(e: MouseEvent, view: EditorView) {
+    const suggestionText = this.suggestion;
     const config = view.state.field<SuggestionConfig>(this.configState);
     if (!config.acceptOnClick) return;
 
     e.stopPropagation();
     e.preventDefault();
 
-    acceptSuggestion(view, this.suggestion, this.suggestionAcceptanceEffect);
+    view.dispatch({
+      ...insertCompletionText(
+        view.state,
+        suggestionText,
+        view.state.selection.main.head,
+        view.state.selection.main.head,
+      ),
+    });
+
+    view.dispatch({
+      effects: this.suggestionAcceptanceEffect.of({
+        acceptance: SuggestionAcceptance.ACCEPTED,
+      }),
+    });
+
     return true;
   }
 }
@@ -372,7 +365,14 @@ export function createExtensionKeymapBinding(
               return false;
             }
 
-            acceptSuggestion(view, suggestionText, suggestionAcceptanceEffect);
+            view.dispatch({
+              ...insertCompletionText(
+                view.state,
+                suggestionText,
+                view.state.selection.main.head,
+                view.state.selection.main.head,
+              ),
+            });
             logInfo("tab handler: suggestion accepted");
             return true;
           } catch (e) {
@@ -652,7 +652,20 @@ export function createAutocompleteSuppressor(
           e.preventDefault();
           e.stopImmediatePropagation();
 
-          acceptSuggestion(this.view, suggestion.suggestion, suggestionAcceptanceEffect);
+          this.view.dispatch({
+            ...insertCompletionText(
+              this.view.state,
+              suggestion.suggestion,
+              this.view.state.selection.main.head,
+              this.view.state.selection.main.head,
+            ),
+          });
+
+          view.dispatch({
+            effects: suggestionAcceptanceEffect.of({
+              acceptance: SuggestionAcceptance.ACCEPTED,
+            }),
+          });
         };
 
         this.view.dom.addEventListener("keydown", this.handleKeydown, true);
