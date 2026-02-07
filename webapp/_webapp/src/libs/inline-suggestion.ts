@@ -595,23 +595,7 @@ export function createRenderInlineSuggestionPlugin(
   );
 }
 
-/**
- * Creates a CodeMirror ViewPlugin that suppresses Overleaf's built-in
- * autocomplete when our inline citation suggestion is active or pending
- * (i.e. `\cite{` was just typed).
- *
- * Three mechanisms work together:
- * 1. A dynamically injected `<style>` element hides all `.cm-tooltip` dropdowns
- *    as soon as the trigger word is detected or a suggestion is present, before
- *    the API even returns.
- * 2. A capture-phase `keydown` listener on the editor DOM intercepts Tab before
- *    Overleaf's autocomplete can consume it, inserting the suggestion text and
- *    dispatching a {@link suggestionAcceptanceEffect} to mark it as accepted.
- * 3. The plugin's `update` hook continuously checks whether suppression should
- *    be active (suggestion present or cursor right after `\cite{`) and toggles
- *    the CSS injection accordingly. On `destroy`, all listeners and injected
- *    styles are cleaned up.
- */
+/** Suppresses Overleaf's built-in autocomplete when our suggestion is active or pending */
 export function createAutocompleteSuppressor(
   overleafCm: OverleafCodeMirror,
   suggestionState: StateField<SuggestionState>,
