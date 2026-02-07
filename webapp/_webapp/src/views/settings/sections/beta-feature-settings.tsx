@@ -9,8 +9,8 @@ export const BetaFeatureSettings = () => {
     <SettingsSectionContainer>
       <SettingsSectionTitle>Beta Features</SettingsSectionTitle>
       <SettingItem
-        label="Enable completion"
-        description="Predicts your next edit"
+        label="Enable citation suggestions"
+        description="Suggest citations as you write"
         isLoading={isUpdating.enableCompletion}
         selected={settings?.enableCompletion ?? false}
         onSelectChange={(selected) => updateSettings({ enableCompletion: selected })}
