@@ -117,7 +117,7 @@ func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userI
 	emptyCitation := "none"
 
 	// Bibliography is placed at the start of the prompt to levarage prompt caching
-	message := fmt.Sprintf("Bibliography: %s\nSentence: %s\nBased on the sentence and bibliography, suggest only the most relevant citation keys separated by commas with no spaces (e.g. key1,key2). Be selective and only include citations that are directly relevant. Avoid suggesting more than 3 citations. If no relevant citations are found, return '%s'.", sentence, bibliography, emptyCitation)
+	message := fmt.Sprintf("Bibliography: %s\nSentence: %s\nBased on the sentence and bibliography, suggest only the most relevant citation keys separated by commas with no spaces (e.g. key1,key2). Be selective and only include citations that are directly relevant. Avoid suggesting more than 3 citations. If no relevant citations are found, return '%s'.", bibliography, sentence, emptyCitation)
 
 	_, resp, err := a.ChatCompletionV2(ctx, "gpt-5.2", OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that suggests relevant citation keys."),
