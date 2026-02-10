@@ -1897,7 +1897,7 @@ func (*CreateConversationMessageStreamResponse_StreamError) isCreateConversation
 func (*CreateConversationMessageStreamResponse_ReasoningChunk) isCreateConversationMessageStreamResponse_ResponsePayload() {
 }
 
-// Request to suggest citation keys based on context
+// Request to get citation keys suggestion based on project bibliography
 type GetCitationKeysRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Sentence      string                 `protobuf:"bytes,1,opt,name=sentence,proto3" json:"sentence,omitempty"`
@@ -1960,9 +1960,8 @@ func (x *GetCitationKeysRequest) GetModelSlug() string {
 
 // Response containing the suggested citation keys
 type GetCitationKeysResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// A comma-separated string of keys, or empty if none found
-	CitationKeys  string `protobuf:"bytes,1,opt,name=citation_keys,json=citationKeys,proto3" json:"citation_keys,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CitationKeys  []string               `protobuf:"bytes,1,rep,name=citation_keys,json=citationKeys,proto3" json:"citation_keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1997,11 +1996,11 @@ func (*GetCitationKeysResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v2_chat_proto_rawDescGZIP(), []int{31}
 }
 
-func (x *GetCitationKeysResponse) GetCitationKeys() string {
+func (x *GetCitationKeysResponse) GetCitationKeys() []string {
 	if x != nil {
 		return x.CitationKeys
 	}
-	return ""
+	return nil
 }
 
 var File_chat_v2_chat_proto protoreflect.FileDescriptor
@@ -2146,7 +2145,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"model_slug\x18\x03 \x01(\tH\x00R\tmodelSlug\x88\x01\x01B\r\n" +
 	"\v_model_slug\">\n" +
 	"\x17GetCitationKeysResponse\x12#\n" +
-	"\rcitation_keys\x18\x01 \x01(\tR\fcitationKeys*R\n" +
+	"\rcitation_keys\x18\x01 \x03(\tR\fcitationKeys*R\n" +
 	"\x10ConversationType\x12!\n" +
 	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xab\b\n" +

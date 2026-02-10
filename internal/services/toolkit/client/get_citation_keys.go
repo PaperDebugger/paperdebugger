@@ -107,11 +107,11 @@ func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson
 	return bibliography, nil
 }
 
-func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userId bson.ObjectID, projectId string, llmProvider *models.LLMProviderConfig) (string, error) {
+func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userId bson.ObjectID, projectId string, llmProvider *models.LLMProviderConfig) ([]string, error) {
 	bibliography, err := a.GetBibliographyForCitation(ctx, userId, projectId)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	emptyCitation := "none"
@@ -125,18 +125,28 @@ func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userI
 	}, llmProvider)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if len(resp) == 0 {
-		return "", nil
+		return []string{}, nil
 	}
 
-	citationKeys := strings.TrimSpace(resp[0].Payload.GetAssistant().GetContent())
+	citationKeysStr := strings.TrimSpace(resp[0].Payload.GetAssistant().GetContent())
 
-	if citationKeys == "" || citationKeys == emptyCitation {
-		return "", nil
+	if citationKeysStr == "" || citationKeysStr == emptyCitation {
+		return []string{}, nil
 	}
 
-	return citationKeys, nil
+	// Parse comma-separated string into a list
+	keys := strings.Split(citationKeysStr, ",")
+	result := make([]string, 0, len(keys))
+	for _, key := range keys {
+		trimmed := strings.TrimSpace(key)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+
+	return result, nil
 }

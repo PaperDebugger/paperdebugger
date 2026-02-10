@@ -250,6 +250,5 @@ message GetCitationKeysRequest {
 
 // Response containing the suggested citation keys
 message GetCitationKeysResponse {
-  // A comma-separated string of keys, or empty if none found
-  string citation_keys = 1;
+  repeated string citation_keys = 1;
 }

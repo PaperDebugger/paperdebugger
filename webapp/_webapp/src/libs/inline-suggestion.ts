@@ -64,7 +64,7 @@ async function completeCitationKeys(state: EditorState, triggerText: string): Pr
       sentence: lastSentence,
       projectId: projectId,
     });
-    return response.citationKeys;
+    return response.citationKeys.join(",");
   } catch (err) {
     logError("inline completion: failed", err);
     return "";
