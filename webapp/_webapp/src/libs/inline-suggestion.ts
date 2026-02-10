@@ -42,14 +42,21 @@ type CompletionTrigger = {
   handler: (state: EditorState, triggerText: string) => Promise<string>;
 };
 
+/** Max characters to look back for sentence extraction (prevents unbounded context). */
+const MAX_CONTEXT_CHARS = 1000;
+
 /** Completion handler for citation keys (triggered by "\cite{"). */
 async function completeCitationKeys(state: EditorState, triggerText: string): Promise<string> {
   const cursorPos = state.selection.main.head;
-  const textBefore = state.doc.sliceString(0, cursorPos - triggerText.length);
-  const lastSentence = textBefore
+  const textBeforeStart = Math.max(0, cursorPos - triggerText.length - MAX_CONTEXT_CHARS);
+  const textBefore = state.doc.sliceString(textBeforeStart, cursorPos - triggerText.length);
+
+  // Split by sentence-ending punctuation and get the last sentence
+  const sentences = textBefore
     .split(/(?<=[.!?])\s+/)
-    .filter((s) => s.trim().length > 0) // filter out empty sentences
-    .slice(-1)[0];
+    .filter((s) => s.trim().length > 0);
+  // Fall back to the bounded window if no sentence boundary found
+  const lastSentence = sentences.length > 0 ? sentences[sentences.length - 1] : textBefore.trim();
   if (!lastSentence) {
     return "";
   }
