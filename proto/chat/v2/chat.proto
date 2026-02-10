@@ -245,7 +245,6 @@ message CreateConversationMessageStreamResponse {
 message GetCitationKeysRequest {
   string sentence = 1;
   string project_id = 2;
-  optional string model_slug = 3;
 }
 
 // Response containing the suggested citation keys
