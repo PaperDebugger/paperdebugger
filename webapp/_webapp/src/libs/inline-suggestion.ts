@@ -613,7 +613,7 @@ export function createAutocompleteSuppressor(
   function suppress() {
     if (styleEl) return;
     styleEl = document.createElement("style");
-    styleEl.textContent = `.cm-tooltip { display: none !important; }`;
+    styleEl.textContent = `.cm-tooltip-autocomplete, .ol-cm-references-search-hint { display: none !important; }`;
     document.head.appendChild(styleEl);
   }
 
