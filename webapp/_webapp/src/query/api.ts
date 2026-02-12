@@ -148,9 +148,11 @@ export const getProject = async (data: PlainMessage<GetProjectRequest>) => {
 };
 
 export const getCitationKeys = async (data: PlainMessage<GetCitationKeysRequest>) => {
-  const response = await apiclientV2.post(`/chats/citation-keys`, data);
+  const response = await apiclientV2.post(`/chats/citation-keys`, data, {
+    ignoreErrorToast: true,
+  });
   return fromJson(GetCitationKeysResponseSchema, response);
-}
+};
 
 export const upsertProject = async (data: PlainMessage<UpsertProjectRequest>) => {
   const response = await apiclient.put(`/projects/${data.projectId}`, data);
