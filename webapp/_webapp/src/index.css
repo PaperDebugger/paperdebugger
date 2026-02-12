@@ -222,7 +222,8 @@ object {
   @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200;
 }
 
-.pd-app-container textarea {
+.pd-app-container textarea,
+.pd-app-container input {
   @apply bg-white dark:bg-default-100 text-default-800;
 }
 
