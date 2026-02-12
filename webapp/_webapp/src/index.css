@@ -222,6 +222,10 @@ object {
   @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200;
 }
 
+.pd-app-container textarea {
+  @apply bg-white dark:bg-default-100 text-default-800;
+}
+
 .pd-app-control-title-bar {
   @apply bg-gray-100 dark:!bg-default-100;
   flex: 0;
