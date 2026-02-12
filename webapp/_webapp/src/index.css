@@ -219,12 +219,12 @@ object {
   border: 1px solid;
   background-color: transparent;
   overflow: hidden;
-  @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200;
-}
+  @apply overflow-hidden w-full h-full dark:!border-default-200 !border-default-200 text-default-800;
 
-.pd-app-container textarea,
-.pd-app-container input {
-  @apply bg-white dark:bg-default-100 text-default-800;
+  textarea,
+  input {
+    background-color: var(--pd-default-bg);
+  }
 }
 
 .pd-app-control-title-bar {
