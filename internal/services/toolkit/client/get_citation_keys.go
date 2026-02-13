@@ -5,106 +5,177 @@ import (
 	"context"
 	"fmt"
 	"paperdebugger/internal/models"
+	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+var (
+	MAX_CONCURRENT_XTRAMCP = 24
+
+	// Regex patterns compiled once
+	titleBraceRe  = regexp.MustCompile(`(?i)title\s*=\s*\{([^}]+)\}`) // eg. title = {content}
+	titleQuoteRe  = regexp.MustCompile(`(?i)title\s*=\s*"([^"]+)"`)   // eg. title = "content"
+	entryStartRe  = regexp.MustCompile(`(?i)^\s*@(\w+)\s*\{`)         // eg. @article{
+	stringEntryRe = regexp.MustCompile(`(?i)^\s*@String\s*\{`)        // eg. @String{
+	multiSpaceRe  = regexp.MustCompile(` {2,}`)
+
+	// Fields to exclude from bibliography (not useful for citation matching)
+	excludedFields = []string{
+		"address", "institution", "pages", "eprint", "primaryclass", "volume", "number",
+		"edition", "numpages", "articleno", "publisher", "editor", "doi", "url", "acmid",
+		"issn", "archivePrefix", "year", "month", "day", "eid", "lastaccessed", "organization",
+		"school", "isbn", "mrclass", "mrnumber", "mrreviewer", "type", "order_no", "location",
+		"howpublished", "distincturl", "issue_date", "archived", "series", "source",
+	}
+	excludeFieldRe = regexp.MustCompile(`(?i)^\s*(` + strings.Join(excludedFields, "|") + `)\s*=`)
+)
+
+// extractTitle extracts the title from a bib entry string.
+func extractTitle(entry string) string {
+	if m := titleBraceRe.FindStringSubmatch(entry); len(m) > 1 {
+		return strings.TrimSpace(m[1])
+	}
+	if m := titleQuoteRe.FindStringSubmatch(entry); len(m) > 1 {
+		return strings.TrimSpace(m[1])
+	}
+	return ""
+}
+
+// parseBibFile extracts bibliography entries from a .bib file's lines,
+// filtering out @String macros, comments, and excluded fields (url, doi, etc.).
+func parseBibFile(lines []string) []string {
+	var entries []string
+	var currentEntry []string
+
+	// It handles multi-line field values by tracking brace/quote balance:
+	//   - skipBraces > 0: currently skipping a {bracketed} value, wait until balanced
+	//   - skipQuotes = true: currently skipping a "quoted" value, wait for closing quote
+
+	var entryDepth int  // brace depth for current entry (0 = entry complete)
+	var skipBraces int  // > 0 means we're skipping lines until braces balance
+	var skipQuotes bool // true means we're skipping lines until closing quote
+
+	for _, line := range lines {
+		// Skip empty lines and comments
+		if trimmed := strings.TrimSpace(line); trimmed == "" || strings.HasPrefix(trimmed, "%") {
+			continue
+		}
+
+		// If skipping a multi-line {bracketed} field value, keep skipping until balanced
+		if skipBraces > 0 {
+			skipBraces += strings.Count(line, "{") - strings.Count(line, "}")
+			continue
+		}
+
+		// If skipping a multi-line "quoted" field value, keep skipping until closing quote
+		if skipQuotes {
+			if strings.Count(line, `"`)%2 == 1 { // odd quote count = found closing quote
+				skipQuotes = false
+			}
+			continue
+		}
+
+		// Skip @String{...} macro definitions
+		if stringEntryRe.MatchString(line) {
+			skipBraces = strings.Count(line, "{") - strings.Count(line, "}")
+			continue
+		}
+
+		// Skip excluded fields (url, doi, pages, etc.) - may span multiple lines
+		if excludeFieldRe.MatchString(line) {
+			if strings.Contains(line, "={") || strings.Contains(line, "= {") {
+				skipBraces = strings.Count(line, "{") - strings.Count(line, "}")
+			} else if strings.Contains(line, `="`) || strings.Contains(line, `= "`) {
+				skipQuotes = strings.Count(line, `"`)%2 == 1 // odd = unclosed quote
+			}
+			continue
+		}
+
+		// Start of new entry: @article{key, or @book{key, etc.
+		if entryStartRe.MatchString(line) {
+			if len(currentEntry) > 0 {
+				entries = append(entries, strings.Join(currentEntry, "\n"))
+			}
+			currentEntry = []string{line}
+			entryDepth = strings.Count(line, "{") - strings.Count(line, "}")
+			continue
+		}
+
+		// Continue building current entry
+		if len(currentEntry) > 0 {
+			currentEntry = append(currentEntry, line)
+			entryDepth += strings.Count(line, "{") - strings.Count(line, "}")
+			if entryDepth <= 0 { // entry complete when braces balance
+				entries = append(entries, strings.Join(currentEntry, "\n"))
+				currentEntry = nil
+			}
+		}
+	}
+
+	// Last entry if file doesn't end with balanced braces
+	if len(currentEntry) > 0 {
+		entries = append(entries, strings.Join(currentEntry, "\n"))
+	}
+	return entries
+}
+
+// fetchAbstracts enriches entries with abstracts from XtraMCP in parallel.
+func (a *AIClientV2) fetchAbstracts(ctx context.Context, entries []string) []string {
+	result := make([]string, len(entries))
+	copy(result, entries)
+
+	loader := xtramcp.NewXtraMCPLoaderV2(nil, nil, a.cfg.XtraMCPURI)
+	sem := make(chan struct{}, MAX_CONCURRENT_XTRAMCP)
+	var wg sync.WaitGroup
+
+	for i, entry := range entries {
+		if title := extractTitle(entry); title != "" {
+			wg.Add(1)
+			go func(idx int, entry, title string) {
+				defer wg.Done()
+				sem <- struct{}{}
+				defer func() { <-sem }()
+
+				resp, err := loader.GetPaperAbstract(ctx, title)
+				if err == nil && resp.Found && resp.Abstract != "" {
+					if pos := strings.LastIndex(entry, "}"); pos > 0 {
+						result[idx] = entry[:pos] + fmt.Sprintf(",\n  abstract = {%s}\n}", resp.Abstract)
+					}
+				}
+			}(i, entry, title)
+		}
+	}
+	wg.Wait()
+	return result
+}
+
 // GetBibliographyForCitation extracts bibliography content from a project's .bib files.
-// It excludes non-essential fields to save tokens when extracting relevant citation keys.
+// It excludes non-essential fields to save tokens and fetches abstracts from XtraMCP.
 func (a *AIClientV2) GetBibliographyForCitation(ctx context.Context, userId bson.ObjectID, projectId string) (string, error) {
 	project, err := a.projectService.GetProject(ctx, userId, projectId)
 	if err != nil {
 		return "", err
 	}
 
-	// Exclude fields that aren't useful for citation matching
-	var excludeRe, excludeBraceRe, excludeQuoteRe *regexp.Regexp
-
-	excludeFields := []string{
-		"address", "institution", "pages", "eprint", "primaryclass", "volume", "number", "edition", "numpages", "articleno",
-		"publisher", "editor", "doi", "url", "acmid", "issn", "archivePrefix", "year", "month", "day",
-		"eid", "lastaccessed", "organization", "school", "isbn", "mrclass", "mrnumber", "mrreviewer", "type", "order_no",
-		"location", "howpublished", "distincturl", "issue_date", "archived", "series", "source",
-	}
-
-	fieldsPattern := strings.Join(excludeFields, "|")
-	excludeRe = regexp.MustCompile(`(?i)^\s*(` + fieldsPattern + `)\s*=`)
-	excludeBraceRe = regexp.MustCompile(`(?i)^\s*(` + fieldsPattern + `)\s*=\s*\{`)
-	excludeQuoteRe = regexp.MustCompile(`(?i)^\s*(` + fieldsPattern + `)\s*=\s*"`)
-
-	// Match @String{ entries
-	stringEntryRe := regexp.MustCompile(`^\s*@String\s*\{`)
-
-	var bibLines []string
+	// Parse all .bib files
+	var entries []string
 	for _, doc := range project.Docs {
-		if doc.Filepath == "" || !strings.HasSuffix(doc.Filepath, ".bib") {
-			continue
-		}
-		braceDepth := 0
-		inQuote := false
-		inStringEntry := false
-		stringEntryBraceDepth := 0
-		for _, line := range doc.Lines {
-			// Handle ongoing @String{...} entry (which can span multiple lines)
-			if inStringEntry {
-				stringEntryBraceDepth += strings.Count(line, "{") - strings.Count(line, "}")
-				if stringEntryBraceDepth <= 0 {
-					inStringEntry = false
-					stringEntryBraceDepth = 0
-				}
-				continue
-			}
-			// Handle ongoing exclusion of some fields (which can span multiple lines)
-			if braceDepth > 0 {
-				braceDepth += strings.Count(line, "{") - strings.Count(line, "}")
-				continue
-			}
-			if inQuote {
-				if strings.Count(line, `"`)%2 == 1 {
-					inQuote = false
-				}
-				continue
-			}
-			// Skip comments
-			if strings.HasPrefix(strings.TrimSpace(line), "%") {
-				continue
-			}
-			// Skip empty lines
-			if strings.TrimSpace(line) == "" {
-				continue
-			}
-			// Skip @String{...} entries
-			if stringEntryRe.MatchString(line) {
-				stringEntryBraceDepth = strings.Count(line, "{") - strings.Count(line, "}")
-				if stringEntryBraceDepth > 0 {
-					inStringEntry = true
-				}
-				continue
-			}
-			// Skip excluded fields
-			if excludeRe.MatchString(line) {
-				if excludeBraceRe.MatchString(line) {
-					braceDepth = strings.Count(line, "{") - strings.Count(line, "}")
-				} else if excludeQuoteRe.MatchString(line) && strings.Count(line, `"`)%2 == 1 {
-					inQuote = true
-				}
-				continue
-			}
-
-			bibLines = append(bibLines, line)
+		if strings.HasSuffix(doc.Filepath, ".bib") {
+			entries = append(entries, parseBibFile(doc.Lines)...)
 		}
 	}
 
-	bibliography := strings.Join(bibLines, "\n")
+	// Enrich with abstracts
+	entries = a.fetchAbstracts(ctx, entries)
 
-	// Normalize multiple spaces
-	multiSpaceRe := regexp.MustCompile(` {2,}`)
-	bibliography = multiSpaceRe.ReplaceAllString(bibliography, " ")
-
-	return bibliography, nil
+	// Join and normalize
+	bibliography := strings.Join(entries, "\n")
+	return multiSpaceRe.ReplaceAllString(bibliography, " "), nil
 }
 
 func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userId bson.ObjectID, projectId string, llmProvider *models.LLMProviderConfig) ([]string, error) {
@@ -138,12 +209,10 @@ func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userI
 		return []string{}, nil
 	}
 
-	// Parse comma-separated string into a list
-	keys := strings.Split(citationKeysStr, ",")
-	result := make([]string, 0, len(keys))
-	for _, key := range keys {
-		trimmed := strings.TrimSpace(key)
-		if trimmed != "" {
+	// Parse comma-separated keys
+	var result []string
+	for _, key := range strings.Split(citationKeysStr, ",") {
+		if trimmed := strings.TrimSpace(key); trimmed != "" {
 			result = append(result, trimmed)
 		}
 	}
