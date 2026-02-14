@@ -2137,15 +2137,15 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\rcitation_keys\x18\x01 \x03(\tR\fcitationKeys*R\n" +
 	"\x10ConversationType\x12!\n" +
 	"\x1dCONVERSATION_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
-	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xab\b\n" +
+	"\x17CONVERSATION_TYPE_DEBUG\x10\x012\xa7\b\n" +
 	"\vChatService\x12\x83\x01\n" +
 	"\x11ListConversations\x12!.chat.v2.ListConversationsRequest\x1a\".chat.v2.ListConversationsResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/_pd/api/v2/chats/conversations\x12\x8f\x01\n" +
 	"\x0fGetConversation\x12\x1f.chat.v2.GetConversationRequest\x1a .chat.v2.GetConversationResponse\"9\x82\xd3\xe4\x93\x023\x121/_pd/api/v2/chats/conversations/{conversation_id}\x12\xc2\x01\n" +
 	"\x1fCreateConversationMessageStream\x12/.chat.v2.CreateConversationMessageStreamRequest\x1a0.chat.v2.CreateConversationMessageStreamResponse\":\x82\xd3\xe4\x93\x024:\x01*\"//_pd/api/v2/chats/conversations/messages/stream0\x01\x12\x9b\x01\n" +
 	"\x12UpdateConversation\x12\".chat.v2.UpdateConversationRequest\x1a#.chat.v2.UpdateConversationResponse\"<\x82\xd3\xe4\x93\x026:\x01*21/_pd/api/v2/chats/conversations/{conversation_id}\x12\x98\x01\n" +
 	"\x12DeleteConversation\x12\".chat.v2.DeleteConversationRequest\x1a#.chat.v2.DeleteConversationResponse\"9\x82\xd3\xe4\x93\x023*1/_pd/api/v2/chats/conversations/{conversation_id}\x12\x82\x01\n" +
-	"\x13ListSupportedModels\x12#.chat.v2.ListSupportedModelsRequest\x1a$.chat.v2.ListSupportedModelsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/_pd/api/v2/chats/models\x12\x80\x01\n" +
-	"\x0fGetCitationKeys\x12\x1f.chat.v2.GetCitationKeysRequest\x1a .chat.v2.GetCitationKeysResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/_pd/api/v2/chats/citation-keysB\x7f\n" +
+	"\x13ListSupportedModels\x12#.chat.v2.ListSupportedModelsRequest\x1a$.chat.v2.ListSupportedModelsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/_pd/api/v2/chats/models\x12}\n" +
+	"\x0fGetCitationKeys\x12\x1f.chat.v2.GetCitationKeysRequest\x1a .chat.v2.GetCitationKeysResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/_pd/api/v2/chats/citation-keysB\x7f\n" +
 	"\vcom.chat.v2B\tChatProtoP\x01Z(paperdebugger/pkg/gen/api/chat/v2;chatv2\xa2\x02\x03CXX\xaa\x02\aChat.V2\xca\x02\aChat\\V2\xe2\x02\x13Chat\\V2\\GPBMetadata\xea\x02\bChat::V2b\x06proto3"
 
 var (

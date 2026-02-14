@@ -32,10 +32,7 @@ service ChatService {
     option (google.api.http) = {get: "/_pd/api/v2/chats/models"};
   }
   rpc GetCitationKeys(GetCitationKeysRequest) returns (GetCitationKeysResponse) {
-    option (google.api.http) = {
-      post: "/_pd/api/v2/chats/citation-keys"
-      body: "*"
-    };
+    option (google.api.http) = {get: "/_pd/api/v2/chats/citation-keys"};
   }
 }
 
