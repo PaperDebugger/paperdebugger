@@ -8,20 +8,16 @@ import (
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 var (
-	MAX_CONCURRENT_XTRAMCP = 24
-
 	// Regex patterns compiled once
-	titleBraceRe  = regexp.MustCompile(`(?i)title\s*=\s*\{([^}]+)\}`) // eg. title = {content}
-	titleQuoteRe  = regexp.MustCompile(`(?i)title\s*=\s*"([^"]+)"`)   // eg. title = "content"
-	entryStartRe  = regexp.MustCompile(`(?i)^\s*@(\w+)\s*\{`)         // eg. @article{
-	stringEntryRe = regexp.MustCompile(`(?i)^\s*@String\s*\{`)        // eg. @String{
+	titleFieldRe  = regexp.MustCompile(`(?i)title\s*=\s*`)     // matches "title = " prefix
+	entryStartRe  = regexp.MustCompile(`(?i)^\s*@(\w+)\s*\{`)  // eg. @article{
+	stringEntryRe = regexp.MustCompile(`(?i)^\s*@String\s*\{`) // eg. @String{
 	multiSpaceRe  = regexp.MustCompile(` {2,}`)
 
 	// Fields to exclude from bibliography (not useful for citation matching)
@@ -35,15 +31,64 @@ var (
 	excludeFieldRe = regexp.MustCompile(`(?i)^\s*(` + strings.Join(excludedFields, "|") + `)\s*=`)
 )
 
-// extractTitle extracts the title from a bib entry string.
+// braceBalance returns the net brace count (opens - closes) in a string.
+func braceBalance(s string) int {
+	return strings.Count(s, "{") - strings.Count(s, "}")
+}
+
+// isQuoteUnclosed returns true if the string has an odd number of double quotes.
+func isQuoteUnclosed(s string) bool {
+	return strings.Count(s, `"`)%2 == 1
+}
+
+// extractBalancedValue extracts a BibTeX field value (braced or quoted) starting at pos.
+// It is needed for (1) getting full title (for abstract lookup) and (2) skipping excluded
+// fields that may span multiple lines.
+// Returns the extracted content and end position, or empty string and -1 if not found.
+func extractBalancedValue(s string, pos int) (string, int) {
+	// Skip whitespace
+	for pos < len(s) && (s[pos] == ' ' || s[pos] == '\t' || s[pos] == '\n' || s[pos] == '\r') {
+		pos++
+	}
+	if pos >= len(s) {
+		return "", -1
+	}
+
+	switch s[pos] {
+	case '{':
+		depth := 0
+		start := pos + 1
+		for i := pos; i < len(s); i++ {
+			switch s[i] {
+			case '{':
+				depth++
+			case '}':
+				depth--
+				if depth == 0 {
+					return s[start:i], i + 1
+				}
+			}
+		}
+	case '"':
+		start := pos + 1
+		for i := start; i < len(s); i++ {
+			if s[i] == '"' {
+				return s[start:i], i + 1
+			}
+		}
+	}
+	return "", -1
+}
+
+// extractTitle extracts the title from a BibTeX entry string.
+// It handles nested braces like title = {A Study of {COVID-19}}.
 func extractTitle(entry string) string {
-	if m := titleBraceRe.FindStringSubmatch(entry); len(m) > 1 {
-		return strings.TrimSpace(m[1])
+	loc := titleFieldRe.FindStringIndex(entry)
+	if loc == nil {
+		return ""
 	}
-	if m := titleQuoteRe.FindStringSubmatch(entry); len(m) > 1 {
-		return strings.TrimSpace(m[1])
-	}
-	return ""
+	content, _ := extractBalancedValue(entry, loc[1])
+	return strings.TrimSpace(content)
 }
 
 // parseBibFile extracts bibliography entries from a .bib file's lines,
@@ -68,13 +113,13 @@ func parseBibFile(lines []string) []string {
 
 		// If skipping a multi-line {bracketed} field value, keep skipping until balanced
 		if skipBraces > 0 {
-			skipBraces += strings.Count(line, "{") - strings.Count(line, "}")
+			skipBraces += braceBalance(line)
 			continue
 		}
 
 		// If skipping a multi-line "quoted" field value, keep skipping until closing quote
 		if skipQuotes {
-			if strings.Count(line, `"`)%2 == 1 { // odd quote count = found closing quote
+			if isQuoteUnclosed(line) { // odd quote count = found closing quote
 				skipQuotes = false
 			}
 			continue
@@ -82,16 +127,16 @@ func parseBibFile(lines []string) []string {
 
 		// Skip @String{...} macro definitions
 		if stringEntryRe.MatchString(line) {
-			skipBraces = strings.Count(line, "{") - strings.Count(line, "}")
+			skipBraces = braceBalance(line)
 			continue
 		}
 
 		// Skip excluded fields (url, doi, pages, etc.) - may span multiple lines
 		if excludeFieldRe.MatchString(line) {
 			if strings.Contains(line, "={") || strings.Contains(line, "= {") {
-				skipBraces = strings.Count(line, "{") - strings.Count(line, "}")
+				skipBraces = braceBalance(line)
 			} else if strings.Contains(line, `="`) || strings.Contains(line, `= "`) {
-				skipQuotes = strings.Count(line, `"`)%2 == 1 // odd = unclosed quote
+				skipQuotes = isQuoteUnclosed(line)
 			}
 			continue
 		}
@@ -102,14 +147,14 @@ func parseBibFile(lines []string) []string {
 				entries = append(entries, strings.Join(currentEntry, "\n"))
 			}
 			currentEntry = []string{line}
-			entryDepth = strings.Count(line, "{") - strings.Count(line, "}")
+			entryDepth = braceBalance(line)
 			continue
 		}
 
 		// Continue building current entry
 		if len(currentEntry) > 0 {
 			currentEntry = append(currentEntry, line)
-			entryDepth += strings.Count(line, "{") - strings.Count(line, "}")
+			entryDepth += braceBalance(line)
 			if entryDepth <= 0 { // entry complete when braces balance
 				entries = append(entries, strings.Join(currentEntry, "\n"))
 				currentEntry = nil
@@ -124,33 +169,39 @@ func parseBibFile(lines []string) []string {
 	return entries
 }
 
-// fetchAbstracts enriches entries with abstracts from XtraMCP in parallel.
+// fetchAbstracts enriches entries with abstracts from XtraMCP using batch API.
 func (a *AIClientV2) fetchAbstracts(ctx context.Context, entries []string) []string {
-	result := make([]string, len(entries))
-	copy(result, entries)
-
-	svc := xtramcp.NewXtraMCPServices(a.cfg.XtraMCPURI)
-	sem := make(chan struct{}, MAX_CONCURRENT_XTRAMCP)
-	var wg sync.WaitGroup
-
-	for i, entry := range entries {
+	// Extract titles
+	var titles []string
+	for _, entry := range entries {
 		if title := extractTitle(entry); title != "" {
-			wg.Add(1)
-			go func(idx int, entry, title string) {
-				defer wg.Done()
-				sem <- struct{}{}
-				defer func() { <-sem }()
-
-				resp, err := svc.GetPaperAbstract(ctx, title)
-				if err == nil && resp.Found && resp.Abstract != "" {
-					if pos := strings.LastIndex(entry, "}"); pos > 0 {
-						result[idx] = entry[:pos] + fmt.Sprintf(",\n  abstract = {%s}\n}", resp.Abstract)
-					}
-				}
-			}(i, entry, title)
+			titles = append(titles, title)
 		}
 	}
-	wg.Wait()
+
+	// Fetch abstracts and build lookup map
+	abstracts := make(map[string]string)
+	svc := xtramcp.NewXtraMCPServices(a.cfg.XtraMCPURI)
+	resp, err := svc.GetPaperAbstracts(ctx, titles)
+	if err == nil && resp.Success {
+		for _, r := range resp.Results {
+			if r.Found {
+				abstracts[r.Title] = r.Abstract
+			}
+		}
+	}
+
+	// Enrich entries
+	result := make([]string, len(entries))
+	for i, entry := range entries {
+		if abstract, ok := abstracts[extractTitle(entry)]; ok && abstract != "" {
+			if pos := strings.LastIndex(entry, "}"); pos > 0 {
+				result[i] = entry[:pos] + fmt.Sprintf(",\n abstract = {%s}\n}", abstract)
+				continue
+			}
+		}
+		result[i] = entry
+	}
 	return result
 }
 

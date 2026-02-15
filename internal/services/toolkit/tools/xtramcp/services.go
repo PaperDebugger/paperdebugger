@@ -1,11 +1,11 @@
 package xtramcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -15,6 +15,17 @@ type PaperAbstractResponse struct {
 	Found    bool   `json:"found"`
 	Title    string `json:"title"`
 	Abstract string `json:"abstract"`
+}
+
+// PaperAbstractsRequest represents the request body for batch paper abstracts API
+type PaperAbstractsRequest struct {
+	Titles []string `json:"titles"`
+}
+
+// PaperAbstractsResponse represents the response from batch paper abstracts API
+type PaperAbstractsResponse struct {
+	Success bool                    `json:"success"`
+	Results []PaperAbstractResponse `json:"results"`
 }
 
 // XtraMCPServices provides access to XtraMCP REST APIs that don't require MCP session
@@ -31,15 +42,25 @@ func NewXtraMCPServices(baseURL string) *XtraMCPServices {
 	}
 }
 
-// GetPaperAbstract fetches the abstract for a paper given its title via the REST API
-func (s *XtraMCPServices) GetPaperAbstract(ctx context.Context, title string) (*PaperAbstractResponse, error) {
-	baseURL := strings.TrimSuffix(s.baseURL, "/mcp")
-	endpoint := fmt.Sprintf("%s/api/paper-abstract?title=%s", baseURL, url.QueryEscape(title))
+// GetPaperAbstracts fetches abstracts for multiple papers in a single request
+func (s *XtraMCPServices) GetPaperAbstracts(ctx context.Context, titles []string) (*PaperAbstractsResponse, error) {
+	if len(titles) == 0 {
+		return &PaperAbstractsResponse{Success: true, Results: []PaperAbstractResponse{}}, nil
+	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	baseURL := strings.TrimSuffix(s.baseURL, "/mcp")
+	endpoint := fmt.Sprintf("%s/api/paper-abstracts", baseURL)
+
+	reqBody, err := json.Marshal(PaperAbstractsRequest{Titles: titles})
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -51,7 +72,7 @@ func (s *XtraMCPServices) GetPaperAbstract(ctx context.Context, title string) (*
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	var result PaperAbstractResponse
+	var result PaperAbstractsResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
