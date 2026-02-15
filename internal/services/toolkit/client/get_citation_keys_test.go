@@ -290,6 +290,216 @@ func TestGetBibliographyForCitation_QuotedFieldValues(t *testing.T) {
 	assert.NotContains(t, result, "https://example.com")
 }
 
+func TestGetBibliographyForCitation_NoBibFiles(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-no-bib-" + bson.NewObjectID().Hex()
+
+	project := &models.Project{
+		Docs: []models.ProjectDoc{
+			{
+				ID:       "tex-doc",
+				Version:  1,
+				Filepath: "main.tex",
+				Lines:    []string{"\\documentclass{article}", "\\begin{document}", "Hello", "\\end{document}"},
+			},
+		},
+	}
+	_, err := projectService.UpsertProject(ctx, userId, projectId, project)
+	assert.NoError(t, err)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
+
+func TestGetBibliographyForCitation_EmptyBibFile(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-empty-bib-" + bson.NewObjectID().Hex()
+
+	createTestProject(t, projectService, userId, projectId, []string{})
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+	assert.Empty(t, result)
+}
+
+func TestGetBibliographyForCitation_NestedBraces(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-nested-braces-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{nested2023,",
+		"  author = {John {van} Smith},",
+		"  title = {A {GPU}-Based Approach to {NLP}},",
+		"  journal = {Journal of {AI} Research},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Should preserve nested braces in kept fields
+	assert.Contains(t, result, "author")
+	assert.Contains(t, result, "{van}")
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "{GPU}")
+	assert.Contains(t, result, "{NLP}")
+	assert.Contains(t, result, "journal")
+	assert.Contains(t, result, "{AI}")
+}
+
+func TestGetBibliographyForCitation_DifferentEntryTypes(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-entry-types-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{article2023,",
+		"  author = {Article Author},",
+		"  title = {Article Title},",
+		"}",
+		"@book{book2023,",
+		"  author = {Book Author},",
+		"  title = {Book Title},",
+		"}",
+		"@inproceedings{inproc2023,",
+		"  author = {Conference Author},",
+		"  title = {Conference Paper},",
+		"  booktitle = {ICML 2023},",
+		"}",
+		"@misc{misc2023,",
+		"  author = {Misc Author},",
+		"  title = {Misc Title},",
+		"  note = {Some note},",
+		"}",
+		"@phdthesis{thesis2023,",
+		"  author = {PhD Author},",
+		"  title = {Thesis Title},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Should include all entry types
+	assert.Contains(t, result, "@article")
+	assert.Contains(t, result, "@book")
+	assert.Contains(t, result, "@inproceedings")
+	assert.Contains(t, result, "@misc")
+	assert.Contains(t, result, "@phdthesis")
+
+	// Should preserve booktitle (not in excluded list)
+	assert.Contains(t, result, "booktitle")
+	assert.Contains(t, result, "ICML 2023")
+
+	// Should preserve note (not in excluded list)
+	assert.Contains(t, result, "note")
+}
+
+func TestGetBibliographyForCitation_MultiLineQuotedValues(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-multiline-quoted-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		`@article{quoted2023,`,
+		`  author = "Test Author",`,
+		`  url = "https://example.com/very/`,
+		`         long/path/to/paper",`,
+		`  title = "Test Title",`,
+		`}`,
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Should keep author and title
+	assert.Contains(t, result, "author")
+	assert.Contains(t, result, "title")
+
+	// Should exclude multi-line quoted url field
+	assert.NotContains(t, result, "url")
+	assert.NotContains(t, result, "long/path")
+}
+
+func TestGetBibliographyForCitation_MalformedEntry(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-malformed-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{valid2023,",
+		"  author = {Valid Author},",
+		"  title = {Valid Title},",
+		"}",
+		"@article{malformed2023,",
+		"  author = {Malformed Author},",
+		"  title = {Missing closing brace",
+		"@article{aftermalformed,",
+		"  author = {After Author},",
+		"  title = {After Title},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Should at least parse the valid entry
+	assert.Contains(t, result, "Valid Author")
+	assert.Contains(t, result, "Valid Title")
+}
+
+func TestGetBibliographyForCitation_EssentialFieldsPreserved(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-essential-fields-" + bson.NewObjectID().Hex()
+
+	// Test that important fields for citation matching are preserved
+	bibContent := []string{
+		"@article{essential2023,",
+		"  author = {Essential Author},",
+		"  title = {Essential Title},",
+		"  journal = {Essential Journal},",
+		"  booktitle = {Essential Booktitle},",
+		"  note = {Essential Note},",
+		"  keywords = {machine learning, AI},",
+		"  abstract = {This is the abstract.},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// These fields should be preserved as they're useful for citation matching
+	assert.Contains(t, result, "author")
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "journal")
+	assert.Contains(t, result, "booktitle")
+	assert.Contains(t, result, "note")
+	assert.Contains(t, result, "keywords")
+	assert.Contains(t, result, "abstract")
+}
+
 // TestCitationKeysParsing tests the expected parsing behavior for citation key responses.
 // This verifies the parsing logic that GetCitationKeys uses internally.
 func TestCitationKeysParsing(t *testing.T) {
