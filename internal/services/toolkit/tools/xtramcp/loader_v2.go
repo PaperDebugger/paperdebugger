@@ -2,25 +2,14 @@ package xtramcp
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
-	"strings"
 )
-
-// PaperAbstractResponse represents the response from XtraMCP paper-abstract REST API
-type PaperAbstractResponse struct {
-	Success  bool   `json:"success"`
-	Found    bool   `json:"found"`
-	Title    string `json:"title"`
-	Abstract string `json:"abstract"`
-}
 
 // MCPListToolsResponse represents the JSON-RPC response from tools/list method
 type MCPListToolsResponseV2 struct {
@@ -247,32 +236,4 @@ func (loader *XtraMCPLoaderV2) fetchAvailableTools() ([]ToolSchemaV2, error) {
 	}
 
 	return mcpResponse.Result.Tools, nil
-}
-
-// GetPaperAbstract fetches the abstract for a paper given its title via the REST API
-func (loader *XtraMCPLoaderV2) GetPaperAbstract(ctx context.Context, title string) (*PaperAbstractResponse, error) {
-	baseURL := strings.TrimSuffix(loader.baseURL, "/mcp")
-	endpoint := fmt.Sprintf("%s/api/paper-abstract?title=%s", baseURL, url.QueryEscape(title))
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	resp, err := loader.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	var result PaperAbstractResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &result, nil
 }

@@ -129,7 +129,7 @@ func (a *AIClientV2) fetchAbstracts(ctx context.Context, entries []string) []str
 	result := make([]string, len(entries))
 	copy(result, entries)
 
-	loader := xtramcp.NewXtraMCPLoaderV2(nil, nil, a.cfg.XtraMCPURI)
+	svc := xtramcp.NewXtraMCPServices(a.cfg.XtraMCPURI)
 	sem := make(chan struct{}, MAX_CONCURRENT_XTRAMCP)
 	var wg sync.WaitGroup
 
@@ -141,7 +141,7 @@ func (a *AIClientV2) fetchAbstracts(ctx context.Context, entries []string) []str
 				sem <- struct{}{}
 				defer func() { <-sem }()
 
-				resp, err := loader.GetPaperAbstract(ctx, title)
+				resp, err := svc.GetPaperAbstract(ctx, title)
 				if err == nil && resp.Found && resp.Abstract != "" {
 					if pos := strings.LastIndex(entry, "}"); pos > 0 {
 						result[idx] = entry[:pos] + fmt.Sprintf(",\n  abstract = {%s}\n}", resp.Abstract)
