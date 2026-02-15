@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -67,6 +68,8 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
 	params := getDefaultParamsV2(modelSlug, a.toolCallHandler.Registry)
+
+	fmt.Println(params)
 
 	for {
 		params.Messages = openaiChatHistory

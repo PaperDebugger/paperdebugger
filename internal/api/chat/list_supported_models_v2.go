@@ -2,7 +2,6 @@ package chat
 
 import (
 	"context"
-	"strings"
 
 	"paperdebugger/internal/libs/contextutil"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -227,19 +226,19 @@ func (s *ChatServerV2) ListSupportedModels(
 		for _, model := range settings.CustomModels {
 			if model.Slug == config.slugOpenRouter {
 				// User has API key for this model, use slugOpenAI instead of slugOpenRouter if applicable
-				slug := config.slugOpenRouter
-				if strings.TrimSpace(config.slugOpenAI) != "" {
-					slug = config.slugOpenAI
-				}
+				// slug := config.slugOpenRouter
+				// if strings.TrimSpace(config.slugOpenAI) != "" {
+				// 	slug = config.slugOpenAI
+				// }
 
 				models = append(models, &chatv2.SupportedModel{
-					Name:          model.Name,
-					Slug:          slug,
-					TotalContext:  int64(model.ContextWindow),
-					MaxOutput:     int64(model.MaxOutput),
-					InputPrice:    int64(model.InputPrice),
-					OutputPrice:   int64(model.OutputPrice),
-					CustomModelId: model.ID.Hex(),
+					Name:         model.Name,
+					Slug:         model.Slug,
+					TotalContext: int64(model.ContextWindow),
+					MaxOutput:    int64(model.MaxOutput),
+					InputPrice:   int64(model.InputPrice),
+					OutputPrice:  int64(model.OutputPrice),
+					IsCustom:     true,
 				})
 				hasOwnAPIKey = true
 				continue
@@ -266,6 +265,7 @@ func (s *ChatServerV2) ListSupportedModels(
 			MaxOutput:    config.maxOutput,
 			InputPrice:   config.inputPrice,
 			OutputPrice:  config.outputPrice,
+			IsCustom:     false,
 		}
 
 		// If model requires own key but user hasn't provided one, mark as disabled

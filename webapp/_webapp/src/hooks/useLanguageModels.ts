@@ -14,7 +14,7 @@ export type Model = {
   outputPrice: number;
   disabled: boolean;
   disabledReason?: string;
-  customModelId: string;
+  isCustom: boolean;
 };
 
 // Extract provider from model slug (e.g., "openai/gpt-4.1" -> "openai")
@@ -34,7 +34,7 @@ const fallbackModels: Model[] = [
     inputPrice: 200,
     outputPrice: 800,
     disabled: false,
-    customModelId: "",
+    isCustom: false,
   },
 ];
 
@@ -48,7 +48,7 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
   outputPrice: Number(supportedModel.outputPrice),
   disabled: supportedModel.disabled,
   disabledReason: supportedModel.disabledReason,
-  customModelId: supportedModel.customModelId,
+  isCustom: supportedModel.isCustom,
 });
 
 export const useLanguageModels = () => {

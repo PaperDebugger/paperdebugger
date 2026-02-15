@@ -1034,7 +1034,7 @@ type SupportedModel struct {
 	OutputPrice    int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`               // in cents per 1M tokens
 	Disabled       bool                   `protobuf:"varint,7,opt,name=disabled,proto3" json:"disabled,omitempty"`                                        // If true, the model is disabled and cannot be used
 	DisabledReason *string                `protobuf:"bytes,8,opt,name=disabled_reason,json=disabledReason,proto3,oneof" json:"disabled_reason,omitempty"` // The reason why the model is disabled
-	CustomModelId  string                 `protobuf:"bytes,9,opt,name=custom_model_id,json=customModelId,proto3" json:"custom_model_id,omitempty"`
+	IsCustom       bool                   `protobuf:"varint,9,opt,name=is_custom,json=isCustom,proto3" json:"is_custom,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1125,11 +1125,11 @@ func (x *SupportedModel) GetDisabledReason() string {
 	return ""
 }
 
-func (x *SupportedModel) GetCustomModelId() string {
+func (x *SupportedModel) GetIsCustom() bool {
 	if x != nil {
-		return x.CustomModelId
+		return x.IsCustom
 	}
-	return ""
+	return false
 }
 
 type ListSupportedModelsRequest struct {
@@ -1969,7 +1969,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"\xc6\x02\n" +
+	"\x1aDeleteConversationResponse\"\xbb\x02\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
@@ -1980,8 +1980,8 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"inputPrice\x12!\n" +
 	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\x12\x1a\n" +
 	"\bdisabled\x18\a \x01(\bR\bdisabled\x12,\n" +
-	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01\x12&\n" +
-	"\x0fcustom_model_id\x18\t \x01(\tR\rcustomModelIdB\x12\n" +
+	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01\x12\x1b\n" +
+	"\tis_custom\x18\t \x01(\bR\bisCustomB\x12\n" +
 	"\x10_disabled_reason\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +

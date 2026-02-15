@@ -11,7 +11,7 @@ export const ApiKeySettings = () => {
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
   const handleCustomModelChange = (newModel: CustomModel, isDelete: boolean) => {
-    const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
+    const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.slug != newModel.slug);
 
     if (isDelete) {
       updateSettings({
@@ -22,7 +22,6 @@ export const ApiKeySettings = () => {
         customModels: [
           ...otherCustomModels,
           {
-            id: newModel.id,
             name: newModel.name,
             baseUrl: newModel.baseUrl,
             slug: newModel.slug,
@@ -55,9 +54,8 @@ export const ApiKeySettings = () => {
                 <CustomModelSection
                   isNew={false}
                   onChange={handleCustomModelChange}
-                  key={m.id}
+                  key={m.slug}
                   model={{
-                    id: m.id,
                     name: m.name,
                     baseUrl: m.baseUrl,
                     slug: m.slug,
@@ -77,7 +75,6 @@ export const ApiKeySettings = () => {
 };
 
 type CustomModel = {
-  id: string;
   name: string;
   baseUrl: string;
   slug: string;
@@ -104,7 +101,6 @@ type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelS
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
   const { models } = useLanguageModels();
-  const { settings } = useSettingStore();
 
   const [isEditing, setIsEditing] = useState(isNew);
   const [modelName, setModelName] = useState(isNew ? "New Model" : customModel.name);
@@ -128,7 +124,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
 
     onChange(
       {
-        id: isNew ? "" : customModel.id,
         name: modelName,
         baseUrl: baseUrl,
         slug: slug,
@@ -153,8 +148,8 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     }
   };
 
-  // TODO: Disable base url input for non-openai
   // TODO: 1 key per model
+  // TODO: Multiple models per key
   return (
     <div className="flex flex-col w-full">
       {isNew ? (

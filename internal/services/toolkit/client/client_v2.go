@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -45,6 +46,9 @@ func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *opena
 	if APIKey == "" {
 		APIKey = a.cfg.InferenceAPIKey
 	}
+
+	fmt.Println(Endpoint)
+	fmt.Println(APIKey)
 
 	opts := []option.RequestOption{
 		option.WithAPIKey(APIKey),

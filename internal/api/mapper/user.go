@@ -3,25 +3,16 @@ package mapper
 import (
 	"paperdebugger/internal/models"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 	// Map the slice of custom models
 	customModels := make([]models.CustomModel, len(settings.CustomModels))
 	for i, m := range settings.CustomModels {
-		id, _ := bson.ObjectIDFromHex(m.Id)
-		if m.Id == "" {
-			// No ID provided, new custom model
-			id = bson.NewObjectID()
-		}
-
 		customModels[i] = models.CustomModel{
-			ID:            id,
+			Slug:          m.Slug,
 			Name:          m.Name,
 			BaseUrl:       m.BaseUrl,
-			Slug:          m.Slug,
 			APIKey:        m.ApiKey,
 			ContextWindow: m.ContextWindow,
 			MaxOutput:     m.MaxOutput,
@@ -46,10 +37,9 @@ func MapModelSettingsToProto(settings *models.Settings) *userv1.Settings {
 	customModels := make([]*userv1.CustomModel, len(settings.CustomModels))
 	for i, m := range settings.CustomModels {
 		customModels[i] = &userv1.CustomModel{
-			Id:            m.ID.Hex(),
+			Slug:          m.Slug,
 			Name:          m.Name,
 			BaseUrl:       m.BaseUrl,
-			Slug:          m.Slug,
 			ApiKey:        m.APIKey,
 			ContextWindow: m.ContextWindow,
 			InputPrice:    m.InputPrice,

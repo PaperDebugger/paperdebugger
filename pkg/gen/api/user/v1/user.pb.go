@@ -617,15 +617,14 @@ func (*DeletePromptResponse) Descriptor() ([]byte, []int) {
 
 type CustomModel struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	BaseUrl       string                 `protobuf:"bytes,3,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
-	Slug          string                 `protobuf:"bytes,4,opt,name=slug,proto3" json:"slug,omitempty"`
-	ApiKey        string                 `protobuf:"bytes,5,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	ContextWindow int32                  `protobuf:"varint,6,opt,name=context_window,json=contextWindow,proto3" json:"context_window,omitempty"`
-	MaxOutput     int32                  `protobuf:"varint,7,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
-	InputPrice    int32                  `protobuf:"varint,8,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`
-	OutputPrice   int32                  `protobuf:"varint,9,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`
+	ApiKey        string                 `protobuf:"bytes,4,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	ContextWindow int32                  `protobuf:"varint,5,opt,name=context_window,json=contextWindow,proto3" json:"context_window,omitempty"`
+	MaxOutput     int32                  `protobuf:"varint,6,opt,name=max_output,json=maxOutput,proto3" json:"max_output,omitempty"`
+	InputPrice    int32                  `protobuf:"varint,7,opt,name=input_price,json=inputPrice,proto3" json:"input_price,omitempty"`
+	OutputPrice   int32                  `protobuf:"varint,8,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -660,9 +659,9 @@ func (*CustomModel) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *CustomModel) GetId() string {
+func (x *CustomModel) GetSlug() string {
 	if x != nil {
-		return x.Id
+		return x.Slug
 	}
 	return ""
 }
@@ -677,13 +676,6 @@ func (x *CustomModel) GetName() string {
 func (x *CustomModel) GetBaseUrl() string {
 	if x != nil {
 		return x.BaseUrl
-	}
-	return ""
-}
-
-func (x *CustomModel) GetSlug() string {
-	if x != nil {
-		return x.Slug
 	}
 	return ""
 }
@@ -1269,19 +1261,18 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x06prompt\x18\x01 \x01(\v2\x0f.user.v1.PromptR\x06prompt\"2\n" +
 	"\x13DeletePromptRequest\x12\x1b\n" +
 	"\tprompt_id\x18\x01 \x01(\tR\bpromptId\"\x16\n" +
-	"\x14DeletePromptResponse\"\x83\x02\n" +
-	"\vCustomModel\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x14DeletePromptResponse\"\xf3\x01\n" +
+	"\vCustomModel\x12\x12\n" +
+	"\x04slug\x18\x01 \x01(\tR\x04slug\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
-	"\bbase_url\x18\x03 \x01(\tR\abaseUrl\x12\x12\n" +
-	"\x04slug\x18\x04 \x01(\tR\x04slug\x12\x17\n" +
-	"\aapi_key\x18\x05 \x01(\tR\x06apiKey\x12%\n" +
-	"\x0econtext_window\x18\x06 \x01(\x05R\rcontextWindow\x12\x1d\n" +
+	"\bbase_url\x18\x03 \x01(\tR\abaseUrl\x12\x17\n" +
+	"\aapi_key\x18\x04 \x01(\tR\x06apiKey\x12%\n" +
+	"\x0econtext_window\x18\x05 \x01(\x05R\rcontextWindow\x12\x1d\n" +
 	"\n" +
-	"max_output\x18\a \x01(\x05R\tmaxOutput\x12\x1f\n" +
-	"\vinput_price\x18\b \x01(\x05R\n" +
+	"max_output\x18\x06 \x01(\x05R\tmaxOutput\x12\x1f\n" +
+	"\vinput_price\x18\a \x01(\x05R\n" +
 	"inputPrice\x12!\n" +
-	"\foutput_price\x18\t \x01(\x05R\voutputPrice\"\xfe\x02\n" +
+	"\foutput_price\x18\b \x01(\x05R\voutputPrice\"\xfe\x02\n" +
 	"\bSettings\x12C\n" +
 	"\x1eshow_shortcuts_after_selection\x18\x01 \x01(\bR\x1bshowShortcutsAfterSelection\x12F\n" +
 	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12+\n" +

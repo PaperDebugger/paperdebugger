@@ -14,7 +14,7 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
   const items: SelectionItem<string>[] = useMemo(() => {
     return models.map((model) => ({
       title: model.name,
-      subtitle: model.slug,
+      subtitle: `${model.slug}${model.isCustom ? " (Custom)" : ""}`,
       value: model.slug,
       disabled: model.disabled,
       disabledReason: model.disabledReason,

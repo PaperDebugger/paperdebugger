@@ -133,7 +133,7 @@ message SupportedModel {
   int64 output_price = 6; // in cents per 1M tokens
   bool disabled = 7; // If true, the model is disabled and cannot be used
   optional string disabled_reason = 8; // The reason why the model is disabled
-  string custom_model_id = 9;
+  bool is_custom = 9;
 }
 
 message ListSupportedModelsRequest {

@@ -3,15 +3,14 @@ package models
 import "go.mongodb.org/mongo-driver/v2/bson"
 
 type CustomModel struct {
-	ID            bson.ObjectID `bson:"_id"`
-	Name          string        `bson:"name"`
-	BaseUrl       string        `bson:"base_url"`
-	Slug          string        `bson:"slug"`
-	APIKey        string        `bson:"api_key"`
-	ContextWindow int32         `bson:"context_window"`
-	MaxOutput     int32         `bson:"max_output"`
-	InputPrice    int32         `bson:"input_price"`
-	OutputPrice   int32         `bson:"output_price"`
+	Slug          string `bson:"_id"`
+	Name          string `bson:"name"`
+	BaseUrl       string `bson:"base_url"`
+	APIKey        string `bson:"api_key"`
+	ContextWindow int32  `bson:"context_window"`
+	MaxOutput     int32  `bson:"max_output"`
+	InputPrice    int32  `bson:"input_price"`
+	OutputPrice   int32  `bson:"output_price"`
 }
 
 type Settings struct {
