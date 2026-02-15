@@ -466,6 +466,152 @@ func TestGetBibliographyForCitation_MalformedEntry(t *testing.T) {
 	assert.Contains(t, result, "Valid Title")
 }
 
+func TestGetBibliographyForCitation_TitleMultilineBraces(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-title-multiline-braces-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{multiline2023,",
+		"  author = {Test Author},",
+		"  title = {A Very Long Title That Spans",
+		"           Multiple Lines in the Bib File},",
+		"  journal = {Test Journal},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Title should be preserved even when spanning multiple lines
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "A Very Long Title")
+	assert.Contains(t, result, "Multiple Lines")
+}
+
+func TestGetBibliographyForCitation_TitleMultilineQuotes(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-title-multiline-quotes-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		`@article{quotedtitle2023,`,
+		`  author = "Test Author",`,
+		`  title = "A Quoted Title That Spans`,
+		`           Multiple Lines",`,
+		`  journal = "Test Journal",`,
+		`}`,
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Title should be preserved even with multiline quotes
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "A Quoted Title")
+	assert.Contains(t, result, "Multiple Lines")
+}
+
+func TestGetBibliographyForCitation_ExcludedFieldNestedBraces(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-excluded-nested-braces-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{nested2023,",
+		"  author = {Test Author},",
+		"  title = {Test Title},",
+		"  url = {https://example.com/{version}/path/{id}},",
+		"  doi = {10.1234/{special}/value},",
+		"  journal = {Test Journal},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Essential fields should be kept
+	assert.Contains(t, result, "author")
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "journal")
+
+	// Excluded fields with nested braces should be completely removed
+	assert.NotContains(t, result, "url")
+	assert.NotContains(t, result, "{version}")
+	assert.NotContains(t, result, "doi")
+	assert.NotContains(t, result, "{special}")
+}
+
+func TestGetBibliographyForCitation_TitleMultilineNestedBraces(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-title-multiline-nested-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{multilinested2023,",
+		"  author = {Test Author},",
+		"  title = {A Study of {COVID-19} and Its",
+		"           Impact on {Machine Learning}",
+		"           Applications},",
+		"  journal = {Test Journal},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Title with multiline nested braces should be preserved
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "{COVID-19}")
+	assert.Contains(t, result, "{Machine Learning}")
+	assert.Contains(t, result, "Applications")
+}
+
+func TestGetBibliographyForCitation_ExcludedFieldMultilineNestedBraces(t *testing.T) {
+	aiClient, projectService := setupTestClient(t)
+	ctx := context.Background()
+	userId := bson.NewObjectID()
+	projectId := "test-excluded-multiline-nested-" + bson.NewObjectID().Hex()
+
+	bibContent := []string{
+		"@article{exclmultnest2023,",
+		"  author = {Test Author},",
+		"  title = {Test Title},",
+		"  url = {https://example.com/{api}/{v2}",
+		"         /resources/{id}/data},",
+		"  journal = {Test Journal},",
+		"}",
+	}
+
+	createTestProject(t, projectService, userId, projectId, bibContent)
+
+	result, err := aiClient.GetBibliographyForCitation(ctx, userId, projectId)
+	assert.NoError(t, err)
+
+	// Essential fields should be kept
+	assert.Contains(t, result, "author")
+	assert.Contains(t, result, "title")
+	assert.Contains(t, result, "journal")
+
+	// Excluded field with multiline nested braces should be completely removed
+	assert.NotContains(t, result, "url")
+	assert.NotContains(t, result, "{api}")
+	assert.NotContains(t, result, "{v2}")
+	assert.NotContains(t, result, "/resources/")
+}
+
 func TestGetBibliographyForCitation_EssentialFieldsPreserved(t *testing.T) {
 	aiClient, projectService := setupTestClient(t)
 	ctx := context.Background()
