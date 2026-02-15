@@ -11,9 +11,9 @@ export const BetaFeatureSettings = () => {
       <SettingItem
         label="Enable citation suggestions"
         description="Suggest citations as you write"
-        isLoading={isUpdating.enableCompletion}
-        selected={settings?.enableCompletion ?? false}
-        onSelectChange={(selected) => updateSettings({ enableCompletion: selected })}
+        isLoading={isUpdating.enableCitationSuggestion}
+        selected={settings?.enableCitationSuggestion ?? false}
+        onSelectChange={(selected) => updateSettings({ enableCitationSuggestion: selected })}
       />
       <SettingItem
         hidden

@@ -619,7 +619,7 @@ type Settings struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	ShowShortcutsAfterSelection  bool                   `protobuf:"varint,1,opt,name=show_shortcuts_after_selection,json=showShortcutsAfterSelection,proto3" json:"show_shortcuts_after_selection,omitempty"`
 	FullWidthPaperDebuggerButton bool                   `protobuf:"varint,2,opt,name=full_width_paper_debugger_button,json=fullWidthPaperDebuggerButton,proto3" json:"full_width_paper_debugger_button,omitempty"`
-	EnableCompletion             bool                   `protobuf:"varint,3,opt,name=enable_completion,json=enableCompletion,proto3" json:"enable_completion,omitempty"`
+	EnableCitationSuggestion     bool                   `protobuf:"varint,3,opt,name=enable_citation_suggestion,json=enableCitationSuggestion,proto3" json:"enable_citation_suggestion,omitempty"`
 	FullDocumentRag              bool                   `protobuf:"varint,4,opt,name=full_document_rag,json=fullDocumentRag,proto3" json:"full_document_rag,omitempty"`
 	ShowedOnboarding             bool                   `protobuf:"varint,5,opt,name=showed_onboarding,json=showedOnboarding,proto3" json:"showed_onboarding,omitempty"`
 	OpenaiApiKey                 string                 `protobuf:"bytes,6,opt,name=openai_api_key,json=openaiApiKey,proto3" json:"openai_api_key,omitempty"`
@@ -671,9 +671,9 @@ func (x *Settings) GetFullWidthPaperDebuggerButton() bool {
 	return false
 }
 
-func (x *Settings) GetEnableCompletion() bool {
+func (x *Settings) GetEnableCitationSuggestion() bool {
 	if x != nil {
-		return x.EnableCompletion
+		return x.EnableCitationSuggestion
 	}
 	return false
 }
@@ -1153,11 +1153,11 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x06prompt\x18\x01 \x01(\v2\x0f.user.v1.PromptR\x06prompt\"2\n" +
 	"\x13DeletePromptRequest\x12\x1b\n" +
 	"\tprompt_id\x18\x01 \x01(\tR\bpromptId\"\x16\n" +
-	"\x14DeletePromptResponse\"\xc3\x02\n" +
+	"\x14DeletePromptResponse\"\xd4\x02\n" +
 	"\bSettings\x12C\n" +
 	"\x1eshow_shortcuts_after_selection\x18\x01 \x01(\bR\x1bshowShortcutsAfterSelection\x12F\n" +
-	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12+\n" +
-	"\x11enable_completion\x18\x03 \x01(\bR\x10enableCompletion\x12*\n" +
+	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12<\n" +
+	"\x1aenable_citation_suggestion\x18\x03 \x01(\bR\x18enableCitationSuggestion\x12*\n" +
 	"\x11full_document_rag\x18\x04 \x01(\bR\x0ffullDocumentRag\x12+\n" +
 	"\x11showed_onboarding\x18\x05 \x01(\bR\x10showedOnboarding\x12$\n" +
 	"\x0eopenai_api_key\x18\x06 \x01(\tR\fopenaiApiKey\"\x14\n" +
