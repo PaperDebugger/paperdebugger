@@ -122,7 +122,7 @@ func (s *UserService) GetDefaultSettings() models.Settings {
 	return models.Settings{
 		ShowShortcutsAfterSelection:  true,
 		FullWidthPaperDebuggerButton: true,
-		EnableCompletion:             false,
+		EnableCitationSuggestion:     false,
 		FullDocumentRag:              false,
 		ShowedOnboarding:             false,
 	}
