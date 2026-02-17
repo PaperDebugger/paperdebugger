@@ -19,13 +19,14 @@ This document describes the core tools exposed by XtraMCP and how they combine i
 | Tool Name                 | Role      | Purpose                                                         | Primary Data Source            | Presently Deployed    |
 |---------------------------|-----------|-----------------------------------------------------------------|--------------------------------|----------------------|
 | `search_relevant_papers`  | Researcher | Fast semantic search over recent CS papers in a local vector DB, enhanced with semantic re-ranker module | Local DB | Yes |
-| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers analysis | *Temporarily Disabled* |
-| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv         | Yes (*Partially*) with arXiv |
-| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft + section-level review (static & semantic) | Yes (*Partially*) — Title, Abstract, Intro — to balance operational cost. |
-| `verify_citations`        | Reviewer   | Ensure citations are grounded, valid, and traceable             | Your draft's bibliography  | *Coming Soon*! |
+| `deep_research`           | Researcher | Multi-step literature synthesis & positioning of your draft     | Local DB + retrieved papers analysis | Yes |
+| `online_search_papers`    | Researcher | Online search over external academic corpora                    | OpenReview + arXiv         | Yes |
+| `review_paper`            | Reviewer   | Conference-style structured review of a draft                   | Your draft + section-level review (static & semantic) | Yes (slightly scaled down to balance operational cost) |
+| `verify_citations`        | Reviewer   | Ensure citations are grounded, valid, and traceable             | Your draft's bibliography  | Yes |
+| `generate_citations`      | Reviewer   | Generates BibTeX-style citations by simplying providing arxiv ID / DOI / URL / title | Your draft | Yes |
 | `enhance_academic_writing`| Enhancer   | Context-aware rewriting and polishing of selected text          | Your draft + XtraGPT       | *Temporarily Disabled* |
-| `get_user_papers`         | Misc / Researcher| Fetch all published papers with description, by a specific user | OpenReview           | *Disabled* (requires auth; easy to enable with local deployment) |
-| `search_user`             | Misc | Fetch user's profile, including info such as publications, co-authors | OpenReview                 | *Disabled* (requires auth; easy to enable with local deployment)|
+| `get_user_papers`         | Misc / Researcher| Fetch all published papers with description, by a specific user | OpenReview           | Yes |
+| `search_user`             | Misc | Fetch user's profile, including info such as publications, co-authors | OpenReview                 | Yes |
 
 ---
 
@@ -122,7 +123,7 @@ Analyze and review a draft against the standards of **top-tier ML conferences** 
 ## 5. `verify_citations`
 
 **Purpose:**
-Verify that citations in your draft are valid, grounded, and traceable, helping reduce the risk of desk rejection due to incorrect or unverifiable references.
+Verify that citations in your draft are valid, grounded, and traceable, helping reduce the risk of desk rejection due to incorrect or unverifiable references. There have been [embarrassing cases](https://gptzero.me/news/neurips/) where accepted papers were found with hallucinated citations. This tool helps to avoid such occurrences.
 
 **How it works**:
 - Parses your bibliography and in-text citations.
@@ -137,8 +138,21 @@ Typical usage:
 - “Check whether any citations in this draft are invalid or unverifiable.”
 
 ---
+## 6. `generate_citations`
 
-## 6. `enhance_academic_writing`
+**Purpose:**
+Generate BibTeX-style citations easily by simply providing the paper's arxiv ID or DOI or URL or just its title.
+
+**How it works**:
+- Searches online for the paper's official source
+- Formats into BibTeX-style citation ready for copy-pasting
+- Inform user if proposed information is invalid / unmatched
+
+Typical usage:
+- “generate_citations: [https://arxiv.org/abs/2505.11336, ... ]”
+
+---
+## 7. `enhance_academic_writing`
 
 **Purpose:**  
 Suggest **context-aware academic writing enhancements** for selected text.
@@ -157,7 +171,7 @@ Suggest **context-aware academic writing enhancements** for selected text.
 - "enhance_academic_writing this paragraph to be clearer and more concise, preserving all technical details.”  
 - "enhance_academic_writing the abstract to be suitable for NeurIPS.”
 
-## 7. `get_user_papers`
+## 8. `get_user_papers`
 
 **Purpose:**  
 Retrieve **all papers authored by a given user** (OpenReview), identified by email.  
@@ -172,7 +186,7 @@ Useful for quickly assembling a researcher’s publication list or grounding con
 - “get_user_papers for <author-email> in summary mode.”  
 - “Retrieve all publications by this researcher and then compare my draft using deep_research.”
 
-## 8. Conference Formatter (WIP)
+## 9. Conference Formatter (WIP)
 
 Upcoming workflows will:
 
@@ -191,7 +205,8 @@ Upcoming workflows will:
 
 - **Reviewer Flow**  
   1. Run `review_paper` on the full draft.  
-  2. For high-impact issues, call `enhance_academic_writing` on the relevant spans.  
+  2. For high-impact issues, call `enhance_academic_writing` on the relevant spans.
+  3. Verify your citations with `verify_citations` or if you haven't yet formatted them, include with `generate_citations`.
 
 - **Enhancer Flow**  
   1. Select a paragraph or section in Overleaf.  
