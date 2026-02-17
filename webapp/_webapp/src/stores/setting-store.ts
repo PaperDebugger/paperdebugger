@@ -59,7 +59,7 @@ export interface SettingStore {
 const defaultSettings: PlainMessage<Settings> = {
   showShortcutsAfterSelection: true,
   fullWidthPaperDebuggerButton: true,
-  enableCompletion: false,
+  enableCitationSuggestion: false,
   fullDocumentRag: false,
   showedOnboarding: true,
   openaiApiKey: "",
