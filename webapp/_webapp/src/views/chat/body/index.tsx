@@ -114,6 +114,8 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
             <span>* Debug mode is enabled, </span>
             <span
               className={`${reloadSuccess ? "text-emerald-300" : "text-default-300 dark:!text-default-300"} underline cursor-pointer rnd-cancel`}
+              role="button"
+              tabIndex={0}
               onClick={async () => {
                 try {
                   const response = await getConversation({ conversationId: conversation?.id ?? "" });
@@ -129,6 +131,25 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
                   setTimeout(() => {
                     setReloadSuccess(ReloadStatus.Default);
                   }, 3000);
+                }
+              }}
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  try {
+                    const response = await getConversation({ conversationId: conversation?.id ?? "" });
+                    if (!response.conversation) {
+                      throw new Error(`Failed to load conversation ${conversation?.id ?? "unknown"}`);
+                    }
+                    setCurrentConversation(response.conversation);
+                    useStreamingStateMachine.getState().reset();
+                    setReloadSuccess(ReloadStatus.Success);
+                  } catch {
+                    setReloadSuccess(ReloadStatus.Failed);
+                  } finally {
+                    setTimeout(() => {
+                      setReloadSuccess(ReloadStatus.Default);
+                    }, 3000);
+                  }
                 }
               }}
             >
