@@ -34,6 +34,8 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     setDisplayMode(displayMode);
   }
 
+  useThemeSync();
+
   // Initialize stores from storage on mount
   // This must happen before the main UI renders to restore login state and settings
   useEffect(() => {

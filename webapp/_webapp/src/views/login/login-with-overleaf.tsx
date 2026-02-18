@@ -59,7 +59,11 @@ export default function LoginWithOverleaf({
       role="button"
       tabIndex={0}
       onClick={() => onOverleafLogin()}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onOverleafLogin(); } }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onOverleafLogin();
+        }
+      }}
       style={{
         cursor: isLoginLoading ? "wait" : "pointer",
       }}

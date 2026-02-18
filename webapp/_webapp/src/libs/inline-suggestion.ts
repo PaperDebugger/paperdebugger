@@ -52,9 +52,7 @@ async function completeCitationKeys(state: EditorState, triggerText: string): Pr
   const textBefore = state.doc.sliceString(textBeforeStart, cursorPos - triggerText.length);
 
   // Split by sentence-ending punctuation and get the last sentence
-  const sentences = textBefore
-    .split(/(?<=[.!?])\s+/)
-    .filter((s) => s.trim().length > 0);
+  const sentences = textBefore.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
   // Fall back to the bounded window if no sentence boundary found
   const lastSentence = sentences.length > 0 ? sentences[sentences.length - 1] : textBefore.trim();
   if (!lastSentence) {
@@ -636,8 +634,7 @@ export function createAutocompleteSuppressor(
         this.handleKeydown = (e: KeyboardEvent) => {
           if (e.key !== "Tab") return;
 
-          const suggestion =
-            this.view.state.field<SuggestionState>(suggestionState);
+          const suggestion = this.view.state.field<SuggestionState>(suggestionState);
           if (!suggestion?.suggestion) return;
 
           e.preventDefault();
@@ -663,8 +660,7 @@ export function createAutocompleteSuppressor(
       }
 
       update(update: ViewUpdate) {
-        const suggestion =
-          update.state.field<SuggestionState>(suggestionState);
+        const suggestion = update.state.field<SuggestionState>(suggestionState);
         if (suggestion?.suggestion || isTriggerAtCursor(update.state)) {
           suppress();
         } else {
@@ -703,5 +699,12 @@ export function createSuggestionExtension(overleafCm: OverleafCodeMirror, config
   const keymapBindingExtension = createExtensionKeymapBinding(overleafCm, suggestionAcceptanceEffect, suggestionState);
   const autocompleteSuppressor = createAutocompleteSuppressor(overleafCm, suggestionState, suggestionAcceptanceEffect);
 
-  return [suggestionState, pluginConfigState, suggestionFetchPlugin, suggestionRenderingPlugin, keymapBindingExtension, autocompleteSuppressor];
+  return [
+    suggestionState,
+    pluginConfigState,
+    suggestionFetchPlugin,
+    suggestionRenderingPlugin,
+    keymapBindingExtension,
+    autocompleteSuppressor,
+  ];
 }

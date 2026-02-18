@@ -39,7 +39,7 @@ export const SettingsFooter = () => {
             setVersionClickTimeout(timeout);
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               setVersionClickCount((prev: number) => {
                 const next = prev + 1;
                 if (next >= 5) {

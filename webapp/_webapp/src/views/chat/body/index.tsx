@@ -134,7 +134,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
                 }
               }}
               onKeyDown={async (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   try {
                     const response = await getConversation({ conversationId: conversation?.id ?? "" });
                     if (!response.conversation) {
