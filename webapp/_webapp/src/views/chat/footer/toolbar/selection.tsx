@@ -1,5 +1,5 @@
 import { cn } from "@heroui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import googleAnalytics, { normalizeName } from "../../../../libs/google-analytics";
 import { useAuthStore } from "../../../../stores/auth-store";
 import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
@@ -26,8 +26,29 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
   const { minimalistMode } = useSettingStore();
   const { user } = useAuthStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const [isKeyboardNavigation, setIsKeyboardNavigation] = useState(false);
+  const [{ selectedIdx, isKeyboardNavigation }, dispatchSelection] = useReducer(
+    (
+      state: { selectedIdx: number; isKeyboardNavigation: boolean },
+      action:
+        | { type: "SET_IDX"; idx: number }
+        | { type: "SET_KEYBOARD_NAV"; value: boolean }
+        | { type: "SET_IDX_WITH_KEYBOARD_NAV"; idx: number },
+    ) => {
+      switch (action.type) {
+        case "SET_IDX":
+          return { ...state, selectedIdx: action.idx };
+        case "SET_KEYBOARD_NAV":
+          return { ...state, isKeyboardNavigation: action.value };
+        case "SET_IDX_WITH_KEYBOARD_NAV":
+          return { selectedIdx: action.idx, isKeyboardNavigation: true };
+        default:
+          return state;
+      }
+    },
+    { selectedIdx: 0, isKeyboardNavigation: false },
+  );
+  const setSelectedIdx = (idx: number) => dispatchSelection({ type: "SET_IDX", idx });
+  const setIsKeyboardNavigation = (value: boolean) => dispatchSelection({ type: "SET_KEYBOARD_NAV", value });
   const itemCount = items?.length ?? 0;
 
   useEffect(() => {
@@ -88,9 +109,6 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
-        setIsKeyboardNavigation(true);
-      }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         e.stopPropagation();
@@ -101,10 +119,11 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
         }
         if (nextIdx < itemCount) {
           scrollTo(nextIdx);
-          setSelectedIdx(nextIdx);
+          dispatchSelection({ type: "SET_IDX_WITH_KEYBOARD_NAV", idx: nextIdx });
+        } else {
+          dispatchSelection({ type: "SET_KEYBOARD_NAV", value: true });
         }
-      }
-      if (e.key === "ArrowUp") {
+      } else if (e.key === "ArrowUp") {
         e.preventDefault();
         e.stopPropagation();
         let prevIdx = selectedIdx - 1;
@@ -114,12 +133,14 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
         }
         if (prevIdx >= 0) {
           scrollTo(prevIdx);
-          setSelectedIdx(prevIdx);
+          dispatchSelection({ type: "SET_IDX_WITH_KEYBOARD_NAV", idx: prevIdx });
+        } else {
+          dispatchSelection({ type: "SET_KEYBOARD_NAV", value: true });
         }
-      }
-      if (e.key === "Enter") {
+      } else if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
+        dispatchSelection({ type: "SET_KEYBOARD_NAV", value: true });
         // Only select if not disabled
         if (!items[selectedIdx]?.disabled) {
           onSelect?.(items[selectedIdx]);
@@ -159,10 +180,19 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
             idx === selectedIdx && !item.disabled && "bg-gray-100 dark:!bg-default-200",
             heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
           )}
+          role="button"
+          tabIndex={item.disabled ? -1 : 0}
           onClick={() => {
             if (item.disabled) return;
             googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
             onSelect?.(item);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              if (item.disabled) return;
+              googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
+              onSelect?.(item);
+            }
           }}
           onMouseEnter={() => {
             if (!isKeyboardNavigation && !item.disabled) {

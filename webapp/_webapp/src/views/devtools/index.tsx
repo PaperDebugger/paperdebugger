@@ -310,8 +310,11 @@ export const DevTools = () => {
 
             {/* Preparing delay */}
             <div className="flex flex-row gap-2 items-center pt-2 border-t !border-orange-200">
-              <label className="text-sm text-gray-700 whitespace-nowrap">Preparing delay (seconds):</label>
+              <label htmlFor="preparing-delay-input" className="text-sm text-gray-700 whitespace-nowrap">
+                Preparing delay (seconds):
+              </label>
               <Input
+                id="preparing-delay-input"
                 size="sm"
                 type="number"
                 min="0"

@@ -40,7 +40,14 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
         {/* Header with Error label and arrow button */}
         <div
           className="flex items-center justify-between cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setIsMetadataCollapsed(!isMetadataCollapsed);
+            }
+          }}
         >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
@@ -68,7 +75,14 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
           {/* Header with arrow button */}
           <div
             className="flex items-center cursor-pointer gap-1"
+            role="button"
+            tabIndex={0}
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setIsMetadataCollapsed(!isMetadataCollapsed);
+              }
+            }}
           >
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"

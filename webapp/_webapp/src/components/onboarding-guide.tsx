@@ -1,6 +1,6 @@
 import { Button, Spinner } from "@heroui/react";
 import { Modal } from "./modal";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { useSettingStore } from "../stores/setting-store";
 import { getUrl } from "../intermediate";
 import { Logo } from "./logo";
@@ -168,9 +168,9 @@ function OnboardingFooter({
       </div>
 
       <div className="flex flex-row justify-center gap-2 w-1/3">
-        {Array.from({ length: totalSteps }, (_, index) => (
+        {ONBOARDING_STEPS.slice(0, totalSteps).map((step, index) => (
           <div
-            key={index}
+            key={step.id}
             className={`w-2 h-2 rounded-full transition-colors duration-200 ${
               index === currentStep ? "bg-primary-500" : "bg-gray-300 dark:!bg-default-300"
             }`}
@@ -202,7 +202,14 @@ function OnboardingStep({ step, imageUrl, imageError, onImageClick, onImageError
             src={imageUrl}
             alt={step.title}
             className="w-full max-w-2xl h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
+            role="button"
+            tabIndex={0}
             onClick={onImageClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onImageClick();
+              }
+            }}
             onError={onImageError}
           />
         </div>
@@ -235,7 +242,14 @@ function ImageModal({
             src={imageUrl}
             alt={title}
             className="max-h-[90vh] w-auto max-w-full object-contain rounded-lg shadow-lg cursor-pointer"
+            role="button"
+            tabIndex={0}
             onClick={onClose}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onClose();
+              }
+            }}
             onError={onImageError}
           />
         )}
@@ -273,21 +287,43 @@ function useOnboardingNavigation(totalSteps: number) {
   };
 }
 
+type ImageState = { imageUrl: string | undefined; imageError: boolean };
+type ImageAction =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; url: string }
+  | { type: "LOAD_ERROR" }
+  | { type: "RESET" };
+
+function imageReducer(state: ImageState, action: ImageAction): ImageState {
+  switch (action.type) {
+    case "LOAD_START":
+      return { imageUrl: undefined, imageError: false };
+    case "LOAD_SUCCESS":
+      return { imageUrl: action.url, imageError: false };
+    case "LOAD_ERROR":
+      return { ...state, imageError: true };
+    case "RESET":
+      return { imageUrl: undefined, imageError: false };
+    default:
+      return state;
+  }
+}
+
 function useOnboardingImage(step: OnboardingStep) {
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
-  const [imageError, setImageError] = useState(false);
+  const [{ imageUrl, imageError }, dispatch] = useReducer(imageReducer, { imageUrl: undefined, imageError: false });
 
   useEffect(() => {
     if (step.imagePath) {
-      setImageError(false);
+      dispatch({ type: "LOAD_START" });
       getUrl(step.imagePath)
-        .then(setImageUrl)
-        .catch(() => setImageError(true));
+        .then((url) => dispatch({ type: "LOAD_SUCCESS", url }))
+        .catch(() => dispatch({ type: "LOAD_ERROR" }));
     } else {
-      setImageUrl(undefined);
-      setImageError(false);
+      dispatch({ type: "RESET" });
     }
   }, [step.imagePath]);
+
+  const setImageError = useCallback(() => dispatch({ type: "LOAD_ERROR" }), []);
 
   return { imageUrl, imageError, setImageError };
 }
@@ -300,6 +336,7 @@ function useOnboardingKeyboardHandlers(
 ) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (!isOpen) return;
       switch (event.key) {
         case "ArrowRight":
           onNext();
@@ -312,15 +349,13 @@ function useOnboardingKeyboardHandlers(
           break;
       }
     },
-    [onNext, onPrevious, onComplete],
+    [isOpen, onNext, onPrevious, onComplete],
   );
 
   useEffect(() => {
-    if (isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [isOpen, handleKeyDown]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 }
 
 // Main Component
@@ -359,7 +394,7 @@ export const OnboardingGuide = () => {
   }, []);
 
   const handleImageError = useCallback(() => {
-    setImageError(true);
+    setImageError();
   }, [setImageError]);
 
   const handleImageModalClose = useCallback(() => {

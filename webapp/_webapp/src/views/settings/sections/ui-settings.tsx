@@ -2,6 +2,7 @@ import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { useSettingStore } from "../../../stores/setting-store";
 import { SettingItem } from "../setting-items";
 import { SettingItemSelect } from "../setting-item-select";
+import { onElementAppeared } from "../../../libs/helpers";
 
 const THEME_OPTIONS: Record<string, string> = {
   auto: "Auto",
@@ -72,7 +73,18 @@ export const UISettings = () => {
         label="Disable line wrap"
         description="Disable Overleaf's line wrap feature."
         selected={disableLineWrap}
-        onSelectChange={(selected) => setDisableLineWrap(selected)}
+        onSelectChange={(selected) => {
+          setDisableLineWrap(selected);
+          if (selected) {
+            onElementAppeared(".cm-lineWrapping", (editor) => {
+              editor.classList.remove("cm-lineWrapping");
+            });
+          } else {
+            onElementAppeared(".cm-content", (editor) => {
+              editor.classList.add("cm-lineWrapping");
+            });
+          }
+        }}
       />
     </SettingsSectionContainer>
   );
