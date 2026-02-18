@@ -88,8 +88,11 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
 
     let cntAdded = 0;
     let cntRemoved = 0;
-    const diffElements = diff.map((part, idx) => {
+    let charOffset = 0;
+    const diffElements = diff.map((part) => {
       const { value, added, removed } = part;
+      const key = `${added ? "a" : removed ? "r" : "n"}-${charOffset}`;
+      charOffset += value.length;
       let nodeStyles;
       if (added) {
         nodeStyles = "text-xs bg-green-200 text-green-800 px-[3px] py-px rounded-md";
@@ -101,7 +104,7 @@ export function TextPatches({ attachment, children }: TextPatchesProps) {
         nodeStyles = "text-xs text-gray-800";
       }
       return (
-        <span className={nodeStyles} key={idx}>
+        <span className={nodeStyles} key={key}>
           {value}
         </span>
       );

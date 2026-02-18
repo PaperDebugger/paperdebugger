@@ -8,7 +8,7 @@ import { useAdapter } from "../../../adapters/context";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();
-  const [endpoint, setEndpoint] = useState(getEndpointFromLocalStorage());
+  const [endpoint, setEndpoint] = useState(() => getEndpointFromLocalStorage());
   const adapter = useAdapter();
   const documentId = adapter.getDocumentId?.() || "N/A";
 

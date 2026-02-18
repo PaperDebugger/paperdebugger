@@ -141,7 +141,6 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 rows={rows}
-                autoFocus
               />
             ) : (
               <input
@@ -152,7 +151,6 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                autoFocus
               />
             )}
             <div className="flex gap-2 shrink-0">

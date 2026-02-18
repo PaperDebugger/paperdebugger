@@ -3,7 +3,7 @@ import "highlight.js/styles/default.min.css";
 import latex from "highlight.js/lib/languages/latex";
 hljs.registerLanguage("latex", latex);
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 
 type CodeBlockProps = {
   code: string;
@@ -11,11 +11,7 @@ type CodeBlockProps = {
 };
 
 export const CodeBlock = ({ code, className }: CodeBlockProps) => {
-  const [highlightedCode, setHighlightedCode] = useState(code);
-
-  useEffect(() => {
-    setHighlightedCode(hljs.highlight(code, { language: "latex" }).value);
-  }, [code]);
+  const highlightedCode = useMemo(() => hljs.highlight(code, { language: "latex" }).value, [code]);
 
   return (
     <pre

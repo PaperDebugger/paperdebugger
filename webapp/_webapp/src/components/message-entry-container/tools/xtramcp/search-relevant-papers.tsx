@@ -48,7 +48,10 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
         {/* Header with Error label and arrow button */}
         <div
           className="flex items-center justify-between cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
         >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
@@ -80,7 +83,10 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
           {/* Header with arrow button */}
           <div
             className="flex items-center justify-between cursor-pointer"
+            role="button"
+            tabIndex={0}
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
           >
             <h3 className="tool-card-title">{functionName}</h3>
             <CollapseArrowButton

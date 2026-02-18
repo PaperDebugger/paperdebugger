@@ -19,6 +19,8 @@ export const SettingsFooter = () => {
         </span>
         <div
           className="text-xs font-light select-none"
+          role="button"
+          tabIndex={0}
           onClick={() => {
             setVersionClickCount((prev: number) => {
               const next = prev + 1;
@@ -35,6 +37,25 @@ export const SettingsFooter = () => {
               setVersionClickCount(0);
             }, 1500);
             setVersionClickTimeout(timeout);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setVersionClickCount((prev: number) => {
+                const next = prev + 1;
+                if (next >= 5) {
+                  setEnableUserDeveloperTools(!enableUserDeveloperTools);
+                  return 0;
+                }
+                return next;
+              });
+              if (versionClickTimeout) {
+                clearTimeout(versionClickTimeout);
+              }
+              const timeout = setTimeout(() => {
+                setVersionClickCount(0);
+              }, 1500);
+              setVersionClickTimeout(timeout);
+            }
           }}
         >
           version:{" "}
