@@ -18,6 +18,14 @@ type UsageService struct {
 	usageCollection *mongo.Collection
 }
 
+type UsageRecord struct {
+	UserID           bson.ObjectID
+	ModelSlug        string
+	PromptTokens     int64
+	CompletionTokens int64
+	TotalTokens      int64
+}
+
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
 	base := NewBaseService(db, cfg, logger)
 	return &UsageService{
@@ -26,7 +34,7 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 	}
 }
 
-func (s *UsageService) RecordUsage(ctx context.Context, userID bson.ObjectID, modelSlug string, promptTokens, completionTokens, totalTokens int64) error {
+func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) error {
 	now := bson.DateTime(time.Now().UnixMilli())
 	usage := models.Usage{
 		BaseModel: models.BaseModel{
@@ -34,11 +42,11 @@ func (s *UsageService) RecordUsage(ctx context.Context, userID bson.ObjectID, mo
 			CreatedAt: now,
 			UpdatedAt: now,
 		},
-		UserID:           userID,
-		ModelSlug:        modelSlug,
-		PromptTokens:     promptTokens,
-		CompletionTokens: completionTokens,
-		TotalTokens:      totalTokens,
+		UserID:           record.UserID,
+		ModelSlug:        record.ModelSlug,
+		PromptTokens:     record.PromptTokens,
+		CompletionTokens: record.CompletionTokens,
+		TotalTokens:      record.TotalTokens,
 	}
 
 	_, err := s.usageCollection.InsertOne(ctx, usage)

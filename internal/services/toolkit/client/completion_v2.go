@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"paperdebugger/internal/models"
+	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strings"
@@ -97,9 +98,15 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			chunk := stream.Current()
 
 			if len(chunk.Choices) == 0 {
-				// Store usage information
 				if chunk.Usage.TotalTokens > 0 {
-					if err := a.usageService.RecordUsage(ctx, userID, modelSlug, chunk.Usage.PromptTokens, chunk.Usage.CompletionTokens, chunk.Usage.TotalTokens); err != nil {
+					err := a.usageService.RecordUsage(ctx, services.UsageRecord{
+						UserID:           userID,
+						ModelSlug:        modelSlug,
+						PromptTokens:     chunk.Usage.PromptTokens,
+						CompletionTokens: chunk.Usage.CompletionTokens,
+						TotalTokens:      chunk.Usage.TotalTokens,
+					})
+					if err != nil {
 						a.logger.Error("Failed to store usage", "error", err)
 					}
 				}
