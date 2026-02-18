@@ -97,7 +97,14 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 			if len(chunk.Choices) == 0 {
 				// Handle usage information
-				// fmt.Printf("Usage: %+v\n", chunk.Usage)
+				if chunk.Usage.TotalTokens > 0 {
+					a.logger.Info("LLM API usage",
+						"model", modelSlug,
+						"prompt_tokens", chunk.Usage.PromptTokens,
+						"completion_tokens", chunk.Usage.CompletionTokens,
+						"total_tokens", chunk.Usage.TotalTokens,
+					)
+				}
 				continue
 			}
 
@@ -185,7 +192,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				// answer_content += chunk.Choices[0].Delta.Content
 				// fmt.Printf("answer_content: %s\n", answer_content)
 				streamHandler.HandleTextDoneItem(chunk, answer_content, reasoning_content)
-				break
 			}
 		}
 
