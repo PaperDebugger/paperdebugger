@@ -187,7 +187,7 @@ export const DevTools = () => {
   };
   const handleAddStreamingAssistant = () => {
     const newMessage = createAssistantMessage(randomUUID(), "Assistant Response Preparing " + randomText(), {
-      modelSlug: "gpt-4.1",
+      modelSlug: "gpt-5.1",
       status: "streaming",
     });
     updateStreamingMessage((prev) => ({ ...prev, parts: [...prev.parts, newMessage] }));

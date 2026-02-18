@@ -117,7 +117,7 @@ export const useConversationUiStore = create<ConversationUiStore>()(
       heightCollapseRequired: false,
       setHeightCollapseRequired: (heightCollapseRequired: boolean) => set({ heightCollapseRequired }),
 
-      lastUsedModelSlug: "openai/gpt-4.1",
+      lastUsedModelSlug: "openai/gpt-5.1",
       setLastUsedModelSlug: (lastUsedModelSlug: string) => set({ lastUsedModelSlug }),
 
       resetPosition: () => {

@@ -16,7 +16,7 @@ export type Model = {
   disabledReason?: string;
 };
 
-// Extract provider from model slug (e.g., "openai/gpt-4.1" -> "openai")
+// Extract provider from model slug (e.g., "openai/gpt-5.1" -> "openai")
 const extractProvider = (slug: string): string => {
   const parts = slug.split("/");
   return parts.length > 1 ? parts[0] : "openai";
@@ -25,13 +25,13 @@ const extractProvider = (slug: string): string => {
 // Fallback models in case the API fails
 const fallbackModels: Model[] = [
   {
-    name: "GPT-4.1",
-    slug: "openai/gpt-4.1",
+    name: "GPT-5.1",
+    slug: "openai/gpt-5.1",
     provider: "openai",
-    totalContext: 1050000,
-    maxOutput: 32800,
-    inputPrice: 200,
-    outputPrice: 800,
+    totalContext: 400000,
+    maxOutput: 128000,
+    inputPrice: 125,
+    outputPrice: 1000,
     disabled: false,
   },
 ];
