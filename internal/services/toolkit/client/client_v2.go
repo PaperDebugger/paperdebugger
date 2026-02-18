@@ -17,10 +17,10 @@ type AIClientV2 struct {
 	toolCallHandler        *handler.ToolCallHandlerV2
 	db                     *mongo.Database
 	functionCallCollection *mongo.Collection
-	usageCollection        *mongo.Collection
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
+	usageService          *services.UsageService
 	cfg                   *cfg.Cfg
 	logger                *logger.Logger
 }
@@ -61,6 +61,7 @@ func NewAIClientV2(
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
+	usageService *services.UsageService,
 	cfg *cfg.Cfg,
 	logger *logger.Logger,
 ) *AIClientV2 {
@@ -105,10 +106,10 @@ func NewAIClientV2(
 
 		db:                     database,
 		functionCallCollection: database.Collection((models.FunctionCall{}).CollectionName()),
-		usageCollection:        database.Collection((models.Usage{}).CollectionName()),
 
 		reverseCommentService: reverseCommentService,
 		projectService:        projectService,
+		usageService:          usageService,
 		cfg:                   cfg,
 		logger:                logger,
 	}

@@ -6,6 +6,7 @@ import (
 
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/logger"
+	"paperdebugger/internal/models"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -43,5 +44,22 @@ func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
 	}
 
 	logger.Info("[MONGO] initialized")
-	return &DB{Client: client, cfg: cfg, logger: logger}, nil
+
+	db := &DB{Client: client, cfg: cfg, logger: logger}
+	db.ensureIndexes()
+	return db, nil
+}
+
+// ensureIndexes creates necessary indexes for the database collections, such as a TTL index.
+func (db *DB) ensureIndexes() {
+	// Create TTL index on usages collection to automatically delete documents after a certain period (e.g., 4 weeks)
+	usages := db.Database("paperdebugger").Collection((models.Usage{}).CollectionName())
+
+	_, err := usages.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.D{{Key: "created_at", Value: 1}},
+		Options: options.Index().SetExpireAfterSeconds(4 * 7 * 24 * 60 * 60),
+	})
+	if err != nil {
+		db.logger.Error("Failed to create TTL index on usages", "error", err)
+	}
 }

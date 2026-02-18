@@ -7,7 +7,6 @@ import (
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strings"
-	"time"
 
 	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -98,22 +97,9 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			chunk := stream.Current()
 
 			if len(chunk.Choices) == 0 {
-				// Store usage information in MongoDB
+				// Store usage information
 				if chunk.Usage.TotalTokens > 0 {
-					now := bson.DateTime(time.Now().UnixMilli())
-					usage := models.Usage{
-						BaseModel: models.BaseModel{
-							ID:        bson.NewObjectID(),
-							CreatedAt: now,
-							UpdatedAt: now,
-						},
-						UserID:           userID,
-						ModelSlug:        modelSlug,
-						PromptTokens:     chunk.Usage.PromptTokens,
-						CompletionTokens: chunk.Usage.CompletionTokens,
-						TotalTokens:      chunk.Usage.TotalTokens,
-					}
-					if _, err := a.usageCollection.InsertOne(ctx, usage); err != nil {
+					if err := a.usageService.RecordUsage(ctx, userID, modelSlug, chunk.Usage.PromptTokens, chunk.Usage.CompletionTokens, chunk.Usage.TotalTokens); err != nil {
 						a.logger.Error("Failed to store usage", "error", err)
 					}
 				}
