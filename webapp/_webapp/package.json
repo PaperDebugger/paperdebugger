@@ -50,6 +50,7 @@
     "semver": "^7.7.4",
     "streamdown": "^2.2.0",
     "tailwindcss": "^4.2.0",
+    "tw-shimmer": "^0.4.6",
     "uuid": "^13.0.0",
     "zustand": "^5.0.11"
   },

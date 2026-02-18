@@ -116,7 +116,7 @@ export const AddCommentsButton = ({
         )}
       </button>
       {errorMessage.length > 0 && (
-        <div className="mt-2! text-xs! font-bold text-red-500! noselect text-nowrap text-ellipsis overflow-hidden animate-pulse">
+        <div className="mt-2! text-xs! font-bold text-red-500! noselect text-nowrap text-ellipsis overflow-hidden shimmer">
           Error: {errorMessage}
         </div>
       )}

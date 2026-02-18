@@ -15,19 +15,6 @@ type GeneralToolCardProps = {
   isLoading?: boolean;
 };
 
-const shimmerStyle = {
-  WebkitTextFillColor: "transparent",
-  animationDelay: "0.5s",
-  animationDuration: "3s",
-  animationIterationCount: "infinite",
-  animationName: "shimmer",
-  background: "#cdcdcd -webkit-gradient(linear, 100% 0, 0 0, from(#cdcdcd), color-stop(.5, #1a1a1a), to(#cdcdcd))",
-  WebkitBackgroundClip: "text",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "50% 200%",
-  backgroundPositionX: "-100%",
-} as const;
-
 export const GeneralToolCard = ({
   functionName,
   message,
@@ -74,7 +61,7 @@ export const GeneralToolCard = ({
   if (!message) {
     return (
       <div className="chat-message-entry">
-        <span className="text-sm text-gray-400 loading-shimmer" style={shimmerStyle}>
+        <span className="text-sm text-gray-400 shimmer">
           Calling tool {functionName}...
         </span>
       </div>
@@ -121,10 +108,7 @@ export const GeneralToolCard = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <h3
-          className={cn("tool-card-title", isLoading && "loading-shimmer")}
-          style={isLoading ? shimmerStyle : undefined}
-        >
+        <h3 className={cn("tool-card-title", isLoading && "shimmer")}>
           {pascalCase(functionName)}
         </h3>
       </div>
