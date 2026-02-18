@@ -1,23 +1,33 @@
 import { create } from "zustand";
-import { SetterStore } from "./types";
 import { OverleafCodeMirror } from "../libs/inline-suggestion";
 import { EditorView } from "@codemirror/view";
 
-type CoreState = {
+interface SelectionStore {
   selectedText: string | null;
-  surroundingText: string | null;
-  selectionRange: Range | null;
-  lastSelectedText: string | null;
-  lastSurroundingText: string | null;
-  lastSelectionRange: Range | null;
-  overleafCm: OverleafCodeMirror | null;
-};
+  setSelectedText: (selectedText: string | null) => void;
 
-type SelectionStore = SetterStore<CoreState> & {
+  surroundingText: string | null;
+  setSurroundingText: (surroundingText: string | null) => void;
+
+  selectionRange: Range | null;
+  setSelectionRange: (selectionRange: Range | null) => void;
+
+  lastSelectedText: string | null;
+  setLastSelectedText: (lastSelectedText: string | null) => void;
+
+  lastSurroundingText: string | null;
+  setLastSurroundingText: (lastSurroundingText: string | null) => void;
+
+  lastSelectionRange: Range | null;
+  setLastSelectionRange: (lastSelectionRange: Range | null) => void;
+
+  overleafCm: OverleafCodeMirror | null;
+  setOverleafCm: (overleafCm: OverleafCodeMirror | null) => void;
+
   clear: () => void;
   clearOverleafSelection: () => void;
   setLastSelection: (text: string | null, surrounding: string, range: Range | null) => void;
-};
+}
 
 export const useSelectionStore = create<SelectionStore>((set) => ({
   selectedText: null,
