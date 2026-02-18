@@ -66,10 +66,19 @@ export const ChatButton = ({
             : "text-gray-500 dark:text-default-500 !border-gray-100 dark:!border-default-200 hover:border-gray-200 dark:hover:border-default-300",
         iconLoaded ? "opacity-100" : "opacity-0",
       )}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
       onClick={() => {
         if (disabled) return;
         googleAnalytics.fireEvent(user?.id, "click_chat_button_" + normalizeName(text ?? alt ?? icon), {});
         onClick?.();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (disabled) return;
+          googleAnalytics.fireEvent(user?.id, "click_chat_button_" + normalizeName(text ?? alt ?? icon), {});
+          onClick?.();
+        }
       }}
       onMouseEnter={() => !disabled && setIsHovered(true)}
       onMouseLeave={() => !disabled && setIsHovered(false)}

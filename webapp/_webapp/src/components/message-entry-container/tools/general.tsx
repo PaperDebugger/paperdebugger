@@ -95,7 +95,7 @@ export const GeneralToolCard = ({
   // When there is a message, show the compact card with collapsible content
   return (
     <div className={cn("tool-card noselect compact", { animated: animated })}>
-      <div className="flex items-center gap-1 cursor-pointer" onClick={toggleCollapse}>
+      <div className="flex items-center gap-1 cursor-pointer" role="button" tabIndex={0} onClick={toggleCollapse} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { toggleCollapse(); } }}>
         <button
           className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"
           aria-label={isCollapsed ? "Expand" : "Collapse"}

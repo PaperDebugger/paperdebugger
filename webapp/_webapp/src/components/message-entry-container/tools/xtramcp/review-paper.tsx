@@ -4,8 +4,8 @@ import MarkdownComponent from "../../../markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
-// Helper function to render severity levels with strikethrough
-const renderSeverityLevels = (threshold: string) => {
+// Component to render severity levels with strikethrough
+const SeverityLevels = ({ threshold }: { threshold: string }) => {
   const levels = ["nit", "minor", "major", "blocker"];
   const thresholdIndex = levels.indexOf(threshold.toLowerCase());
 
@@ -30,7 +30,7 @@ const renderSeverityLevels = (threshold: string) => {
   );
 };
 
-const renderSections = (sections: Array<string>) => {
+const Sections = ({ sections }: { sections: Array<string> }) => {
   return (
     <span>
       {sections.map((section, index) => (
@@ -81,7 +81,10 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
         {/* Header with Error label and arrow button */}
         <div
           className="flex items-center justify-between cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
         >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
@@ -113,7 +116,10 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
           {/* Header with arrow button */}
           <div
             className="flex items-center justify-between cursor-pointer"
+            role="button"
+            tabIndex={0}
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
           >
             <h3 className="tool-card-title">{functionName}</h3>
             <CollapseArrowButton
@@ -144,13 +150,13 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
                 {result.metadata.severity_threshold && (
                   <div className="mb-2">
                     <span className="font-medium">Filtered:</span>{" "}
-                    {renderSeverityLevels(result.metadata.severity_threshold)}
+                    <SeverityLevels threshold={result.metadata.severity_threshold} />
                   </div>
                 )}
                 {result.metadata.sections_reviewed && (
                   <div>
                     <span className="font-medium">Sections reviewed:</span>{" "}
-                    {renderSections(result.metadata.sections_reviewed)}
+                    <Sections sections={result.metadata.sections_reviewed} />
                   </div>
                 )}
               </div>
