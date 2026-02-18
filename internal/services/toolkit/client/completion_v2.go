@@ -7,8 +7,10 @@ import (
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strings"
+	"time"
 
 	"github.com/openai/openai-go/v3"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
@@ -25,8 +27,8 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, userID, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +56,7 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, mes
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, userID bson.ObjectID, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 
@@ -96,14 +98,24 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			chunk := stream.Current()
 
 			if len(chunk.Choices) == 0 {
-				// Handle usage information
+				// Store usage information in MongoDB
 				if chunk.Usage.TotalTokens > 0 {
-					a.logger.Info("LLM API usage",
-						"model", modelSlug,
-						"prompt_tokens", chunk.Usage.PromptTokens,
-						"completion_tokens", chunk.Usage.CompletionTokens,
-						"total_tokens", chunk.Usage.TotalTokens,
-					)
+					now := bson.DateTime(time.Now().UnixMilli())
+					usage := models.Usage{
+						BaseModel: models.BaseModel{
+							ID:        bson.NewObjectID(),
+							CreatedAt: now,
+							UpdatedAt: now,
+						},
+						UserID:           userID,
+						ModelSlug:        modelSlug,
+						PromptTokens:     chunk.Usage.PromptTokens,
+						CompletionTokens: chunk.Usage.CompletionTokens,
+						TotalTokens:      chunk.Usage.TotalTokens,
+					}
+					if _, err := a.usageCollection.InsertOne(ctx, usage); err != nil {
+						a.logger.Error("Failed to store usage", "error", err)
+					}
 				}
 				continue
 			}

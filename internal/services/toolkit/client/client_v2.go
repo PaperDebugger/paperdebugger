@@ -17,6 +17,7 @@ type AIClientV2 struct {
 	toolCallHandler        *handler.ToolCallHandlerV2
 	db                     *mongo.Database
 	functionCallCollection *mongo.Collection
+	usageCollection        *mongo.Collection
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
@@ -104,6 +105,7 @@ func NewAIClientV2(
 
 		db:                     database,
 		functionCallCollection: database.Collection((models.FunctionCall{}).CollectionName()),
+		usageCollection:        database.Collection((models.Usage{}).CollectionName()),
 
 		reverseCommentService: reverseCommentService,
 		projectService:        projectService,
