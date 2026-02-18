@@ -3,7 +3,7 @@ import { SettingItemInput } from "../settings/setting-item-input";
 import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../libs/apiclient";
 
 export default function AdvancedSettings() {
-  const [endpoint, setEndpoint] = useState(getEndpointFromLocalStorage());
+  const [endpoint, setEndpoint] = useState(() => getEndpointFromLocalStorage());
 
   useEffect(() => {
     apiclient.updateBaseURL(endpoint, "v1");

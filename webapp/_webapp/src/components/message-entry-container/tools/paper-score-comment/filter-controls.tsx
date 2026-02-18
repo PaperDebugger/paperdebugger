@@ -38,7 +38,14 @@ export const FilterControls = ({
     <div>
       <div
         className="!flex !items-center !justify-between !mb-1 !px-2 cursor-pointer"
+        role="button"
+        tabIndex={0}
         onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setIsSuggestionsExpanded(!isSuggestionsExpanded);
+          }
+        }}
       >
         <button className="!flex !items-center !gap-2 !text-sm !font-semibold !text-gray-800 hover:!text-gray-600 !transition-colors truncate">
           <Icon

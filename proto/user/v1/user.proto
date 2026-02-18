@@ -117,7 +117,7 @@ message DeletePromptResponse {}
 message Settings {
   bool show_shortcuts_after_selection = 1;
   bool full_width_paper_debugger_button = 2;
-  bool enable_completion = 3;
+  bool enable_citation_suggestion = 3;
   bool full_document_rag = 4;
   bool showed_onboarding = 5;
   string openai_api_key = 6;
