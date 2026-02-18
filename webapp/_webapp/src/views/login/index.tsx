@@ -91,7 +91,11 @@ export const Login = () => {
         onClick={() => {
           setShowEndpointSettings(!showEndpointSettings);
         }}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setShowEndpointSettings(!showEndpointSettings); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setShowEndpointSettings(!showEndpointSettings);
+          }
+        }}
       >
         Advanced Options
       </div>

@@ -43,7 +43,11 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
           role="button"
           tabIndex={0}
           onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setIsMetadataCollapsed(!isMetadataCollapsed);
+            }
+          }}
         >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
@@ -74,7 +78,11 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
             role="button"
             tabIndex={0}
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setIsMetadataCollapsed(!isMetadataCollapsed);
+              }
+            }}
           >
             <button
               className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"
