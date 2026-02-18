@@ -10,24 +10,24 @@ import { DisplayMessage } from "../stores/types";
 // Constants
 export const STYLES = {
   container: {
-    base: "!flex !flex-row !gap-2",
+    base: "flex! flex-row! gap-2!",
     assistant: "",
     indicator: "",
   },
   messageWrapper: {
-    base: "!max-w-full !flex !flex-col !gap-4",
-    assistant: "!max-w-[100%]",
-    user: "!max-w-[70%]",
-    indicator: "!w-full",
+    base: "max-w-full! flex! flex-col! gap-4!",
+    assistant: "max-w-full!",
+    user: "max-w-[70%]!",
+    indicator: "w-full!",
   },
   messageBox: {
     base: cn(),
-    assistant: "px-3 pt-3 pb-1 my-2 !border !border-transparent",
+    assistant: "px-3 pt-3 pb-1 my-2 border! border-transparent!",
     user: "px-3 py-2 bg-gray-100 dark:!bg-default-200 self-end my-2",
     indicator: "px-3",
   },
   attachment: {
-    content: "!max-w-[300px] !bg-default-100 dark:!bg-default-100",
+    content: "max-w-[300px]! !bg-default-100 dark:!bg-default-100",
     text: "!text-tiny !text-default-400",
   },
 } as const;

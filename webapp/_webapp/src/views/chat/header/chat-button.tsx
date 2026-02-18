@@ -60,10 +60,10 @@ export const ChatButton = ({
         isHovered ? (variant === "danger" ? "bg-danger-50" : "bg-gray-100 dark:!bg-default-200") : "",
         disabled ? "opacity-30" : "",
         disabled
-          ? "text-gray-400 dark:text-default-400 !border-gray-200 dark:!border-default-200"
+          ? "text-gray-400 dark:text-default-400 border-gray-200! dark:!border-default-200"
           : variant === "danger"
             ? "text-danger dark:text-danger-500 border-danger-200"
-            : "text-gray-500 dark:text-default-500 !border-gray-100 dark:!border-default-200 hover:border-gray-200 dark:hover:border-default-300",
+            : "text-gray-500 dark:text-default-500 border-gray-100! dark:!border-default-200 hover:border-gray-200 dark:hover:border-default-300",
         iconLoaded ? "opacity-100" : "opacity-0",
       )}
       role="button"
@@ -95,9 +95,9 @@ export const ChatButton = ({
         {text && (
           <span
             className={cn(
-              "!text-xs !text-nowrap !overflow-hidden",
-              disableAnimation ? "" : "!transition-all !duration-500",
-              showText ? "!max-w-[300px] !ms-[4px] !opacity-100" : "!max-w-0 !ms-[0px] !opacity-0",
+              "text-xs! text-nowrap! overflow-hidden!",
+              disableAnimation ? "" : "transition-all! duration-500!",
+              showText ? "max-w-[300px]! ms-[4px]! opacity-100!" : "max-w-0! ms-0! opacity-0!",
             )}
           >
             {text}

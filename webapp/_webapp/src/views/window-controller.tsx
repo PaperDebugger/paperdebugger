@@ -41,8 +41,8 @@ const PositionController = () => {
   return (
     <div
       className={cn(
-        "flex flex-row items-center noselect gap-0 overflow-clip transition-all duration-[300ms]",
-        sidebarCollapsed ? "w-[0%]" : "w-[100%]",
+        "flex flex-row items-center noselect gap-0 overflow-clip transition-all duration-300",
+        sidebarCollapsed ? "w-[0%]" : "w-full",
       )}
     >
       <Tooltip content="Floating" placement="bottom" className="noselect" size="sm" delay={500}>

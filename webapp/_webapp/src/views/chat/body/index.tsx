@@ -161,7 +161,7 @@ export const ChatBody = ({ conversation }: ChatBodyProps) => {
       </div>
 
       {/* Bottom spacer to allow scrolling the last user message to the top */}
-      <div className="flex-shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
+      <div className="shrink-0" style={{ minHeight: "calc(100% - 80px)" }} aria-hidden="true" />
     </div>
   );
 };

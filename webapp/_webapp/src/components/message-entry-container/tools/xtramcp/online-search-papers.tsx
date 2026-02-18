@@ -98,7 +98,7 @@ export const OnlineSearchPapersCard = ({ functionName, message, preparing, anima
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200!">
                 {/* Custom metadata rendering */}
                 {result.metadata.query && (
                   <div className="mb-2">

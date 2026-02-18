@@ -210,9 +210,9 @@ export const DevTools = () => {
 
   // --- Render ---
   return (
-    <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 !border-orange-600 rounded-lg overflow-hidden">
+    <div className="flex flex-col w-full max-h-full bg-orange-50 border-2 border-orange-600! rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-3 bg-orange-100 border-b-2 !border-orange-600">
+      <div className="shrink-0 px-4 py-3 bg-orange-100 border-b-2 border-orange-600!">
         <h1 className="text-2xl font-bold text-center text-orange-700">DevTools</h1>
       </div>
 
@@ -220,7 +220,7 @@ export const DevTools = () => {
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
         <div className="flex flex-col gap-4">
           {/* Conversation section */}
-          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border !border-orange-200">
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200!">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-orange-700 flex items-center gap-2">
                 Conversation (
@@ -231,7 +231,7 @@ export const DevTools = () => {
                 )}
                 )
               </h2>
-              <Button size="sm" onPress={startFromScratch} className="flex-shrink-0">
+              <Button size="sm" onPress={startFromScratch} className="shrink-0">
                 Create Dummy Conversation
               </Button>
             </div>
@@ -247,14 +247,14 @@ export const DevTools = () => {
                   value={selectedText ?? ""}
                   onChange={handleSelectedTextChange}
                 />
-                <Button size="sm" onPress={handleClearSelectedText} className="flex-shrink-0">
+                <Button size="sm" onPress={handleClearSelectedText} className="shrink-0">
                   Clear
                 </Button>
               </div>
             </div>
 
             {/* Finalized Messages */}
-            <div className="flex flex-col gap-2 pt-2 border-t !border-orange-200">
+            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200!">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-gray-700">
                   Finalized Messages ({currentConversation.messages.length})
@@ -284,7 +284,7 @@ export const DevTools = () => {
           </div>
 
           {/* Streaming Message section */}
-          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border !border-orange-200">
+          <div className="flex flex-col gap-3 p-3 bg-white rounded-lg border border-orange-200!">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <h3 className="text-sm font-semibold text-gray-700">Streaming Message</h3>
               <Button size="sm" variant="light" onPress={handleClearStreamingMessage} className="h-7 min-w-16">
@@ -309,7 +309,7 @@ export const DevTools = () => {
             </div>
 
             {/* Preparing delay */}
-            <div className="flex flex-row gap-2 items-center pt-2 border-t !border-orange-200">
+            <div className="flex flex-row gap-2 items-center pt-2 border-t border-orange-200!">
               <label htmlFor="preparing-delay-input" className="text-sm text-gray-700 whitespace-nowrap">
                 Preparing delay (seconds):
               </label>
@@ -325,7 +325,7 @@ export const DevTools = () => {
             </div>
 
             {/* Streaming buttons */}
-            <div className="flex flex-col gap-2 pt-2 border-t !border-orange-200">
+            <div className="flex flex-col gap-2 pt-2 border-t border-orange-200!">
               <Button size="sm" onPress={handleAddStreamingUserMessage} className="w-full">
                 Add User Message
               </Button>

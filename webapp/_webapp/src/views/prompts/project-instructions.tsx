@@ -86,7 +86,7 @@ export function ProjectInstructions() {
           id="pd-chat-prompt-input-project"
           ref={projectInstructionRef}
           className={cn(
-            "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md w-full",
+            "grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200! dark:!border-default-200 rounded-md w-full",
           )}
           style={{
             fontSize: "12px",

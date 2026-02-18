@@ -89,7 +89,7 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
               aria-label={isMetadataCollapsed ? "Expand" : "Collapse"}
             >
               <svg
-                className={cn("w-3 h-3 transition-transform duration-200 rotate-[-90deg]", {
+                className={cn("w-3 h-3 transition-transform duration-200 -rotate-90", {
                   "rotate-0": !isMetadataCollapsed,
                 })}
                 fill="none"
@@ -105,7 +105,7 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs !text-gray-600 dark:!text-gray-400 mt-2 pt-2 border-t !border-default-200 dark:!border-default-200">
+              <div className="text-xs text-gray-600! dark:text-gray-400! mt-2 pt-2 border-t !border-default-200 dark:!border-default-200">
                 {/* Custom metadata rendering */}
                 <div className="mb-2 italic">
                   ⚠️ [Experimental Feature] Some BibTeX entries may not be able to be generated.

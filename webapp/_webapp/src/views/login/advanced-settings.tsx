@@ -11,7 +11,7 @@ export default function AdvancedSettings() {
   }, [endpoint]);
 
   return (
-    <div className="flex flex-col gap-2 p-8 border !border-gray-200 dark:!border-default-200 rounded-lg my-4">
+    <div className="flex flex-col gap-2 p-8 border border-gray-200! dark:!border-default-200 rounded-lg my-4">
       <h1 className="text-default-700 dark:!text-default-700">Advanced Options</h1>
       <SettingItemInput
         label="Endpoint"
