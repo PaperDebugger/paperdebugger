@@ -147,7 +147,17 @@ export const AssistantMessageContainer = ({
           {((parsedMessage.regularContent?.length || 0) > 0 || parsedMessage.paperDebuggerContent.length > 0) && (
             <div className="actions rnd-cancel noselect">
               <Tooltip content="Copy" placement="bottom" size="sm" delay={1000}>
-                <span onClick={handleCopy} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { handleCopy(); } }} tabIndex={0} role="button" aria-label="Copy message">
+                <span
+                  onClick={handleCopy}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleCopy();
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Copy message"
+                >
                   <Icon icon={copySuccess ? "tabler:copy-check" : "tabler:copy"} className="icon" />
                 </span>
               </Tooltip>

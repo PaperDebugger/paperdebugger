@@ -205,7 +205,11 @@ function OnboardingStep({ step, imageUrl, imageError, onImageClick, onImageError
             role="button"
             tabIndex={0}
             onClick={onImageClick}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onImageClick(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onImageClick();
+              }
+            }}
             onError={onImageError}
           />
         </div>
@@ -241,7 +245,11 @@ function ImageModal({
             role="button"
             tabIndex={0}
             onClick={onClose}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onClose();
+              }
+            }}
             onError={onImageError}
           />
         )}

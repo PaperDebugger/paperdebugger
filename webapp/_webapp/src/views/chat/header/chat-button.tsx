@@ -74,7 +74,7 @@ export const ChatButton = ({
         onClick?.();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           if (disabled) return;
           googleAnalytics.fireEvent(user?.id, "click_chat_button_" + normalizeName(text ?? alt ?? icon), {});
           onClick?.();

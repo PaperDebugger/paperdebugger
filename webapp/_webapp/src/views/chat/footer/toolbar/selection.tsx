@@ -27,7 +27,13 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
   const { user } = useAuthStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [{ selectedIdx, isKeyboardNavigation }, dispatchSelection] = useReducer(
-    (state: { selectedIdx: number; isKeyboardNavigation: boolean }, action: { type: "SET_IDX"; idx: number } | { type: "SET_KEYBOARD_NAV"; value: boolean } | { type: "SET_IDX_WITH_KEYBOARD_NAV"; idx: number }) => {
+    (
+      state: { selectedIdx: number; isKeyboardNavigation: boolean },
+      action:
+        | { type: "SET_IDX"; idx: number }
+        | { type: "SET_KEYBOARD_NAV"; value: boolean }
+        | { type: "SET_IDX_WITH_KEYBOARD_NAV"; idx: number },
+    ) => {
       switch (action.type) {
         case "SET_IDX":
           return { ...state, selectedIdx: action.idx };
@@ -182,7 +188,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
             onSelect?.(item);
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               if (item.disabled) return;
               googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
               onSelect?.(item);

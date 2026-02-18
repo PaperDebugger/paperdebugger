@@ -84,7 +84,11 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
           role="button"
           tabIndex={0}
           onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setIsMetadataCollapsed(!isMetadataCollapsed);
+            }
+          }}
         >
           <h3 className="tool-card-title">{functionName}</h3>
           <div className="flex items-center gap-2">
@@ -119,7 +123,11 @@ export const ReviewPaperCard = ({ functionName, message, preparing, animated }: 
             role="button"
             tabIndex={0}
             onClick={() => setIsMetadataCollapsed(!isMetadataCollapsed)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { setIsMetadataCollapsed(!isMetadataCollapsed); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setIsMetadataCollapsed(!isMetadataCollapsed);
+              }
+            }}
           >
             <h3 className="tool-card-title">{functionName}</h3>
             <CollapseArrowButton
