@@ -66,6 +66,18 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		"o1",
 		"codex-mini-latest",
 	}
+
+	// Gemini does not support Store param
+	if strings.HasPrefix(strings.ToLower(modelSlug), "gemini") {
+		return openaiv3.ChatCompletionNewParams{
+			Model:               modelSlug,
+			Temperature:         openaiv3.Float(0.7),
+			MaxCompletionTokens: openaiv3.Int(4000),
+			Tools:               toolRegistry.GetTools(),
+			ParallelToolCalls:   openaiv3.Bool(true),
+		}
+	}
+
 	for _, model := range reasoningModels {
 		if strings.Contains(modelSlug, model) {
 			return openaiv3.ChatCompletionNewParams{

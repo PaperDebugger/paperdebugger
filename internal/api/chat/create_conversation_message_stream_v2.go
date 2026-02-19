@@ -2,14 +2,12 @@ package chat
 
 import (
 	"context"
-	"fmt"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
@@ -293,23 +291,17 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	if customModel == nil {
 		// User did not specify API key for this model
 		llmProvider = &models.LLMProviderConfig{
-			APIKey: settings.OpenAIAPIKey,
+			APIKey: "",
 		}
 	} else {
-		modelSlug = modelSlug[strings.Index(modelSlug, "/")+1:]
 		llmProvider = &models.LLMProviderConfig{
 			APIKey:   customModel.APIKey,
 			Endpoint: customModel.BaseUrl,
 		}
 	}
 
-	fmt.Println(modelSlug)
-	fmt.Println(llmProvider.Endpoint)
-	fmt.Println(llmProvider.APIKey)
-	fmt.Println("************************")
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, customModel != nil, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
-		fmt.Println(err)
 		return s.sendStreamError(stream, err)
 	}
 
@@ -334,7 +326,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
-			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider, modelSlug, customModel != nil)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return
