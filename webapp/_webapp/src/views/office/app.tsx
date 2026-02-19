@@ -1,7 +1,7 @@
 import r2wc from "@r2wc/react-to-web-component";
 import { MainDrawer } from "..";
 import { useConversationUiStore } from "../../stores/conversation/conversation-ui-store";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Providers } from "./providers";
 import { AdapterProvider, type DocumentAdapter } from "../../adapters";
 import { useAuthStore } from "../../stores/auth-store";
@@ -20,10 +20,19 @@ interface PaperDebuggerProps {
 }
 
 const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerProps) => {
-  const { setDisplayMode, setIsOpen, isOpen } = useConversationUiStore();
+  const { setDisplayMode, setIsOpen } = useConversationUiStore();
   const { initFromStorage: initAuthFromStorage, login } = useAuthStore();
   const { initLocalSettings } = useSettingStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const prevDisplayModeRef = useRef<typeof displayMode | null>(null);
+
+  useThemeSync();
+
+  // Sync displayMode prop to store during render (compute during render instead of useEffect)
+  if (prevDisplayModeRef.current !== displayMode) {
+    prevDisplayModeRef.current = displayMode;
+    setDisplayMode(displayMode);
+  }
 
   useThemeSync();
 
@@ -36,13 +45,9 @@ const PaperDebugger = ({ displayMode = "fullscreen", adapterId }: PaperDebuggerP
     initLocalSettings();
     // Attempt to login with restored tokens
     login();
+    setIsOpen(true);
     setIsInitialized(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    setDisplayMode(displayMode);
-    setIsOpen(true);
-  }, [setIsOpen, isOpen, setDisplayMode, displayMode]);
 
   // Get adapter from registry (must be registered by the host application)
   const adapter = useMemo<DocumentAdapter | null>(() => {

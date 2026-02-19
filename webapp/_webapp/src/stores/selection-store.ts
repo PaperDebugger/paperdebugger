@@ -16,6 +16,7 @@ type CoreState = {
 type SelectionStore = SetterStore<CoreState> & {
   clear: () => void;
   clearOverleafSelection: () => void;
+  setLastSelection: (text: string | null, surrounding: string, range: Range | null) => void;
 };
 
 export const useSelectionStore = create<SelectionStore>((set) => ({
@@ -42,6 +43,9 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   lastSelectionRange: null,
   setLastSelectionRange: (lastSelectionRange) => {
     set({ lastSelectionRange });
+  },
+  setLastSelection: (lastSelectedText, lastSurroundingText, lastSelectionRange) => {
+    set({ lastSelectedText, lastSurroundingText, lastSelectionRange });
   },
   clear: () => {
     set({ selectedText: null, surroundingText: null, selectionRange: null });

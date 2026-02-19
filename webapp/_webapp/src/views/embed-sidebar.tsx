@@ -264,7 +264,13 @@ export const EmbedSidebar = () => {
       }}
     >
       {/* Resize handle on the left */}
-      <div ref={resizeHandleRef} className="pd-embed-resize-handle" onMouseDown={handleMouseDown}>
+      <div
+        ref={resizeHandleRef}
+        className="pd-embed-resize-handle"
+        role="separator"
+        aria-label="Resize sidebar"
+        onMouseDown={handleMouseDown}
+      >
         {/* Visual indicator line */}
         <div className="resize-handle-indicator" />
       </div>
