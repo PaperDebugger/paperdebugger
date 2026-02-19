@@ -1,6 +1,6 @@
 import { cn } from "@heroui/react";
-import { LoadingIndicator } from "../../../loading-indicator";
-import MarkdownComponent from "../../../markdown";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import MarkdownComponent from "@/components/markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseWrapper } from "./utils/common";
 

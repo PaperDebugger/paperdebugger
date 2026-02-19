@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { cn, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { COLLAPSED_HEIGHT, useConversationUiStore } from "../stores/conversation/conversation-ui-store";
-import { PdAppControlTitleBar } from "../components/pd-app-control-title-bar";
-import { PdAppSmallControlButton } from "../components/pd-app-small-control-button";
+import { PdAppControlTitleBar } from "@/components/pd-app-control-title-bar";
+import { PdAppSmallControlButton } from "@/components/pd-app-small-control-button";
 
 export const WindowController = () => {
   const { sidebarCollapsed, setIsOpen } = useConversationUiStore();

@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import LogoOverleaf from "../../components/logo-overleaf";
-import { getCookies } from "../../intermediate";
-import { loginByOverleaf } from "../../query/api";
-import { useAuthStore } from "../../stores/auth-store";
-import { useSettingStore } from "../../stores/setting-store";
-import { usePromptLibraryStore } from "../../stores/prompt-library-store";
+import LogoOverleaf from "@/components/logo-overleaf";
+import { getCookies } from "@/intermediate";
+import { loginByOverleaf } from "@/query/api";
+import { useAuthStore } from "@/stores/auth-store";
+import { useSettingStore } from "@/stores/setting-store";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 
 interface LoginWithOverleafProps {
   isLoginLoading: boolean;

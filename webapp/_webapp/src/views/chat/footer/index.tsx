@@ -1,21 +1,21 @@
 import { Button } from "@heroui/button";
 import { useCallback, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
-import { useSelectionStore } from "../../../stores/selection-store";
-import googleAnalytics from "../../../libs/google-analytics";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { useConversationStore } from "../../../stores/conversation/conversation-store";
-import { useSendMessageStream } from "../../../hooks/useSendMessageStream";
-import { useAuthStore } from "../../../stores/auth-store";
+import { useSelectionStore } from "@/stores/selection-store";
+import googleAnalytics from "@/libs/google-analytics";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useSendMessageStream } from "@/hooks/useSendMessageStream";
+import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@heroui/react";
 import { SelectedTextIndicator } from "./selected-text-indicator";
 import { PromptSelection } from "./toolbar/prompt-selection";
 import { ActionSelection } from "./toolbar/action-selection";
-import { usePromptLibraryStore } from "../../../stores/prompt-library-store";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 import { useActions } from "../actions/actions";
 import { ChatActions } from "./toolbar/chat-actions";
 import { ModelSelection } from "./toolbar/model-selection";
-import { useSettingStore } from "../../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 // Add animation keyframes
 const blinkAnimation = `@keyframes blink {

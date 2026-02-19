@@ -1,10 +1,10 @@
 import { cn, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import googleAnalytics, { normalizeName } from "../../../libs/google-analytics";
-import { useAuthStore } from "../../../stores/auth-store";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { useSettingStore } from "../../../stores/setting-store";
+import googleAnalytics, { normalizeName } from "@/libs/google-analytics";
+import { useAuthStore } from "@/stores/auth-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 type ChatButtonProps = {
   icon: string;

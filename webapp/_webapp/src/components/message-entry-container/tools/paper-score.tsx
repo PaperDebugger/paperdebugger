@@ -1,7 +1,7 @@
-import { PaperScoreResultSchema } from "../../../pkg/gen/apiclient/project/v1/project_pb";
-import { fromJson } from "../../../libs/protobuf-utils";
-import { LoadingIndicator } from "../../loading-indicator";
-import { logError } from "../../../libs/logger";
+import { PaperScoreResultSchema } from "@gen/apiclient/project/v1/project_pb";
+import { fromJson } from "@/libs/protobuf-utils";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import { logError } from "@/libs/logger";
 import { cn } from "@heroui/react";
 
 type PaperScoreCardProps = {

@@ -1,18 +1,18 @@
 import { Input, Listbox, ListboxItem, ListboxSection, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRef, useState } from "react";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { getConversation, updateConversation } from "../../../query/api";
-import { errorToast } from "../../../libs/toasts";
-import { useDeleteConversationMutation, useListConversationsQuery } from "../../../query";
-import { logError } from "../../../libs/logger";
-import { Modal } from "../../../components/modal";
-import googleAnalytics from "../../../libs/google-analytics";
-import { useStreamingStateMachine } from "../../../stores/streaming";
-import { getProjectId } from "../../../libs/helpers";
-import { useConversationStore } from "../../../stores/conversation/conversation-store";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { useAuthStore } from "../../../stores/auth-store";
+import { Conversation } from "@gen/apiclient/chat/v2/chat_pb";
+import { getConversation, updateConversation } from "@/query/api";
+import { errorToast } from "@/libs/toasts";
+import { useDeleteConversationMutation, useListConversationsQuery } from "@/query";
+import { logError } from "@/libs/logger";
+import { Modal } from "@/components/modal";
+import googleAnalytics from "@/libs/google-analytics";
+import { useStreamingStateMachine } from "@/stores/streaming";
+import { getProjectId } from "@/libs/helpers";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useAuthStore } from "@/stores/auth-store";
 
 export const ChatHistoryModal = () => {
   const { currentConversation, setCurrentConversation } = useConversationStore();

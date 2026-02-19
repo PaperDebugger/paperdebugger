@@ -18,6 +18,10 @@
     /* Type resolution */
     "types": ["vite/client", "node", "chrome", "react"],
     "typeRoots": ["./node_modules/@types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@gen/*": ["./src/pkg/gen/*"]
+    },
 
     /* Linting */
     "strict": true,

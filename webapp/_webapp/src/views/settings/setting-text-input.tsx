@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, cn } from "@heroui/react";
-import { useSettingStore } from "../../stores/setting-store";
-import { Settings } from "../../pkg/gen/apiclient/user/v1/user_pb";
-import { PlainMessage } from "../../query/types";
-import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { listSupportedModels } from "../../query/api";
-import { queryKeys } from "../../query/keys";
+import { useSettingStore } from "@/stores/setting-store";
+import { Settings } from "@gen/apiclient/user/v1/user_pb";
+import { PlainMessage } from "@/query/types";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { listSupportedModels } from "@/query/api";
+import { queryKeys } from "@/query/keys";
 
 type SettingKey = keyof PlainMessage<Settings>;
 

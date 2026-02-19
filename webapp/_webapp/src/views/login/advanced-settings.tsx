@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { SettingItemInput } from "../settings/setting-item-input";
-import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../libs/apiclient";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "@/libs/apiclient";
 
 export default function AdvancedSettings() {
   const [endpoint, setEndpoint] = useState(() => getEndpointFromLocalStorage());

@@ -1,4 +1,4 @@
-import SwitchCell from "../../components/switch-cell";
+import SwitchCell from "@/components/switch-cell";
 
 type SettingItemProps = {
   label: string;

@@ -1,8 +1,8 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import { useSettingStore } from "../../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 import { SettingItem } from "../setting-items";
 import { SettingItemSelect } from "../setting-item-select";
-import { onElementAppeared } from "../../../libs/helpers";
+import { onElementAppeared } from "@/libs/helpers";
 
 const THEME_OPTIONS: Record<string, string> = {
   auto: "Auto",

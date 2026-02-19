@@ -11,9 +11,9 @@
  * - Testable error handling with explicit strategies
  */
 
-import { ErrorCode, Error as RequestError } from "../../pkg/gen/apiclient/shared/v1/shared_pb";
-import { logError, logWarn, logInfo } from "../../libs/logger";
-import { errorToast } from "../../libs/toasts";
+import { ErrorCode, Error as RequestError } from "@gen/apiclient/shared/v1/shared_pb";
+import { logError, logWarn, logInfo } from "@/libs/logger";
+import { errorToast } from "@/libs/toasts";
 import { StreamingError, StreamingErrorCode, RecoveryStrategy, ErrorContext, ErrorResolution } from "./types";
 
 // ============================================================================

@@ -1,4 +1,4 @@
-import { LoadingIndicator } from "../../loading-indicator";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { cn } from "@heroui/react";
 import { ErrorToolCard } from "./error";
 

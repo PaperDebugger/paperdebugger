@@ -14,6 +14,12 @@ function generateConfig(
 ): UserConfig {
   const config: UserConfig = {
     base: "/_pd/webapp",
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+        "@gen": path.resolve(__dirname, "./src/pkg/gen"),
+      },
+    },
     plugins: [
       tailwindcss(),
       react(),

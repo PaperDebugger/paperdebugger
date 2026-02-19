@@ -1,10 +1,10 @@
 import { useCallback, useRef, useEffect, useState } from "react";
 import { Button, cn } from "@heroui/react";
 import { SettingsSectionContainer, SettingsSectionTitle } from "../settings/sections/components";
-import { useGetProjectInstructionsQuery, useUpsertProjectInstructionsMutation } from "../../query";
+import { useGetProjectInstructionsQuery, useUpsertProjectInstructionsMutation } from "@/query";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "../../query/keys";
-import { getProjectId } from "../../libs/helpers";
+import { queryKeys } from "@/query/keys";
+import { getProjectId } from "@/libs/helpers";
 
 export function ProjectInstructions() {
   const projectInstructionRef = useRef<HTMLTextAreaElement>(null);

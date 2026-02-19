@@ -1,9 +1,9 @@
 import { cn } from "@heroui/react";
 import { useEffect, useReducer, useRef } from "react";
-import googleAnalytics, { normalizeName } from "../../../../libs/google-analytics";
-import { useAuthStore } from "../../../../stores/auth-store";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
-import { useSettingStore } from "../../../../stores/setting-store";
+import googleAnalytics, { normalizeName } from "@/libs/google-analytics";
+import { useAuthStore } from "@/stores/auth-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 export type SelectionItem<T> = {
   title: string;

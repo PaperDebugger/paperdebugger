@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MessageCard } from "../../../components/message-card";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
+import { MessageCard } from "@/components/message-card";
+import { Conversation } from "@gen/apiclient/chat/v2/chat_pb";
 import { isEmptyConversation, getPrevUserSelectedText, findLastUserMessageIndex } from "../helper";
 import { StatusIndicator } from "./status-indicator";
 import { EmptyView } from "./empty-view";
-import { useMessageStore } from "../../../stores/message-store";
-import { useSettingStore } from "../../../stores/setting-store";
-import { useConversationStore } from "../../../stores/conversation/conversation-store";
-import { useStreamingStateMachine } from "../../../stores/streaming";
-import { getConversation } from "../../../query/api";
-import { DisplayMessage } from "../../../stores/types";
+import { useMessageStore } from "@/stores/message-store";
+import { useSettingStore } from "@/stores/setting-store";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useStreamingStateMachine } from "@/stores/streaming";
+import { getConversation } from "@/query/api";
+import { DisplayMessage } from "@/stores/types";
 
 interface ChatBodyProps {
   conversation?: Conversation;

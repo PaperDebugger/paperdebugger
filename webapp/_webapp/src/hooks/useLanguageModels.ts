@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
-import { SupportedModel } from "../pkg/gen/apiclient/chat/v2/chat_pb";
-import { useConversationStore } from "../stores/conversation/conversation-store";
-import { useListSupportedModelsQuery } from "../query";
-import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
+import { SupportedModel } from "@gen/apiclient/chat/v2/chat_pb";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useListSupportedModelsQuery } from "@/query";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 
 export type Model = {
   name: string;

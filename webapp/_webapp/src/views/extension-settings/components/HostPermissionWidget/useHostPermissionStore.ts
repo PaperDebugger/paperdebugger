@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { requestHostPermission } from "../../../../intermediate";
+import { requestHostPermission } from "@/intermediate";
 import { PermissionItem, PermissionMessage } from "./hostPermissionTypes";
 
 const normalizeWildcardPattern = (url: string) => {

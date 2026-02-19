@@ -1,8 +1,8 @@
-import { LoadingIndicator } from "../../../components/loading-indicator";
-import { UnknownEntryMessageContainer } from "../../../components/message-entry-container/unknown-entry";
-import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { useSocketStore } from "../../../stores/socket-store";
-import { useStreamingStateMachine } from "../../../stores/streaming";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import { UnknownEntryMessageContainer } from "@/components/message-entry-container/unknown-entry";
+import { Conversation } from "@gen/apiclient/chat/v2/chat_pb";
+import { useSocketStore } from "@/stores/socket-store";
+import { useStreamingStateMachine } from "@/stores/streaming";
 
 export const StatusIndicator = ({ conversation }: { conversation?: Conversation }) => {
   const { syncing, syncingProgress } = useSocketStore();

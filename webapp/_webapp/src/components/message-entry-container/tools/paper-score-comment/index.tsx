@@ -1,13 +1,13 @@
 import { JsonValue } from "@bufbuild/protobuf";
-import { fromJson } from "../../../../libs/protobuf-utils";
-import { OverleafCommentSchema } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
-import { getProjectId } from "../../../../libs/helpers";
+import { fromJson } from "@/libs/protobuf-utils";
+import { OverleafCommentSchema } from "@gen/apiclient/project/v1/project_pb";
+import { getProjectId } from "@/libs/helpers";
 import { useEffect, useState } from "react";
-import { LoadingIndicator } from "../../../loading-indicator";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { cn } from "@heroui/react";
 import { ErrorToolCard } from "../error";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { getCookies } from "../../../../intermediate";
+import { getCookies } from "@/intermediate";
 import { PaperScoreCommentCardProps } from "./types";
 import { StatsSummary } from "./stats-summary";
 import { FilterControls } from "./filter-controls";

@@ -1,10 +1,10 @@
 import { cn, Spinner } from "@heroui/react";
 import { useCallback, useState } from "react";
-import { Prompt, PromptSchema } from "../../pkg/gen/apiclient/user/v1/user_pb";
+import { Prompt, PromptSchema } from "@gen/apiclient/user/v1/user_pb";
 import { ChatButton } from "../chat/header/chat-button";
 import { toJson } from "@bufbuild/protobuf";
-import { fromJson } from "../../libs/protobuf-utils";
-import { usePromptLibraryStore } from "../../stores/prompt-library-store";
+import { fromJson } from "@/libs/protobuf-utils";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 
 type PromptLibraryTableProps = {
   onDelete: (prompt: Prompt) => void;

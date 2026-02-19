@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { PlainMessage } from "../query/types";
-import { User } from "../pkg/gen/apiclient/user/v1/user_pb";
+import { User } from "@gen/apiclient/user/v1/user_pb";
 import apiclient, { apiclientV2 } from "../libs/apiclient";
 import { logout as apiLogout, getUser } from "../query/api";
 import { logInfo } from "../libs/logger";

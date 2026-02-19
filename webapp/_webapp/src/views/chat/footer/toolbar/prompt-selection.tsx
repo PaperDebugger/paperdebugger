@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { SelectionItem, Selection } from "./selection";
-import { Prompt } from "../../../../pkg/gen/apiclient/user/v1/user_pb";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
+import { Prompt } from "@gen/apiclient/user/v1/user_pb";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 
 type PromptSelectionProps = {
   prompts: Prompt[];

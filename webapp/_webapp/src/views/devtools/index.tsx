@@ -1,17 +1,17 @@
-import { useSelectionStore } from "../../stores/selection-store";
-import { Button, Input } from "@heroui/react";
-import { useStreamingStateMachine, InternalMessage } from "../../stores/streaming";
-import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { fromJson } from "../../libs/protobuf-utils";
-import { MessageSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { isEmptyConversation } from "../chat/helper";
-import { useState } from "react";
+import { fromJson } from "@/libs/protobuf-utils";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useSelectionStore } from "@/stores/selection-store";
+import { InternalMessage, useStreamingStateMachine } from "@/stores/streaming";
 import {
-  createUserMessage,
   createAssistantMessage,
   createToolCallMessage,
   createToolCallPrepareMessage,
-} from "../../types/message";
+  createUserMessage,
+} from "@/types/message";
+import { isEmptyConversation } from "@/views/chat/helper";
+import { MessageSchema } from "@gen/apiclient/chat/v2/chat_pb";
+import { Button, Input } from "@heroui/react";
+import { useState } from "react";
 
 // --- Utility functions ---
 const loremIpsum =

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { logInfo } from "../../libs/logger";
-import { getAppleAuthToken } from "../../libs/oauth";
+import { logInfo } from "@/libs/logger";
+import { getAppleAuthToken } from "@/libs/oauth";
 
 interface LoginWithAppleProps {
   isLoginLoading: boolean;

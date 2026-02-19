@@ -1,11 +1,11 @@
 import { cn, Tooltip } from "@heroui/react";
 import { GeneralToolCard } from "./tools/general";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import googleAnalytics from "../../libs/google-analytics";
-import { getProjectId } from "../../libs/helpers";
+import googleAnalytics from "@/libs/google-analytics";
+import { getProjectId } from "@/libs/helpers";
 import MarkdownComponent from "../markdown";
 import { TextPatches } from "../text-patches";
-import { useAuthStore } from "../../stores/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 // Helper functions

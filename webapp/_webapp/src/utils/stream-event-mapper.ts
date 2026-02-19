@@ -16,7 +16,7 @@ import {
   StreamInitialization,
   StreamPartBegin,
   StreamPartEnd,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
+} from "@gen/apiclient/chat/v2/chat_pb";
 import { StreamEvent } from "../stores/streaming";
 import { logError } from "../libs/logger";
 

@@ -13,7 +13,7 @@
  * - All conversion logic in one place
  */
 
-import { Message, MessageSchema, StreamPartBegin, StreamPartEnd } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { Message, MessageSchema, StreamPartBegin, StreamPartEnd } from "@gen/apiclient/chat/v2/chat_pb";
 import { fromJson } from "../libs/protobuf-utils";
 import {
   InternalMessage,
@@ -455,6 +455,34 @@ export function fromDisplayMessage(msg: DisplayMessage): InternalMessage {
         },
       };
   }
+}
+
+// ============================================================================
+// Display Message Utilities
+// ============================================================================
+
+/**
+ * Check if a DisplayMessage should be visible in the chat.
+ * Filters out empty messages and system messages.
+ */
+export function isDisplayableMessage(msg: DisplayMessage): boolean {
+  if (msg.type === "user") {
+    return msg.content.length > 0;
+  }
+  if (msg.type === "assistant") {
+    return msg.content.length > 0 || (msg.reasoning?.length ?? 0) > 0;
+  }
+  if (msg.type === "toolCall" || msg.type === "toolCallPrepare") {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Filter display messages to only include visible ones.
+ */
+export function filterDisplayMessages(messages: DisplayMessage[]): DisplayMessage[] {
+  return messages.filter(isDisplayableMessage);
 }
 
 // Re-export factory functions for convenience

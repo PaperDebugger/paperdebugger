@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { OverleafComment } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
+import { OverleafComment } from "@gen/apiclient/project/v1/project_pb";
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { getImportanceColor, getImportanceIcon, cleanCommentText } from "./utils";

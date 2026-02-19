@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { OverleafComment } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
-import { useSocketStore } from "../../../../stores/socket-store";
-import { addClickedOverleafComment, hasClickedOverleafComment } from "../../../../libs/helpers";
-import { acceptComments } from "../../../../query/api";
-import { fromJson } from "../../../../libs/protobuf-utils";
-import { CommentsAcceptedRequestSchema } from "../../../../pkg/gen/apiclient/comment/v1/comment_pb";
-import { useConversationStore } from "../../../../stores/conversation/conversation-store";
+import { OverleafComment } from "@gen/apiclient/project/v1/project_pb";
+import { useSocketStore } from "@/stores/socket-store";
+import { addClickedOverleafComment, hasClickedOverleafComment } from "@/libs/helpers";
+import { acceptComments } from "@/query/api";
+import { fromJson } from "@/libs/protobuf-utils";
+import { CommentsAcceptedRequestSchema } from "@gen/apiclient/comment/v1/comment_pb";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
 
 type AddCommentsButtonProps = {
   projectId: string;
