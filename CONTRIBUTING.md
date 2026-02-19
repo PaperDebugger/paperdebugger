@@ -48,6 +48,8 @@ feat/* or fix/*  →  main
 
 For small, well-tested changes (typo fixes, minor refactors) that don't need integration testing. PR review is still required.
 
+> **Note:** Fast-track merges to `main` will cause `staging` to drift behind. This is fine — `staging` does not need to be in sync at all times. Sync `staging` with `main` before starting a new round of integration testing (e.g., merge `main` into `staging`).
+
 ### When to Use Which
 
 | Use `staging` | Go direct to `main` |
