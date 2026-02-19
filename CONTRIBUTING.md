@@ -114,6 +114,15 @@ We follow semantic versioning (`MAJOR.MINOR.PATCH`):
 
 Example: `feat/new-feature` → staging (`2.1.9` → `2.1.10`) → main (`2.1.10` → `2.2.0`)
 
+Minor and patch versions are bumped automatically via CI. For a **major version bump** (breaking changes), manually create a tag:
+
+```bash
+git tag v3.0.0
+git push origin v3.0.0
+```
+
+Subsequent automated bumps will increment from the new tag.
+
 ## Code Quality
 
 Run these before submitting a PR:
