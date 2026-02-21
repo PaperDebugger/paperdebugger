@@ -98,8 +98,9 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			chunk := stream.Current()
 
 			if len(chunk.Choices) == 0 {
+				// Handle usage information
 				if chunk.Usage.TotalTokens > 0 {
-					// Record usage and log stats asynchronously to avoid blocking the response
+					// Record usage asynchronously to avoid blocking the response
 					go func(usage services.UsageRecord) {
 						bgCtx := context.Background()
 						if err := a.usageService.RecordUsage(bgCtx, usage); err != nil {

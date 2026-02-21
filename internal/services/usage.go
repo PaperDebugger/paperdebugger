@@ -45,7 +45,7 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 }
 
 // RecordUsage updates the active session or creates a new one if none exists.
-// Uses retry logic to handle race conditions when multiple requests try to create a session.
+// Falls back to update if insert fails (handles race when another request created a session). 
 func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) error {
 	now := time.Now()
 	nowBson := bson.DateTime(now.UnixMilli())
