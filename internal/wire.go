@@ -9,6 +9,7 @@ import (
 	"paperdebugger/internal/api/chat"
 	"paperdebugger/internal/api/comment"
 	"paperdebugger/internal/api/project"
+	"paperdebugger/internal/api/usage"
 	"paperdebugger/internal/api/user"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
@@ -32,6 +33,7 @@ var Set = wire.NewSet(
 	user.NewUserServer,
 	project.NewProjectServer,
 	comment.NewCommentServer,
+	usage.NewUsageServer,
 
 	aiclient.NewAIClient,
 	aiclient.NewAIClientV2,
@@ -43,6 +45,7 @@ var Set = wire.NewSet(
 	services.NewProjectService,
 	services.NewPromptService,
 	services.NewOAuthService,
+	services.NewUsageService,
 
 	cfg.GetCfg,
 	logger.GetLogger,

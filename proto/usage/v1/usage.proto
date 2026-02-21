@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package usage.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/usage/v1;usagev1";
+
+service UsageService {
+  rpc GetSessionUsage(GetSessionUsageRequest) returns (GetSessionUsageResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/usage/session"};
+  }
+
+  rpc GetWeeklyUsage(GetWeeklyUsageRequest) returns (GetWeeklyUsageResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/usage/weekly"};
+  }
+}
+
+message SessionUsage {
+  google.protobuf.Timestamp session_expiry = 1;
+  int64 total_tokens = 2;
+}
+
+message WeeklyUsage {
+  int64 total_tokens = 1;
+}
+
+message GetSessionUsageRequest {}
+
+message GetSessionUsageResponse {
+  // Active session usage, null if no active session
+  SessionUsage session = 1;
+}
+
+message GetWeeklyUsageRequest {}
+
+message GetWeeklyUsageResponse {
+  WeeklyUsage usage = 1;
+}

@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"paperdebugger/internal/models"
+	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strings"
 
 	"github.com/openai/openai-go/v3"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
@@ -25,8 +27,8 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, userID, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +56,7 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, mes
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, userID bson.ObjectID, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 
@@ -97,7 +99,22 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 			if len(chunk.Choices) == 0 {
 				// Handle usage information
-				// fmt.Printf("Usage: %+v\n", chunk.Usage)
+				if chunk.Usage.TotalTokens > 0 {
+					// Record usage asynchronously to avoid blocking the response
+					go func(usage services.UsageRecord) {
+						bgCtx := context.Background()
+						if err := a.usageService.RecordUsage(bgCtx, usage); err != nil {
+							a.logger.Error("Failed to store usage", "error", err)
+							return
+						}
+
+					}(services.UsageRecord{
+						UserID:           userID,
+						PromptTokens:     chunk.Usage.PromptTokens,
+						CompletionTokens: chunk.Usage.CompletionTokens,
+						TotalTokens:      chunk.Usage.TotalTokens,
+					})
+				}
 				continue
 			}
 
@@ -185,7 +202,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				// answer_content += chunk.Choices[0].Delta.Content
 				// fmt.Printf("answer_content: %s\n", answer_content)
 				streamHandler.HandleTextDoneItem(chunk, answer_content, reasoning_content)
-				break
 			}
 		}
 
