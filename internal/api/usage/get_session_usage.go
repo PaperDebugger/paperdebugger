@@ -31,13 +31,8 @@ func (s *UsageServer) GetSessionUsage(
 
 	return &usagev1.GetSessionUsageResponse{
 		Session: &usagev1.SessionUsage{
-			Id:               session.ID.Hex(),
-			SessionStart:     timestamppb.New(session.SessionStart.Time()),
-			SessionExpiry:    timestamppb.New(session.SessionExpiry.Time()),
-			PromptTokens:     session.PromptTokens,
-			CompletionTokens: session.CompletionTokens,
-			TotalTokens:      session.TotalTokens,
-			RequestCount:     session.RequestCount,
+			SessionExpiry: timestamppb.New(session.SessionExpiry.Time()),
+			TotalTokens:   session.TotalTokens,
 		},
 	}, nil
 }

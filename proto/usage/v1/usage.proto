@@ -18,21 +18,12 @@ service UsageService {
 }
 
 message SessionUsage {
-  string id = 1;
-  google.protobuf.Timestamp session_start = 2;
-  google.protobuf.Timestamp session_expiry = 3;
-  int64 prompt_tokens = 4;
-  int64 completion_tokens = 5;
-  int64 total_tokens = 6;
-  int64 request_count = 7;
+  google.protobuf.Timestamp session_expiry = 1;
+  int64 total_tokens = 2;
 }
 
 message WeeklyUsage {
-  int64 prompt_tokens = 1;
-  int64 completion_tokens = 2;
-  int64 total_tokens = 3;
-  int64 request_count = 4;
-  int64 session_count = 5;
+  int64 total_tokens = 1;
 }
 
 message GetSessionUsageRequest {}

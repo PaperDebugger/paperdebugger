@@ -8,10 +8,22 @@ const formatNumber = (n: bigint | number | undefined): string => {
   return Number(n).toLocaleString();
 };
 
-const formatDate = (timestamp: { seconds?: bigint; nanos?: number } | undefined): string => {
-  if (!timestamp || !timestamp.seconds) return "N/A";
-  const date = new Date(Number(timestamp.seconds) * 1000);
-  return date.toLocaleString();
+const formatTimeRemaining = (timestamp: { seconds?: bigint; nanos?: number } | undefined): string => {
+  if (!timestamp || !timestamp.seconds) return "";
+  const expiryMs = Number(timestamp.seconds) * 1000;
+  const nowMs = Date.now();
+  const diffMs = expiryMs - nowMs;
+
+  if (diffMs <= 0) return "";
+
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+    return `resets in ${hours} hr ${minutes} min`;
+  }
+  return `resets in ${minutes} min`;
 };
 
 const SectionContainer = ({ children }: { children: React.ReactNode }) => {
@@ -53,17 +65,16 @@ export const Usage = () => {
       <TabHeader title="Usage" />
       <div className="pd-app-tab-content-body">
         <SectionContainer>
-          <SectionTitle>Current Session</SectionTitle>
+          <SectionTitle>
+            Current Session
+            {session?.sessionExpiry && (
+              <span> ({formatTimeRemaining(session.sessionExpiry)})</span>
+            )}
+          </SectionTitle>
           {session ? (
             <CellWrapper>
               <div className="flex flex-col gap-2 w-full">
-                <StatItem label="Session Start" value={formatDate(session.sessionStart)} />
-                <StatItem label="Session Expiry" value={formatDate(session.sessionExpiry)} />
-                <div className="border-t border-default-200 my-1" />
-                <StatItem label="Prompt Tokens" value={formatNumber(session.promptTokens)} />
-                <StatItem label="Completion Tokens" value={formatNumber(session.completionTokens)} />
-                <StatItem label="Total Tokens" value={formatNumber(session.totalTokens)} />
-                <StatItem label="Requests" value={formatNumber(session.requestCount)} />
+                <StatItem label="Tokens Used" value={formatNumber(session.totalTokens)} />
               </div>
             </CellWrapper>
           ) : (
@@ -74,16 +85,11 @@ export const Usage = () => {
         </SectionContainer>
 
         <SectionContainer>
-          <SectionTitle>Weekly Summary</SectionTitle>
+          <SectionTitle>Weekly Limits</SectionTitle>
           {weekly ? (
             <CellWrapper>
               <div className="flex flex-col gap-2 w-full">
-                <StatItem label="Prompt Tokens" value={formatNumber(weekly.promptTokens)} />
-                <StatItem label="Completion Tokens" value={formatNumber(weekly.completionTokens)} />
-                <StatItem label="Total Tokens" value={formatNumber(weekly.totalTokens)} />
-                <div className="border-t border-default-200 my-1" />
-                <StatItem label="Total Requests" value={formatNumber(weekly.requestCount)} />
-                <StatItem label="Total Sessions" value={formatNumber(weekly.sessionCount)} />
+                <StatItem label="Tokens Used" value={formatNumber(weekly.totalTokens)} />
               </div>
             </CellWrapper>
           ) : (

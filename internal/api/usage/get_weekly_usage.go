@@ -23,11 +23,7 @@ func (s *UsageServer) GetWeeklyUsage(
 
 	return &usagev1.GetWeeklyUsageResponse{
 		Usage: &usagev1.WeeklyUsage{
-			PromptTokens:     stats.PromptTokens,
-			CompletionTokens: stats.CompletionTokens,
-			TotalTokens:      stats.TotalTokens,
-			RequestCount:     stats.RequestCount,
-			SessionCount:     stats.SessionCount,
+			TotalTokens: stats.TotalTokens,
 		},
 	}, nil
 }

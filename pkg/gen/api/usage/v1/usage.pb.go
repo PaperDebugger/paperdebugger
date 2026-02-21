@@ -24,16 +24,11 @@ const (
 )
 
 type SessionUsage struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	SessionStart     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=session_start,json=sessionStart,proto3" json:"session_start,omitempty"`
-	SessionExpiry    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=session_expiry,json=sessionExpiry,proto3" json:"session_expiry,omitempty"`
-	PromptTokens     int64                  `protobuf:"varint,4,opt,name=prompt_tokens,json=promptTokens,proto3" json:"prompt_tokens,omitempty"`
-	CompletionTokens int64                  `protobuf:"varint,5,opt,name=completion_tokens,json=completionTokens,proto3" json:"completion_tokens,omitempty"`
-	TotalTokens      int64                  `protobuf:"varint,6,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
-	RequestCount     int64                  `protobuf:"varint,7,opt,name=request_count,json=requestCount,proto3" json:"request_count,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionExpiry *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=session_expiry,json=sessionExpiry,proto3" json:"session_expiry,omitempty"`
+	TotalTokens   int64                  `protobuf:"varint,2,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SessionUsage) Reset() {
@@ -66,39 +61,11 @@ func (*SessionUsage) Descriptor() ([]byte, []int) {
 	return file_usage_v1_usage_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SessionUsage) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *SessionUsage) GetSessionStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.SessionStart
-	}
-	return nil
-}
-
 func (x *SessionUsage) GetSessionExpiry() *timestamppb.Timestamp {
 	if x != nil {
 		return x.SessionExpiry
 	}
 	return nil
-}
-
-func (x *SessionUsage) GetPromptTokens() int64 {
-	if x != nil {
-		return x.PromptTokens
-	}
-	return 0
-}
-
-func (x *SessionUsage) GetCompletionTokens() int64 {
-	if x != nil {
-		return x.CompletionTokens
-	}
-	return 0
 }
 
 func (x *SessionUsage) GetTotalTokens() int64 {
@@ -108,22 +75,11 @@ func (x *SessionUsage) GetTotalTokens() int64 {
 	return 0
 }
 
-func (x *SessionUsage) GetRequestCount() int64 {
-	if x != nil {
-		return x.RequestCount
-	}
-	return 0
-}
-
 type WeeklyUsage struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	PromptTokens     int64                  `protobuf:"varint,1,opt,name=prompt_tokens,json=promptTokens,proto3" json:"prompt_tokens,omitempty"`
-	CompletionTokens int64                  `protobuf:"varint,2,opt,name=completion_tokens,json=completionTokens,proto3" json:"completion_tokens,omitempty"`
-	TotalTokens      int64                  `protobuf:"varint,3,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
-	RequestCount     int64                  `protobuf:"varint,4,opt,name=request_count,json=requestCount,proto3" json:"request_count,omitempty"`
-	SessionCount     int64                  `protobuf:"varint,5,opt,name=session_count,json=sessionCount,proto3" json:"session_count,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TotalTokens   int64                  `protobuf:"varint,1,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WeeklyUsage) Reset() {
@@ -156,37 +112,9 @@ func (*WeeklyUsage) Descriptor() ([]byte, []int) {
 	return file_usage_v1_usage_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *WeeklyUsage) GetPromptTokens() int64 {
-	if x != nil {
-		return x.PromptTokens
-	}
-	return 0
-}
-
-func (x *WeeklyUsage) GetCompletionTokens() int64 {
-	if x != nil {
-		return x.CompletionTokens
-	}
-	return 0
-}
-
 func (x *WeeklyUsage) GetTotalTokens() int64 {
 	if x != nil {
 		return x.TotalTokens
-	}
-	return 0
-}
-
-func (x *WeeklyUsage) GetRequestCount() int64 {
-	if x != nil {
-		return x.RequestCount
-	}
-	return 0
-}
-
-func (x *WeeklyUsage) GetSessionCount() int64 {
-	if x != nil {
-		return x.SessionCount
 	}
 	return 0
 }
@@ -356,21 +284,12 @@ var File_usage_v1_usage_proto protoreflect.FileDescriptor
 
 const file_usage_v1_usage_proto_rawDesc = "" +
 	"\n" +
-	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbc\x02\n" +
-	"\fSessionUsage\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12?\n" +
-	"\rsession_start\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\fsessionStart\x12A\n" +
-	"\x0esession_expiry\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rsessionExpiry\x12#\n" +
-	"\rprompt_tokens\x18\x04 \x01(\x03R\fpromptTokens\x12+\n" +
-	"\x11completion_tokens\x18\x05 \x01(\x03R\x10completionTokens\x12!\n" +
-	"\ftotal_tokens\x18\x06 \x01(\x03R\vtotalTokens\x12#\n" +
-	"\rrequest_count\x18\a \x01(\x03R\frequestCount\"\xcc\x01\n" +
-	"\vWeeklyUsage\x12#\n" +
-	"\rprompt_tokens\x18\x01 \x01(\x03R\fpromptTokens\x12+\n" +
-	"\x11completion_tokens\x18\x02 \x01(\x03R\x10completionTokens\x12!\n" +
-	"\ftotal_tokens\x18\x03 \x01(\x03R\vtotalTokens\x12#\n" +
-	"\rrequest_count\x18\x04 \x01(\x03R\frequestCount\x12#\n" +
-	"\rsession_count\x18\x05 \x01(\x03R\fsessionCount\"\x18\n" +
+	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"t\n" +
+	"\fSessionUsage\x12A\n" +
+	"\x0esession_expiry\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\rsessionExpiry\x12!\n" +
+	"\ftotal_tokens\x18\x02 \x01(\x03R\vtotalTokens\"0\n" +
+	"\vWeeklyUsage\x12!\n" +
+	"\ftotal_tokens\x18\x01 \x01(\x03R\vtotalTokens\"\x18\n" +
 	"\x16GetSessionUsageRequest\"K\n" +
 	"\x17GetSessionUsageResponse\x120\n" +
 	"\asession\x18\x01 \x01(\v2\x16.usage.v1.SessionUsageR\asession\"\x17\n" +
@@ -406,19 +325,18 @@ var file_usage_v1_usage_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),   // 6: google.protobuf.Timestamp
 }
 var file_usage_v1_usage_proto_depIdxs = []int32{
-	6, // 0: usage.v1.SessionUsage.session_start:type_name -> google.protobuf.Timestamp
-	6, // 1: usage.v1.SessionUsage.session_expiry:type_name -> google.protobuf.Timestamp
-	0, // 2: usage.v1.GetSessionUsageResponse.session:type_name -> usage.v1.SessionUsage
-	1, // 3: usage.v1.GetWeeklyUsageResponse.usage:type_name -> usage.v1.WeeklyUsage
-	2, // 4: usage.v1.UsageService.GetSessionUsage:input_type -> usage.v1.GetSessionUsageRequest
-	4, // 5: usage.v1.UsageService.GetWeeklyUsage:input_type -> usage.v1.GetWeeklyUsageRequest
-	3, // 6: usage.v1.UsageService.GetSessionUsage:output_type -> usage.v1.GetSessionUsageResponse
-	5, // 7: usage.v1.UsageService.GetWeeklyUsage:output_type -> usage.v1.GetWeeklyUsageResponse
-	6, // [6:8] is the sub-list for method output_type
-	4, // [4:6] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	6, // 0: usage.v1.SessionUsage.session_expiry:type_name -> google.protobuf.Timestamp
+	0, // 1: usage.v1.GetSessionUsageResponse.session:type_name -> usage.v1.SessionUsage
+	1, // 2: usage.v1.GetWeeklyUsageResponse.usage:type_name -> usage.v1.WeeklyUsage
+	2, // 3: usage.v1.UsageService.GetSessionUsage:input_type -> usage.v1.GetSessionUsageRequest
+	4, // 4: usage.v1.UsageService.GetWeeklyUsage:input_type -> usage.v1.GetWeeklyUsageRequest
+	3, // 5: usage.v1.UsageService.GetSessionUsage:output_type -> usage.v1.GetSessionUsageResponse
+	5, // 6: usage.v1.UsageService.GetWeeklyUsage:output_type -> usage.v1.GetWeeklyUsageResponse
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_usage_v1_usage_proto_init() }
