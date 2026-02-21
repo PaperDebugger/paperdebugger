@@ -1,4 +1,6 @@
-import { Spinner } from "@heroui/react";
+import { Spinner, Button } from "@heroui/react";
+import { Icon } from "@iconify/react";
+import { useState, useEffect } from "react";
 import { TabHeader } from "../../components/tab-header";
 import { useGetSessionUsageQuery, useGetWeeklyUsageQuery } from "../../query";
 import CellWrapper from "../../components/cell-wrapper";
@@ -26,6 +28,20 @@ const formatTimeRemaining = (timestamp: { seconds?: bigint; nanos?: number } | u
   return `resets in ${minutes} min`;
 };
 
+const formatLastUpdated = (timestamp: number): string => {
+  const diffMs = Date.now() - timestamp;
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  if (seconds < 10) return "just now";
+  if (seconds < 60) return `${seconds} seconds ago`;
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  if (hours === 1) return "1 hour ago";
+  return `${hours} hours ago`;
+};
+
 const SectionContainer = ({ children }: { children: React.ReactNode }) => {
   return <div className="flex flex-col gap-2 w-full my-2 noselect">{children}</div>;
 };
@@ -44,10 +60,35 @@ const StatItem = ({ label, value }: { label: string; value: string }) => {
 };
 
 export const Usage = () => {
-  const { data: sessionData, isLoading: sessionLoading } = useGetSessionUsageQuery();
-  const { data: weeklyData, isLoading: weeklyLoading } = useGetWeeklyUsageQuery();
+  const {
+    data: sessionData,
+    isLoading: sessionLoading,
+    dataUpdatedAt: sessionUpdatedAt,
+    refetch: refetchSession,
+    isFetching: sessionFetching,
+  } = useGetSessionUsageQuery();
+  const {
+    data: weeklyData,
+    isLoading: weeklyLoading,
+    refetch: refetchWeekly,
+    isFetching: weeklyFetching,
+  } = useGetWeeklyUsageQuery();
+
+  const [, setTick] = useState(0);
+
+  // Update the "last updated" text periodically
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isLoading = sessionLoading || weeklyLoading;
+  const isFetching = sessionFetching || weeklyFetching;
+
+  const handleRefresh = () => {
+    refetchSession();
+    refetchWeekly();
+  };
 
   if (isLoading) {
     return (
@@ -98,6 +139,22 @@ export const Usage = () => {
             </CellWrapper>
           )}
         </SectionContainer>
+
+        <div className="flex items-center justify-start gap-2 px-2 mt-2">
+          <span className="text-xs text-default-400">
+            Last updated: {formatLastUpdated(sessionUpdatedAt)}
+          </span>
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            onPress={handleRefresh}
+            isLoading={isFetching}
+            className="min-w-6 w-6 h-6"
+          >
+            <Icon icon="mdi:refresh" className="text-default-500" width={14} />
+          </Button>
+        </div>
       </div>
     </div>
   );
