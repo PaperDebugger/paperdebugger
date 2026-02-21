@@ -25,8 +25,8 @@ import (
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, isCustomModel bool, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, isCustomModel, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +54,7 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, isC
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, isCustomModel bool, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 
@@ -65,7 +65,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		streamHandler.SendFinalization()
 	}()
 
-	if isCustomModel {
+	if llmProvider.IsCustomModel {
 		// e.g., Strip "google/" from "google/gemini-2.5-flash"
 		modelSlug = modelSlug[strings.Index(modelSlug, "/")+1:]
 	}

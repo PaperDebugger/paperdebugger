@@ -13,7 +13,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string, isCustomModel bool) (string, error) {
+func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string) (string, error) {
 	messages := lo.Map(inappChatHistory, func(message *chatv2.Message, _ int) string {
 		if _, ok := message.Payload.MessageType.(*chatv2.MessagePayload_Assistant); ok {
 			return fmt.Sprintf("Assistant: %s", message.Payload.GetAssistant().GetContent())
@@ -31,11 +31,11 @@ func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistor
 
 	// Default model if user is not using their own
 	modelToUse := "gpt-5-nano"
-	if isCustomModel {
+	if llmProvider.IsCustomModel {
 		modelToUse = modelSlug
 	}
 
-	_, resp, err := a.ChatCompletionV2(ctx, modelToUse, isCustomModel, OpenAIChatHistory{
+	_, resp, err := a.ChatCompletionV2(ctx, modelToUse, OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that generates a title for a conversation."),
 		openai.UserMessage(message),
 	}, llmProvider)

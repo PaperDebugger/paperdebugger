@@ -277,6 +277,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	}
 
 	// Check if user has an API key for requested model
+	var llmProvider *models.LLMProviderConfig
 	var customModel *models.CustomModel
 	customModel = nil
 	for _, m := range settings.CustomModels {
@@ -287,20 +288,22 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	}
 
 	// Usage is the same as ChatCompletion, just passing the stream parameter
-	var llmProvider *models.LLMProviderConfig
+
 	if customModel == nil {
 		// User did not specify API key for this model
 		llmProvider = &models.LLMProviderConfig{
-			APIKey: "",
+			APIKey:        "",
+			IsCustomModel: false,
 		}
 	} else {
 		llmProvider = &models.LLMProviderConfig{
-			APIKey:   customModel.APIKey,
-			Endpoint: customModel.BaseUrl,
+			APIKey:        customModel.APIKey,
+			Endpoint:      customModel.BaseUrl,
+			IsCustomModel: true,
 		}
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, customModel != nil, conversation.OpenaiChatHistoryCompletion, llmProvider)
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -326,7 +329,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
-			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider, modelSlug, customModel != nil)
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider, modelSlug)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return
