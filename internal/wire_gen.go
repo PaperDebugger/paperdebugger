@@ -13,6 +13,7 @@ import (
 	"paperdebugger/internal/api/chat"
 	"paperdebugger/internal/api/comment"
 	"paperdebugger/internal/api/project"
+	"paperdebugger/internal/api/usage"
 	"paperdebugger/internal/api/user"
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
@@ -38,14 +39,16 @@ func InitializeApp() (*api.Server, error) {
 	aiClient := client.NewAIClient(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
 	chatService := services.NewChatService(dbDB, cfgCfg, loggerLogger)
 	chatServiceServer := chat.NewChatServer(aiClient, chatService, projectService, userService, loggerLogger, cfgCfg)
-	aiClientV2 := client.NewAIClientV2(dbDB, reverseCommentService, projectService, cfgCfg, loggerLogger)
+	usageService := services.NewUsageService(dbDB, cfgCfg, loggerLogger)
+	aiClientV2 := client.NewAIClientV2(dbDB, reverseCommentService, projectService, usageService, cfgCfg, loggerLogger)
 	chatServiceV2 := services.NewChatServiceV2(dbDB, cfgCfg, loggerLogger)
 	chatv2ChatServiceServer := chat.NewChatServerV2(aiClientV2, chatServiceV2, projectService, userService, loggerLogger, cfgCfg)
 	promptService := services.NewPromptService(dbDB, cfgCfg, loggerLogger)
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
 	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)
 	commentServiceServer := comment.NewCommentServer(projectService, chatService, reverseCommentService, loggerLogger, cfgCfg)
-	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer)
+	usageServiceServer := usage.NewUsageServer(usageService, loggerLogger)
+	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer, usageServiceServer)
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)
 	oAuthHandler := auth.NewOAuthHandler(oAuthService)
 	ginServer := api.NewGinServer(cfgCfg, oAuthHandler)
@@ -55,4 +58,4 @@ func InitializeApp() (*api.Server, error) {
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, usage.NewUsageServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, services.NewUsageService, cfg.GetCfg, logger.GetLogger, db.NewDB)
