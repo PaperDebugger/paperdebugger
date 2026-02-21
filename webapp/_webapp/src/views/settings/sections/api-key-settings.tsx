@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
+import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import { Button } from "@heroui/react";
+import { Button, Tooltip } from "@heroui/react";
 import { useSettingStore } from "../../../stores/setting-store";
 import { useLanguageModels } from "../../../hooks/useLanguageModels";
 
@@ -101,9 +102,9 @@ type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelS
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
   const { models } = useLanguageModels();
+  const { settings } = useSettingStore();
 
   const [isEditing, setIsEditing] = useState(isNew);
-  const [modelName, setModelName] = useState(isNew ? "New Model" : customModel.name);
   const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
   const [slug, setSlug] = useState(customModel?.slug || "");
   const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
@@ -111,10 +112,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
   const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
+  const [modelName, setModelName] = useState(isNew ? models[0].name : customModel.name);
   const isModelNameEdited = useRef(false);
 
   const baseInputClassName = "hover:cursor-pointer bg-transparent p-1 focus:outline-none";
-  const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-bold`;
+  const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-medium`;
   const labelClassName = `${baseInputClassName} text-xs text-default-900 w-auto`;
   const detailInputClassName = `${baseInputClassName} text-xs text-default-400 font-normal flex-1`;
 
@@ -137,7 +139,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     );
 
     if (isNew) {
-      setModelName("New Model");
+      setModelName(models[0].name);
       setBaseUrl("");
       setSlug("");
       setApiKey("");
@@ -148,89 +150,102 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     }
   };
 
-  // TODO: 1 key per model
   // TODO: Multiple models per key
   return (
-    <div className="flex flex-col w-full">
-      {isNew ? (
-        <Button size="sm" onPress={() => handleOnChange(false)}>
-          Add (TODO)
-        </Button>
-      ) : (
-        <>
-          <Button size="sm" onPress={() => handleOnChange(true)}>
-            Delete (TODO)
-          </Button>
-          <Button size="sm" onPress={() => setIsEditing(true)}>
-            Edit (TODO)
-          </Button>
-          <Button
-            size="sm"
-            onPress={() => {
-              setIsEditing(false);
-              handleOnChange(false);
-            }}
-          >
-            Save (TODO)
-          </Button>
-        </>
-      )}
-
-      <input
-        className={nameInputClassName}
-        value={modelName}
-        type="text"
-        disabled={!isEditing}
-        onChange={(e) => {
-          isModelNameEdited.current = true;
-          setModelName(e.target.value);
-        }}
-      ></input>
-
-      <div className="flex flex-row">
-        <label className={labelClassName}>Slug</label>
-        <select
-          className={detailInputClassName}
+    <div className="flex flex-col w-full pl-1">
+      <div className="flex flex-row justify-between">
+        <input
+          className={nameInputClassName}
+          value={modelName}
+          type="text"
           disabled={!isEditing}
           onChange={(e) => {
-            setSlug(e.target.value);
-            if (!isModelNameEdited.current) {
-              // Custom name not yet defined, default to the selected model's name
-              setModelName(models.filter((m) => m.slug == e.target.value)[0].name);
-            }
+            isModelNameEdited.current = true;
+            setModelName(e.target.value);
           }}
-        >
-          {models.map((m) => (
-            <option selected={slug == m.slug} key={m.slug} value={m.slug}>
-              {m.slug}
-            </option>
-          ))}
-        </select>
+        ></input>
+
+        {isNew ? (
+          <Tooltip content="Add" placement="bottom" className="noselect" delay={500}>
+            <button onClick={() => handleOnChange(false)} className="p-1 hover:bg-default-100 rounded">
+              <Icon icon="tabler:device-floppy" width="16" />
+            </button>
+          </Tooltip>
+        ) : (
+          <div>
+            <Tooltip content="Edit" placement="bottom" className="noselect" delay={500}>
+              <button
+                onClick={() => {
+                  if (isEditing) {
+                    handleOnChange(false);
+                  }
+                  setIsEditing((i) => !i);
+                }}
+                className="p-1 hover:bg-default-100 rounded"
+              >
+                <Icon icon={isEditing ? "tabler:device-floppy" : "tabler:pencil"} width="16" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Delete" placement="bottom" className="noselect" delay={500}>
+              <button onClick={() => handleOnChange(true)} className="p-1 hover:bg-default-100 rounded">
+                <Icon icon="tabler:trash" width="16" />
+              </button>
+            </Tooltip>
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-row">
-        <label className={labelClassName}>Base URL</label>
-        <input
-          className={detailInputClassName}
-          value={baseUrl}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setBaseUrl(e.target.value)}
-        />
-      </div>
+      <div className="pr-1">
+        <div className="flex flex-row">
+          <label className={labelClassName}>Slug</label>
+          <select
+            className={detailInputClassName}
+            disabled={!isEditing}
+            onChange={(e) => {
+              setSlug(e.target.value);
+              if (!isModelNameEdited.current) {
+                // Custom name not yet defined, default to the selected model's name
+                setModelName(models.filter((m) => m.slug == e.target.value)[0].name);
+              }
+            }}
+          >
+            {models
+              .filter(
+                (m) =>
+                  (!isNew && m.slug == slug) ||
+                  !Array.from(settings?.customModels || []).some((cm) => cm.slug == m.slug),
+              )
+              .map((m) => (
+                <option selected={slug == m.slug} key={m.slug} value={m.slug}>
+                  {m.slug}
+                </option>
+              ))}
+          </select>
+        </div>
 
-      <div className="flex flex-row">
-        <label className={labelClassName}>API Key</label>
-        <input
-          className={detailInputClassName}
-          value={apiKey}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setApiKey(e.target.value)}
-        />
-      </div>
+        <div className="flex flex-row">
+          <label className={labelClassName}>Base URL</label>
+          <input
+            className={detailInputClassName}
+            value={baseUrl}
+            type="text"
+            disabled={!isEditing}
+            onChange={(e) => setBaseUrl(e.target.value)}
+          />
+        </div>
 
-      <div className="flex flex-row">
+        <div className="flex flex-row">
+          <label className={labelClassName}>API Key</label>
+          <input
+            className={detailInputClassName}
+            value={apiKey}
+            type={!isEditing && !isNew ? "password" : "text"}
+            disabled={!isEditing}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+        </div>
+
+        {/* <div className="flex flex-row">
         <label className={labelClassName}>Context Window</label>
         <input
           className={detailInputClassName}
@@ -272,6 +287,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing}
           onChange={(e) => setOutputPrice(e.target.valueAsNumber)}
         />
+      </div> */}
       </div>
     </div>
   );
