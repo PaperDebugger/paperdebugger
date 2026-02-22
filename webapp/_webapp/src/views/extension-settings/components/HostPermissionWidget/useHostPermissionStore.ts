@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { requestHostPermission } from "../../../../intermediate";
+import { requestHostPermission } from "@/intermediate";
 import { PermissionItem, PermissionMessage } from "./hostPermissionTypes";
 
 const normalizeWildcardPattern = (url: string) => {
@@ -127,11 +127,11 @@ export const useHostPermissionStore = create<HostPermissionState>((set, get) => 
 export const getMessageClassName = (type: PermissionMessage["type"]): string => {
   switch (type) {
     case "success":
-      return "bg-green-100 text-green-800 border !border-green-300";
+      return "bg-green-100 text-green-800 border border-green-300!";
     case "error":
-      return "bg-red-100 text-red-800 border !border-red-300";
+      return "bg-red-100 text-red-800 border border-red-300!";
     case "info":
-      return "bg-blue-100 text-blue-800 border !border-blue-300";
+      return "bg-blue-100 text-blue-800 border border-blue-300!";
     default:
       return "";
   }

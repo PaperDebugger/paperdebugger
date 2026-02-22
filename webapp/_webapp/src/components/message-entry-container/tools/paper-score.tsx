@@ -1,7 +1,7 @@
-import { PaperScoreResultSchema } from "../../../pkg/gen/apiclient/project/v1/project_pb";
-import { fromJson } from "../../../libs/protobuf-utils";
-import { LoadingIndicator } from "../../loading-indicator";
-import { logError } from "../../../libs/logger";
+import { PaperScoreResultSchema } from "@gen/apiclient/project/v1/project_pb";
+import { fromJson } from "@/libs/protobuf-utils";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import { logError } from "@/libs/logger";
 import { cn } from "@heroui/react";
 
 type PaperScoreCardProps = {
@@ -24,7 +24,7 @@ export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardP
       return (
         <div className="tool-card">
           <h3 className="tool-card-title">Paper Score</h3>
-          <div className="!text-xs !text-primary-600">No paper score result.</div>
+          <div className="text-xs! !text-primary-600">No paper score result.</div>
         </div>
       );
     }
@@ -34,7 +34,7 @@ export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardP
       return (
         <div className="tool-card">
           <h3 className="tool-card-title">Paper Score</h3>
-          <div className="!text-xs !text-primary-600">Failed to parse paper score. {message}</div>
+          <div className="text-xs! !text-primary-600">Failed to parse paper score. {message}</div>
         </div>
       );
     }
@@ -46,12 +46,12 @@ export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardP
         {/* Current Score Section */}
         <div>
           <h3 className="tool-card-title">Current Paper Score</h3>
-          <div className="flex !items-baseline !gap-2">
-            <span className="!text-4xl !font-bold !text-primary-900">{currentScore}</span>
-            <span className="!text-lg !text-primary-700">points</span>
+          <div className="flex items-baseline! gap-2!">
+            <span className="text-4xl! font-bold! !text-primary-900">{currentScore}</span>
+            <span className="text-lg! !text-primary-700">points</span>
           </div>
-          <div className="flex !items-baseline !gap-2">
-            <span className="!text-sm !text-primary-700">{currentPercentile}% percentile</span>
+          <div className="flex items-baseline! gap-2!">
+            <span className="text-sm! !text-primary-700">{currentPercentile}% percentile</span>
           </div>
         </div>
       </div>
@@ -61,7 +61,7 @@ export const PaperScoreCard = ({ message, preparing, animated }: PaperScoreCardP
     return (
       <div className="tool-card">
         <h3 className="tool-card-title">Paper Score</h3>
-        <div className="!text-xs !text-primary-600">Error occurred while parsing paper score.</div>
+        <div className="text-xs! !text-primary-600">Error occurred while parsing paper score.</div>
       </div>
     );
   }

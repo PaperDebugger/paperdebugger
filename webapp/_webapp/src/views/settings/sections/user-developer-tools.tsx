@@ -1,10 +1,10 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { SettingItemSelect } from "../setting-item-select";
-import { useSettingStore } from "../../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 import { SettingItemInput } from "../setting-item-input";
 import { useEffect, useState } from "react";
-import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "../../../libs/apiclient";
-import { useAdapter } from "../../../adapters/context";
+import apiclient, { apiclientV2, getEndpointFromLocalStorage, resetApiClientEndpoint } from "@/libs/apiclient";
+import { useAdapter } from "@/adapters/context";
 
 export const UserDeveloperTools = () => {
   const { conversationMode, setConversationMode } = useSettingStore();

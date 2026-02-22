@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { cn, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { COLLAPSED_HEIGHT, useConversationUiStore } from "../stores/conversation/conversation-ui-store";
-import { PdAppControlTitleBar } from "../components/pd-app-control-title-bar";
-import { PdAppSmallControlButton } from "../components/pd-app-small-control-button";
+import { PdAppControlTitleBar } from "@/components/pd-app-control-title-bar";
+import { PdAppSmallControlButton } from "@/components/pd-app-small-control-button";
 
 export const WindowController = () => {
   const { sidebarCollapsed, setIsOpen } = useConversationUiStore();
@@ -41,8 +41,8 @@ const PositionController = () => {
   return (
     <div
       className={cn(
-        "flex flex-row items-center noselect gap-0 overflow-clip transition-all duration-[300ms]",
-        sidebarCollapsed ? "w-[0%]" : "w-[100%]",
+        "flex flex-row items-center noselect gap-0 overflow-clip transition-all duration-300",
+        sidebarCollapsed ? "w-[0%]" : "w-full",
       )}
     >
       <Tooltip content="Floating" placement="bottom" className="noselect" size="sm" delay={500}>

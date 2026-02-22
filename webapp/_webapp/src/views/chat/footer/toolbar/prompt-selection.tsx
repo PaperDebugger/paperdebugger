@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { SelectionItem, Selection } from "./selection";
-import { Prompt } from "../../../../pkg/gen/apiclient/user/v1/user_pb";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
+import { Prompt } from "@gen/apiclient/user/v1/user_pb";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 
 type PromptSelectionProps = {
   prompts: Prompt[];
@@ -37,7 +37,7 @@ export function PromptSelection({ prompts }: PromptSelectionProps) {
 
   if (prompts.length === 0) {
     return (
-      <div className="transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:!bg-default-100 shadow-lg rounded-lg border !border-gray-200 dark:!border-default-200 p-4">
+      <div className="transition-all duration-100 absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:!bg-default-100 shadow-lg rounded-lg border border-gray-200! dark:!border-default-200 p-4">
         <div className="text-gray-500 dark:text-default-500 text-sm text-center">No prompts found</div>
       </div>
     );

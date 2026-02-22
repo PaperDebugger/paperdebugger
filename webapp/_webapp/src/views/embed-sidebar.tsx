@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
-import { PdAppContainer } from "../components/pd-app-container";
+import { PdAppContainer } from "@/components/pd-app-container";
 import { WindowController } from "./window-controller";
 import { Body } from "./body";
 

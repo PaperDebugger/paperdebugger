@@ -13,8 +13,8 @@ import {
   toDisplayMessage,
   fromDisplayMessage,
 } from "../message-converters";
-import { InternalMessage, MessageStatus } from "../../types/message";
-import { DisplayMessage } from "../../stores/types";
+import { InternalMessage, MessageStatus } from "@/types/message";
+import { DisplayMessage } from "@/stores/types";
 
 describe("Message Converters", () => {
   describe("fromApiMessage", () => {

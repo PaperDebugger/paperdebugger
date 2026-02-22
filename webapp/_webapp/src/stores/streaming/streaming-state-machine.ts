@@ -13,8 +13,8 @@
 
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { IncompleteIndicator, Message, Conversation } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { logError, logWarn } from "../../libs/logger";
+import { IncompleteIndicator, Message, Conversation } from "@gen/apiclient/chat/v2/chat_pb";
+import { logError, logWarn } from "@/libs/logger";
 import { useConversationStore } from "../conversation/conversation-store";
 import { createStreamingError, getRecoveryStrategy, StreamingErrorHandler } from "./error-handler";
 import { getMessageTypeHandler, isValidMessageRole } from "./message-type-handlers";
@@ -26,7 +26,7 @@ import {
   StreamingMessage,
   StreamState,
 } from "./types";
-import { toApiMessage, createAssistantMessage } from "../../utils/message-converters";
+import { toApiMessage, createAssistantMessage } from "@/utils/message-converters";
 
 // ============================================================================
 // Store State Interface

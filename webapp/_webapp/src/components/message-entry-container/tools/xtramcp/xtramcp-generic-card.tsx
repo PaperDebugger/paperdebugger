@@ -1,6 +1,6 @@
 import { cn } from "@heroui/react";
-import { LoadingIndicator } from "../../../loading-indicator";
-import MarkdownComponent from "../../../markdown";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import MarkdownComponent from "@/components/markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
@@ -97,7 +97,7 @@ export const XtraMcpGenericCard = ({ functionName, message, preparing, animated 
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200!">
                 {/* Generic metadata rendering - display all fields */}
                 {Object.entries(result.metadata).map(([key, value], index) => {
                   const isLastItem = index === Object.entries(result.metadata!).length - 1;

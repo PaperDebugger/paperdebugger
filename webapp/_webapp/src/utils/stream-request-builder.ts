@@ -6,7 +6,7 @@
  * making it easier to test and reducing hook complexity.
  */
 
-import { ConversationType, CreateConversationMessageStreamRequest } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { ConversationType, CreateConversationMessageStreamRequest } from "@gen/apiclient/chat/v2/chat_pb";
 import { PlainMessage } from "../query/types";
 
 // ============================================================================

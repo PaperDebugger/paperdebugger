@@ -2,7 +2,7 @@
 
 import { errorToast } from "./toasts";
 import { logError } from "./logger";
-import { ErrorCode, Error as RequestError } from "../pkg/gen/apiclient/shared/v1/shared_pb";
+import { ErrorCode, Error as RequestError } from "@gen/apiclient/shared/v1/shared_pb";
 
 export async function withRetrySync<T>(
   operation: () => Promise<T>,

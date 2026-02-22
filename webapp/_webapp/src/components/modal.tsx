@@ -11,12 +11,12 @@ type ModalProps = {
 } & Omit<HeroModalProps, "children" | "content">;
 
 const defaultClassNames = {
-  backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20 z-[9997]",
-  base: "z-[9998]",
-  body: "z-[9998]",
-  header: "z-[9998]",
-  footer: "z-[9998]",
-  wrapper: "z-[9998] rnd-cancel noselect",
+  backdrop: "bg-linear-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20 z-9997",
+  base: "z-9998",
+  body: "z-9998",
+  header: "z-9998",
+  footer: "z-9998",
+  wrapper: "z-9998 rnd-cancel noselect",
 };
 
 export const Modal = memo(
@@ -34,9 +34,9 @@ export const Modal = memo(
 
       return (
         <>
-          {header && <ModalHeader className="!py-3">{header}</ModalHeader>}
+          {header && <ModalHeader className="py-3!">{header}</ModalHeader>}
           <ModalBody>{children}</ModalBody>
-          {footer && <ModalFooter className="!py-3">{footer}</ModalFooter>}
+          {footer && <ModalFooter className="py-3!">{footer}</ModalFooter>}
         </>
       );
     }, [content, header, children, footer]);
