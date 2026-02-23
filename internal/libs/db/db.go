@@ -54,7 +54,7 @@ func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
 func (db *DB) ensureIndexes() {
 	sessions := db.Database("paperdebugger").Collection((models.LLMSession{}).CollectionName())
 
-	// TTL index: auto-delete sessions after 30 days
+	// TTL index: auto-delete sessions after 30 days past their expiry time
 	_, err := sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.D{{Key: "session_expiry", Value: 1}},
 		Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60),
