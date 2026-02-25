@@ -73,4 +73,15 @@ func (db *DB) ensureIndexes() {
 	if err != nil {
 		db.logger.Error("Failed to create compound index on llm_sessions", "error", err)
 	}
+
+	// Compound index for usage queries and recent session lookups
+	_, err = sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "user_id", Value: 1},
+			{Key: "session_start", Value: -1},
+		},
+	})
+	if err != nil {
+		db.logger.Error("Failed to create session_start index on llm_sessions", "error", err)
+	}
 }
