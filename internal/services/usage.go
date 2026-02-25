@@ -84,10 +84,24 @@ func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) erro
 	}
 	_, err = s.sessionCollection.InsertOne(ctx, session)
 	if err != nil {
-		// Insert failed (race condition or other error) - retry update
-		_, err = s.sessionCollection.UpdateOne(ctx, filter, update)
+		// Only retry with update if insert failed due to duplicate key (race condition)
+		if mongo.IsDuplicateKeyError(err) {
+			_, updateErr := s.sessionCollection.UpdateOne(ctx, filter, update)
+			if updateErr != nil {
+				// Log both errors for debugging
+				s.logger.Warn("Insert failed with duplicate key, update also failed",
+					"insertErr", err,
+					"updateErr", updateErr,
+					"userID", record.UserID)
+				return updateErr
+			}
+			// Race condition handled successfully
+			return nil
+		}
+		// Insert failed for non-duplicate-key reason (network, validation, etc.)
+		return err
 	}
-	return err
+	return nil
 }
 
 // GetActiveSession returns the current active session for a user, if any.
