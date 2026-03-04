@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { TabHeader } from "../../components/tab-header";
 import { useGetSessionUsageQuery, useGetWeeklyUsageQuery } from "../../query";
 import CellWrapper from "../../components/cell-wrapper";
+import { useSettingStore } from "../../stores/setting-store";
 
 const formatCost = (cost: number | undefined): string => {
   if (cost === undefined || cost === 0) return "USD $0.00";
@@ -60,6 +61,9 @@ const CostDisplay = ({ cost }: { cost: number | undefined }) => {
 };
 
 export const Usage = () => {
+  const { settings } = useSettingStore();
+  const isBYOK = Boolean(settings?.openaiApiKey);
+
   const {
     data: sessionData,
     isLoading: sessionLoading,
@@ -94,6 +98,22 @@ export const Usage = () => {
     return (
       <div className="flex justify-center items-center w-full h-full">
         <Spinner color="default" variant="gradient" />
+      </div>
+    );
+  }
+
+  // Show message for BYOK users
+  if (isBYOK) {
+    return (
+      <div className="pd-app-tab-content noselect !min-w-[400px]">
+        <TabHeader title="Usage" />
+        <div className="pd-app-tab-content-body">
+          <CellWrapper>
+            <div className="text-xs text-default-500 w-full text-center py-4">
+              Usage tracking is not available when using your own API key.
+            </div>
+          </CellWrapper>
+        </div>
       </div>
     );
   }
