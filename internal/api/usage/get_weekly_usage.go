@@ -21,9 +21,21 @@ func (s *UsageServer) GetWeeklyUsage(
 		return nil, err
 	}
 
+	// Convert models map to proto format
+	models := make(map[string]*usagev1.ModelTokens)
+	for modelName, tokens := range stats.Models {
+		models[modelName] = &usagev1.ModelTokens{
+			PromptTokens:     tokens.PromptTokens,
+			CompletionTokens: tokens.CompletionTokens,
+			TotalTokens:      tokens.TotalTokens,
+			RequestCount:     tokens.RequestCount,
+		}
+	}
+
 	return &usagev1.GetWeeklyUsageResponse{
 		Usage: &usagev1.WeeklyUsage{
-			TotalTokens: stats.TotalTokens,
+			Models:       models,
+			SessionCount: stats.SessionCount,
 		},
 	}, nil
 }

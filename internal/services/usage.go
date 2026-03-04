@@ -23,17 +23,23 @@ type UsageService struct {
 
 type UsageRecord struct {
 	UserID           bson.ObjectID
+	Model            string
 	PromptTokens     int64
 	CompletionTokens int64
 	TotalTokens      int64
 }
 
-type UsageStats struct {
+// ModelUsageStats stores aggregated usage statistics for a specific model.
+type ModelUsageStats struct {
 	PromptTokens     int64 `bson:"prompt_tokens"`
 	CompletionTokens int64 `bson:"completion_tokens"`
 	TotalTokens      int64 `bson:"total_tokens"`
 	RequestCount     int64 `bson:"request_count"`
-	SessionCount     int64 `bson:"session_count"`
+}
+
+type UsageStats struct {
+	Models       map[string]*ModelUsageStats `bson:"models"`
+	SessionCount int64                       `bson:"session_count"`
 }
 
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
@@ -45,21 +51,23 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 }
 
 // RecordUsage updates the active session or creates a new one if none exists.
-// Falls back to update if insert fails (handles race when another request created a session). 
+// Falls back to update if insert fails (handles race when another request created a session).
 func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) error {
 	now := time.Now()
 	nowBson := bson.DateTime(now.UnixMilli())
 
+	// Build field paths for per-model token storage
+	modelPrefix := "models." + record.Model
 	filter := bson.M{
 		"user_id":        record.UserID,
 		"session_expiry": bson.M{"$gt": nowBson},
 	}
 	update := bson.M{
 		"$inc": bson.M{
-			"prompt_tokens":     record.PromptTokens,
-			"completion_tokens": record.CompletionTokens,
-			"total_tokens":      record.TotalTokens,
-			"request_count":     1,
+			modelPrefix + ".prompt_tokens":     record.PromptTokens,
+			modelPrefix + ".completion_tokens": record.CompletionTokens,
+			modelPrefix + ".total_tokens":      record.TotalTokens,
+			modelPrefix + ".request_count":     1,
 		},
 	}
 
@@ -73,14 +81,18 @@ func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) erro
 
 	// No active session found - create a new one
 	session := models.LLMSession{
-		ID:               bson.NewObjectID(),
-		UserID:           record.UserID,
-		SessionStart:     nowBson,
-		SessionExpiry:    bson.DateTime(now.Add(SessionDuration).UnixMilli()),
-		PromptTokens:     record.PromptTokens,
-		CompletionTokens: record.CompletionTokens,
-		TotalTokens:      record.TotalTokens,
-		RequestCount:     1,
+		ID:            bson.NewObjectID(),
+		UserID:        record.UserID,
+		SessionStart:  nowBson,
+		SessionExpiry: bson.DateTime(now.Add(SessionDuration).UnixMilli()),
+		Models: map[string]*models.ModelTokens{
+			record.Model: {
+				PromptTokens:     record.PromptTokens,
+				CompletionTokens: record.CompletionTokens,
+				TotalTokens:      record.TotalTokens,
+				RequestCount:     1,
+			},
+		},
 	}
 	_, err = s.sessionCollection.InsertOne(ctx, session)
 	if err != nil {
@@ -135,13 +147,40 @@ func (s *UsageService) getUsageSince(ctx context.Context, userID bson.ObjectID, 
 			"user_id":       userID,
 			"session_start": bson.M{"$gte": bson.DateTime(since.UnixMilli())},
 		}},
+		// Convert models map to array for aggregation
+		bson.M{"$project": bson.M{
+			"models_array":  bson.M{"$objectToArray": "$models"},
+			"session_count": bson.M{"$literal": 1},
+		}},
+		// Unwind the models array to aggregate per model
+		bson.M{"$unwind": bson.M{
+			"path":                       "$models_array",
+			"preserveNullAndEmptyArrays": true,
+		}},
+		// Group by model name and sum tokens
 		bson.M{"$group": bson.M{
-			"_id":               nil,
-			"prompt_tokens":     bson.M{"$sum": "$prompt_tokens"},
-			"completion_tokens": bson.M{"$sum": "$completion_tokens"},
-			"total_tokens":      bson.M{"$sum": "$total_tokens"},
-			"request_count":     bson.M{"$sum": "$request_count"},
-			"session_count":     bson.M{"$sum": 1},
+			"_id":               "$models_array.k",
+			"prompt_tokens":     bson.M{"$sum": "$models_array.v.prompt_tokens"},
+			"completion_tokens": bson.M{"$sum": "$models_array.v.completion_tokens"},
+			"total_tokens":      bson.M{"$sum": "$models_array.v.total_tokens"},
+			"request_count":     bson.M{"$sum": "$models_array.v.request_count"},
+		}},
+		// Reshape into array of model stats
+		bson.M{"$group": bson.M{
+			"_id": nil,
+			"models": bson.M{"$push": bson.M{
+				"k": "$_id",
+				"v": bson.M{
+					"prompt_tokens":     "$prompt_tokens",
+					"completion_tokens": "$completion_tokens",
+					"total_tokens":      "$total_tokens",
+					"request_count":     "$request_count",
+				},
+			}},
+		}},
+		// Convert back to object
+		bson.M{"$project": bson.M{
+			"models": bson.M{"$arrayToObject": "$models"},
 		}},
 	}
 
@@ -151,14 +190,40 @@ func (s *UsageService) getUsageSince(ctx context.Context, userID bson.ObjectID, 
 	}
 	defer cursor.Close(ctx)
 
+	// Get session count separately (simpler query)
+	countPipeline := bson.A{
+		bson.M{"$match": bson.M{
+			"user_id":       userID,
+			"session_start": bson.M{"$gte": bson.DateTime(since.UnixMilli())},
+		}},
+		bson.M{"$count": "session_count"},
+	}
+	countCursor, err := s.sessionCollection.Aggregate(ctx, countPipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer countCursor.Close(ctx)
+
+	var sessionCount int64
+	if countCursor.Next(ctx) {
+		var countResult struct {
+			SessionCount int64 `bson:"session_count"`
+		}
+		if err := countCursor.Decode(&countResult); err != nil {
+			return nil, err
+		}
+		sessionCount = countResult.SessionCount
+	}
+
 	if cursor.Next(ctx) {
 		var result UsageStats
 		if err := cursor.Decode(&result); err != nil {
 			return nil, err
 		}
+		result.SessionCount = sessionCount
 		return &result, nil
 	}
-	return &UsageStats{}, nil
+	return &UsageStats{Models: make(map[string]*ModelUsageStats)}, nil
 }
 
 // startOfWeek returns the start of the week (Monday 00:00:00 UTC).

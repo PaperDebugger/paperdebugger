@@ -23,17 +23,86 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ModelTokens struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	PromptTokens     int64                  `protobuf:"varint,1,opt,name=prompt_tokens,json=promptTokens,proto3" json:"prompt_tokens,omitempty"`
+	CompletionTokens int64                  `protobuf:"varint,2,opt,name=completion_tokens,json=completionTokens,proto3" json:"completion_tokens,omitempty"`
+	TotalTokens      int64                  `protobuf:"varint,3,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	RequestCount     int64                  `protobuf:"varint,4,opt,name=request_count,json=requestCount,proto3" json:"request_count,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ModelTokens) Reset() {
+	*x = ModelTokens{}
+	mi := &file_usage_v1_usage_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ModelTokens) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ModelTokens) ProtoMessage() {}
+
+func (x *ModelTokens) ProtoReflect() protoreflect.Message {
+	mi := &file_usage_v1_usage_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ModelTokens.ProtoReflect.Descriptor instead.
+func (*ModelTokens) Descriptor() ([]byte, []int) {
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ModelTokens) GetPromptTokens() int64 {
+	if x != nil {
+		return x.PromptTokens
+	}
+	return 0
+}
+
+func (x *ModelTokens) GetCompletionTokens() int64 {
+	if x != nil {
+		return x.CompletionTokens
+	}
+	return 0
+}
+
+func (x *ModelTokens) GetTotalTokens() int64 {
+	if x != nil {
+		return x.TotalTokens
+	}
+	return 0
+}
+
+func (x *ModelTokens) GetRequestCount() int64 {
+	if x != nil {
+		return x.RequestCount
+	}
+	return 0
+}
+
 type SessionUsage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SessionExpiry *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=session_expiry,json=sessionExpiry,proto3" json:"session_expiry,omitempty"`
-	TotalTokens   int64                  `protobuf:"varint,2,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	// Tokens per model (model_slug -> tokens)
+	Models        map[string]*ModelTokens `protobuf:"bytes,2,rep,name=models,proto3" json:"models,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SessionUsage) Reset() {
 	*x = SessionUsage{}
-	mi := &file_usage_v1_usage_proto_msgTypes[0]
+	mi := &file_usage_v1_usage_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -45,7 +114,7 @@ func (x *SessionUsage) String() string {
 func (*SessionUsage) ProtoMessage() {}
 
 func (x *SessionUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[0]
+	mi := &file_usage_v1_usage_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +127,7 @@ func (x *SessionUsage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionUsage.ProtoReflect.Descriptor instead.
 func (*SessionUsage) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{0}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SessionUsage) GetSessionExpiry() *timestamppb.Timestamp {
@@ -68,23 +137,25 @@ func (x *SessionUsage) GetSessionExpiry() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *SessionUsage) GetTotalTokens() int64 {
+func (x *SessionUsage) GetModels() map[string]*ModelTokens {
 	if x != nil {
-		return x.TotalTokens
+		return x.Models
 	}
-	return 0
+	return nil
 }
 
 type WeeklyUsage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TotalTokens   int64                  `protobuf:"varint,1,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Tokens per model (model_slug -> tokens)
+	Models        map[string]*ModelTokens `protobuf:"bytes,1,rep,name=models,proto3" json:"models,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	SessionCount  int64                   `protobuf:"varint,2,opt,name=session_count,json=sessionCount,proto3" json:"session_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WeeklyUsage) Reset() {
 	*x = WeeklyUsage{}
-	mi := &file_usage_v1_usage_proto_msgTypes[1]
+	mi := &file_usage_v1_usage_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -96,7 +167,7 @@ func (x *WeeklyUsage) String() string {
 func (*WeeklyUsage) ProtoMessage() {}
 
 func (x *WeeklyUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[1]
+	mi := &file_usage_v1_usage_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,12 +180,19 @@ func (x *WeeklyUsage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeeklyUsage.ProtoReflect.Descriptor instead.
 func (*WeeklyUsage) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{1}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *WeeklyUsage) GetTotalTokens() int64 {
+func (x *WeeklyUsage) GetModels() map[string]*ModelTokens {
 	if x != nil {
-		return x.TotalTokens
+		return x.Models
+	}
+	return nil
+}
+
+func (x *WeeklyUsage) GetSessionCount() int64 {
+	if x != nil {
+		return x.SessionCount
 	}
 	return 0
 }
@@ -127,7 +205,7 @@ type GetSessionUsageRequest struct {
 
 func (x *GetSessionUsageRequest) Reset() {
 	*x = GetSessionUsageRequest{}
-	mi := &file_usage_v1_usage_proto_msgTypes[2]
+	mi := &file_usage_v1_usage_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +217,7 @@ func (x *GetSessionUsageRequest) String() string {
 func (*GetSessionUsageRequest) ProtoMessage() {}
 
 func (x *GetSessionUsageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[2]
+	mi := &file_usage_v1_usage_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +230,7 @@ func (x *GetSessionUsageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionUsageRequest.ProtoReflect.Descriptor instead.
 func (*GetSessionUsageRequest) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{2}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{3}
 }
 
 type GetSessionUsageResponse struct {
@@ -165,7 +243,7 @@ type GetSessionUsageResponse struct {
 
 func (x *GetSessionUsageResponse) Reset() {
 	*x = GetSessionUsageResponse{}
-	mi := &file_usage_v1_usage_proto_msgTypes[3]
+	mi := &file_usage_v1_usage_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -177,7 +255,7 @@ func (x *GetSessionUsageResponse) String() string {
 func (*GetSessionUsageResponse) ProtoMessage() {}
 
 func (x *GetSessionUsageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[3]
+	mi := &file_usage_v1_usage_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -190,7 +268,7 @@ func (x *GetSessionUsageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionUsageResponse.ProtoReflect.Descriptor instead.
 func (*GetSessionUsageResponse) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{3}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetSessionUsageResponse) GetSession() *SessionUsage {
@@ -208,7 +286,7 @@ type GetWeeklyUsageRequest struct {
 
 func (x *GetWeeklyUsageRequest) Reset() {
 	*x = GetWeeklyUsageRequest{}
-	mi := &file_usage_v1_usage_proto_msgTypes[4]
+	mi := &file_usage_v1_usage_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -220,7 +298,7 @@ func (x *GetWeeklyUsageRequest) String() string {
 func (*GetWeeklyUsageRequest) ProtoMessage() {}
 
 func (x *GetWeeklyUsageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[4]
+	mi := &file_usage_v1_usage_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +311,7 @@ func (x *GetWeeklyUsageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWeeklyUsageRequest.ProtoReflect.Descriptor instead.
 func (*GetWeeklyUsageRequest) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{4}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{5}
 }
 
 type GetWeeklyUsageResponse struct {
@@ -245,7 +323,7 @@ type GetWeeklyUsageResponse struct {
 
 func (x *GetWeeklyUsageResponse) Reset() {
 	*x = GetWeeklyUsageResponse{}
-	mi := &file_usage_v1_usage_proto_msgTypes[5]
+	mi := &file_usage_v1_usage_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -257,7 +335,7 @@ func (x *GetWeeklyUsageResponse) String() string {
 func (*GetWeeklyUsageResponse) ProtoMessage() {}
 
 func (x *GetWeeklyUsageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_usage_v1_usage_proto_msgTypes[5]
+	mi := &file_usage_v1_usage_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -270,7 +348,7 @@ func (x *GetWeeklyUsageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWeeklyUsageResponse.ProtoReflect.Descriptor instead.
 func (*GetWeeklyUsageResponse) Descriptor() ([]byte, []int) {
-	return file_usage_v1_usage_proto_rawDescGZIP(), []int{5}
+	return file_usage_v1_usage_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetWeeklyUsageResponse) GetUsage() *WeeklyUsage {
@@ -284,12 +362,24 @@ var File_usage_v1_usage_proto protoreflect.FileDescriptor
 
 const file_usage_v1_usage_proto_rawDesc = "" +
 	"\n" +
-	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"t\n" +
+	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa7\x01\n" +
+	"\vModelTokens\x12#\n" +
+	"\rprompt_tokens\x18\x01 \x01(\x03R\fpromptTokens\x12+\n" +
+	"\x11completion_tokens\x18\x02 \x01(\x03R\x10completionTokens\x12!\n" +
+	"\ftotal_tokens\x18\x03 \x01(\x03R\vtotalTokens\x12#\n" +
+	"\rrequest_count\x18\x04 \x01(\x03R\frequestCount\"\xdf\x01\n" +
 	"\fSessionUsage\x12A\n" +
-	"\x0esession_expiry\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\rsessionExpiry\x12!\n" +
-	"\ftotal_tokens\x18\x02 \x01(\x03R\vtotalTokens\"0\n" +
-	"\vWeeklyUsage\x12!\n" +
-	"\ftotal_tokens\x18\x01 \x01(\x03R\vtotalTokens\"\x18\n" +
+	"\x0esession_expiry\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\rsessionExpiry\x12:\n" +
+	"\x06models\x18\x02 \x03(\v2\".usage.v1.SessionUsage.ModelsEntryR\x06models\x1aP\n" +
+	"\vModelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.usage.v1.ModelTokensR\x05value:\x028\x01\"\xbf\x01\n" +
+	"\vWeeklyUsage\x129\n" +
+	"\x06models\x18\x01 \x03(\v2!.usage.v1.WeeklyUsage.ModelsEntryR\x06models\x12#\n" +
+	"\rsession_count\x18\x02 \x01(\x03R\fsessionCount\x1aP\n" +
+	"\vModelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.usage.v1.ModelTokensR\x05value:\x028\x01\"\x18\n" +
 	"\x16GetSessionUsageRequest\"K\n" +
 	"\x17GetSessionUsageResponse\x120\n" +
 	"\asession\x18\x01 \x01(\v2\x16.usage.v1.SessionUsageR\asession\"\x17\n" +
@@ -314,29 +404,36 @@ func file_usage_v1_usage_proto_rawDescGZIP() []byte {
 	return file_usage_v1_usage_proto_rawDescData
 }
 
-var file_usage_v1_usage_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_usage_v1_usage_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_usage_v1_usage_proto_goTypes = []any{
-	(*SessionUsage)(nil),            // 0: usage.v1.SessionUsage
-	(*WeeklyUsage)(nil),             // 1: usage.v1.WeeklyUsage
-	(*GetSessionUsageRequest)(nil),  // 2: usage.v1.GetSessionUsageRequest
-	(*GetSessionUsageResponse)(nil), // 3: usage.v1.GetSessionUsageResponse
-	(*GetWeeklyUsageRequest)(nil),   // 4: usage.v1.GetWeeklyUsageRequest
-	(*GetWeeklyUsageResponse)(nil),  // 5: usage.v1.GetWeeklyUsageResponse
-	(*timestamppb.Timestamp)(nil),   // 6: google.protobuf.Timestamp
+	(*ModelTokens)(nil),             // 0: usage.v1.ModelTokens
+	(*SessionUsage)(nil),            // 1: usage.v1.SessionUsage
+	(*WeeklyUsage)(nil),             // 2: usage.v1.WeeklyUsage
+	(*GetSessionUsageRequest)(nil),  // 3: usage.v1.GetSessionUsageRequest
+	(*GetSessionUsageResponse)(nil), // 4: usage.v1.GetSessionUsageResponse
+	(*GetWeeklyUsageRequest)(nil),   // 5: usage.v1.GetWeeklyUsageRequest
+	(*GetWeeklyUsageResponse)(nil),  // 6: usage.v1.GetWeeklyUsageResponse
+	nil,                             // 7: usage.v1.SessionUsage.ModelsEntry
+	nil,                             // 8: usage.v1.WeeklyUsage.ModelsEntry
+	(*timestamppb.Timestamp)(nil),   // 9: google.protobuf.Timestamp
 }
 var file_usage_v1_usage_proto_depIdxs = []int32{
-	6, // 0: usage.v1.SessionUsage.session_expiry:type_name -> google.protobuf.Timestamp
-	0, // 1: usage.v1.GetSessionUsageResponse.session:type_name -> usage.v1.SessionUsage
-	1, // 2: usage.v1.GetWeeklyUsageResponse.usage:type_name -> usage.v1.WeeklyUsage
-	2, // 3: usage.v1.UsageService.GetSessionUsage:input_type -> usage.v1.GetSessionUsageRequest
-	4, // 4: usage.v1.UsageService.GetWeeklyUsage:input_type -> usage.v1.GetWeeklyUsageRequest
-	3, // 5: usage.v1.UsageService.GetSessionUsage:output_type -> usage.v1.GetSessionUsageResponse
-	5, // 6: usage.v1.UsageService.GetWeeklyUsage:output_type -> usage.v1.GetWeeklyUsageResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	9, // 0: usage.v1.SessionUsage.session_expiry:type_name -> google.protobuf.Timestamp
+	7, // 1: usage.v1.SessionUsage.models:type_name -> usage.v1.SessionUsage.ModelsEntry
+	8, // 2: usage.v1.WeeklyUsage.models:type_name -> usage.v1.WeeklyUsage.ModelsEntry
+	1, // 3: usage.v1.GetSessionUsageResponse.session:type_name -> usage.v1.SessionUsage
+	2, // 4: usage.v1.GetWeeklyUsageResponse.usage:type_name -> usage.v1.WeeklyUsage
+	0, // 5: usage.v1.SessionUsage.ModelsEntry.value:type_name -> usage.v1.ModelTokens
+	0, // 6: usage.v1.WeeklyUsage.ModelsEntry.value:type_name -> usage.v1.ModelTokens
+	3, // 7: usage.v1.UsageService.GetSessionUsage:input_type -> usage.v1.GetSessionUsageRequest
+	5, // 8: usage.v1.UsageService.GetWeeklyUsage:input_type -> usage.v1.GetWeeklyUsageRequest
+	4, // 9: usage.v1.UsageService.GetSessionUsage:output_type -> usage.v1.GetSessionUsageResponse
+	6, // 10: usage.v1.UsageService.GetWeeklyUsage:output_type -> usage.v1.GetWeeklyUsageResponse
+	9, // [9:11] is the sub-list for method output_type
+	7, // [7:9] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_usage_v1_usage_proto_init() }
@@ -350,7 +447,7 @@ func file_usage_v1_usage_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_usage_v1_usage_proto_rawDesc), len(file_usage_v1_usage_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

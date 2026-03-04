@@ -29,10 +29,21 @@ func (s *UsageServer) GetSessionUsage(
 		}, nil
 	}
 
+	// Convert models map to proto format
+	models := make(map[string]*usagev1.ModelTokens)
+	for modelName, tokens := range session.Models {
+		models[modelName] = &usagev1.ModelTokens{
+			PromptTokens:     tokens.PromptTokens,
+			CompletionTokens: tokens.CompletionTokens,
+			TotalTokens:      tokens.TotalTokens,
+			RequestCount:     tokens.RequestCount,
+		}
+	}
+
 	return &usagev1.GetSessionUsageResponse{
 		Session: &usagev1.SessionUsage{
 			SessionExpiry: timestamppb.New(session.SessionExpiry.Time()),
-			TotalTokens:   session.TotalTokens,
+			Models:        models,
 		},
 	}, nil
 }

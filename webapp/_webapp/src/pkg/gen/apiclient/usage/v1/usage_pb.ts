@@ -13,7 +13,39 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file usage/v1/usage.proto.
  */
 export const file_usage_v1_usage: GenFile = /*@__PURE__*/
-  fileDesc("ChR1c2FnZS92MS91c2FnZS5wcm90bxIIdXNhZ2UudjEiWAoMU2Vzc2lvblVzYWdlEjIKDnNlc3Npb25fZXhwaXJ5GAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx0b3RhbF90b2tlbnMYAiABKAMiIwoLV2Vla2x5VXNhZ2USFAoMdG90YWxfdG9rZW5zGAEgASgDIhgKFkdldFNlc3Npb25Vc2FnZVJlcXVlc3QiQgoXR2V0U2Vzc2lvblVzYWdlUmVzcG9uc2USJwoHc2Vzc2lvbhgBIAEoCzIWLnVzYWdlLnYxLlNlc3Npb25Vc2FnZSIXChVHZXRXZWVrbHlVc2FnZVJlcXVlc3QiPgoWR2V0V2Vla2x5VXNhZ2VSZXNwb25zZRIkCgV1c2FnZRgBIAEoCzIVLnVzYWdlLnYxLldlZWtseVVzYWdlMpoCCgxVc2FnZVNlcnZpY2UShQEKD0dldFNlc3Npb25Vc2FnZRIgLnVzYWdlLnYxLkdldFNlc3Npb25Vc2FnZVJlcXVlc3QaIS51c2FnZS52MS5HZXRTZXNzaW9uVXNhZ2VSZXNwb25zZSItgtPkkwInEiUvX3BkL2FwaS92MS91c2Vycy9Ac2VsZi91c2FnZS9zZXNzaW9uEoEBCg5HZXRXZWVrbHlVc2FnZRIfLnVzYWdlLnYxLkdldFdlZWtseVVzYWdlUmVxdWVzdBogLnVzYWdlLnYxLkdldFdlZWtseVVzYWdlUmVzcG9uc2UiLILT5JMCJhIkL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvdXNhZ2Uvd2Vla2x5QocBCgxjb20udXNhZ2UudjFCClVzYWdlUHJvdG9QAVoqcGFwZXJkZWJ1Z2dlci9wa2cvZ2VuL2FwaS91c2FnZS92MTt1c2FnZXYxogIDVVhYqgIIVXNhZ2UuVjHKAghVc2FnZVxWMeICFFVzYWdlXFYxXEdQQk1ldGFkYXRh6gIJVXNhZ2U6OlYxYgZwcm90bzM", [file_google_api_annotations, file_google_protobuf_timestamp]);
+  fileDesc("ChR1c2FnZS92MS91c2FnZS5wcm90bxIIdXNhZ2UudjEibAoLTW9kZWxUb2tlbnMSFQoNcHJvbXB0X3Rva2VucxgBIAEoAxIZChFjb21wbGV0aW9uX3Rva2VucxgCIAEoAxIUCgx0b3RhbF90b2tlbnMYAyABKAMSFQoNcmVxdWVzdF9jb3VudBgEIAEoAyK8AQoMU2Vzc2lvblVzYWdlEjIKDnNlc3Npb25fZXhwaXJ5GAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZtb2RlbHMYAiADKAsyIi51c2FnZS52MS5TZXNzaW9uVXNhZ2UuTW9kZWxzRW50cnkaRAoLTW9kZWxzRW50cnkSCwoDa2V5GAEgASgJEiQKBXZhbHVlGAIgASgLMhUudXNhZ2UudjEuTW9kZWxUb2tlbnM6AjgBIp0BCgtXZWVrbHlVc2FnZRIxCgZtb2RlbHMYASADKAsyIS51c2FnZS52MS5XZWVrbHlVc2FnZS5Nb2RlbHNFbnRyeRIVCg1zZXNzaW9uX2NvdW50GAIgASgDGkQKC01vZGVsc0VudHJ5EgsKA2tleRgBIAEoCRIkCgV2YWx1ZRgCIAEoCzIVLnVzYWdlLnYxLk1vZGVsVG9rZW5zOgI4ASIYChZHZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0IkIKF0dldFNlc3Npb25Vc2FnZVJlc3BvbnNlEicKB3Nlc3Npb24YASABKAsyFi51c2FnZS52MS5TZXNzaW9uVXNhZ2UiFwoVR2V0V2Vla2x5VXNhZ2VSZXF1ZXN0Ij4KFkdldFdlZWtseVVzYWdlUmVzcG9uc2USJAoFdXNhZ2UYASABKAsyFS51c2FnZS52MS5XZWVrbHlVc2FnZTKaAgoMVXNhZ2VTZXJ2aWNlEoUBCg9HZXRTZXNzaW9uVXNhZ2USIC51c2FnZS52MS5HZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0GiEudXNhZ2UudjEuR2V0U2Vzc2lvblVzYWdlUmVzcG9uc2UiLYLT5JMCJxIlL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvdXNhZ2Uvc2Vzc2lvbhKBAQoOR2V0V2Vla2x5VXNhZ2USHy51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlcXVlc3QaIC51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlc3BvbnNlIiyC0+STAiYSJC9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3VzYWdlL3dlZWtseUKHAQoMY29tLnVzYWdlLnYxQgpVc2FnZVByb3RvUAFaKnBhcGVyZGVidWdnZXIvcGtnL2dlbi9hcGkvdXNhZ2UvdjE7dXNhZ2V2MaICA1VYWKoCCFVzYWdlLlYxygIIVXNhZ2VcVjHiAhRVc2FnZVxWMVxHUEJNZXRhZGF0YeoCCVVzYWdlOjpWMWIGcHJvdG8z", [file_google_api_annotations, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message usage.v1.ModelTokens
+ */
+export type ModelTokens = Message<"usage.v1.ModelTokens"> & {
+  /**
+   * @generated from field: int64 prompt_tokens = 1;
+   */
+  promptTokens: bigint;
+
+  /**
+   * @generated from field: int64 completion_tokens = 2;
+   */
+  completionTokens: bigint;
+
+  /**
+   * @generated from field: int64 total_tokens = 3;
+   */
+  totalTokens: bigint;
+
+  /**
+   * @generated from field: int64 request_count = 4;
+   */
+  requestCount: bigint;
+};
+
+/**
+ * Describes the message usage.v1.ModelTokens.
+ * Use `create(ModelTokensSchema)` to create a new message.
+ */
+export const ModelTokensSchema: GenMessage<ModelTokens> = /*@__PURE__*/
+  messageDesc(file_usage_v1_usage, 0);
 
 /**
  * @generated from message usage.v1.SessionUsage
@@ -25,9 +57,11 @@ export type SessionUsage = Message<"usage.v1.SessionUsage"> & {
   sessionExpiry?: Timestamp;
 
   /**
-   * @generated from field: int64 total_tokens = 2;
+   * Tokens per model (model_slug -> tokens)
+   *
+   * @generated from field: map<string, usage.v1.ModelTokens> models = 2;
    */
-  totalTokens: bigint;
+  models: { [key: string]: ModelTokens };
 };
 
 /**
@@ -35,16 +69,23 @@ export type SessionUsage = Message<"usage.v1.SessionUsage"> & {
  * Use `create(SessionUsageSchema)` to create a new message.
  */
 export const SessionUsageSchema: GenMessage<SessionUsage> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 0);
+  messageDesc(file_usage_v1_usage, 1);
 
 /**
  * @generated from message usage.v1.WeeklyUsage
  */
 export type WeeklyUsage = Message<"usage.v1.WeeklyUsage"> & {
   /**
-   * @generated from field: int64 total_tokens = 1;
+   * Tokens per model (model_slug -> tokens)
+   *
+   * @generated from field: map<string, usage.v1.ModelTokens> models = 1;
    */
-  totalTokens: bigint;
+  models: { [key: string]: ModelTokens };
+
+  /**
+   * @generated from field: int64 session_count = 2;
+   */
+  sessionCount: bigint;
 };
 
 /**
@@ -52,7 +93,7 @@ export type WeeklyUsage = Message<"usage.v1.WeeklyUsage"> & {
  * Use `create(WeeklyUsageSchema)` to create a new message.
  */
 export const WeeklyUsageSchema: GenMessage<WeeklyUsage> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 1);
+  messageDesc(file_usage_v1_usage, 2);
 
 /**
  * @generated from message usage.v1.GetSessionUsageRequest
@@ -65,7 +106,7 @@ export type GetSessionUsageRequest = Message<"usage.v1.GetSessionUsageRequest"> 
  * Use `create(GetSessionUsageRequestSchema)` to create a new message.
  */
 export const GetSessionUsageRequestSchema: GenMessage<GetSessionUsageRequest> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 2);
+  messageDesc(file_usage_v1_usage, 3);
 
 /**
  * @generated from message usage.v1.GetSessionUsageResponse
@@ -84,7 +125,7 @@ export type GetSessionUsageResponse = Message<"usage.v1.GetSessionUsageResponse"
  * Use `create(GetSessionUsageResponseSchema)` to create a new message.
  */
 export const GetSessionUsageResponseSchema: GenMessage<GetSessionUsageResponse> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 3);
+  messageDesc(file_usage_v1_usage, 4);
 
 /**
  * @generated from message usage.v1.GetWeeklyUsageRequest
@@ -97,7 +138,7 @@ export type GetWeeklyUsageRequest = Message<"usage.v1.GetWeeklyUsageRequest"> & 
  * Use `create(GetWeeklyUsageRequestSchema)` to create a new message.
  */
 export const GetWeeklyUsageRequestSchema: GenMessage<GetWeeklyUsageRequest> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 4);
+  messageDesc(file_usage_v1_usage, 5);
 
 /**
  * @generated from message usage.v1.GetWeeklyUsageResponse
@@ -114,7 +155,7 @@ export type GetWeeklyUsageResponse = Message<"usage.v1.GetWeeklyUsageResponse"> 
  * Use `create(GetWeeklyUsageResponseSchema)` to create a new message.
  */
 export const GetWeeklyUsageResponseSchema: GenMessage<GetWeeklyUsageResponse> = /*@__PURE__*/
-  messageDesc(file_usage_v1_usage, 5);
+  messageDesc(file_usage_v1_usage, 6);
 
 /**
  * @generated from service usage.v1.UsageService

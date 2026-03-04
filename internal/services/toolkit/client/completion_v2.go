@@ -110,6 +110,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 					}(services.UsageRecord{
 						UserID:           userID,
+						Model:            modelSlug,
 						PromptTokens:     chunk.Usage.PromptTokens,
 						CompletionTokens: chunk.Usage.CompletionTokens,
 						TotalTokens:      chunk.Usage.TotalTokens,

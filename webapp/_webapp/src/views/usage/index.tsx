@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { TabHeader } from "../../components/tab-header";
 import { useGetSessionUsageQuery, useGetWeeklyUsageQuery } from "../../query";
 import CellWrapper from "../../components/cell-wrapper";
+import type { ModelTokens } from "../../pkg/gen/apiclient/usage/v1/usage_pb";
 
 const formatNumber = (n: bigint | number | undefined): string => {
   if (n === undefined) return "0";
@@ -50,11 +51,26 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
   return <div className="text-gray-500 text-xs ps-2">{children}</div>;
 };
 
-const StatItem = ({ label, value }: { label: string; value: string }) => {
+const ModelUsageItem = ({ model, tokens }: { model: string; tokens: ModelTokens }) => {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-xs text-default-500">{label}</span>
-      <span className="text-xs font-medium">{value}</span>
+    <div className="flex flex-col gap-1 py-1">
+      <div className="text-xs font-medium text-default-700">{model}</div>
+      <div className="flex justify-between items-center ps-2">
+        <span className="text-xs text-default-500">Total</span>
+        <span className="text-xs">{formatNumber(tokens.totalTokens)}</span>
+      </div>
+      <div className="flex justify-between items-center ps-2">
+        <span className="text-xs text-default-500">Prompt</span>
+        <span className="text-xs">{formatNumber(tokens.promptTokens)}</span>
+      </div>
+      <div className="flex justify-between items-center ps-2">
+        <span className="text-xs text-default-500">Completion</span>
+        <span className="text-xs">{formatNumber(tokens.completionTokens)}</span>
+      </div>
+      <div className="flex justify-between items-center ps-2">
+        <span className="text-xs text-default-500">Requests</span>
+        <span className="text-xs">{formatNumber(tokens.requestCount)}</span>
+      </div>
     </div>
   );
 };
@@ -101,6 +117,9 @@ export const Usage = () => {
   const session = sessionData?.session;
   const weekly = weeklyData?.usage;
 
+  const sessionModels = session?.models ? Object.entries(session.models) : [];
+  const weeklyModels = weekly?.models ? Object.entries(weekly.models) : [];
+
   return (
     <div className="pd-app-tab-content noselect !min-w-[400px]">
       <TabHeader title="Usage" />
@@ -112,10 +131,12 @@ export const Usage = () => {
               <span> ({formatTimeRemaining(session.sessionExpiry)})</span>
             )}
           </SectionTitle>
-          {session ? (
+          {session && sessionModels.length > 0 ? (
             <CellWrapper>
-              <div className="flex flex-col gap-2 w-full">
-                <StatItem label="Tokens Used" value={formatNumber(session.totalTokens)} />
+              <div className="flex flex-col divide-y divide-default-200 w-full">
+                {sessionModels.map(([model, tokens]) => (
+                  <ModelUsageItem key={model} model={model} tokens={tokens} />
+                ))}
               </div>
             </CellWrapper>
           ) : (
@@ -126,11 +147,13 @@ export const Usage = () => {
         </SectionContainer>
 
         <SectionContainer>
-          <SectionTitle>Weekly Limits</SectionTitle>
-          {weekly ? (
+          <SectionTitle>Weekly Usage</SectionTitle>
+          {weekly && weeklyModels.length > 0 ? (
             <CellWrapper>
-              <div className="flex flex-col gap-2 w-full">
-                <StatItem label="Tokens Used" value={formatNumber(weekly.totalTokens)} />
+              <div className="flex flex-col divide-y divide-default-200 w-full">
+                {weeklyModels.map(([model, tokens]) => (
+                  <ModelUsageItem key={model} model={model} tokens={tokens} />
+                ))}
               </div>
             </CellWrapper>
           ) : (
