@@ -9,16 +9,19 @@ import (
 type UsageServer struct {
 	usagev1.UnimplementedUsageServiceServer
 
-	usageService *services.UsageService
-	logger       *logger.Logger
+	usageService   *services.UsageService
+	pricingService *services.PricingService
+	logger         *logger.Logger
 }
 
 func NewUsageServer(
 	usageService *services.UsageService,
+	pricingService *services.PricingService,
 	logger *logger.Logger,
 ) usagev1.UsageServiceServer {
 	return &UsageServer{
-		usageService: usageService,
-		logger:       logger,
+		usageService:   usageService,
+		pricingService: pricingService,
+		logger:         logger,
 	}
 }

@@ -22,18 +22,21 @@ message ModelTokens {
   int64 completion_tokens = 2;
   int64 total_tokens = 3;
   int64 request_count = 4;
+  double cost_usd = 5; // Cost in USD for this model
 }
 
 message SessionUsage {
   google.protobuf.Timestamp session_expiry = 1;
   // Tokens per model (model_slug -> tokens)
   map<string, ModelTokens> models = 2;
+  double total_cost_usd = 3; // Total cost in USD across all models
 }
 
 message WeeklyUsage {
   // Tokens per model (model_slug -> tokens)
   map<string, ModelTokens> models = 1;
   int64 session_count = 2;
+  double total_cost_usd = 3; // Total cost in USD across all models
 }
 
 message GetSessionUsageRequest {}

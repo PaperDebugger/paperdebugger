@@ -11,6 +11,12 @@ const formatNumber = (n: bigint | number | undefined): string => {
   return Number(n).toLocaleString();
 };
 
+const formatCost = (cost: number | undefined): string => {
+  if (cost === undefined || cost === 0) return "$0.00";
+  if (cost < 0.01) return `$${cost.toFixed(4)}`;
+  return `$${cost.toFixed(2)}`;
+};
+
 const formatTimeRemaining = (timestamp: { seconds?: bigint; nanos?: number } | undefined): string => {
   if (!timestamp || !timestamp.seconds) return "";
   const expiryMs = Number(timestamp.seconds) * 1000;
@@ -53,24 +59,28 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
 
 const ModelUsageItem = ({ model, tokens }: { model: string; tokens: ModelTokens }) => {
   return (
-    <div className="flex flex-col gap-1 py-1">
-      <div className="text-xs font-medium text-default-700">{model}</div>
-      <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-500">Total</span>
-        <span className="text-xs">{formatNumber(tokens.totalTokens)}</span>
+    <div className="flex flex-col gap-1 py-2">
+      <div className="flex justify-between items-center">
+        <span className="text-xs font-medium text-default-700">{model}</span>
+        <span className="text-xs font-semibold text-primary">{formatCost(tokens.costUsd)}</span>
       </div>
       <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-500">Prompt</span>
-        <span className="text-xs">{formatNumber(tokens.promptTokens)}</span>
+        <span className="text-xs text-default-400">Tokens</span>
+        <span className="text-xs text-default-500">{formatNumber(tokens.totalTokens)}</span>
       </div>
       <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-500">Completion</span>
-        <span className="text-xs">{formatNumber(tokens.completionTokens)}</span>
+        <span className="text-xs text-default-400">Requests</span>
+        <span className="text-xs text-default-500">{formatNumber(tokens.requestCount)}</span>
       </div>
-      <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-500">Requests</span>
-        <span className="text-xs">{formatNumber(tokens.requestCount)}</span>
-      </div>
+    </div>
+  );
+};
+
+const TotalCostDisplay = ({ cost }: { cost: number | undefined }) => {
+  return (
+    <div className="flex justify-between items-center py-2 border-t border-default-200 mt-1">
+      <span className="text-sm font-medium">Total Cost</span>
+      <span className="text-sm font-bold text-primary">{formatCost(cost)}</span>
     </div>
   );
 };
@@ -133,10 +143,11 @@ export const Usage = () => {
           </SectionTitle>
           {session && sessionModels.length > 0 ? (
             <CellWrapper>
-              <div className="flex flex-col divide-y divide-default-200 w-full">
+              <div className="flex flex-col w-full">
                 {sessionModels.map(([model, tokens]) => (
                   <ModelUsageItem key={model} model={model} tokens={tokens} />
                 ))}
+                <TotalCostDisplay cost={session.totalCostUsd} />
               </div>
             </CellWrapper>
           ) : (
@@ -150,10 +161,11 @@ export const Usage = () => {
           <SectionTitle>Weekly Usage</SectionTitle>
           {weekly && weeklyModels.length > 0 ? (
             <CellWrapper>
-              <div className="flex flex-col divide-y divide-default-200 w-full">
+              <div className="flex flex-col w-full">
                 {weeklyModels.map(([model, tokens]) => (
                   <ModelUsageItem key={model} model={model} tokens={tokens} />
                 ))}
+                <TotalCostDisplay cost={weekly.totalCostUsd} />
               </div>
             </CellWrapper>
           ) : (

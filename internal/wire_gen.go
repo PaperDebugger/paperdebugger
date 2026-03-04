@@ -47,15 +47,16 @@ func InitializeApp() (*api.Server, error) {
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
 	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)
 	commentServiceServer := comment.NewCommentServer(projectService, chatService, reverseCommentService, loggerLogger, cfgCfg)
-	usageServiceServer := usage.NewUsageServer(usageService, loggerLogger)
+	pricingService := services.NewPricingService(dbDB, cfgCfg, loggerLogger)
+	usageServiceServer := usage.NewUsageServer(usageService, pricingService, loggerLogger)
 	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer, usageServiceServer)
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)
 	oAuthHandler := auth.NewOAuthHandler(oAuthService)
 	ginServer := api.NewGinServer(cfgCfg, oAuthHandler)
-	server := api.NewServer(grpcServer, ginServer, loggerLogger)
+	server := api.NewServer(grpcServer, ginServer, pricingService, loggerLogger)
 	return server, nil
 }
 
 // wire.go:
 
-var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, usage.NewUsageServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, services.NewUsageService, cfg.GetCfg, logger.GetLogger, db.NewDB)
+var Set = wire.NewSet(api.NewServer, api.NewGrpcServer, api.NewGinServer, auth.NewOAuthHandler, auth.NewAuthServer, chat.NewChatServer, chat.NewChatServerV2, user.NewUserServer, project.NewProjectServer, comment.NewCommentServer, usage.NewUsageServer, client.NewAIClient, client.NewAIClientV2, services.NewReverseCommentService, services.NewChatService, services.NewChatServiceV2, services.NewTokenService, services.NewUserService, services.NewProjectService, services.NewPromptService, services.NewOAuthService, services.NewUsageService, services.NewPricingService, cfg.GetCfg, logger.GetLogger, db.NewDB)

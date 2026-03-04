@@ -29,6 +29,7 @@ type ModelTokens struct {
 	CompletionTokens int64                  `protobuf:"varint,2,opt,name=completion_tokens,json=completionTokens,proto3" json:"completion_tokens,omitempty"`
 	TotalTokens      int64                  `protobuf:"varint,3,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
 	RequestCount     int64                  `protobuf:"varint,4,opt,name=request_count,json=requestCount,proto3" json:"request_count,omitempty"`
+	CostUsd          float64                `protobuf:"fixed64,5,opt,name=cost_usd,json=costUsd,proto3" json:"cost_usd,omitempty"` // Cost in USD for this model
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -91,11 +92,19 @@ func (x *ModelTokens) GetRequestCount() int64 {
 	return 0
 }
 
+func (x *ModelTokens) GetCostUsd() float64 {
+	if x != nil {
+		return x.CostUsd
+	}
+	return 0
+}
+
 type SessionUsage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SessionExpiry *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=session_expiry,json=sessionExpiry,proto3" json:"session_expiry,omitempty"`
 	// Tokens per model (model_slug -> tokens)
 	Models        map[string]*ModelTokens `protobuf:"bytes,2,rep,name=models,proto3" json:"models,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	TotalCostUsd  float64                 `protobuf:"fixed64,3,opt,name=total_cost_usd,json=totalCostUsd,proto3" json:"total_cost_usd,omitempty"` // Total cost in USD across all models
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -144,11 +153,19 @@ func (x *SessionUsage) GetModels() map[string]*ModelTokens {
 	return nil
 }
 
+func (x *SessionUsage) GetTotalCostUsd() float64 {
+	if x != nil {
+		return x.TotalCostUsd
+	}
+	return 0
+}
+
 type WeeklyUsage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Tokens per model (model_slug -> tokens)
 	Models        map[string]*ModelTokens `protobuf:"bytes,1,rep,name=models,proto3" json:"models,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	SessionCount  int64                   `protobuf:"varint,2,opt,name=session_count,json=sessionCount,proto3" json:"session_count,omitempty"`
+	TotalCostUsd  float64                 `protobuf:"fixed64,3,opt,name=total_cost_usd,json=totalCostUsd,proto3" json:"total_cost_usd,omitempty"` // Total cost in USD across all models
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -193,6 +210,13 @@ func (x *WeeklyUsage) GetModels() map[string]*ModelTokens {
 func (x *WeeklyUsage) GetSessionCount() int64 {
 	if x != nil {
 		return x.SessionCount
+	}
+	return 0
+}
+
+func (x *WeeklyUsage) GetTotalCostUsd() float64 {
+	if x != nil {
+		return x.TotalCostUsd
 	}
 	return 0
 }
@@ -362,21 +386,24 @@ var File_usage_v1_usage_proto protoreflect.FileDescriptor
 
 const file_usage_v1_usage_proto_rawDesc = "" +
 	"\n" +
-	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa7\x01\n" +
+	"\x14usage/v1/usage.proto\x12\busage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc2\x01\n" +
 	"\vModelTokens\x12#\n" +
 	"\rprompt_tokens\x18\x01 \x01(\x03R\fpromptTokens\x12+\n" +
 	"\x11completion_tokens\x18\x02 \x01(\x03R\x10completionTokens\x12!\n" +
 	"\ftotal_tokens\x18\x03 \x01(\x03R\vtotalTokens\x12#\n" +
-	"\rrequest_count\x18\x04 \x01(\x03R\frequestCount\"\xdf\x01\n" +
+	"\rrequest_count\x18\x04 \x01(\x03R\frequestCount\x12\x19\n" +
+	"\bcost_usd\x18\x05 \x01(\x01R\acostUsd\"\x85\x02\n" +
 	"\fSessionUsage\x12A\n" +
 	"\x0esession_expiry\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\rsessionExpiry\x12:\n" +
-	"\x06models\x18\x02 \x03(\v2\".usage.v1.SessionUsage.ModelsEntryR\x06models\x1aP\n" +
+	"\x06models\x18\x02 \x03(\v2\".usage.v1.SessionUsage.ModelsEntryR\x06models\x12$\n" +
+	"\x0etotal_cost_usd\x18\x03 \x01(\x01R\ftotalCostUsd\x1aP\n" +
 	"\vModelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
-	"\x05value\x18\x02 \x01(\v2\x15.usage.v1.ModelTokensR\x05value:\x028\x01\"\xbf\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x15.usage.v1.ModelTokensR\x05value:\x028\x01\"\xe5\x01\n" +
 	"\vWeeklyUsage\x129\n" +
 	"\x06models\x18\x01 \x03(\v2!.usage.v1.WeeklyUsage.ModelsEntryR\x06models\x12#\n" +
-	"\rsession_count\x18\x02 \x01(\x03R\fsessionCount\x1aP\n" +
+	"\rsession_count\x18\x02 \x01(\x03R\fsessionCount\x12$\n" +
+	"\x0etotal_cost_usd\x18\x03 \x01(\x01R\ftotalCostUsd\x1aP\n" +
 	"\vModelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12+\n" +
 	"\x05value\x18\x02 \x01(\v2\x15.usage.v1.ModelTokensR\x05value:\x028\x01\"\x18\n" +

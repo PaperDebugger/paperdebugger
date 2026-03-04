@@ -11,6 +11,7 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/libs/metadatautil"
 	"paperdebugger/internal/libs/shared"
+	"paperdebugger/internal/services"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -31,8 +32,9 @@ import (
 )
 
 type Server struct {
-	grpcServer *GrpcServer
-	ginServer  *GinServer
+	grpcServer     *GrpcServer
+	ginServer      *GinServer
+	pricingService *services.PricingService
 
 	logger *logger.Logger
 }
@@ -40,16 +42,21 @@ type Server struct {
 func NewServer(
 	grpcServer *GrpcServer,
 	ginServer *GinServer,
+	pricingService *services.PricingService,
 	logger *logger.Logger,
 ) *Server {
 	return &Server{
-		grpcServer: grpcServer,
-		ginServer:  ginServer,
-		logger:     logger,
+		grpcServer:     grpcServer,
+		ginServer:      ginServer,
+		pricingService: pricingService,
+		logger:         logger,
 	}
 }
 
 func (s *Server) Run(addr string) {
+	// Start the pricing updater in the background
+	s.pricingService.StartPriceUpdater(context.Background())
+
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		s.logger.Fatalf("failed to start grpc server listener: %v", err)

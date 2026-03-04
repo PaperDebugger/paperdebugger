@@ -31,15 +31,30 @@ type UsageRecord struct {
 
 // ModelUsageStats stores aggregated usage statistics for a specific model.
 type ModelUsageStats struct {
-	PromptTokens     int64 `bson:"prompt_tokens"`
-	CompletionTokens int64 `bson:"completion_tokens"`
-	TotalTokens      int64 `bson:"total_tokens"`
-	RequestCount     int64 `bson:"request_count"`
+	PromptTokens     int64   `bson:"prompt_tokens"`
+	CompletionTokens int64   `bson:"completion_tokens"`
+	TotalTokens      int64   `bson:"total_tokens"`
+	RequestCount     int64   `bson:"request_count"`
+	CostUSD          float64 `bson:"-"` // Calculated field, not stored
 }
 
 type UsageStats struct {
 	Models       map[string]*ModelUsageStats `bson:"models"`
 	SessionCount int64                       `bson:"session_count"`
+	TotalCostUSD float64                     `bson:"-"` // Calculated field, not stored
+}
+
+// CalculateCosts calculates the cost in USD for each model and total.
+// pricingMap maps model slug to pricing info.
+func (s *UsageStats) CalculateCosts(pricingMap map[string]*models.ModelPricing) {
+	s.TotalCostUSD = 0
+	for modelSlug, stats := range s.Models {
+		if pricing, ok := pricingMap[modelSlug]; ok && pricing != nil {
+			stats.CostUSD = float64(stats.PromptTokens)*pricing.PromptPrice +
+				float64(stats.CompletionTokens)*pricing.CompletionPrice
+			s.TotalCostUSD += stats.CostUSD
+		}
+	}
 }
 
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {

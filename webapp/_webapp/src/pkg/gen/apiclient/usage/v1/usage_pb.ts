@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file usage/v1/usage.proto.
  */
 export const file_usage_v1_usage: GenFile = /*@__PURE__*/
-  fileDesc("ChR1c2FnZS92MS91c2FnZS5wcm90bxIIdXNhZ2UudjEibAoLTW9kZWxUb2tlbnMSFQoNcHJvbXB0X3Rva2VucxgBIAEoAxIZChFjb21wbGV0aW9uX3Rva2VucxgCIAEoAxIUCgx0b3RhbF90b2tlbnMYAyABKAMSFQoNcmVxdWVzdF9jb3VudBgEIAEoAyK8AQoMU2Vzc2lvblVzYWdlEjIKDnNlc3Npb25fZXhwaXJ5GAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZtb2RlbHMYAiADKAsyIi51c2FnZS52MS5TZXNzaW9uVXNhZ2UuTW9kZWxzRW50cnkaRAoLTW9kZWxzRW50cnkSCwoDa2V5GAEgASgJEiQKBXZhbHVlGAIgASgLMhUudXNhZ2UudjEuTW9kZWxUb2tlbnM6AjgBIp0BCgtXZWVrbHlVc2FnZRIxCgZtb2RlbHMYASADKAsyIS51c2FnZS52MS5XZWVrbHlVc2FnZS5Nb2RlbHNFbnRyeRIVCg1zZXNzaW9uX2NvdW50GAIgASgDGkQKC01vZGVsc0VudHJ5EgsKA2tleRgBIAEoCRIkCgV2YWx1ZRgCIAEoCzIVLnVzYWdlLnYxLk1vZGVsVG9rZW5zOgI4ASIYChZHZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0IkIKF0dldFNlc3Npb25Vc2FnZVJlc3BvbnNlEicKB3Nlc3Npb24YASABKAsyFi51c2FnZS52MS5TZXNzaW9uVXNhZ2UiFwoVR2V0V2Vla2x5VXNhZ2VSZXF1ZXN0Ij4KFkdldFdlZWtseVVzYWdlUmVzcG9uc2USJAoFdXNhZ2UYASABKAsyFS51c2FnZS52MS5XZWVrbHlVc2FnZTKaAgoMVXNhZ2VTZXJ2aWNlEoUBCg9HZXRTZXNzaW9uVXNhZ2USIC51c2FnZS52MS5HZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0GiEudXNhZ2UudjEuR2V0U2Vzc2lvblVzYWdlUmVzcG9uc2UiLYLT5JMCJxIlL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvdXNhZ2Uvc2Vzc2lvbhKBAQoOR2V0V2Vla2x5VXNhZ2USHy51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlcXVlc3QaIC51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlc3BvbnNlIiyC0+STAiYSJC9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3VzYWdlL3dlZWtseUKHAQoMY29tLnVzYWdlLnYxQgpVc2FnZVByb3RvUAFaKnBhcGVyZGVidWdnZXIvcGtnL2dlbi9hcGkvdXNhZ2UvdjE7dXNhZ2V2MaICA1VYWKoCCFVzYWdlLlYxygIIVXNhZ2VcVjHiAhRVc2FnZVxWMVxHUEJNZXRhZGF0YeoCCVVzYWdlOjpWMWIGcHJvdG8z", [file_google_api_annotations, file_google_protobuf_timestamp]);
+  fileDesc("ChR1c2FnZS92MS91c2FnZS5wcm90bxIIdXNhZ2UudjEifgoLTW9kZWxUb2tlbnMSFQoNcHJvbXB0X3Rva2VucxgBIAEoAxIZChFjb21wbGV0aW9uX3Rva2VucxgCIAEoAxIUCgx0b3RhbF90b2tlbnMYAyABKAMSFQoNcmVxdWVzdF9jb3VudBgEIAEoAxIQCghjb3N0X3VzZBgFIAEoASLUAQoMU2Vzc2lvblVzYWdlEjIKDnNlc3Npb25fZXhwaXJ5GAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZtb2RlbHMYAiADKAsyIi51c2FnZS52MS5TZXNzaW9uVXNhZ2UuTW9kZWxzRW50cnkSFgoOdG90YWxfY29zdF91c2QYAyABKAEaRAoLTW9kZWxzRW50cnkSCwoDa2V5GAEgASgJEiQKBXZhbHVlGAIgASgLMhUudXNhZ2UudjEuTW9kZWxUb2tlbnM6AjgBIrUBCgtXZWVrbHlVc2FnZRIxCgZtb2RlbHMYASADKAsyIS51c2FnZS52MS5XZWVrbHlVc2FnZS5Nb2RlbHNFbnRyeRIVCg1zZXNzaW9uX2NvdW50GAIgASgDEhYKDnRvdGFsX2Nvc3RfdXNkGAMgASgBGkQKC01vZGVsc0VudHJ5EgsKA2tleRgBIAEoCRIkCgV2YWx1ZRgCIAEoCzIVLnVzYWdlLnYxLk1vZGVsVG9rZW5zOgI4ASIYChZHZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0IkIKF0dldFNlc3Npb25Vc2FnZVJlc3BvbnNlEicKB3Nlc3Npb24YASABKAsyFi51c2FnZS52MS5TZXNzaW9uVXNhZ2UiFwoVR2V0V2Vla2x5VXNhZ2VSZXF1ZXN0Ij4KFkdldFdlZWtseVVzYWdlUmVzcG9uc2USJAoFdXNhZ2UYASABKAsyFS51c2FnZS52MS5XZWVrbHlVc2FnZTKaAgoMVXNhZ2VTZXJ2aWNlEoUBCg9HZXRTZXNzaW9uVXNhZ2USIC51c2FnZS52MS5HZXRTZXNzaW9uVXNhZ2VSZXF1ZXN0GiEudXNhZ2UudjEuR2V0U2Vzc2lvblVzYWdlUmVzcG9uc2UiLYLT5JMCJxIlL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvdXNhZ2Uvc2Vzc2lvbhKBAQoOR2V0V2Vla2x5VXNhZ2USHy51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlcXVlc3QaIC51c2FnZS52MS5HZXRXZWVrbHlVc2FnZVJlc3BvbnNlIiyC0+STAiYSJC9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3VzYWdlL3dlZWtseUKHAQoMY29tLnVzYWdlLnYxQgpVc2FnZVByb3RvUAFaKnBhcGVyZGVidWdnZXIvcGtnL2dlbi9hcGkvdXNhZ2UvdjE7dXNhZ2V2MaICA1VYWKoCCFVzYWdlLlYxygIIVXNhZ2VcVjHiAhRVc2FnZVxWMVxHUEJNZXRhZGF0YeoCCVVzYWdlOjpWMWIGcHJvdG8z", [file_google_api_annotations, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message usage.v1.ModelTokens
@@ -38,6 +38,13 @@ export type ModelTokens = Message<"usage.v1.ModelTokens"> & {
    * @generated from field: int64 request_count = 4;
    */
   requestCount: bigint;
+
+  /**
+   * Cost in USD for this model
+   *
+   * @generated from field: double cost_usd = 5;
+   */
+  costUsd: number;
 };
 
 /**
@@ -62,6 +69,13 @@ export type SessionUsage = Message<"usage.v1.SessionUsage"> & {
    * @generated from field: map<string, usage.v1.ModelTokens> models = 2;
    */
   models: { [key: string]: ModelTokens };
+
+  /**
+   * Total cost in USD across all models
+   *
+   * @generated from field: double total_cost_usd = 3;
+   */
+  totalCostUsd: number;
 };
 
 /**
@@ -86,6 +100,13 @@ export type WeeklyUsage = Message<"usage.v1.WeeklyUsage"> & {
    * @generated from field: int64 session_count = 2;
    */
   sessionCount: bigint;
+
+  /**
+   * Total cost in USD across all models
+   *
+   * @generated from field: double total_cost_usd = 3;
+   */
+  totalCostUsd: number;
 };
 
 /**

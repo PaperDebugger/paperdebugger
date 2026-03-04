@@ -46,6 +46,7 @@ var Set = wire.NewSet(
 	services.NewPromptService,
 	services.NewOAuthService,
 	services.NewUsageService,
+	services.NewPricingService,
 
 	cfg.GetCfg,
 	logger.GetLogger,
