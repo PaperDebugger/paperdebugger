@@ -4,17 +4,11 @@ import { useState, useEffect } from "react";
 import { TabHeader } from "../../components/tab-header";
 import { useGetSessionUsageQuery, useGetWeeklyUsageQuery } from "../../query";
 import CellWrapper from "../../components/cell-wrapper";
-import type { ModelTokens } from "../../pkg/gen/apiclient/usage/v1/usage_pb";
-
-const formatNumber = (n: bigint | number | undefined): string => {
-  if (n === undefined) return "0";
-  return Number(n).toLocaleString();
-};
 
 const formatCost = (cost: number | undefined): string => {
-  if (cost === undefined || cost === 0) return "$0.00";
-  if (cost < 0.01) return `$${cost.toFixed(4)}`;
-  return `$${cost.toFixed(2)}`;
+  if (cost === undefined || cost === 0) return "USD $0.00";
+  if (cost < 0.01) return `USD $${cost.toFixed(4)}`;
+  return `USD $${cost.toFixed(2)}`;
 };
 
 const formatTimeRemaining = (timestamp: { seconds?: bigint; nanos?: number } | undefined): string => {
@@ -57,30 +51,10 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
   return <div className="text-gray-500 text-xs ps-2">{children}</div>;
 };
 
-const ModelUsageItem = ({ model, tokens }: { model: string; tokens: ModelTokens }) => {
+const CostDisplay = ({ cost }: { cost: number | undefined }) => {
   return (
-    <div className="flex flex-col gap-1 py-2">
-      <div className="flex justify-between items-center">
-        <span className="text-xs font-medium text-default-700">{model}</span>
-        <span className="text-xs font-semibold text-primary">{formatCost(tokens.costUsd)}</span>
-      </div>
-      <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-400">Tokens</span>
-        <span className="text-xs text-default-500">{formatNumber(tokens.totalTokens)}</span>
-      </div>
-      <div className="flex justify-between items-center ps-2">
-        <span className="text-xs text-default-400">Requests</span>
-        <span className="text-xs text-default-500">{formatNumber(tokens.requestCount)}</span>
-      </div>
-    </div>
-  );
-};
-
-const TotalCostDisplay = ({ cost }: { cost: number | undefined }) => {
-  return (
-    <div className="flex justify-between items-center py-2 border-t border-default-200 mt-1">
-      <span className="text-sm font-medium">Total Cost</span>
-      <span className="text-sm font-bold text-primary">{formatCost(cost)}</span>
+    <div className="flex justify-between items-center py-2">
+      <span className="text-xs">{formatCost(cost)}</span>
     </div>
   );
 };
@@ -127,28 +101,20 @@ export const Usage = () => {
   const session = sessionData?.session;
   const weekly = weeklyData?.usage;
 
-  const sessionModels = session?.models ? Object.entries(session.models) : [];
-  const weeklyModels = weekly?.models ? Object.entries(weekly.models) : [];
-
   return (
     <div className="pd-app-tab-content noselect !min-w-[400px]">
       <TabHeader title="Usage" />
       <div className="pd-app-tab-content-body">
         <SectionContainer>
           <SectionTitle>
-            Current Session
+            Current Session Usage
             {session?.sessionExpiry && (
               <span> ({formatTimeRemaining(session.sessionExpiry)})</span>
             )}
           </SectionTitle>
-          {session && sessionModels.length > 0 ? (
+          {session ? (
             <CellWrapper>
-              <div className="flex flex-col w-full">
-                {sessionModels.map(([model, tokens]) => (
-                  <ModelUsageItem key={model} model={model} tokens={tokens} />
-                ))}
-                <TotalCostDisplay cost={session.totalCostUsd} />
-              </div>
+              <CostDisplay cost={session.totalCostUsd} />
             </CellWrapper>
           ) : (
             <CellWrapper>
@@ -159,14 +125,9 @@ export const Usage = () => {
 
         <SectionContainer>
           <SectionTitle>Weekly Usage</SectionTitle>
-          {weekly && weeklyModels.length > 0 ? (
+          {weekly ? (
             <CellWrapper>
-              <div className="flex flex-col w-full">
-                {weeklyModels.map(([model, tokens]) => (
-                  <ModelUsageItem key={model} model={model} tokens={tokens} />
-                ))}
-                <TotalCostDisplay cost={weekly.totalCostUsd} />
-              </div>
+              <CostDisplay cost={weekly.totalCostUsd} />
             </CellWrapper>
           ) : (
             <CellWrapper>
@@ -174,7 +135,9 @@ export const Usage = () => {
             </CellWrapper>
           )}
         </SectionContainer>
-
+        <div className="px-2 mt-2 text-xs">
+          <span>All costs displayed are fully covered by the PaperDebugger Team.</span>
+        </div>
         <div className="flex items-center justify-start gap-2 px-2 mt-2">
           <span className="text-xs text-default-400">
             Last updated: {formatLastUpdated(sessionUpdatedAt)}
