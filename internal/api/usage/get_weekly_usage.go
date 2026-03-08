@@ -29,24 +29,18 @@ func (s *UsageServer) GetWeeklyUsage(
 		pricingMap = make(map[string]*models.ModelPricing)
 	}
 
-	// Convert models map to proto format and calculate costs
-	protoModels := make(map[string]*usagev1.ModelTokens)
-	var totalCostUSD float64
+	// Convert to common TokenStats format
+	modelsMap := make(map[string]TokenStats, len(stats.Models))
 	for modelName, tokens := range stats.Models {
-		var costUSD float64
-		if pricing, ok := pricingMap[modelName]; ok && pricing != nil {
-			costUSD = float64(tokens.PromptTokens)*pricing.PromptPrice +
-				float64(tokens.CompletionTokens)*pricing.CompletionPrice
-			totalCostUSD += costUSD
-		}
-		protoModels[modelName] = &usagev1.ModelTokens{
+		modelsMap[modelName] = TokenStats{
 			PromptTokens:     tokens.PromptTokens,
 			CompletionTokens: tokens.CompletionTokens,
 			TotalTokens:      tokens.TotalTokens,
 			RequestCount:     tokens.RequestCount,
-			CostUsd:          costUSD,
 		}
 	}
+
+	protoModels, totalCostUSD := convertModelsToProto(modelsMap, pricingMap)
 
 	return &usagev1.GetWeeklyUsageResponse{
 		Usage: &usagev1.WeeklyUsage{
