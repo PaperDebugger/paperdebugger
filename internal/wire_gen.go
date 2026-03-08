@@ -53,7 +53,7 @@ func InitializeApp() (*api.Server, error) {
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)
 	oAuthHandler := auth.NewOAuthHandler(oAuthService)
 	ginServer := api.NewGinServer(cfgCfg, oAuthHandler)
-	server := api.NewServer(grpcServer, ginServer, pricingService, loggerLogger)
+	server := api.NewServer(grpcServer, ginServer, pricingService, aiClientV2, loggerLogger)
 	return server, nil
 }
 

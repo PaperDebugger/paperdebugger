@@ -100,15 +100,8 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			if len(chunk.Choices) == 0 {
 				// Handle usage information - only record for non-BYOK users
 				if chunk.Usage.TotalTokens > 0 && !llmProvider.IsCustom() {
-					// Record usage asynchronously to avoid blocking the response
-					go func(usage services.UsageRecord) {
-						bgCtx := context.Background()
-						if err := a.usageService.RecordUsage(bgCtx, usage); err != nil {
-							a.logger.Error("Failed to store usage", "error", err)
-							return
-						}
-
-					}(services.UsageRecord{
+					// Queue usage record for async processing
+					a.RecordUsageAsync(services.UsageRecord{
 						UserID:           userID,
 						Model:            modelSlug,
 						PromptTokens:     chunk.Usage.PromptTokens,

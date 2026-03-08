@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/libs/metadatautil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/services"
+	aiclient "paperdebugger/internal/services/toolkit/client"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -35,6 +39,7 @@ type Server struct {
 	grpcServer     *GrpcServer
 	ginServer      *GinServer
 	pricingService *services.PricingService
+	aiClientV2     *aiclient.AIClientV2
 
 	logger *logger.Logger
 }
@@ -43,19 +48,24 @@ func NewServer(
 	grpcServer *GrpcServer,
 	ginServer *GinServer,
 	pricingService *services.PricingService,
+	aiClientV2 *aiclient.AIClientV2,
 	logger *logger.Logger,
 ) *Server {
 	return &Server{
 		grpcServer:     grpcServer,
 		ginServer:      ginServer,
 		pricingService: pricingService,
+		aiClientV2:     aiClientV2,
 		logger:         logger,
 	}
 }
 
 func (s *Server) Run(addr string) {
 	// Start the pricing updater in the background
-	s.pricingService.StartPriceUpdater(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	s.pricingService.StartPriceUpdater(ctx)
 
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
@@ -119,12 +129,33 @@ func (s *Server) Run(addr string) {
 		return
 	}
 
+	// Set up signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		s.logger.Info("[PAPERDEBUGGER] received shutdown signal, shutting down gracefully...")
+		s.Shutdown()
+		os.Exit(0)
+	}()
+
 	s.logger.Infof("[PAPERDEBUGGER] http server listening on %s", addr)
 	s.ginServer.Any("/_pd/api/*path", func(c *gin.Context) { mux.ServeHTTP(c.Writer, c.Request) })
 	err = s.ginServer.Run(addr)
 	if err != nil {
 		s.logger.Fatalf("failed to start http server: %v", err)
 	}
+}
+
+// Shutdown gracefully shuts down all server components.
+func (s *Server) Shutdown() {
+	s.logger.Info("[PAPERDEBUGGER] shutting down AI client (draining usage records)...")
+	s.aiClientV2.Shutdown()
+	s.logger.Info("[PAPERDEBUGGER] AI client shutdown complete")
+
+	s.grpcServer.GracefulStop()
+	s.logger.Info("[PAPERDEBUGGER] gRPC server shutdown complete")
 }
 
 func (s *Server) metadataAnnotator() func(ctx context.Context, req *http.Request) metadata.MD {

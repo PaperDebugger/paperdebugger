@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -126,7 +127,8 @@ func (s *PricingService) GetPricing(ctx context.Context, modelSlug string) (*mod
 	}
 
 	// Try partial match (model slug might be a prefix)
-	filter = bson.M{"model_slug": bson.M{"$regex": "^" + modelSlug}}
+	// Use QuoteMeta to escape any regex special characters in the model slug
+	filter = bson.M{"model_slug": bson.M{"$regex": "^" + regexp.QuoteMeta(modelSlug)}}
 	err = s.collection.FindOne(ctx, filter).Decode(&pricing)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
