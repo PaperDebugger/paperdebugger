@@ -69,6 +69,10 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 // Falls back to update if insert fails (handles race when another request created a session).
 func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) error {
 	now := time.Now()
+	// Round session_start to the second so concurrent requests get the same timestamp.
+	// Combined with the unique index on (user_id, session_start), this ensures only one
+	// session is created per user per second, with conflicts handled via duplicate key retry.
+	sessionStart := now.Truncate(time.Second)
 	nowBson := bson.DateTime(now.UnixMilli())
 
 	// Build field paths for per-model token storage
@@ -98,8 +102,8 @@ func (s *UsageService) RecordUsage(ctx context.Context, record UsageRecord) erro
 	session := models.LLMSession{
 		ID:            bson.NewObjectID(),
 		UserID:        record.UserID,
-		SessionStart:  nowBson,
-		SessionExpiry: bson.DateTime(now.Add(SessionDuration).UnixMilli()),
+		SessionStart:  bson.DateTime(sessionStart.UnixMilli()),
+		SessionExpiry: bson.DateTime(sessionStart.Add(SessionDuration).UnixMilli()),
 		Models: map[string]*models.ModelTokens{
 			record.Model: {
 				PromptTokens:     record.PromptTokens,

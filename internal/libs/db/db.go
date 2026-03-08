@@ -74,12 +74,15 @@ func (db *DB) ensureIndexes() {
 		db.logger.Error("Failed to create compound index on llm_sessions", "error", err)
 	}
 
-	// Compound index for usage queries and recent session lookups
+	// Unique compound index for session creation and queries.
+	// session_start is rounded to the second, so concurrent requests within the same
+	// second will conflict, triggering duplicate key handling in RecordUsage.
 	_, err = sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys: bson.D{
 			{Key: "user_id", Value: 1},
 			{Key: "session_start", Value: -1},
 		},
+		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
 		db.logger.Error("Failed to create session_start index on llm_sessions", "error", err)

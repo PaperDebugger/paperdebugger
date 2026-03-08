@@ -299,20 +299,16 @@ func TestUsageService_RecordUsage_RaceCondition(t *testing.T) {
 		}
 	}
 
-	// All tokens should be accumulated across all sessions
+	// All tokens should be accumulated in a single session
 	assert.Equal(t, int64(100), totalPrompt, "Expected 10 requests * 10 tokens each")
 	assert.Equal(t, int64(200), totalCompletion, "Expected 10 requests * 20 tokens each")
 	assert.Equal(t, int64(300), totalTokens, "Expected 10 requests * 30 tokens each")
 	assert.Equal(t, int64(10), totalRequests, "Expected 10 requests recorded")
 
-	// Note: In a race condition, multiple sessions might be created if concurrent
-	// InsertOne calls succeed simultaneously (no unique index prevents this).
-	// The important guarantee is that no usage data is lost - all requests are
-	// recorded correctly, even if spread across multiple sessions.
-	t.Logf("Sessions created during race: %d", count)
-	if count > 1 {
-		t.Logf("Multiple sessions created due to race condition (expected behavior)")
-	}
+	// With the unique index on (user_id, session_start) and second-level truncation,
+	// only one session should be created. Concurrent inserts trigger duplicate key
+	// errors which are handled by falling back to update.
+	assert.Equal(t, int64(1), count, "Expected exactly 1 session due to unique index")
 }
 
 func TestUsageService_GetActiveSession_NoSession(t *testing.T) {
