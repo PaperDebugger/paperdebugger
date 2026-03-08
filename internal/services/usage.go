@@ -19,6 +19,7 @@ const SessionDuration = 5 * time.Hour
 type UsageService struct {
 	BaseService
 	sessionCollection *mongo.Collection
+	pricingService    *PricingService
 }
 
 type UsageRecord struct {
@@ -44,9 +45,16 @@ type UsageStats struct {
 	TotalCostUSD float64                     `bson:"-"` // Calculated field, not stored
 }
 
-// CalculateCosts calculates the cost in USD for each model and total.
+// SessionUsageStats represents session usage with calculated costs.
+type SessionUsageStats struct {
+	SessionExpiry time.Time
+	Models        map[string]*ModelUsageStats
+	TotalCostUSD  float64
+}
+
+// calculateCosts calculates the cost in USD for each model and total.
 // pricingMap maps model slug to pricing info.
-func (s *UsageStats) CalculateCosts(pricingMap map[string]*models.ModelPricing) {
+func (s *UsageStats) calculateCosts(pricingMap map[string]*models.ModelPricing) {
 	s.TotalCostUSD = 0
 	for modelSlug, stats := range s.Models {
 		if pricing, ok := pricingMap[modelSlug]; ok && pricing != nil {
@@ -57,11 +65,12 @@ func (s *UsageStats) CalculateCosts(pricingMap map[string]*models.ModelPricing) 
 	}
 }
 
-func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
+func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger, pricingService *PricingService) *UsageService {
 	base := NewBaseService(db, cfg, logger)
 	return &UsageService{
 		BaseService:       base,
 		sessionCollection: base.db.Collection((models.LLMSession{}).CollectionName()),
+		pricingService:    pricingService,
 	}
 }
 
@@ -250,6 +259,69 @@ func startOfWeek(t time.Time) time.Time {
 	t = t.UTC()
 	daysFromMonday := (int(t.Weekday()) + 6) % 7 // Sunday=6, Monday=0, Tuesday=1, ...
 	return time.Date(t.Year(), t.Month(), t.Day()-daysFromMonday, 0, 0, 0, 0, time.UTC)
+}
+
+// GetActiveSessionWithCosts returns the current active session with costs calculated.
+func (s *UsageService) GetActiveSessionWithCosts(ctx context.Context, userID bson.ObjectID) (*SessionUsageStats, error) {
+	session, err := s.GetActiveSession(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if session == nil {
+		return nil, nil
+	}
+
+	// Get pricing map for cost calculation
+	pricingMap, err := s.pricingService.GetPricingMap(ctx)
+	if err != nil {
+		s.logger.Warn("Failed to get pricing map for session costs", "error", err)
+		pricingMap = make(map[string]*models.ModelPricing)
+	}
+
+	// Convert session models to ModelUsageStats and calculate costs
+	modelsWithCosts := make(map[string]*ModelUsageStats, len(session.Models))
+	var totalCostUSD float64
+
+	for modelName, tokens := range session.Models {
+		stats := &ModelUsageStats{
+			PromptTokens:     tokens.PromptTokens,
+			CompletionTokens: tokens.CompletionTokens,
+			TotalTokens:      tokens.TotalTokens,
+			RequestCount:     tokens.RequestCount,
+		}
+		if pricing, ok := pricingMap[modelName]; ok && pricing != nil {
+			stats.CostUSD = float64(stats.PromptTokens)*pricing.PromptPrice +
+				float64(stats.CompletionTokens)*pricing.CompletionPrice
+			totalCostUSD += stats.CostUSD
+		}
+		modelsWithCosts[modelName] = stats
+	}
+
+	return &SessionUsageStats{
+		SessionExpiry: session.SessionExpiry.Time(),
+		Models:        modelsWithCosts,
+		TotalCostUSD:  totalCostUSD,
+	}, nil
+}
+
+// GetWeeklyUsageWithCosts returns aggregated weekly usage with costs calculated.
+func (s *UsageService) GetWeeklyUsageWithCosts(ctx context.Context, userID bson.ObjectID) (*UsageStats, error) {
+	stats, err := s.GetWeeklyUsage(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get pricing map for cost calculation
+	pricingMap, err := s.pricingService.GetPricingMap(ctx)
+	if err != nil {
+		s.logger.Warn("Failed to get pricing map for weekly costs", "error", err)
+		pricingMap = make(map[string]*models.ModelPricing)
+	}
+
+	// Calculate costs using the existing method
+	stats.calculateCosts(pricingMap)
+
+	return stats, nil
 }
 
 // ListRecentSessions returns the most recent sessions for a user.

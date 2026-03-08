@@ -26,7 +26,8 @@ func setupTestUsageService(t *testing.T) (*services.UsageService, *mongo.Collect
 		t.Fatalf("failed to connect to test db: %v", err)
 	}
 
-	svc := services.NewUsageService(dbInstance, cfg.GetCfg(), logger.GetLogger())
+	pricingService := services.NewPricingService(dbInstance, cfg.GetCfg(), logger.GetLogger())
+	svc := services.NewUsageService(dbInstance, cfg.GetCfg(), logger.GetLogger(), pricingService)
 	collection := dbInstance.Database("paperdebugger").Collection((models.LLMSession{}).CollectionName())
 
 	return svc, collection

@@ -25,7 +25,8 @@ func setupTestClient(t *testing.T) (*client.AIClientV2, *services.ProjectService
 	}
 
 	projectService := services.NewProjectService(dbInstance, cfg.GetCfg(), logger.GetLogger())
-	usageService := services.NewUsageService(dbInstance, cfg.GetCfg(), logger.GetLogger())
+	pricingService := services.NewPricingService(dbInstance, cfg.GetCfg(), logger.GetLogger())
+	usageService := services.NewUsageService(dbInstance, cfg.GetCfg(), logger.GetLogger(), pricingService)
 	aiClient := client.NewAIClientV2(
 		dbInstance,
 		&services.ReverseCommentService{},
