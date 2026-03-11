@@ -6,17 +6,23 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/libs/metadatautil"
 	"paperdebugger/internal/libs/shared"
+	"paperdebugger/internal/services"
+	aiclient "paperdebugger/internal/services/toolkit/client"
 	authv1 "paperdebugger/pkg/gen/api/auth/v1"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	commentv1 "paperdebugger/pkg/gen/api/comment/v1"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
 	sharedv1 "paperdebugger/pkg/gen/api/shared/v1"
+	usagev1 "paperdebugger/pkg/gen/api/usage/v1"
 	userv1 "paperdebugger/pkg/gen/api/user/v1"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +36,10 @@ import (
 )
 
 type Server struct {
-	grpcServer *GrpcServer
-	ginServer  *GinServer
+	grpcServer     *GrpcServer
+	ginServer      *GinServer
+	pricingService *services.PricingService
+	aiClientV2     *aiclient.AIClientV2
 
 	logger *logger.Logger
 }
@@ -39,16 +47,26 @@ type Server struct {
 func NewServer(
 	grpcServer *GrpcServer,
 	ginServer *GinServer,
+	pricingService *services.PricingService,
+	aiClientV2 *aiclient.AIClientV2,
 	logger *logger.Logger,
 ) *Server {
 	return &Server{
-		grpcServer: grpcServer,
-		ginServer:  ginServer,
-		logger:     logger,
+		grpcServer:     grpcServer,
+		ginServer:      ginServer,
+		pricingService: pricingService,
+		aiClientV2:     aiClientV2,
+		logger:         logger,
 	}
 }
 
 func (s *Server) Run(addr string) {
+	// Start the pricing updater in the background
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	s.pricingService.StartPriceUpdater(ctx)
+
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		s.logger.Fatalf("failed to start grpc server listener: %v", err)
@@ -105,6 +123,22 @@ func (s *Server) Run(addr string) {
 		s.logger.Fatalf("failed to register comment service grpc gateway: %v", err)
 		return
 	}
+	err = usagev1.RegisterUsageServiceHandler(context.Background(), mux, client)
+	if err != nil {
+		s.logger.Fatalf("failed to register usage service grpc gateway: %v", err)
+		return
+	}
+
+	// Set up signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		s.logger.Info("[PAPERDEBUGGER] received shutdown signal, shutting down gracefully...")
+		s.Shutdown()
+		os.Exit(0)
+	}()
 
 	s.logger.Infof("[PAPERDEBUGGER] http server listening on %s", addr)
 	s.ginServer.Any("/_pd/api/*path", func(c *gin.Context) { mux.ServeHTTP(c.Writer, c.Request) })
@@ -112,6 +146,16 @@ func (s *Server) Run(addr string) {
 	if err != nil {
 		s.logger.Fatalf("failed to start http server: %v", err)
 	}
+}
+
+// Shutdown gracefully shuts down all server components.
+func (s *Server) Shutdown() {
+	s.logger.Info("[PAPERDEBUGGER] shutting down AI client (draining usage records)...")
+	s.aiClientV2.Shutdown()
+	s.logger.Info("[PAPERDEBUGGER] AI client shutdown complete")
+
+	s.grpcServer.GracefulStop()
+	s.logger.Info("[PAPERDEBUGGER] gRPC server shutdown complete")
 }
 
 func (s *Server) metadataAnnotator() func(ctx context.Context, req *http.Request) metadata.MD {

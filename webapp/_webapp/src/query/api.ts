@@ -224,3 +224,29 @@ export const acceptComments = async (data: PlainMessage<CommentsAcceptedRequest>
   const response = await apiclient.post(`/comments/accepted`, data);
   return fromJson(CommentsAcceptedResponseSchema, response);
 };
+
+// Usage
+import {
+  GetSessionUsageResponseSchema,
+  GetWeeklyUsageResponseSchema,
+} from "../pkg/gen/apiclient/usage/v1/usage_pb";
+
+export const getSessionUsage = async () => {
+  if (!apiclient.hasToken()) {
+    throw new Error("No token");
+  }
+  const response = await apiclient.get("/users/@self/usage/session", undefined, {
+    ignoreErrorToast: true,
+  });
+  return fromJson(GetSessionUsageResponseSchema, response);
+};
+
+export const getWeeklyUsage = async () => {
+  if (!apiclient.hasToken()) {
+    throw new Error("No token");
+  }
+  const response = await apiclient.get("/users/@self/usage/weekly", undefined, {
+    ignoreErrorToast: true,
+  });
+  return fromJson(GetWeeklyUsageResponseSchema, response);
+};

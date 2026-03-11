@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package usage.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "paperdebugger/pkg/gen/api/usage/v1;usagev1";
+
+service UsageService {
+  rpc GetSessionUsage(GetSessionUsageRequest) returns (GetSessionUsageResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/usage/session"};
+  }
+
+  rpc GetWeeklyUsage(GetWeeklyUsageRequest) returns (GetWeeklyUsageResponse) {
+    option (google.api.http) = {get: "/_pd/api/v1/users/@self/usage/weekly"};
+  }
+}
+
+message ModelTokens {
+  int64 prompt_tokens = 1;
+  int64 completion_tokens = 2;
+  int64 total_tokens = 3;
+  int64 request_count = 4;
+  double cost_usd = 5; // Cost in USD for this model
+}
+
+message SessionUsage {
+  google.protobuf.Timestamp session_expiry = 1;
+  // Tokens per model (model_slug -> tokens)
+  map<string, ModelTokens> models = 2;
+  double total_cost_usd = 3; // Total cost in USD across all models
+}
+
+message WeeklyUsage {
+  // Tokens per model (model_slug -> tokens)
+  map<string, ModelTokens> models = 1;
+  int64 session_count = 2;
+  double total_cost_usd = 3; // Total cost in USD across all models
+}
+
+message GetSessionUsageRequest {}
+
+message GetSessionUsageResponse {
+  // Active session usage, null if no active session
+  SessionUsage session = 1;
+}
+
+message GetWeeklyUsageRequest {}
+
+message GetWeeklyUsageResponse {
+  WeeklyUsage usage = 1;
+}

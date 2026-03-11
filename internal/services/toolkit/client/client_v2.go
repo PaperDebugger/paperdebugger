@@ -1,6 +1,9 @@
 package client
 
 import (
+	"context"
+	"sync"
+
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
@@ -13,6 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+const usageChannelBufferSize = 100
+
 type AIClientV2 struct {
 	toolCallHandler        *handler.ToolCallHandlerV2
 	db                     *mongo.Database
@@ -20,8 +25,16 @@ type AIClientV2 struct {
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
+	usageService          *services.UsageService
 	cfg                   *cfg.Cfg
 	logger                *logger.Logger
+
+	// usageChan buffers usage records for async processing
+	usageChan chan services.UsageRecord
+	// usageWg tracks in-flight usage recording operations
+	usageWg sync.WaitGroup
+	// shutdownOnce ensures shutdown logic runs only once
+	shutdownOnce sync.Once
 }
 
 // SetOpenAIClient sets the appropriate OpenAI client based on the LLM provider config.
@@ -60,6 +73,7 @@ func NewAIClientV2(
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
+	usageService *services.UsageService,
 	cfg *cfg.Cfg,
 	logger *logger.Logger,
 ) *AIClientV2 {
@@ -107,9 +121,53 @@ func NewAIClientV2(
 
 		reverseCommentService: reverseCommentService,
 		projectService:        projectService,
+		usageService:          usageService,
 		cfg:                   cfg,
 		logger:                logger,
+
+		usageChan: make(chan services.UsageRecord, usageChannelBufferSize),
 	}
 
+	// Start the usage recording worker
+	client.usageWg.Add(1)
+	go client.usageWorker()
+
 	return client
+}
+
+// usageWorker processes usage records from the channel.
+// It runs until the channel is closed during shutdown.
+func (a *AIClientV2) usageWorker() {
+	defer a.usageWg.Done()
+
+	for record := range a.usageChan {
+		ctx := context.Background()
+		if err := a.usageService.RecordUsage(ctx, record); err != nil {
+			a.logger.Error("Failed to store usage", "error", err)
+		}
+	}
+}
+
+// RecordUsageAsync queues a usage record for async processing.
+// Returns false if the channel is full (record dropped).
+func (a *AIClientV2) RecordUsageAsync(record services.UsageRecord) bool {
+	select {
+	case a.usageChan <- record:
+		return true
+	default:
+		a.logger.Warn("Usage channel full, dropping record",
+			"userID", record.UserID,
+			"model", record.Model,
+			"tokens", record.TotalTokens)
+		return false
+	}
+}
+
+// Shutdown gracefully stops the usage worker, ensuring all pending
+// records are processed before returning.
+func (a *AIClientV2) Shutdown() {
+	a.shutdownOnce.Do(func() {
+		close(a.usageChan)
+		a.usageWg.Wait()
+	})
 }
