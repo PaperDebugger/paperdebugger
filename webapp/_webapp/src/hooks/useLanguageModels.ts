@@ -58,7 +58,7 @@ export const useLanguageModels = () => {
 
   const models: Model[] = useMemo(() => {
     if (supportedModelsResponse?.models && supportedModelsResponse.models.length > 0) {
-      return supportedModelsResponse.models.map(mapSupportedModelToModel);
+      return supportedModelsResponse.models.map(mapSupportedModelToModel).filter((m) => !m.disabled || m.isCustom);
     }
     return fallbackModels;
   }, [supportedModelsResponse]);

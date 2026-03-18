@@ -216,7 +216,18 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         )}
       </div>
 
-      <div className="pr-1">
+      <div className="flex flex-row">
+        <label className={labelClassName}>Slug</label>
+        <input
+          className={detailInputClassName}
+          value={slug}
+          type="text"
+          disabled={!isEditing}
+          onChange={(e) => setSlug(e.target.value)}
+        />
+      </div>
+
+      {/* <div className="pr-1">
         <div className="flex flex-row">
           <label className={labelClassName}>Slug</label>
           <select
@@ -248,31 +259,31 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
               <option>{slug}</option>
             )}
           </select>
-        </div>
+        </div> */}
 
-        <div className="flex flex-row">
-          <label className={labelClassName}>Base URL</label>
-          <input
-            className={detailInputClassName}
-            value={baseUrl}
-            type="text"
-            disabled={!isEditing}
-            onChange={(e) => setBaseUrl(e.target.value)}
-          />
-        </div>
+      <div className="flex flex-row">
+        <label className={labelClassName}>Base URL</label>
+        <input
+          className={detailInputClassName}
+          value={baseUrl}
+          type="text"
+          disabled={!isEditing}
+          onChange={(e) => setBaseUrl(e.target.value)}
+        />
+      </div>
 
-        <div className="flex flex-row">
-          <label className={labelClassName}>API Key</label>
-          <input
-            className={detailInputClassName}
-            value={apiKey}
-            type={!isEditing && !isNew ? "password" : "text"}
-            disabled={!isEditing}
-            onChange={(e) => setApiKey(e.target.value)}
-          />
-        </div>
+      <div className="flex flex-row">
+        <label className={labelClassName}>API Key</label>
+        <input
+          className={detailInputClassName}
+          value={apiKey}
+          type={!isEditing && !isNew ? "password" : "text"}
+          disabled={!isEditing}
+          onChange={(e) => setApiKey(e.target.value)}
+        />
+      </div>
 
-        {/* <div className="flex flex-row">
+      {/* <div className="flex flex-row">
         <label className={labelClassName}>Context Window</label>
         <input
           className={detailInputClassName}
@@ -315,7 +326,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           onChange={(e) => setOutputPrice(e.target.valueAsNumber)}
         />
       </div> */}
-      </div>
     </div>
   );
 };
