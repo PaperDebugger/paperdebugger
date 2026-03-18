@@ -1323,7 +1323,8 @@ func (x *StreamPartBegin) GetPayload() *MessagePayload {
 }
 
 // Note: After the StreamPartBegin of tool_call, there can be no MessageChunk,
-//       and the StreamPartEnd can be directly called when the result is ready.
+//
+//	and the StreamPartEnd can be directly called when the result is ready.
 type MessageChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"` // The id of the message that this chunk belongs to
@@ -1623,7 +1624,8 @@ func (x *StreamError) GetErrorMessage() string {
 
 // This message should be the same as CreateConversationMessageRequest
 // Note: If conversation_id is provided,
-//       the conversation will be created and returned.
+//
+//	the conversation will be created and returned.
 type CreateConversationMessageStreamRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	ProjectId        string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`

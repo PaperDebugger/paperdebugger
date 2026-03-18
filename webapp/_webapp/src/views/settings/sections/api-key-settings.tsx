@@ -1,10 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
 import { Button, Tooltip } from "@heroui/react";
 import { useSettingStore } from "../../../stores/setting-store";
-import { useLanguageModels } from "../../../hooks/useLanguageModels";
 
 export const ApiKeySettings = () => {
   const { updateSettings, settings } = useSettingStore();
@@ -12,7 +11,8 @@ export const ApiKeySettings = () => {
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
   const handleCustomModelChange = (newModel: CustomModel, isDelete: boolean) => {
-    const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.slug != newModel.slug);
+    const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
+    console.log(otherCustomModels);
 
     if (isDelete) {
       updateSettings({
@@ -23,6 +23,7 @@ export const ApiKeySettings = () => {
         customModels: [
           ...otherCustomModels,
           {
+            id: newModel.id,
             name: newModel.name,
             baseUrl: newModel.baseUrl,
             slug: newModel.slug,
@@ -48,15 +49,16 @@ export const ApiKeySettings = () => {
         onOpenChange={(isOpen) => setIsShowModal(isOpen)}
         content={
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
-            <CustomModelSection key={"newModel"} isNew onChange={handleCustomModelChange} />
+            <CustomModelSection key={""} isNew onChange={handleCustomModelChange} />
             {Array.from(settings?.customModels || [])
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((m) => (
                 <CustomModelSection
                   isNew={false}
                   onChange={handleCustomModelChange}
-                  key={m.slug}
+                  key={m.id}
                   model={{
+                    id: m.id,
                     name: m.name,
                     baseUrl: m.baseUrl,
                     slug: m.slug,
@@ -76,6 +78,7 @@ export const ApiKeySettings = () => {
 };
 
 type CustomModel = {
+  id: string;
   name: string;
   baseUrl: string;
   slug: string;
@@ -101,31 +104,17 @@ type ExistingCustomModelSectionProps = {
 type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelSectionProps;
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
-  const { models } = useLanguageModels();
-  const { settings } = useSettingStore();
-
-  var availableModels = models.filter((m) => !Array.from(settings?.customModels || []).some((cm) => cm.slug == m.slug));
-  var firstAvailable = availableModels[0] ?? { slug: "", name: "" };
-
+  const id = customModel?.id || "";
   const [isEditing, setIsEditing] = useState(isNew);
   const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
-  const [slug, setSlug] = useState(customModel?.slug ?? firstAvailable.slug);
+  const [slug, setSlug] = useState(customModel?.slug ?? "");
   const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
   const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow || 0);
   const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
   const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
-  const [modelName, setModelName] = useState(isNew ? firstAvailable.name : customModel?.name || "");
+  const [modelName, setModelName] = useState(customModel?.name || "My Model");
   const isModelNameEdited = useRef(false);
-
-  useEffect(() => {
-    if (!isNew) return;
-    const firstAvailable = availableModels[0] ?? { slug: "", name: "" };
-    if (!isModelNameEdited.current) {
-      setModelName(firstAvailable.name);
-    }
-    setSlug(firstAvailable.slug);
-  }, [models?.length, settings?.customModels?.length, isNew]);
 
   const baseInputClassName = "hover:cursor-pointer bg-transparent p-1 focus:outline-none";
   const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-medium flex-1 truncate`;
@@ -136,8 +125,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     // TODO: Input validation
     // TODO: Add loader
 
+    console.log("Id: ", id);
+
     onChange(
       {
+        id: id,
         name: modelName,
         baseUrl: baseUrl,
         slug: slug,
@@ -151,11 +143,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     );
 
     if (isNew) {
-      availableModels = availableModels.filter((m) => m.slug != slug);
-      const next = availableModels[0] ?? { slug: "", name: "" };
-      setModelName(next.name);
+      setModelName("My Model");
       setBaseUrl("");
-      setSlug(next.slug);
+      setSlug("");
       setApiKey("");
       setContextWindow(0);
       setMaxOutput(0);
@@ -180,15 +170,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
 
         {isNew ? (
           <Tooltip content="Add" placement="bottom" className="noselect" delay={500}>
-            <button
-              onClick={() => {
-                if (availableModels.length > 0) {
-                  handleOnChange(false);
-                }
-              }}
-              className="p-1 hover:bg-default-100 rounded"
-              disabled={availableModels.length === 0}
-            >
+            <button onClick={() => handleOnChange(false)} className="p-1 hover:bg-default-100 rounded">
               <Icon icon="tabler:device-floppy" width="16" />
             </button>
           </Tooltip>

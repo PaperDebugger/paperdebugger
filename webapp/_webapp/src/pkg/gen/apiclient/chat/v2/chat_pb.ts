@@ -542,7 +542,7 @@ export const StreamInitializationSchema: GenMessage<StreamInitialization> = /*@_
 /**
  * Designed as StreamPartBegin and StreamPartEnd to
  * handle the case where assistant and tool are called at the same time.
- * 
+ *
  * User: Please answer me "Ok I will do that", then call "get_weather"
  * Assistant: Ok I will do that + Tool: get_weather
  *
