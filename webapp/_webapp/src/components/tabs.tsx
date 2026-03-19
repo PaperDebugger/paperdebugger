@@ -151,7 +151,13 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
     <>
       <div className="pd-app-tab-items noselect relative" style={{ width: `${tabItemsWidth}px` }}>
         {/* Resize handle on the right edge */}
-        <div ref={resizeHandleRef} className="pd-tab-items-resize-handle" onMouseDown={handleMouseDown}>
+        <div
+          ref={resizeHandleRef}
+          className="pd-tab-items-resize-handle"
+          role="separator"
+          aria-label="Resize tabs"
+          onMouseDown={handleMouseDown}
+        >
           {/* Visual indicator line */}
           <div className="resize-handle-indicator" />
         </div>

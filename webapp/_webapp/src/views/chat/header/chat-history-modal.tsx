@@ -1,6 +1,6 @@
 import { Input, Listbox, ListboxItem, ListboxSection, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Conversation } from "../../../pkg/gen/apiclient/chat/v2/chat_pb";
 import { getConversation, updateConversation } from "../../../query/api";
 import { errorToast } from "../../../libs/toasts";
@@ -28,9 +28,11 @@ export const ChatHistoryModal = () => {
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
-  const [editedTitle, setEditedTitle] = useState("");
+  const [editState, setEditState] = useState<{ id: string | null; title: string }>({ id: null, title: "" });
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const editingTitleId = editState.id;
+  const editedTitle = editState.title;
 
   // Refs
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -50,8 +52,7 @@ export const ChatHistoryModal = () => {
 
   // Title editing handlers
   const handleEditTitle = (chat: Conversation) => {
-    setEditingTitleId(chat.id);
-    setEditedTitle(chat.title);
+    setEditState({ id: chat.id, title: chat.title });
     setTimeout(() => {
       editInputRef.current?.focus();
       editInputRef.current?.select();
@@ -60,13 +61,13 @@ export const ChatHistoryModal = () => {
 
   const handleSaveTitle = async (id: string) => {
     if (!editedTitle.trim()) {
-      setEditingTitleId(null);
+      setEditState({ id: null, title: "" });
       return;
     }
 
     const chatToUpdate = conversations?.conversations.find((chat) => chat.id === id);
     if (!chatToUpdate || chatToUpdate.title === editedTitle.trim()) {
-      setEditingTitleId(null);
+      setEditState({ id: null, title: "" });
       return;
     }
 
@@ -79,14 +80,14 @@ export const ChatHistoryModal = () => {
         title: editedTitle.trim(),
       });
       await refetchConversationList();
-      setEditingTitleId(null);
+      setEditState({ id: null, title: "" });
     } catch (e) {
       errorToast("Failed to update conversation title");
       logError(e);
     }
   };
 
-  const handleCancelEdit = () => setEditingTitleId(null);
+  const handleCancelEdit = () => setEditState({ id: null, title: "" });
 
   // Delete handler
   const handleDeleteConversation = (id: string, e: React.MouseEvent) => {
@@ -145,7 +146,7 @@ export const ChatHistoryModal = () => {
             value={editedTitle}
             onChange={(e) => {
               e.stopPropagation();
-              setEditedTitle(e.target.value);
+              setEditState((prev) => ({ ...prev, title: e.target.value }));
             }}
             onKeyDown={(e) => {
               e.stopPropagation();
@@ -177,18 +178,14 @@ export const ChatHistoryModal = () => {
     </ListboxItem>
   );
 
-  // refetch conversation list when showHistory is true
-  useEffect(() => {
-    if (showChatHistory) {
-      refetchConversationList();
-    }
-  }, [showChatHistory, refetchConversationList]);
-
   return (
     <Modal
       isOpen={showChatHistory}
       onOpenChange={(open) => {
-        if (open) inputRef.current?.focus();
+        if (open) {
+          inputRef.current?.focus();
+          refetchConversationList();
+        }
         setShowChatHistory(open);
       }}
       disableAnimation={true}

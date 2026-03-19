@@ -35,8 +35,7 @@ export default function LoginWithOverleaf({
       setToken(resp.token);
       setRefreshToken(resp.refreshToken);
       await login();
-      await loadSettings();
-      await loadPrompts();
+      await Promise.all([loadSettings(), loadPrompts()]);
     } catch (e) {
       setErrorMessage("Login failed: " + (e as Error).message);
     } finally {
@@ -57,7 +56,14 @@ export default function LoginWithOverleaf({
   return (
     <div
       className="mt-[1rem] border !border-primary-700 rounded-lg px-3 h-[32px] min-h-[32px] w-[196px] flex flex-row items-center bg-primary-700 text-white cursor-pointer"
+      role="button"
+      tabIndex={0}
       onClick={() => onOverleafLogin()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onOverleafLogin();
+        }
+      }}
       style={{
         cursor: isLoginLoading ? "wait" : "pointer",
       }}

@@ -6,6 +6,7 @@ import (
 
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/logger"
+	"paperdebugger/internal/models"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -43,5 +44,47 @@ func NewDB(cfg *cfg.Cfg, logger *logger.Logger) (*DB, error) {
 	}
 
 	logger.Info("[MONGO] initialized")
-	return &DB{Client: client, cfg: cfg, logger: logger}, nil
+
+	db := &DB{Client: client, cfg: cfg, logger: logger}
+	db.ensureIndexes()
+	return db, nil
+}
+
+// ensureIndexes creates necessary indexes for the database collections.
+func (db *DB) ensureIndexes() {
+	sessions := db.Database("paperdebugger").Collection((models.LLMSession{}).CollectionName())
+
+	// TTL index: auto-delete sessions after 30 days past their expiry time
+	_, err := sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.D{{Key: "session_expiry", Value: 1}},
+		Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60),
+	})
+	if err != nil {
+		db.logger.Error("Failed to create TTL index on llm_sessions", "error", err)
+	}
+
+	// Compound index for efficient active session lookups
+	_, err = sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "user_id", Value: 1},
+			{Key: "session_expiry", Value: -1},
+		},
+	})
+	if err != nil {
+		db.logger.Error("Failed to create compound index on llm_sessions", "error", err)
+	}
+
+	// Unique compound index for session creation and queries.
+	// session_start is rounded to the second, so concurrent requests within the same
+	// second will conflict, triggering duplicate key handling in RecordUsage.
+	_, err = sessions.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "user_id", Value: 1},
+			{Key: "session_start", Value: -1},
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	if err != nil {
+		db.logger.Error("Failed to create session_start index on llm_sessions", "error", err)
+	}
 }

@@ -86,6 +86,9 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2,
 				Tools:               toolRegistry.GetTools(),
 				ParallelToolCalls:   openaiv3.Bool(true),
 				Store:               openaiv3.Bool(false),
+				StreamOptions: openaiv3.ChatCompletionStreamOptionsParam{
+					IncludeUsage: openaiv3.Bool(true),
+				},
 			}
 		}
 	}
@@ -97,6 +100,9 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2,
 		Tools:               toolRegistry.GetTools(), // Tool registration is managed centrally by the registry
 		ParallelToolCalls:   openaiv3.Bool(true),
 		Store:               openaiv3.Bool(false), // Must set to false, because we are construct our own chat history.
+		StreamOptions: openaiv3.ChatCompletionStreamOptionsParam{
+			IncludeUsage: openaiv3.Bool(true),
+		},
 	}
 }
 

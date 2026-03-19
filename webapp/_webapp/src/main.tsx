@@ -1,4 +1,4 @@
-import { Extension } from "@codemirror/state";
+import type { Extension } from "@codemirror/state";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
@@ -58,9 +58,7 @@ export const Main = () => {
     lastSelectedText,
     lastSurroundingText,
     lastSelectionRange,
-    setLastSelectedText,
-    setLastSurroundingText,
-    setLastSelectionRange,
+    setLastSelection,
     setSelectedText,
     setSurroundingText,
     setSelectionRange,
@@ -68,7 +66,7 @@ export const Main = () => {
   } = useSelectionStore();
   const [menuElement, setMenuElement] = useState<Element | null>(null);
   const { isOpen, setIsOpen } = useConversationUiStore();
-  const { settings, loadSettings, disableLineWrap, initLocalSettings } = useSettingStore();
+  const { settings, loadSettings, initLocalSettings } = useSettingStore();
   const { login } = useAuthStore();
   const { loadPrompts } = usePromptLibraryStore();
 
@@ -84,25 +82,12 @@ export const Main = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (disableLineWrap) {
-      onElementAppeared(".cm-lineWrapping", (editor) => {
-        editor.classList.remove("cm-lineWrapping");
-      });
-    } else {
-      onElementAppeared(".cm-content", (editor) => {
-        editor.classList.add("cm-lineWrapping");
-      });
-    }
-  }, [disableLineWrap]);
-
-  useEffect(() => {
     const handleSelectionChange = () => {
       const selection = window.getSelection();
       // check if the selection is in the editor
       const editor = document.querySelector(".cm-editor");
       if (editor && editor.contains(selection?.anchorNode ?? null)) {
         const text = selection?.toString() ?? null;
-        setLastSelectedText(text);
 
         let surrounding = "";
         try {
@@ -121,9 +106,8 @@ export const Main = () => {
         } catch {
           // fallback
         }
-        setLastSurroundingText(surrounding);
 
-        setLastSelectionRange(selection?.getRangeAt(0) ?? null);
+        setLastSelection(text, surrounding, selection?.getRangeAt(0) ?? null);
         return;
       } else {
         return;
@@ -133,7 +117,7 @@ export const Main = () => {
     return () => {
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
-  }, [setLastSelectedText, setLastSelectionRange, setLastSurroundingText]);
+  }, [setLastSelection]);
 
   // Add effect to close context menu when clicking outside
 
