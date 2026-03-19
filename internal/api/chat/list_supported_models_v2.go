@@ -220,44 +220,20 @@ func (s *ChatServerV2) ListSupportedModels(
 	}
 
 	var models []*chatv2.SupportedModel
+
+	for _, model := range settings.CustomModels {
+		models = append(models, &chatv2.SupportedModel{
+			Name:         model.Name,
+			Slug:         model.Slug,
+			TotalContext: int64(model.ContextWindow),
+			MaxOutput:    int64(model.MaxOutput),
+			InputPrice:   int64(model.InputPrice),
+			OutputPrice:  int64(model.OutputPrice),
+			IsCustom:     true,
+		})
+	}
+
 	for _, config := range allModels {
-		// Check if user has set API key for this particular model
-		hasOwnAPIKey := false
-		for _, model := range settings.CustomModels {
-			if model.Slug == config.slugOpenRouter {
-				// User has API key for this model, use slugOpenAI instead of slugOpenRouter if applicable
-				// slug := config.slugOpenRouter
-				// if strings.TrimSpace(config.slugOpenAI) != "" {
-				// 	slug = config.slugOpenAI
-				// }
-
-				models = append(models, &chatv2.SupportedModel{
-					Name:         model.Name,
-					Slug:         model.Slug,
-					TotalContext: int64(model.ContextWindow),
-					MaxOutput:    int64(model.MaxOutput),
-					InputPrice:   int64(model.InputPrice),
-					OutputPrice:  int64(model.OutputPrice),
-					IsCustom:     true,
-				})
-				hasOwnAPIKey = true
-				continue
-			}
-		}
-
-		if hasOwnAPIKey {
-			continue
-		}
-
-		// Choose the appropriate slug based on whether user has their own API key.
-		//
-		// Some models are only available via OpenRouter; for those, slugOpenAI may be empty.
-		// In that case, keep using the OpenRouter slug to avoid returning an empty model slug.
-		// slug := config.slugOpenRouter
-		// if hasOwnAPIKey && strings.TrimSpace(config.slugOpenAI) != "" {
-		// 	slug = config.slugOpenAI
-		// }
-
 		model := &chatv2.SupportedModel{
 			Name:         config.name,
 			Slug:         config.slugOpenRouter,
@@ -265,17 +241,16 @@ func (s *ChatServerV2) ListSupportedModels(
 			MaxOutput:    config.maxOutput,
 			InputPrice:   config.inputPrice,
 			OutputPrice:  config.outputPrice,
-			IsCustom:     false,
 		}
 
 		// If model requires own key but user hasn't provided one, mark as disabled
 		if config.requireOwnKey {
-			model.Disabled = true
-			model.DisabledReason = stringPtr("Requires your own OpenAI API key. Configure it in Settings.")
+			continue
 		}
 
 		models = append(models, model)
 	}
+
 	return &chatv2.ListSupportedModelsResponse{
 		Models: models,
 	}, nil

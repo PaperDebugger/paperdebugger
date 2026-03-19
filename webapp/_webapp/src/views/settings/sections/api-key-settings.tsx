@@ -117,25 +117,29 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
   const [modelName, setModelName] = useState(customModel?.name || "");
 
-  const baseInputClassName = "bg-transparent p-1 focus:outline-none mt-[4px]";
-  const modelNameInputClassName = `${baseInputClassName} text-sm text-default-900 font-medium flex-1 truncate`;
-  const labelClassName = `${baseInputClassName} text-xs text-default-900 w-auto`;
-  const detailInputClassName = `${baseInputClassName} flex-1 noselect focus:outline-none 
-    rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md 
-    text-xs text-default-700 dark:text-default-300 placeholder:text-default-400 disabled:opacity-70 disabled:cursor-not-allowed`;
+  const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed";
+  const modelNameInputClassName = `${baseClassName} text-sm text-default-900 font-medium flex-1 truncate rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md mr-1`;
+  const labelClassName = `${baseClassName} text-xs text-default-900 w-auto`;
+  const detailInputClassName = `${baseClassName} flex-1 noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md 
+    text-xs text-default-700 placeholder:text-default-400`;
 
   const handleOnChange = (isDelete: boolean) => {
-    if (modelName.length < 1 || slug.length < 1 || baseUrl.length < 1 || apiKey.length < 1) {
+    if (
+      modelName.trim().length < 1 ||
+      slug.trim().length < 1 ||
+      baseUrl.trim().length < 1 ||
+      apiKey.trim().length < 1
+    ) {
       return;
     }
 
     onChange(
       {
         id: id,
-        name: modelName,
-        baseUrl: baseUrl,
-        slug: slug,
-        apiKey: apiKey,
+        name: modelName.trim(),
+        baseUrl: baseUrl.trim(),
+        slug: slug.trim(),
+        apiKey: apiKey.trim(),
         contextWindow: contextWindow,
         maxOutput: maxOutput,
         inputPrice: inputPrice,
@@ -165,7 +169,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placeholder="My Model"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setModelName(e.target.value.trim())}
+          onChange={(e) => setModelName(e.target.value)}
         ></input>
 
         {isNew ? (
@@ -198,19 +202,19 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         )}
       </div>
 
-      <div className="flex flex-row">
+      <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>Slug</label>
         <input
           className={detailInputClassName}
           value={slug}
-          placeholder="e.g., google/gemini-2.5-flash"
+          placeholder="e.g., gemini-2.5-flash"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setSlug(e.target.value.trim())}
+          onChange={(e) => setSlug(e.target.value)}
         />
       </div>
 
-      <div className="flex flex-row">
+      <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>Base URL</label>
         <input
           className={detailInputClassName}
@@ -218,11 +222,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placeholder="An OpenAI-compatible endpoint"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setBaseUrl(e.target.value.trim())}
+          onChange={(e) => setBaseUrl(e.target.value)}
         />
       </div>
 
-      <div className="flex flex-row">
+      <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>API Key</label>
         <input
           className={detailInputClassName}
@@ -230,7 +234,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placeholder="Your API Key"
           type={!isEditing && !isNew ? "password" : "text"}
           disabled={!isEditing}
-          onChange={(e) => setApiKey(e.target.value.trim())}
+          onChange={(e) => setApiKey(e.target.value)}
         />
       </div>
 

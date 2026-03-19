@@ -53,7 +53,7 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 	})
 }
 
-func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2) openaiv3.ChatCompletionNewParams {
+func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2, isCustomModel bool) openaiv3.ChatCompletionNewParams {
 	var reasoningModels = []string{
 		"gpt-5",
 		"gpt-5-mini",
@@ -67,8 +67,8 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		"codex-mini-latest",
 	}
 
-	// Gemini does not support Store param
-	if strings.HasPrefix(strings.ToLower(modelSlug), "gemini") {
+	// Other model providers generally do not support the Store param
+	if isCustomModel {
 		return openaiv3.ChatCompletionNewParams{
 			Model:               modelSlug,
 			Temperature:         openaiv3.Float(0.7),
