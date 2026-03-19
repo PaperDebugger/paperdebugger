@@ -117,11 +117,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
   const [modelName, setModelName] = useState(customModel?.name || "");
 
+  const borderedInputClassName = "rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md";
   const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed";
-  const modelNameInputClassName = `${baseClassName} text-sm text-default-900 font-medium flex-1 truncate rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md mr-1`;
+  const modelNameInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} text-sm text-default-900 font-medium flex-1 truncate mr-1`;
   const labelClassName = `${baseClassName} text-xs text-default-900 w-auto`;
-  const detailInputClassName = `${baseClassName} flex-1 noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md 
-    text-xs text-default-700 placeholder:text-default-400`;
+  const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
 
   const handleOnChange = (isDelete: boolean) => {
     if (
