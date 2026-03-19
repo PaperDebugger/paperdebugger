@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
@@ -12,7 +12,6 @@ export const ApiKeySettings = () => {
 
   const handleCustomModelChange = (newModel: CustomModel, isDelete: boolean) => {
     const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
-    console.log(otherCustomModels);
 
     if (isDelete) {
       updateSettings({
@@ -53,22 +52,25 @@ export const ApiKeySettings = () => {
             {Array.from(settings?.customModels || [])
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((m) => (
-                <CustomModelSection
-                  isNew={false}
-                  onChange={handleCustomModelChange}
-                  key={m.id}
-                  model={{
-                    id: m.id,
-                    name: m.name,
-                    baseUrl: m.baseUrl,
-                    slug: m.slug,
-                    apiKey: m.apiKey,
-                    contextWindow: m.contextWindow,
-                    maxOutput: m.maxOutput,
-                    inputPrice: m.inputPrice,
-                    outputPrice: m.outputPrice,
-                  }}
-                />
+                <>
+                  <hr></hr>
+                  <CustomModelSection
+                    isNew={false}
+                    onChange={handleCustomModelChange}
+                    key={m.id}
+                    model={{
+                      id: m.id,
+                      name: m.name,
+                      baseUrl: m.baseUrl,
+                      slug: m.slug,
+                      apiKey: m.apiKey,
+                      contextWindow: m.contextWindow,
+                      maxOutput: m.maxOutput,
+                      inputPrice: m.inputPrice,
+                      outputPrice: m.outputPrice,
+                    }}
+                  />
+                </>
               ))}
           </div>
         }
@@ -113,19 +115,19 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
   const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
-  const [modelName, setModelName] = useState(customModel?.name || "My Model");
-  const isModelNameEdited = useRef(false);
+  const [modelName, setModelName] = useState(customModel?.name || "");
 
-  const baseInputClassName = "hover:cursor-pointer bg-transparent p-1 focus:outline-none";
-  const nameInputClassName = `${baseInputClassName} text-sm text-default-900 font-medium flex-1 truncate`;
+  const baseInputClassName = "bg-transparent p-1 focus:outline-none mt-[4px]";
+  const modelNameInputClassName = `${baseInputClassName} text-sm text-default-900 font-medium flex-1 truncate`;
   const labelClassName = `${baseInputClassName} text-xs text-default-900 w-auto`;
-  const detailInputClassName = `${baseInputClassName} text-xs text-default-400 font-normal flex-1`;
+  const detailInputClassName = `${baseInputClassName} flex-1 noselect focus:outline-none 
+    rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md 
+    text-xs text-default-700 dark:text-default-300 placeholder:text-default-400 disabled:opacity-70 disabled:cursor-not-allowed`;
 
   const handleOnChange = (isDelete: boolean) => {
-    // TODO: Input validation
-    // TODO: Add loader
-
-    console.log("Id: ", id);
+    if (modelName.length < 1 || slug.length < 1 || baseUrl.length < 1 || apiKey.length < 1) {
+      return;
+    }
 
     onChange(
       {
@@ -143,7 +145,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     );
 
     if (isNew) {
-      setModelName("My Model");
+      setModelName("");
       setBaseUrl("");
       setSlug("");
       setApiKey("");
@@ -158,14 +160,12 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     <div className="flex flex-col w-full pl-1">
       <div className="flex flex-row justify-between">
         <input
-          className={nameInputClassName}
+          className={modelNameInputClassName}
           value={modelName}
+          placeholder="My Model"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => {
-            isModelNameEdited.current = true;
-            setModelName(e.target.value);
-          }}
+          onChange={(e) => setModelName(e.target.value.trim())}
         ></input>
 
         {isNew ? (
@@ -203,54 +203,22 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         <input
           className={detailInputClassName}
           value={slug}
+          placeholder="e.g., google/gemini-2.5-flash"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setSlug(e.target.value)}
+          onChange={(e) => setSlug(e.target.value.trim())}
         />
       </div>
-
-      {/* <div className="pr-1">
-        <div className="flex flex-row">
-          <label className={labelClassName}>Slug</label>
-          <select
-            className={detailInputClassName}
-            disabled={!isEditing}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              if (!isModelNameEdited.current && isNew) {
-                // Custom name not yet defined, default to the selected model's name
-                const m = availableModels.find((mo) => mo.slug == e.target.value);
-                if (m) setModelName(m.name);
-              }
-            }}
-            value={slug}
-          >
-            {isNew ? (
-              availableModels.length > 0 ? (
-                availableModels.map((m) => (
-                  <option key={m.slug} value={m.slug}>
-                    {m.slug}
-                  </option>
-                ))
-              ) : (
-                <option disabled value="">
-                  No available models
-                </option>
-              )
-            ) : (
-              <option>{slug}</option>
-            )}
-          </select>
-        </div> */}
 
       <div className="flex flex-row">
         <label className={labelClassName}>Base URL</label>
         <input
           className={detailInputClassName}
           value={baseUrl}
+          placeholder="An OpenAI-compatible endpoint"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setBaseUrl(e.target.value)}
+          onChange={(e) => setBaseUrl(e.target.value.trim())}
         />
       </div>
 
@@ -259,9 +227,10 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         <input
           className={detailInputClassName}
           value={apiKey}
+          placeholder="Your API Key"
           type={!isEditing && !isNew ? "password" : "text"}
           disabled={!isEditing}
-          onChange={(e) => setApiKey(e.target.value)}
+          onChange={(e) => setApiKey(e.target.value.trim())}
         />
       </div>
 
