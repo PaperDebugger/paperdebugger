@@ -7,14 +7,13 @@
 package userv1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -1282,8 +1281,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"max_output\x18\a \x01(\x05R\tmaxOutput\x12\x1f\n" +
 	"\vinput_price\x18\b \x01(\x05R\n" +
 	"inputPrice\x12!\n" +
-	"\foutput_price\x18\t \x01(\x05R\voutputPrice\"\xfe\x02\n" +
-	"\x14DeletePromptResponse\"\xd4\x02\n" +
+	"\foutput_price\x18\t \x01(\x05R\voutputPrice\"\x8f\x03\n" +
 	"\bSettings\x12C\n" +
 	"\x1eshow_shortcuts_after_selection\x18\x01 \x01(\bR\x1bshowShortcutsAfterSelection\x12F\n" +
 	" full_width_paper_debugger_button\x18\x02 \x01(\bR\x1cfullWidthPaperDebuggerButton\x12<\n" +
