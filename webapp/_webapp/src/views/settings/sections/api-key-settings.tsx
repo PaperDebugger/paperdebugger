@@ -116,12 +116,17 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
   const [modelName, setModelName] = useState(customModel?.name || "");
+  const [isModelNameValid, setIsModelNameValid] = useState(true);
+  const [isSlugValid, setIsSlugValid] = useState(true);
+  const [isBaseUrlValid, setIsBaseUrlValid] = useState(true);
+  const [isApiKeyValid, setIsApiKeyValid] = useState(true);
 
   const borderedInputClassName = "rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md";
   const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed";
   const modelNameInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} text-sm text-default-900 font-medium flex-1 truncate mr-1`;
   const labelClassName = `${baseClassName} text-xs text-default-900 w-auto`;
   const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
+  const errorInputClassName = "!border-red-500 focus:!border-red-500";
 
   const handleOnChange = (isDelete: boolean) => {
     if (
@@ -130,6 +135,10 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       baseUrl.trim().length < 1 ||
       apiKey.trim().length < 1
     ) {
+      setIsModelNameValid(modelName.trim().length > 0);
+      setIsSlugValid(slug.trim().length > 0);
+      setIsBaseUrlValid(baseUrl.trim().length > 0);
+      setIsApiKeyValid(apiKey.trim().length > 0);
       return;
     }
 
@@ -157,6 +166,8 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       setMaxOutput(0);
       setInputPrice(0);
       setOutputPrice(0);
+    } else {
+      setIsEditing(false);
     }
   };
 
@@ -164,12 +175,15 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     <div className="flex flex-col w-full pl-1">
       <div className="flex flex-row justify-between">
         <input
-          className={modelNameInputClassName}
+          className={`${modelNameInputClassName} ${!isModelNameValid && errorInputClassName}`}
           value={modelName}
           placeholder="My Model"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setModelName(e.target.value)}
+          onChange={(e) => {
+            setIsModelNameValid(true);
+            setModelName(e.target.value);
+          }}
         ></input>
 
         {isNew ? (
@@ -185,8 +199,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 onClick={() => {
                   if (isEditing) {
                     handleOnChange(false);
+                  } else {
+                    setIsEditing(true);
                   }
-                  setIsEditing((i) => !i);
                 }}
                 className="p-1 hover:bg-default-100 rounded"
               >
@@ -205,36 +220,45 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>Slug</label>
         <input
-          className={detailInputClassName}
+          className={`${detailInputClassName} ${!isSlugValid && errorInputClassName}`}
           value={slug}
           placeholder="e.g., gemini-2.5-flash"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setSlug(e.target.value)}
+          onChange={(e) => {
+            setIsSlugValid(true);
+            setSlug(e.target.value);
+          }}
         />
       </div>
 
       <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>Base URL</label>
         <input
-          className={detailInputClassName}
+          className={`${detailInputClassName} ${!isBaseUrlValid && errorInputClassName}`}
           value={baseUrl}
           placeholder="An OpenAI-compatible endpoint"
           type="text"
           disabled={!isEditing}
-          onChange={(e) => setBaseUrl(e.target.value)}
+          onChange={(e) => {
+            setIsBaseUrlValid(true);
+            setBaseUrl(e.target.value);
+          }}
         />
       </div>
 
       <div className="flex flex-row mt-[4px]">
         <label className={labelClassName}>API Key</label>
         <input
-          className={detailInputClassName}
+          className={`${detailInputClassName} ${!isApiKeyValid && errorInputClassName}`}
           value={apiKey}
           placeholder="Your API Key"
           type={!isEditing && !isNew ? "password" : "text"}
           disabled={!isEditing}
-          onChange={(e) => setApiKey(e.target.value)}
+          onChange={(e) => {
+            setIsApiKeyValid(true);
+            setApiKey(e.target.value);
+          }}
         />
       </div>
 
