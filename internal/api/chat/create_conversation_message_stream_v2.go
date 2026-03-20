@@ -8,6 +8,7 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
@@ -296,6 +297,16 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			IsCustomModel: false,
 		}
 	} else {
+		customModel.BaseUrl = strings.ToLower(customModel.BaseUrl)
+
+		if strings.Contains(customModel.BaseUrl, "paperdebugger.com") {
+			customModel.BaseUrl = ""
+		}
+		if !strings.HasPrefix(customModel.BaseUrl, "https://") {
+			customModel.BaseUrl = strings.Replace(customModel.BaseUrl, "http://", "", 1)
+			customModel.BaseUrl = "https://" + customModel.BaseUrl
+		}
+
 		llmProvider = &models.LLMProviderConfig{
 			APIKey:        customModel.APIKey,
 			Endpoint:      customModel.BaseUrl,
