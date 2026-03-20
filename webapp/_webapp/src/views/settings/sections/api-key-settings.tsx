@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import { Button, Tooltip } from "@heroui/react";
+import { Accordion, AccordionItem, Button, Tooltip } from "@heroui/react";
 import { useSettingStore } from "../../../stores/setting-store";
 
 export const ApiKeySettings = () => {
@@ -48,7 +48,7 @@ export const ApiKeySettings = () => {
         onOpenChange={(isOpen) => setIsShowModal(isOpen)}
         content={
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
-            <CustomModelSection key={""} isNew onChange={handleCustomModelChange} />
+            <CustomModelSection key={"new_custom_model"} isNew onChange={handleCustomModelChange} />
             {Array.from(settings?.customModels || []).map((m) => (
               <>
                 <hr></hr>
@@ -120,7 +120,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [isApiKeyValid, setIsApiKeyValid] = useState(true);
 
   const borderedInputClassName = "rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md";
-  const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed";
+  const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70";
   const modelNameInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} text-sm text-default-900 font-medium flex-1 truncate mr-1`;
   const labelClassName = `${baseClassName} text-xs text-default-900 w-auto`;
   const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
@@ -260,49 +260,72 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         />
       </div>
 
-      {/* <div className="flex flex-row">
-        <label className={labelClassName}>Context Window</label>
-        <input
-          className={detailInputClassName}
-          value={String(contextWindow)}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setContextWindow(e.target.valueAsNumber)}
-        />
-      </div>
+      <Accordion className="mt-2 px-0" variant="light" selectionMode="multiple">
+        <AccordionItem
+          key="optional-fields"
+          aria-label="More"
+          title={<span className="text-xs text-default-900">{isNew ? "Optional Fields" : "More"}</span>}
+          classNames={{
+            trigger: "px-1 py-0 min-h-0",
+            content: "pt-1 pb-1",
+          }}
+        >
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-row">
+              <label className={labelClassName}>Context Window</label>
+              <input
+                className={detailInputClassName}
+                value={String(contextWindow)}
+                type="number"
+                min={0}
+                step="1"
+                disabled={!isEditing}
+                onChange={(e) => setContextWindow(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+              />
+            </div>
 
-      <div className="flex flex-row">
-        <label className={labelClassName}>Max Output</label>
-        <input
-          className={detailInputClassName}
-          value={String(maxOutput)}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setMaxOutput(e.target.valueAsNumber)}
-        />
-      </div>
+            <div className="flex flex-row">
+              <label className={labelClassName}>Max Output</label>
+              <input
+                className={detailInputClassName}
+                value={String(maxOutput)}
+                type="number"
+                min={0}
+                step="1"
+                disabled={!isEditing}
+                onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+              />
+            </div>
 
-      <div className="flex flex-row">
-        <label className={labelClassName}>Input Price</label>
-        <input
-          className={detailInputClassName}
-          value={String(inputPrice)}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setInputPrice(e.target.valueAsNumber)}
-        />
-      </div>
+            <div className="flex flex-row">
+              <label className={labelClassName}>Input Price</label>
+              <input
+                className={detailInputClassName}
+                value={String(inputPrice)}
+                type="number"
+                min={0}
+                step="1"
+                disabled={!isEditing}
+                onChange={(e) => setInputPrice(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+              />
+            </div>
 
-      <div className="flex flex-row">
-        <label className={labelClassName}>Output Price</label>
-        <input
-          className={detailInputClassName}
-          value={String(outputPrice)}
-          type="text"
-          disabled={!isEditing}
-          onChange={(e) => setOutputPrice(e.target.valueAsNumber)}
-        />
-      </div> */}
+            <div className="flex flex-row">
+              <label className={labelClassName}>Output Price</label>
+              <input
+                className={detailInputClassName}
+                value={String(outputPrice)}
+                type="number"
+                min={0}
+                step="1"
+                pattern="[0-9]*"
+                disabled={!isEditing}
+                onChange={(e) => setOutputPrice(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+              />
+            </div>
+          </div>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };
