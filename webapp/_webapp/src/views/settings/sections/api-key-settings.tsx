@@ -49,29 +49,27 @@ export const ApiKeySettings = () => {
         content={
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
             <CustomModelSection key={""} isNew onChange={handleCustomModelChange} />
-            {Array.from(settings?.customModels || [])
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((m) => (
-                <>
-                  <hr></hr>
-                  <CustomModelSection
-                    isNew={false}
-                    onChange={handleCustomModelChange}
-                    key={m.id}
-                    model={{
-                      id: m.id,
-                      name: m.name,
-                      baseUrl: m.baseUrl,
-                      slug: m.slug,
-                      apiKey: m.apiKey,
-                      contextWindow: m.contextWindow,
-                      maxOutput: m.maxOutput,
-                      inputPrice: m.inputPrice,
-                      outputPrice: m.outputPrice,
-                    }}
-                  />
-                </>
-              ))}
+            {Array.from(settings?.customModels || []).map((m) => (
+              <>
+                <hr></hr>
+                <CustomModelSection
+                  isNew={false}
+                  onChange={handleCustomModelChange}
+                  key={m.id}
+                  model={{
+                    id: m.id,
+                    name: m.name,
+                    baseUrl: m.baseUrl,
+                    slug: m.slug,
+                    apiKey: m.apiKey,
+                    contextWindow: m.contextWindow,
+                    maxOutput: m.maxOutput,
+                    inputPrice: m.inputPrice,
+                    outputPrice: m.outputPrice,
+                  }}
+                />
+              </>
+            ))}
           </div>
         }
       />
