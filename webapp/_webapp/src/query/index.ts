@@ -22,8 +22,6 @@ import {
   upsertUserInstructions,
   getProjectInstructions,
   upsertProjectInstructions,
-  getSessionUsage,
-  getWeeklyUsage,
 } from "./api";
 import {
   CreatePromptResponse,
@@ -39,10 +37,6 @@ import {
   GetProjectInstructionsResponse,
   UpsertProjectInstructionsResponse,
 } from "../pkg/gen/apiclient/project/v1/project_pb";
-import {
-  GetSessionUsageResponse,
-  GetWeeklyUsageResponse,
-} from "../pkg/gen/apiclient/usage/v1/usage_pb";
 import { useAuthStore } from "../stores/auth-store";
 
 export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {
@@ -169,27 +163,6 @@ export const useUpsertProjectInstructionsMutation = (
 ) => {
   return useMutation({
     mutationFn: upsertProjectInstructions,
-    ...opts,
-  });
-};
-
-// Usage
-export const useGetSessionUsageQuery = (opts?: UseQueryOptionsOverride<GetSessionUsageResponse>) => {
-  const { user } = useAuthStore();
-  return useQuery({
-    queryKey: queryKeys.usage.getSessionUsage().queryKey,
-    queryFn: () => getSessionUsage(),
-    enabled: !!user,
-    ...opts,
-  });
-};
-
-export const useGetWeeklyUsageQuery = (opts?: UseQueryOptionsOverride<GetWeeklyUsageResponse>) => {
-  const { user } = useAuthStore();
-  return useQuery({
-    queryKey: queryKeys.usage.getWeeklyUsage().queryKey,
-    queryFn: () => getWeeklyUsage(),
-    enabled: !!user,
     ...opts,
   });
 };
