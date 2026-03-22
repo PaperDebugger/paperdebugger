@@ -5,10 +5,6 @@ export const queryKeys = createQueryKeyStore({
     getUser: () => ["users", "@self"],
     getUserInstructions: () => ["users", "@self", "instructions"],
   },
-  usage: {
-    getSessionUsage: () => ["users", "@self", "usage", "session"],
-    getWeeklyUsage: () => ["users", "@self", "usage", "weekly"],
-  },
   prompts: {
     listPrompts: () => ["users", "@self", "prompts"],
   },

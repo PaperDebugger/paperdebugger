@@ -2,7 +2,6 @@ import { Chat } from "./views/chat";
 import { Tabs } from "./components/tabs";
 import { Settings } from "./views/settings";
 import { Prompts } from "./views/prompts";
-import { Usage } from "./views/usage";
 import { PdAppBodyContainer } from "./components/pd-app-body-container";
 
 export const PaperDebugger = () => {
@@ -23,13 +22,6 @@ export const PaperDebugger = () => {
             icon: "tabler:notebook",
             children: <Prompts />,
             tooltip: "Prompt Library",
-          },
-          {
-            key: "usage",
-            title: "Usage",
-            icon: "tabler:chart-bar",
-            children: <Usage />,
-            tooltip: "Usage Statistics",
           },
           {
             key: "settings",
