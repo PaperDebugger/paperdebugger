@@ -10,6 +10,7 @@ import (
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
+	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
 	filetools "paperdebugger/internal/services/toolkit/tools/files"
@@ -78,9 +79,15 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		}
 	}
 
+	// MiniMax models require temperature in range [0.0, 1.0]
+	temperature := 0.7
+	if models.IsMiniMaxModel(modelSlug) && temperature > 1.0 {
+		temperature = 1.0
+	}
+
 	return openaiv3.ChatCompletionNewParams{
 		Model:               modelSlug,
-		Temperature:         openaiv3.Float(0.7),
+		Temperature:         openaiv3.Float(temperature),
 		MaxCompletionTokens: openaiv3.Int(4000),      // DEBUG POINT: change this to test the frontend handler
 		Tools:               toolRegistry.GetTools(), // Tool registration is managed centrally by the registry
 		ParallelToolCalls:   openaiv3.Bool(true),

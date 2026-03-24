@@ -46,6 +46,20 @@ cp .env.example .env
 # Edit the .env file based on your configuration
 ```
 
+**Required environment variables:**
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API key (server-side default) |
+| `OPENAI_BASE_URL` | OpenAI base URL (default: `https://api.openai.com/v1`) |
+| `INFERENCE_API_KEY` | OpenRouter inference API key |
+| `INFERENCE_BASE_URL` | Inference endpoint URL |
+
+**Optional provider keys (for direct API access):**
+| Variable | Description |
+|---|---|
+| `MINIMAX_API_KEY` | [MiniMax](https://www.minimaxi.com/) API key for direct access to MiniMax models (M2.7, M2.7-highspeed) |
+| `MINIMAX_BASE_URL` | MiniMax base URL (default: `https://api.minimax.io/v1`) |
+
 #### 4. Custom MCP Backend Orchestration [OPTIONAL FOR LOCAL DEV]
 Our enhanced orchestration backend, [**XtraMCP**](https://github.com/4ndrelim/academic-paper-mcp-server), is partially deployed in-production, with selected components enabled to **balance stability and operational cost** at this stage. It is still under active development and remains closed-source for now. 
 

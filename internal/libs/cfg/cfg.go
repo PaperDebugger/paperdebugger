@@ -13,6 +13,9 @@ type Cfg struct {
 	InferenceAPIKey  string
 	JwtSigningKey    string
 
+	MiniMaxBaseURL string
+	MiniMaxAPIKey  string
+
 	MongoURI     string
 	XtraMCPURI   string
 	MCPServerURL string
@@ -28,6 +31,8 @@ func GetCfg() *Cfg {
 		InferenceBaseURL: inferenceBaseURL(),
 		InferenceAPIKey:  os.Getenv("INFERENCE_API_KEY"),
 		JwtSigningKey:    os.Getenv("JWT_SIGNING_KEY"),
+		MiniMaxBaseURL:   miniMaxBaseURL(),
+		MiniMaxAPIKey:    os.Getenv("MINIMAX_API_KEY"),
 		MongoURI:         mongoURI(),
 		XtraMCPURI:       xtraMCPURI(),
 		MCPServerURL:     mcpServerURL(),
@@ -67,6 +72,14 @@ func mongoURI() string {
 	}
 
 	return "mongodb://localhost:27017"
+}
+
+func miniMaxBaseURL() string {
+	val := os.Getenv("MINIMAX_BASE_URL")
+	if val != "" {
+		return val
+	}
+	return "https://api.minimax.io/v1"
 }
 
 func mcpServerURL() string {
