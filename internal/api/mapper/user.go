@@ -13,10 +13,9 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 	for i, m := range settings.CustomModels {
 		var id bson.ObjectID
 
-		if m.Id == "" {
+		id, err := bson.ObjectIDFromHex(m.Id)
+		if err != nil {
 			id = bson.NewObjectID()
-		} else {
-			id, _ = bson.ObjectIDFromHex(m.Id)
 		}
 
 		customModels[i] = models.CustomModel{

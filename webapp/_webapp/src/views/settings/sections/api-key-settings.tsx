@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
@@ -10,15 +10,15 @@ export const ApiKeySettings = () => {
 
   const [isShowModal, setIsShowModal] = useState<boolean>(false);
 
-  const handleCustomModelChange = (newModel: CustomModel, isDelete: boolean) => {
+  const handleCustomModelChange = async (newModel: CustomModel, isDelete: boolean) => {
     const otherCustomModels = Array.from(settings?.customModels || []).filter((model) => model.id != newModel.id);
 
     if (isDelete) {
-      updateSettings({
+      await updateSettings({
         customModels: otherCustomModels,
       });
     } else {
-      updateSettings({
+      await updateSettings({
         customModels: [
           ...otherCustomModels,
           {
@@ -50,12 +50,11 @@ export const ApiKeySettings = () => {
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
             <CustomModelSection key={"new_custom_model"} isNew onChange={handleCustomModelChange} />
             {Array.from(settings?.customModels || []).map((m) => (
-              <>
+              <Fragment key={m.id}>
                 <hr></hr>
                 <CustomModelSection
                   isNew={false}
                   onChange={handleCustomModelChange}
-                  key={m.id}
                   model={{
                     id: m.id,
                     name: m.name,
@@ -68,7 +67,7 @@ export const ApiKeySettings = () => {
                     outputPrice: m.outputPrice,
                   }}
                 />
-              </>
+              </Fragment>
             ))}
           </div>
         }
@@ -126,7 +125,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
   const errorInputClassName = "!border-red-500 focus:!border-red-500";
 
-  const handleOnChange = (isDelete: boolean) => {
+  const handleOnChange = async (isDelete: boolean) => {
     if (
       modelName.trim().length < 1 ||
       slug.trim().length < 1 ||
@@ -140,7 +139,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       return;
     }
 
-    onChange(
+    await onChange(
       {
         id: id,
         name: modelName.trim(),

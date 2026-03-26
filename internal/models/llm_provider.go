@@ -2,6 +2,8 @@ package models
 
 // LLMProviderConfig holds the configuration for LLM API calls.
 // If both Endpoint and APIKey are empty, the system default will be used.
+// If IsCustomModel is true, the user-requested slug with corresponding
+// API keys and endpoint should be used.
 type LLMProviderConfig struct {
 	Endpoint      string
 	APIKey        string

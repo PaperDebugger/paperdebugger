@@ -281,10 +281,9 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	var llmProvider *models.LLMProviderConfig
 	var customModel *models.CustomModel
 	customModel = nil
-	for _, m := range settings.CustomModels {
-		if m.Slug == modelSlug {
-			customModel = &m
-			break
+	for i := range settings.CustomModels {
+		if settings.CustomModels[i].Slug == modelSlug {
+			customModel = &settings.CustomModels[i]
 		}
 	}
 
