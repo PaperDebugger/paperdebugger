@@ -32,18 +32,20 @@ func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *opena
 	var Endpoint string = llmConfig.Endpoint
 	var APIKey string = llmConfig.APIKey
 
-	if Endpoint == "" {
-		if APIKey != "" {
-			// User provided their own API key, use the OpenAI-compatible endpoint
-			Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
-		} else {
-			// suffix needed for cloudflare gateway
-			Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
+	if !llmConfig.IsCustomModel {
+		if Endpoint == "" {
+			if APIKey != "" {
+				// User provided their own API key, use the OpenAI-compatible endpoint
+				Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
+			} else {
+				// suffix needed for cloudflare gateway
+				Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
+			}
 		}
-	}
 
-	if APIKey == "" {
-		APIKey = a.cfg.InferenceAPIKey
+		if APIKey == "" {
+			APIKey = a.cfg.InferenceAPIKey
+		}
 	}
 
 	opts := []option.RequestOption{

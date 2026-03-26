@@ -2,7 +2,6 @@ package chat
 
 import (
 	"context"
-	"strings"
 
 	"paperdebugger/internal/libs/contextutil"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
@@ -220,22 +219,24 @@ func (s *ChatServerV2) ListSupportedModels(
 		return nil, err
 	}
 
-	hasOwnAPIKey := strings.TrimSpace(settings.OpenAIAPIKey) != ""
-
 	var models []*chatv2.SupportedModel
-	for _, config := range allModels {
-		// Choose the appropriate slug based on whether user has their own API key.
-		//
-		// Some models are only available via OpenRouter; for those, slugOpenAI may be empty.
-		// In that case, keep using the OpenRouter slug to avoid returning an empty model slug.
-		slug := config.slugOpenRouter
-		if hasOwnAPIKey && strings.TrimSpace(config.slugOpenAI) != "" {
-			slug = config.slugOpenAI
-		}
 
+	for _, model := range settings.CustomModels {
+		models = append(models, &chatv2.SupportedModel{
+			Name:         model.Name,
+			Slug:         model.Slug,
+			TotalContext: int64(model.ContextWindow),
+			MaxOutput:    int64(model.MaxOutput),
+			InputPrice:   int64(model.InputPrice),
+			OutputPrice:  int64(model.OutputPrice),
+			IsCustom:     true,
+		})
+	}
+
+	for _, config := range allModels {
 		model := &chatv2.SupportedModel{
 			Name:         config.name,
-			Slug:         slug,
+			Slug:         config.slugOpenRouter,
 			TotalContext: config.totalContext,
 			MaxOutput:    config.maxOutput,
 			InputPrice:   config.inputPrice,
@@ -243,9 +244,8 @@ func (s *ChatServerV2) ListSupportedModels(
 		}
 
 		// If model requires own key but user hasn't provided one, mark as disabled
-		if config.requireOwnKey && !hasOwnAPIKey {
-			model.Disabled = true
-			model.DisabledReason = stringPtr("Requires your own OpenAI API key. Configure it in Settings.")
+		if config.requireOwnKey {
+			continue
 		}
 
 		models = append(models, model)

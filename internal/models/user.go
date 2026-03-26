@@ -2,13 +2,26 @@ package models
 
 import "go.mongodb.org/mongo-driver/v2/bson"
 
+type CustomModel struct {
+	Id            bson.ObjectID `bson:"_id"`
+	Slug          string        `bson:"slug"`
+	Name          string        `bson:"name"`
+	BaseUrl       string        `bson:"base_url"`
+	APIKey        string        `bson:"api_key"`
+	ContextWindow int32         `bson:"context_window"`
+	MaxOutput     int32         `bson:"max_output"`
+	InputPrice    int32         `bson:"input_price"`
+	OutputPrice   int32         `bson:"output_price"`
+}
+
 type Settings struct {
-	ShowShortcutsAfterSelection  bool   `bson:"show_shortcuts_after_selection"`
-	FullWidthPaperDebuggerButton bool   `bson:"full_width_paper_debugger_button"`
-	EnableCitationSuggestion     bool   `bson:"enable_citation_suggestion"`
-	FullDocumentRag              bool   `bson:"full_document_rag"`
-	ShowedOnboarding             bool   `bson:"showed_onboarding"`
-	OpenAIAPIKey                 string `bson:"openai_api_key"`
+	ShowShortcutsAfterSelection  bool          `bson:"show_shortcuts_after_selection"`
+	FullWidthPaperDebuggerButton bool          `bson:"full_width_paper_debugger_button"`
+	EnableCitationSuggestion     bool          `bson:"enable_citation_suggestion"`
+	FullDocumentRag              bool          `bson:"full_document_rag"`
+	ShowedOnboarding             bool          `bson:"showed_onboarding"`
+	OpenAIAPIKey                 string        `bson:"openai_api_key"`
+	CustomModels                 []CustomModel `bson:"custom_models"`
 }
 
 type User struct {
