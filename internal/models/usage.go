@@ -6,13 +6,12 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// Usage tracks cost per user, per project, per model, per hour.
+// Usage tracks cost per user, per project, per hour.
 // Each document represents one hour bucket of usage.
 type Usage struct {
 	ID         bson.ObjectID `bson:"_id"`
 	UserID     bson.ObjectID `bson:"user_id"`
 	ProjectID  string        `bson:"project_id"`
-	ModelSlug  string        `bson:"model_slug"`
 	HourBucket bson.DateTime `bson:"hour_bucket"` // Timestamp truncated to the hour
 	Cost       float64       `bson:"cost"`        // Cost in USD
 	UpdatedAt  bson.DateTime `bson:"updated_at"`

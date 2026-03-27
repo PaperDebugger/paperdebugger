@@ -28,7 +28,6 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 			Keys: bson.D{
 				{Key: "user_id", Value: 1},
 				{Key: "project_id", Value: 1},
-				{Key: "model_slug", Value: 1},
 				{Key: "hour_bucket", Value: 1},
 			},
 			Options: options.Index().SetUnique(true),
@@ -56,9 +55,9 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 	}
 }
 
-// TrackUsage increments cost for a user/project/model/hour bucket.
+// TrackUsage increments cost for a user/project/hour bucket.
 // Uses upsert to create or update the usage record atomically.
-func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, cost float64) error {
+func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64) error {
 	if cost == 0 {
 		return nil
 	}
@@ -69,7 +68,6 @@ func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, pro
 	filter := bson.M{
 		"user_id":     userID,
 		"project_id":  projectID,
-		"model_slug":  modelSlug,
 		"hour_bucket": bson.NewDateTimeFromTime(hourBucket),
 	}
 

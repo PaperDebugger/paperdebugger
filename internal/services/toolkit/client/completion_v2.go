@@ -230,7 +230,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 	// Track cost if userID is provided and user is not using their own API key (BYOK)
 	if !userID.IsZero() && !llmProvider.IsCustom() {
-		if err := a.usageService.TrackUsage(ctx, userID, projectID, modelSlug, usage.Cost); err != nil {
+		if err := a.usageService.TrackUsage(ctx, userID, projectID, usage.Cost); err != nil {
 			a.logger.Error("Failed to track usage", "error", err)
 		}
 	}
