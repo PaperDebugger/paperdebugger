@@ -6,9 +6,9 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// Usage tracks cost per user, per project, per hour.
+// HourlyUsage tracks cost per user, per project, per hour.
 // Each document represents one hour bucket of usage.
-type Usage struct {
+type HourlyUsage struct {
 	ID         bson.ObjectID `bson:"_id"`
 	UserID     bson.ObjectID `bson:"user_id"`
 	ProjectID  string        `bson:"project_id"`
@@ -17,11 +17,38 @@ type Usage struct {
 	UpdatedAt  bson.DateTime `bson:"updated_at"`
 }
 
-func (u Usage) CollectionName() string {
-	return "usages"
+func (u HourlyUsage) CollectionName() string {
+	return "hourly_usages"
+}
+
+// WeeklyUsage tracks cost per user, per project, per week.
+// Each document represents one week bucket of usage.
+type WeeklyUsage struct {
+	ID         bson.ObjectID `bson:"_id"`
+	UserID     bson.ObjectID `bson:"user_id"`
+	ProjectID  string        `bson:"project_id"`
+	WeekBucket bson.DateTime `bson:"week_bucket"` // Timestamp truncated to the week (Monday)
+	Cost       float64       `bson:"cost"`        // Cost in USD
+	UpdatedAt  bson.DateTime `bson:"updated_at"`
+}
+
+func (u WeeklyUsage) CollectionName() string {
+	return "weekly_usages"
 }
 
 // TruncateToHour truncates a time to the start of its hour.
 func TruncateToHour(t time.Time) time.Time {
 	return t.Truncate(time.Hour)
+}
+
+// TruncateToWeek truncates a time to the start of its week (Monday 00:00:00 UTC).
+func TruncateToWeek(t time.Time) time.Time {
+	t = t.UTC()
+	weekday := int(t.Weekday())
+	if weekday == 0 {
+		weekday = 7 // Sunday becomes 7
+	}
+	// Subtract days to get to Monday
+	monday := t.AddDate(0, 0, -(weekday - 1))
+	return time.Date(monday.Year(), monday.Month(), monday.Day(), 0, 0, 0, 0, time.UTC)
 }

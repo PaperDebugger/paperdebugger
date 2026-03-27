@@ -16,14 +16,17 @@ import (
 
 type UsageService struct {
 	BaseService
-	usageCollection *mongo.Collection
+	hourlyCollection *mongo.Collection
+	weeklyCollection *mongo.Collection
 }
 
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
 	base := NewBaseService(db, cfg, logger)
-	collection := base.db.Collection((models.Usage{}).CollectionName())
+	hourlyCollection := base.db.Collection((models.HourlyUsage{}).CollectionName())
+	weeklyCollection := base.db.Collection((models.WeeklyUsage{}).CollectionName())
 
-	indexModels := []mongo.IndexModel{
+	// Hourly usage indexes
+	hourlyIndexModels := []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{Key: "user_id", Value: 1},
@@ -35,6 +38,7 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 		{
 			Keys: bson.D{
 				{Key: "project_id", Value: 1},
+				{Key: "hour_bucket", Value: 1},
 			},
 		},
 		{
@@ -44,25 +48,69 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 			Options: options.Index().SetExpireAfterSeconds(14 * 24 * 60 * 60), // 2 weeks TTL
 		},
 	}
-	_, err := collection.Indexes().CreateMany(context.Background(), indexModels)
+	_, err := hourlyCollection.Indexes().CreateMany(context.Background(), hourlyIndexModels)
 	if err != nil {
-		logger.Error("Failed to create indexes for usages collection", err)
+		logger.Error("Failed to create indexes for hourly_usages collection", err)
+	}
+
+	// Weekly usage indexes
+	weeklyIndexModels := []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "user_id", Value: 1},
+				{Key: "project_id", Value: 1},
+				{Key: "week_bucket", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "project_id", Value: 1},
+				{Key: "week_bucket", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "week_bucket", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(14 * 24 * 60 * 60), // 2 weeks TTL
+		},
+	}
+	_, err = weeklyCollection.Indexes().CreateMany(context.Background(), weeklyIndexModels)
+	if err != nil {
+		logger.Error("Failed to create indexes for weekly_usages collection", err)
 	}
 
 	return &UsageService{
-		BaseService:     base,
-		usageCollection: collection,
+		BaseService:      base,
+		hourlyCollection: hourlyCollection,
+		weeklyCollection: weeklyCollection,
 	}
 }
 
-// TrackUsage increments cost for a user/project/hour bucket.
-// Uses upsert to create or update the usage record atomically.
+// TrackUsage increments cost for a user/project in both hourly and weekly buckets.
+// Uses upsert to create or update the usage records atomically.
 func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64) error {
 	if cost == 0 {
 		return nil
 	}
 
 	now := time.Now()
+
+	// Track hourly usage
+	if err := s.trackHourlyUsage(ctx, userID, projectID, cost, now); err != nil {
+		return err
+	}
+
+	// Track weekly usage
+	if err := s.trackWeeklyUsage(ctx, userID, projectID, cost, now); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UsageService) trackHourlyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
 	hourBucket := models.TruncateToHour(now)
 
 	filter := bson.M{
@@ -84,6 +132,32 @@ func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, pro
 	}
 
 	opts := options.UpdateOne().SetUpsert(true)
-	_, err := s.usageCollection.UpdateOne(ctx, filter, update, opts)
+	_, err := s.hourlyCollection.UpdateOne(ctx, filter, update, opts)
+	return err
+}
+
+func (s *UsageService) trackWeeklyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
+	weekBucket := models.TruncateToWeek(now)
+
+	filter := bson.M{
+		"user_id":     userID,
+		"project_id":  projectID,
+		"week_bucket": bson.NewDateTimeFromTime(weekBucket),
+	}
+
+	update := bson.M{
+		"$inc": bson.M{
+			"cost": cost,
+		},
+		"$set": bson.M{
+			"updated_at": bson.NewDateTimeFromTime(now),
+		},
+		"$setOnInsert": bson.M{
+			"_id": bson.NewObjectID(),
+		},
+	}
+
+	opts := options.UpdateOne().SetUpsert(true)
+	_, err := s.weeklyCollection.UpdateOne(ctx, filter, update, opts)
 	return err
 }
