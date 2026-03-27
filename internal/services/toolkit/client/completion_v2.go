@@ -36,7 +36,7 @@ type UsageCost struct {
 func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
 	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, bson.ObjectID{}, "", "", modelSlug, messages, llmProvider)
 	if err != nil {
-		return nil, nil, UsageCost{}, err
+		return nil, nil, usage, err
 	}
 	return openaiChatHistory, inappChatHistory, usage, nil
 }
@@ -73,6 +73,16 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	streamHandler.SendInitialization()
 	defer func() {
 		streamHandler.SendFinalization()
+	}()
+
+	// Track usage on all exit paths (success or error) to prevent abuse
+	// Only track if userID is provided and user is not using their own API key (BYOK)
+	defer func() {
+		if !userID.IsZero() && !llmProvider.IsCustom() && usage.Cost > 0 {
+			if err := a.usageService.TrackUsage(ctx, userID, projectID, usage.Cost); err != nil {
+				a.logger.Error("Failed to track usage", "error", err)
+			}
+		}
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
@@ -205,7 +215,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 
 		if err := stream.Err(); err != nil {
-			return nil, nil, UsageCost{}, err
+			return nil, nil, usage, err
 		}
 
 		if answer_content != "" {
@@ -215,7 +225,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		// Execute the calls (if any), return incremental data
 		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, toolCalls, streamHandler)
 		if err != nil {
-			return nil, nil, UsageCost{}, err
+			return nil, nil, usage, err
 		}
 
 		// // Record the tool call results
@@ -225,13 +235,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		} else {
 			// response stream is finished, if there is no tool call, then break
 			break
-		}
-	}
-
-	// Track cost if userID is provided and user is not using their own API key (BYOK)
-	if !userID.IsZero() && !llmProvider.IsCustom() {
-		if err := a.usageService.TrackUsage(ctx, userID, projectID, usage.Cost); err != nil {
-			a.logger.Error("Failed to track usage", "error", err)
 		}
 	}
 
