@@ -33,8 +33,8 @@ type UsageCost struct {
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. Cost information (in USD).
 //  4. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
-	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, bson.ObjectID{}, "", "", modelSlug, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
+	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, userID, projectID, "", modelSlug, messages, llmProvider)
 	if err != nil {
 		return nil, nil, usage, err
 	}

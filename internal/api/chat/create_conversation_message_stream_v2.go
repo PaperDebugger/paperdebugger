@@ -307,7 +307,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
-			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, conversation.UserID, conversation.ProjectID, protoMessages, llmProvider)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return
