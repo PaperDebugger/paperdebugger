@@ -21,9 +21,38 @@ type UsageService struct {
 
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
 	base := NewBaseService(db, cfg, logger)
+	collection := base.db.Collection((models.Usage{}).CollectionName())
+
+	indexModels := []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "user_id", Value: 1},
+				{Key: "project_id", Value: 1},
+				{Key: "model_slug", Value: 1},
+				{Key: "hour_bucket", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "project_id", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "hour_bucket", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(14 * 24 * 60 * 60), // 2 weeks TTL
+		},
+	}
+	_, err := collection.Indexes().CreateMany(context.Background(), indexModels)
+	if err != nil {
+		logger.Error("Failed to create indexes for usages collection", err)
+	}
+
 	return &UsageService{
 		BaseService:     base,
-		usageCollection: base.db.Collection((models.Usage{}).CollectionName()),
+		usageCollection: collection,
 	}
 }
 
