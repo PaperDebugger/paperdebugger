@@ -36,6 +36,20 @@ func (u WeeklyUsage) CollectionName() string {
 	return "weekly_usages"
 }
 
+// LifetimeUsage tracks total cost per user, per project, across all time.
+// Each document represents the cumulative usage for a user-project pair.
+type LifetimeUsage struct {
+	ID        bson.ObjectID `bson:"_id"`
+	UserID    bson.ObjectID `bson:"user_id"`
+	ProjectID string        `bson:"project_id"`
+	Cost      float64       `bson:"cost"` // Total cost in USD
+	UpdatedAt bson.DateTime `bson:"updated_at"`
+}
+
+func (u LifetimeUsage) CollectionName() string {
+	return "lifetime_usages"
+}
+
 // TruncateToHour truncates a time to the start of its hour.
 func TruncateToHour(t time.Time) time.Time {
 	return t.Truncate(time.Hour)

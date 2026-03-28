@@ -16,14 +16,16 @@ import (
 
 type UsageService struct {
 	BaseService
-	hourlyCollection *mongo.Collection
-	weeklyCollection *mongo.Collection
+	hourlyCollection   *mongo.Collection
+	weeklyCollection   *mongo.Collection
+	lifetimeCollection *mongo.Collection
 }
 
 func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageService {
 	base := NewBaseService(db, cfg, logger)
 	hourlyCollection := base.db.Collection((models.HourlyUsage{}).CollectionName())
 	weeklyCollection := base.db.Collection((models.WeeklyUsage{}).CollectionName())
+	lifetimeCollection := base.db.Collection((models.LifetimeUsage{}).CollectionName())
 
 	// Hourly usage indexes
 	hourlyIndexModels := []mongo.IndexModel{
@@ -81,14 +83,35 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 		logger.Error("Failed to create indexes for weekly_usages collection", err)
 	}
 
+	// Lifetime usage indexes (no TTL since it's lifetime)
+	lifetimeIndexModels := []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "user_id", Value: 1},
+				{Key: "project_id", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "project_id", Value: 1},
+			},
+		},
+	}
+	_, err = lifetimeCollection.Indexes().CreateMany(context.Background(), lifetimeIndexModels)
+	if err != nil {
+		logger.Error("Failed to create indexes for lifetime_usages collection", err)
+	}
+
 	return &UsageService{
-		BaseService:      base,
-		hourlyCollection: hourlyCollection,
-		weeklyCollection: weeklyCollection,
+		BaseService:        base,
+		hourlyCollection:   hourlyCollection,
+		weeklyCollection:   weeklyCollection,
+		lifetimeCollection: lifetimeCollection,
 	}
 }
 
-// TrackUsage increments cost for a user/project in both hourly and weekly buckets.
+// TrackUsage increments cost for a user/project in hourly, weekly, and lifetime buckets.
 // Uses upsert to create or update the usage records atomically.
 func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64) error {
 	if cost == 0 {
@@ -104,6 +127,11 @@ func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, pro
 
 	// Track weekly usage
 	if err := s.trackWeeklyUsage(ctx, userID, projectID, cost, now); err != nil {
+		return err
+	}
+
+	// Track lifetime usage
+	if err := s.trackLifetimeUsage(ctx, userID, projectID, cost, now); err != nil {
 		return err
 	}
 
@@ -159,5 +187,28 @@ func (s *UsageService) trackWeeklyUsage(ctx context.Context, userID bson.ObjectI
 
 	opts := options.UpdateOne().SetUpsert(true)
 	_, err := s.weeklyCollection.UpdateOne(ctx, filter, update, opts)
+	return err
+}
+
+func (s *UsageService) trackLifetimeUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
+	filter := bson.M{
+		"user_id":    userID,
+		"project_id": projectID,
+	}
+
+	update := bson.M{
+		"$inc": bson.M{
+			"cost": cost,
+		},
+		"$set": bson.M{
+			"updated_at": bson.NewDateTimeFromTime(now),
+		},
+		"$setOnInsert": bson.M{
+			"_id": bson.NewObjectID(),
+		},
+	}
+
+	opts := options.UpdateOne().SetUpsert(true)
+	_, err := s.lifetimeCollection.UpdateOne(ctx, filter, update, opts)
 	return err
 }
