@@ -6,6 +6,10 @@ on:
   repository_dispatch:
     types: [stg]
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-backend-and-push:
     runs-on: ubuntu-latest
