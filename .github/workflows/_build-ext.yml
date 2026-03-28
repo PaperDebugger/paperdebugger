@@ -1,0 +1,70 @@
+name: Build and publish Chrome extension
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string # stg, prd
+      ref:
+        required: true
+        type: string # staging, main
+      extension_id:
+        required: true
+        type: string
+
+jobs:
+  build-chrome-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Build
+        run: |
+          export GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}
+          cd webapp/_webapp
+          npm install
+          npm run build:${{ inputs.environment }}:chrome
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-${{ inputs.environment }}
+          path: webapp/_webapp/dist
+
+  push-to-chrome-web-store:
+    runs-on: ubuntu-latest
+    needs: build-chrome-extension
+    steps:
+      - name: Install zip
+        run: |
+          sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: paperdebugger-chrome-extension-${{ inputs.environment }}
+          path: dist
+
+      - name: Zip extension files
+        run: |
+          zip -r dist.zip dist/*
+
+      - name: Upload to Chrome Web Store (upload only)
+        uses: mobilefirstllc/cws-publish@latest
+        with:
+          action: 'upload'
+          client_id: ${{ secrets.CHROME_EXT_CLIENT_ID }}
+          client_secret: ${{ secrets.CHROME_EXT_CLIENT_SECRET }}
+          refresh_token: ${{ secrets.CHROME_EXT_REFRESH_TOKEN }}
+          extension_id: ${{ inputs.extension_id }}
+          zip_file: 'dist.zip'
