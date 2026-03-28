@@ -1,5 +1,5 @@
 import { PaperScoreCard } from "./paper-score";
-import { PaperScoreCommentCard } from "./paper-score-comment/index";
+import { PaperScoreCommentCard } from "./paper-score-comment";
 import { GreetingCard } from "./greeting";
 import { ErrorToolCard } from "./error";
 import { AlwaysExceptionCard } from "./always-exception";

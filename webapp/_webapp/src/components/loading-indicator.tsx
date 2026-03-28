@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 
 // ============================================================================
 // Types
@@ -49,11 +49,37 @@ const PHASE_STYLES = {
 // Component
 // ============================================================================
 
+type IndicatorState = {
+  progress: number;
+  phase: Phase;
+  isTimeout: boolean;
+};
+
+type IndicatorAction =
+  | { type: "SET_PROGRESS"; progress: number }
+  | { type: "ADVANCE_PHASE"; nextPhase: Phase }
+  | { type: "SET_TIMEOUT" };
+
+function indicatorReducer(state: IndicatorState, action: IndicatorAction): IndicatorState {
+  switch (action.type) {
+    case "SET_PROGRESS":
+      return { ...state, progress: action.progress };
+    case "ADVANCE_PHASE":
+      return { ...state, phase: action.nextPhase, progress: 0 };
+    case "SET_TIMEOUT":
+      return { ...state, isTimeout: true };
+    default:
+      return state;
+  }
+}
+
 export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, errorMessage }: LoadingIndicatorProps) => {
   // State
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<Phase>("green");
-  const [isTimeout, setIsTimeout] = useState(false);
+  const [{ progress, phase, isTimeout }, dispatch] = useReducer(indicatorReducer, {
+    progress: 0,
+    phase: "green",
+    isTimeout: false,
+  });
 
   // Handle progress animation
   useEffect(() => {
@@ -103,18 +129,18 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
         // we spend 100% of estimatedDuration in green,
         // 50% in orange, and 50% in red before warning.
         if (phase === "green") {
-          setPhase("orange");
+          dispatch({ type: "ADVANCE_PHASE", nextPhase: "orange" });
           currentProgress = 0;
         } else if (phase === "orange") {
-          setPhase("red");
+          dispatch({ type: "ADVANCE_PHASE", nextPhase: "red" });
           currentProgress = 0;
         } else if (phase === "red") {
-          setIsTimeout(true);
+          dispatch({ type: "SET_TIMEOUT" });
           return;
         }
       }
 
-      setProgress(currentProgress);
+      dispatch({ type: "SET_PROGRESS", progress: currentProgress });
 
       if (!isTimeout) {
         animationFrameId = requestAnimationFrame(updateProgress);

@@ -16,6 +16,9 @@ paperdebuggerMcpServer:
 paperdebuggerXtraMcpServer:
   image: ghcr.io/paperdebugger/xtragpt-mcp-server:sha-00708c8
 
+nodeSelector: {}
+cloudflareNodeSelector: {}
+
 mongo:
   in_cluster: true
   uri: "" # if in_cluster is false, use the external mongo instead

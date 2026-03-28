@@ -9,6 +9,7 @@ import { UISettings } from "./sections/ui-settings";
 import { RealDeveloperTools } from "./sections/real-developer-tools";
 import { SettingsFooter } from "./sections/footer";
 import { ApiKeySettings } from "./sections/api-key-settings";
+import { BetaFeatureSettings } from "./sections/beta-feature-settings";
 
 export const Settings = () => {
   const { settings, isLoading, loadSettings, enableUserDeveloperTools } = useSettingStore();
@@ -32,6 +33,7 @@ export const Settings = () => {
       <SettingsHeader />
       <div className="pd-app-tab-content-body">
         <UISettings />
+        <BetaFeatureSettings />
         <ApiKeySettings />
         <AccountSettings />
         <SettingsFooter />

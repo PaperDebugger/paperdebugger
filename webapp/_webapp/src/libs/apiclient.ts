@@ -7,6 +7,7 @@ import { EventEmitter } from "events";
 import { ErrorCode, ErrorSchema } from "../pkg/gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
 import { storage } from "./storage";
+import { useAuthStore } from "../stores/auth-store";
 
 // Exhaustive type check helper - will cause compile error if a case is not handled
 const assertNever = (x: never): never => {
@@ -29,6 +30,7 @@ class ApiClient {
   private axiosInstance: AxiosInstance;
   private refreshToken: string | null;
   private onTokenRefreshedEventEmitter: EventEmitter;
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(baseURL: string, apiVersion: ApiVersion) {
     this.axiosInstance = axios.create({
@@ -64,6 +66,8 @@ class ApiClient {
   }
 
   setTokens(token: string, refreshToken: string): void {
+    useAuthStore.getState().setToken(token);
+    useAuthStore.getState().setRefreshToken(refreshToken);
     this.refreshToken = refreshToken;
     this.axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
@@ -89,15 +93,27 @@ class ApiClient {
   }
 
   async refresh() {
-    const response = await this.axiosInstance.post<JsonValue>("/auth/refresh", {
-      refreshToken: this.refreshToken,
-    });
-    const resp = fromJson(RefreshTokenResponseSchema, response.data);
-    this.setTokens(resp.token, resp.refreshToken);
-    this.onTokenRefreshedEventEmitter.emit("tokenRefreshed", {
-      token: resp.token,
-      refreshToken: resp.refreshToken,
-    });
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        const response = await this.axiosInstance.post<JsonValue>("/auth/refresh", {
+          refreshToken: this.refreshToken,
+        });
+        const resp = fromJson(RefreshTokenResponseSchema, response.data);
+        this.setTokens(resp.token, resp.refreshToken);
+        this.onTokenRefreshedEventEmitter.emit("tokenRefreshed", {
+          token: resp.token,
+          refreshToken: resp.refreshToken,
+        });
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
   }
 
   private async requestWithRefresh(config: AxiosRequestConfig): Promise<JsonValue> {

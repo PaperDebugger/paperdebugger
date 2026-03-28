@@ -86,8 +86,15 @@ export const Login = () => {
 
       <div
         className="text-xs text-gray-500 mt-2 text-center max-w-xs hover:cursor-pointer hover:underline"
+        role="button"
+        tabIndex={0}
         onClick={() => {
           setShowEndpointSettings(!showEndpointSettings);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setShowEndpointSettings(!showEndpointSettings);
+          }
         }}
       >
         Advanced Options
