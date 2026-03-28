@@ -40,6 +40,7 @@ Stay connected with the PaperDebugger community! Join our [Discord](https://disc
   - [Custom Endpoint Configuration](#custom-endpoint-configuration)
 - [Architecture Overview](#architecture-overview)
 - [Self-Host Development Setup](#self-host-development-setup)
+- [Contributing](#contributing)
 
 ## Features
 
@@ -102,6 +103,10 @@ The PaperDebugger backend is built with modern technologies:
 ## Self-Host Development Setup
 
 Please refer to [DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+## Contributing
+
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for branch structure, merge workflow, PR guidelines, and code quality requirements.
 
 ## Citation
 ```
