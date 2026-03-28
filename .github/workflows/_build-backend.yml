@@ -1,0 +1,97 @@
+name: Build and deploy backend
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string # dev, stg, prd
+      ref:
+        required: true
+        type: string # development, staging, main
+      version_tag:
+        required: true
+        type: string # e.g. "development" or "v2.1.3"
+
+jobs:
+  build-backend-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      IMAGE_TAG: ${{ steps.output.outputs.IMAGE_TAG }}
+      PAPERDEBUGGER_IMAGE: ${{ steps.output.outputs.PAPERDEBUGGER_IMAGE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup env
+        run: |
+          echo "MONOREPO_REVISION=$(git rev-parse HEAD | cut -c1-6)" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ inputs.version_tag }}" >> $GITHUB_ENV
+          echo "VERSION=${{ inputs.version_tag }}" >> $GITHUB_ENV
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push docker image
+        run: |
+          make all
+      - id: output
+        name: Output image tag
+        run: |
+          export IMAGE_TAG=${BRANCH_NAME}-${MONOREPO_REVISION}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "PAPERDEBUGGER_IMAGE=ghcr.io/paperdebugger/sharelatex-paperdebugger:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+  deploy-backend:
+    needs: build-backend-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Clone deploy repo
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/paperdebugger/deploy.git ../deploy
+      - name: Generate kubernetes manifests
+        env:
+          OPENAI_BASE_URL: ${{ inputs.environment == 'dev' && secrets.OPENAI_BASE_URL_DEV || inputs.environment == 'stg' && secrets.OPENAI_BASE_URL_STG || secrets.OPENAI_BASE_URL_PRD }}
+          OPENAI_API_KEY: ${{ inputs.environment == 'dev' && secrets.OPENAI_API_KEY_DEV || inputs.environment == 'stg' && secrets.OPENAI_API_KEY_STG || secrets.OPENAI_API_KEY_PRD }}
+          INFERENCE_BASE_URL: ${{ inputs.environment == 'dev' && secrets.INFERENCE_BASE_URL_DEV || inputs.environment == 'stg' && secrets.INFERENCE_BASE_URL_STG || secrets.INFERENCE_BASE_URL_PRD }}
+          INFERENCE_API_KEY: ${{ inputs.environment == 'dev' && secrets.INFERENCE_API_KEY_DEV || inputs.environment == 'stg' && secrets.INFERENCE_API_KEY_STG || secrets.INFERENCE_API_KEY_PRD }}
+          MCP_BASIC_KEY: ${{ inputs.environment == 'dev' && secrets.MCP_BASIC_KEY_DEV || inputs.environment == 'stg' && secrets.MCP_BASIC_KEY_STG || secrets.MCP_BASIC_KEY_PRD }}
+          MCP_PAPERSCORE_KEY: ${{ inputs.environment == 'dev' && secrets.MCP_PAPERSCORE_KEY_DEV || inputs.environment == 'stg' && secrets.MCP_PAPERSCORE_KEY_STG || secrets.MCP_PAPERSCORE_KEY_PRD }}
+          XTRAMCP_OPENAI_BASE_URL: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_OPENAI_BASE_URL_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_OPENAI_BASE_URL_STG || secrets.XTRAMCP_OPENAI_BASE_URL_PRD }}
+          XTRAMCP_OPENAI_API_KEY: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_OPENAI_API_KEY_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_OPENAI_API_KEY_STG || secrets.XTRAMCP_OPENAI_API_KEY_PRD }}
+          XTRAMCP_OPENREVIEW_BASE_URL: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_OPENREVIEW_BASE_URL_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_OPENREVIEW_BASE_URL_STG || secrets.XTRAMCP_OPENREVIEW_BASE_URL_PRD }}
+          XTRAMCP_OPENREVIEW_USERNAME: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_OPENREVIEW_USERNAME_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_OPENREVIEW_USERNAME_STG || secrets.XTRAMCP_OPENREVIEW_USERNAME_PRD }}
+          XTRAMCP_OPENREVIEW_PASSWORD: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_OPENREVIEW_PASSWORD_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_OPENREVIEW_PASSWORD_STG || secrets.XTRAMCP_OPENREVIEW_PASSWORD_PRD }}
+          XTRAMCP_CROSSREF_EMAIL_ADDRESS: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_STG || secrets.XTRAMCP_CROSSREF_EMAIL_ADDRESS_PRD }}
+          XTRAMCP_DOI_EMAIL_ADDRESS: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_DOI_EMAIL_ADDRESS_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_DOI_EMAIL_ADDRESS_STG || secrets.XTRAMCP_DOI_EMAIL_ADDRESS_PRD }}
+          XTRAMCP_ACL_METADATA_DB_URL: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_ACL_METADATA_DB_URL_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_ACL_METADATA_DB_URL_STG || secrets.XTRAMCP_ACL_METADATA_DB_URL_PRD }}
+          XTRAMCP_ARXIV_METADATA_DB_URL: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_ARXIV_METADATA_DB_URL_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_ARXIV_METADATA_DB_URL_STG || secrets.XTRAMCP_ARXIV_METADATA_DB_URL_PRD }}
+          XTRAMCP_MONGO_URI: ${{ inputs.environment == 'dev' && secrets.XTRAMCP_MONGO_URI_DEV || inputs.environment == 'stg' && secrets.XTRAMCP_MONGO_URI_STG || secrets.XTRAMCP_MONGO_URI_PRD }}
+          MONGO_URI: ${{ inputs.environment == 'dev' && secrets.MONGO_URI_DEV || inputs.environment == 'stg' && secrets.MONGO_URI_STG || secrets.MONGO_URI_PRD }}
+          GHCR_DOCKER_CONFIG: ${{ inputs.environment == 'dev' && secrets.GHCR_DOCKER_CONFIG_DEV || inputs.environment == 'stg' && secrets.GHCR_DOCKER_CONFIG_STG || secrets.GHCR_DOCKER_CONFIG_PRD }}
+          CLOUDFLARE_TUNNEL_TOKEN: ${{ inputs.environment == 'dev' && secrets.CLOUDFLARE_TUNNEL_TOKEN_DEV || inputs.environment == 'stg' && secrets.CLOUDFLARE_TUNNEL_TOKEN_STG || secrets.CLOUDFLARE_TUNNEL_TOKEN_PRD }}
+        run: |
+          export PAPERDEBUGGER_IMAGE=${{ needs.build-backend-and-push.outputs.PAPERDEBUGGER_IMAGE }}
+          mkdir -p ../deploy/${{ inputs.environment }}
+          ./hack/${{ inputs.environment }}.sh > ../deploy/${{ inputs.environment }}/paperdebugger.yaml
+      - name: Push changes to deploy repo
+        run: |
+          export IMAGE_TAG=${{ needs.build-backend-and-push.outputs.IMAGE_TAG }}
+          cd ../deploy
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ inputs.environment }}/paperdebugger.yaml
+          git diff --staged --quiet || git commit -m "chore: update paperdebugger ${{ inputs.environment }}, revision ${IMAGE_TAG}"
+          git push
