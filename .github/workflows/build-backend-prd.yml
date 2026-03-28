@@ -3,6 +3,10 @@ on:
   repository_dispatch:
     types: [prd]
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-and-deploy:
     uses: ./.github/workflows/_build-backend.yml
