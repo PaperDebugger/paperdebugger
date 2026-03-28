@@ -13,6 +13,10 @@ spec:
       labels:
         app: paperdebugger
     spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       imagePullSecrets:
         - name: ghcr-secret
       initContainers:
