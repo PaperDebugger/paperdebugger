@@ -313,6 +313,32 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		}
 	}
 
+	// Usage is the same as ChatCompletion, just passing the stream parameter
+
+	if customModel == nil {
+		// User did not specify API key for this model
+		llmProvider = &models.LLMProviderConfig{
+			APIKey:        "",
+			IsCustomModel: false,
+		}
+	} else {
+		customModel.BaseUrl = strings.ToLower(customModel.BaseUrl)
+
+		if strings.Contains(customModel.BaseUrl, "paperdebugger.com") {
+			customModel.BaseUrl = ""
+		}
+		if !strings.HasPrefix(customModel.BaseUrl, "https://") {
+			customModel.BaseUrl = strings.Replace(customModel.BaseUrl, "http://", "", 1)
+			customModel.BaseUrl = "https://" + customModel.BaseUrl
+		}
+
+		llmProvider = &models.LLMProviderConfig{
+			APIKey:        customModel.APIKey,
+			Endpoint:      customModel.BaseUrl,
+			IsCustomModel: true,
+		}
+	}
+
 	openaiChatHistory, inappChatHistory, _, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.UserID, conversation.ProjectID, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
 	if err != nil {
 		return s.sendStreamError(stream, err)
