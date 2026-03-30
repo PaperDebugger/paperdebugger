@@ -14,6 +14,10 @@ spec:
       labels:
         app: mongo
     spec:
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: mongo
           image: {{ .Values.mongo.image }}

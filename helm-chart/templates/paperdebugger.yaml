@@ -13,6 +13,10 @@ spec:
       labels:
         app: paperdebugger
     spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       imagePullSecrets:
         - name: ghcr-secret
       initContainers:
@@ -72,6 +76,8 @@ data:
   INFERENCE_BASE_URL: "{{ .Values.inference_base_url }}"
   INFERENCE_API_KEY: "{{ .Values.inference_api_key }}"
   JWT_SIGNING_KEY: "{{ .Values.jwt_signing_key }}"
-  {{ if not .Values.mongo.in_cluster }}
+  {{- if .Values.mongo.in_cluster }}
+  PD_MONGO_URI: "mongodb://mongo.{{ .Values.namespace }}.svc.cluster.local:27017/?replicaSet=in-cluster"
+  {{- else }}
   PD_MONGO_URI: "{{ .Values.mongo.uri }}"
-  {{ end }}
+  {{- end }}

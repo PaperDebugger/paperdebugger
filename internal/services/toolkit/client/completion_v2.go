@@ -8,6 +8,7 @@ import (
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/openai/openai-go/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -79,14 +80,17 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	// Only track if userID is provided and user is not using their own API key (BYOK)
 	defer func() {
 		if !userID.IsZero() && !llmProvider.IsCustom() && usage.Cost > 0 {
-			if err := a.usageService.TrackUsage(ctx, userID, projectID, usage.Cost); err != nil {
-				a.logger.Error("Failed to track usage", "error", err)
+			// Use a detached context since the request context may be canceled
+			trackCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := a.usageService.TrackUsage(trackCtx, userID, projectID, usage.Cost); err != nil {
+				a.logger.Error("Error while tracking usage", "error", err)
 			}
 		}
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
-	params := getDefaultParamsV2(modelSlug, a.toolCallHandler.Registry)
+	params := getDefaultParamsV2(modelSlug, a.toolCallHandler.Registry, llmProvider.IsCustomModel)
 
 	for {
 		params.Messages = openaiChatHistory

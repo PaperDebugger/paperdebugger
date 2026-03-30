@@ -23,6 +23,10 @@ spec:
       labels:
         pod: cloudflared
     spec:
+      {{- with .Values.cloudflareNodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         sysctls:
         # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.
