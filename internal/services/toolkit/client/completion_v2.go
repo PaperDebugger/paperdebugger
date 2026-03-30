@@ -79,7 +79,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	// Track usage on all exit paths (success or error) to prevent abuse
 	// Only track if userID is provided and user is not using their own API key (BYOK)
 	defer func() {
-		if !userID.IsZero() && !llmProvider.IsCustom() && usage.Cost > 0 {
+		if !userID.IsZero() && !llmProvider.IsCustomModel && usage.Cost > 0 {
 			// Use a detached context since the request context may be canceled
 			trackCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
