@@ -68,6 +68,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 	usage := UsageCost{}
+	success := false // Track whether the request completed successfully
 
 	streamHandler := handler.NewStreamHandlerV2(callbackStream, conversationId, modelSlug)
 
@@ -83,7 +84,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			// Use a detached context since the request context may be canceled
 			trackCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			if err := a.usageService.TrackUsage(trackCtx, userID, projectID, usage.Cost); err != nil {
+			if err := a.usageService.TrackUsage(trackCtx, userID, projectID, usage.Cost, success); err != nil {
 				a.logger.Error("Error while tracking usage", "error", err)
 			}
 		}
@@ -242,5 +243,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 	}
 
+	success = true
 	return openaiChatHistory, inappChatHistory, usage, nil
 }

@@ -9,12 +9,13 @@ import (
 // HourlyUsage tracks cost per user, per project, per hour.
 // Each document represents one hour bucket of usage.
 type HourlyUsage struct {
-	ID         bson.ObjectID `bson:"_id"`
-	UserID     bson.ObjectID `bson:"user_id"`
-	ProjectID  string        `bson:"project_id"`
-	HourBucket bson.DateTime `bson:"hour_bucket"` // Timestamp truncated to the hour
-	Cost       float64       `bson:"cost"`        // Cost in USD
-	UpdatedAt  bson.DateTime `bson:"updated_at"`
+	ID          bson.ObjectID `bson:"_id"`
+	UserID      bson.ObjectID `bson:"user_id"`
+	ProjectID   string        `bson:"project_id"`
+	HourBucket  bson.DateTime `bson:"hour_bucket"`  // Timestamp truncated to the hour
+	SuccessCost float64       `bson:"success_cost"` // Cost in USD for successful requests
+	FailedCost  float64       `bson:"failed_cost"`  // Cost in USD for failed requests
+	UpdatedAt   bson.DateTime `bson:"updated_at"`
 }
 
 func (u HourlyUsage) CollectionName() string {
@@ -24,12 +25,13 @@ func (u HourlyUsage) CollectionName() string {
 // WeeklyUsage tracks cost per user, per project, per week.
 // Each document represents one week bucket of usage.
 type WeeklyUsage struct {
-	ID         bson.ObjectID `bson:"_id"`
-	UserID     bson.ObjectID `bson:"user_id"`
-	ProjectID  string        `bson:"project_id"`
-	WeekBucket bson.DateTime `bson:"week_bucket"` // Timestamp truncated to the week (Monday)
-	Cost       float64       `bson:"cost"`        // Cost in USD
-	UpdatedAt  bson.DateTime `bson:"updated_at"`
+	ID          bson.ObjectID `bson:"_id"`
+	UserID      bson.ObjectID `bson:"user_id"`
+	ProjectID   string        `bson:"project_id"`
+	WeekBucket  bson.DateTime `bson:"week_bucket"`  // Timestamp truncated to the week (Monday)
+	SuccessCost float64       `bson:"success_cost"` // Cost in USD for successful requests
+	FailedCost  float64       `bson:"failed_cost"`  // Cost in USD for failed requests
+	UpdatedAt   bson.DateTime `bson:"updated_at"`
 }
 
 func (u WeeklyUsage) CollectionName() string {
@@ -39,11 +41,12 @@ func (u WeeklyUsage) CollectionName() string {
 // LifetimeUsage tracks total cost per user, per project, across all time.
 // Each document represents the cumulative usage for a user-project pair.
 type LifetimeUsage struct {
-	ID        bson.ObjectID `bson:"_id"`
-	UserID    bson.ObjectID `bson:"user_id"`
-	ProjectID string        `bson:"project_id"`
-	Cost      float64       `bson:"cost"` // Total cost in USD
-	UpdatedAt bson.DateTime `bson:"updated_at"`
+	ID          bson.ObjectID `bson:"_id"`
+	UserID      bson.ObjectID `bson:"user_id"`
+	ProjectID   string        `bson:"project_id"`
+	SuccessCost float64       `bson:"success_cost"` // Total cost in USD for successful requests
+	FailedCost  float64       `bson:"failed_cost"`  // Total cost in USD for failed requests
+	UpdatedAt   bson.DateTime `bson:"updated_at"`
 }
 
 func (u LifetimeUsage) CollectionName() string {

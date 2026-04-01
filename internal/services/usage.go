@@ -113,7 +113,9 @@ func NewUsageService(db *db.DB, cfg *cfg.Cfg, logger *logger.Logger) *UsageServi
 
 // TrackUsage increments cost for a user/project in hourly, weekly, and lifetime buckets.
 // Uses upsert to create or update the usage records atomically.
-func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64) error {
+// The success parameter indicates whether the request completed successfully.
+// We will be charging only for successful requests, but we track failed requests for monitoring.
+func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, success bool) error {
 	if cost == 0 {
 		return nil
 	}
@@ -121,35 +123,32 @@ func (s *UsageService) TrackUsage(ctx context.Context, userID bson.ObjectID, pro
 	now := time.Now()
 
 	// Track hourly usage
-	if err := s.trackHourlyUsage(ctx, userID, projectID, cost, now); err != nil {
+	if err := s.trackHourlyUsage(ctx, userID, projectID, cost, success, now); err != nil {
 		return err
 	}
 
 	// Track weekly usage
-	if err := s.trackWeeklyUsage(ctx, userID, projectID, cost, now); err != nil {
+	if err := s.trackWeeklyUsage(ctx, userID, projectID, cost, success, now); err != nil {
 		return err
 	}
 
 	// Track lifetime usage
-	if err := s.trackLifetimeUsage(ctx, userID, projectID, cost, now); err != nil {
+	if err := s.trackLifetimeUsage(ctx, userID, projectID, cost, success, now); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *UsageService) trackHourlyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
-	hourBucket := models.TruncateToHour(now)
-
-	filter := bson.M{
-		"user_id":     userID,
-		"project_id":  projectID,
-		"hour_bucket": bson.NewDateTimeFromTime(hourBucket),
+func (s *UsageService) upsertUsage(ctx context.Context, collection *mongo.Collection, filter bson.M, cost float64, success bool, now time.Time) error {
+	costField := "failed_cost"
+	if success {
+		costField = "success_cost"
 	}
 
 	update := bson.M{
 		"$inc": bson.M{
-			"cost": cost,
+			costField: cost,
 		},
 		"$set": bson.M{
 			"updated_at": bson.NewDateTimeFromTime(now),
@@ -160,55 +159,32 @@ func (s *UsageService) trackHourlyUsage(ctx context.Context, userID bson.ObjectI
 	}
 
 	opts := options.UpdateOne().SetUpsert(true)
-	_, err := s.hourlyCollection.UpdateOne(ctx, filter, update, opts)
+	_, err := collection.UpdateOne(ctx, filter, update, opts)
 	return err
 }
 
-func (s *UsageService) trackWeeklyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
-	weekBucket := models.TruncateToWeek(now)
-
+func (s *UsageService) trackHourlyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, success bool, now time.Time) error {
 	filter := bson.M{
 		"user_id":     userID,
 		"project_id":  projectID,
-		"week_bucket": bson.NewDateTimeFromTime(weekBucket),
+		"hour_bucket": bson.NewDateTimeFromTime(models.TruncateToHour(now)),
 	}
-
-	update := bson.M{
-		"$inc": bson.M{
-			"cost": cost,
-		},
-		"$set": bson.M{
-			"updated_at": bson.NewDateTimeFromTime(now),
-		},
-		"$setOnInsert": bson.M{
-			"_id": bson.NewObjectID(),
-		},
-	}
-
-	opts := options.UpdateOne().SetUpsert(true)
-	_, err := s.weeklyCollection.UpdateOne(ctx, filter, update, opts)
-	return err
+	return s.upsertUsage(ctx, s.hourlyCollection, filter, cost, success, now)
 }
 
-func (s *UsageService) trackLifetimeUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, now time.Time) error {
+func (s *UsageService) trackWeeklyUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, success bool, now time.Time) error {
+	filter := bson.M{
+		"user_id":     userID,
+		"project_id":  projectID,
+		"week_bucket": bson.NewDateTimeFromTime(models.TruncateToWeek(now)),
+	}
+	return s.upsertUsage(ctx, s.weeklyCollection, filter, cost, success, now)
+}
+
+func (s *UsageService) trackLifetimeUsage(ctx context.Context, userID bson.ObjectID, projectID string, cost float64, success bool, now time.Time) error {
 	filter := bson.M{
 		"user_id":    userID,
 		"project_id": projectID,
 	}
-
-	update := bson.M{
-		"$inc": bson.M{
-			"cost": cost,
-		},
-		"$set": bson.M{
-			"updated_at": bson.NewDateTimeFromTime(now),
-		},
-		"$setOnInsert": bson.M{
-			"_id": bson.NewObjectID(),
-		},
-	}
-
-	opts := options.UpdateOne().SetUpsert(true)
-	_, err := s.lifetimeCollection.UpdateOne(ctx, filter, update, opts)
-	return err
+	return s.upsertUsage(ctx, s.lifetimeCollection, filter, cost, success, now)
 }
