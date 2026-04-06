@@ -27,12 +27,12 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
     (item: SelectionItem<string>) => {
       if (item.disabled) return;
 
-      if (item.isCustom) {
-        setModel(models.find((m) => m.id === item.id)!);
-      } else {
-        setModel(models.find((m) => m.slug === item.value)!);
-      }
+      const selectedModel = item.isCustom
+        ? ((item.id ? models.find((m) => m.id === item.id) : undefined) ?? models.find((m) => m.slug === item.value))
+        : models.find((m) => m.slug === item.value);
+      if (!selectedModel) return;
 
+      setModel(selectedModel);
       onSelectModel();
       inputRef.current?.focus();
     },

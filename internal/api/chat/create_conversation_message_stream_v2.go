@@ -292,7 +292,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			}
 		}
 		if customModel == nil {
-			return s.sendStreamError(stream, fmt.Errorf("Failed to get custom model"))
+			return s.sendStreamError(stream, fmt.Errorf("custom model not found: %q", customModelID))
 		}
 		modelSlug = customModel.Slug
 	}
