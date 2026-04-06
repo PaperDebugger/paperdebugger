@@ -18,13 +18,21 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
       value: model.slug,
       disabled: model.disabled,
       disabledReason: model.disabledReason,
+      id: model.id ?? undefined,
+      isCustom: model.isCustom,
     }));
   }, [models]);
 
   const onSelect = useCallback(
     (item: SelectionItem<string>) => {
       if (item.disabled) return;
-      setModel(models.find((m) => m.slug === item.value)!);
+
+      if (item.isCustom) {
+        setModel(models.find((m) => m.id === item.id)!);
+      } else {
+        setModel(models.find((m) => m.slug === item.value)!);
+      }
+
       onSelectModel();
       inputRef.current?.focus();
     },

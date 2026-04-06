@@ -5,6 +5,7 @@ import { useListSupportedModelsQuery } from "../query";
 import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
 
 export type Model = {
+  id?: string;
   name: string;
   slug: string;
   provider: string;
@@ -39,6 +40,7 @@ const fallbackModels: Model[] = [
 ];
 
 const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
+  id: supportedModel.id || undefined,
   name: supportedModel.name,
   slug: supportedModel.slug,
   provider: extractProvider(supportedModel.slug),
@@ -53,7 +55,7 @@ const mapSupportedModelToModel = (supportedModel: SupportedModel): Model => ({
 
 export const useLanguageModels = () => {
   const { currentConversation, setCurrentConversation } = useConversationStore();
-  const { setLastUsedModelSlug } = useConversationUiStore();
+  const { lastUsedCustomModelId, setLastUsedModelSlug, setLastUsedCustomModelId } = useConversationUiStore();
   const { data: supportedModelsResponse } = useListSupportedModelsQuery();
 
   const models: Model[] = useMemo(() => {
@@ -64,19 +66,25 @@ export const useLanguageModels = () => {
   }, [supportedModelsResponse]);
 
   const currentModel = useMemo(() => {
-    const model = models.find((m) => m.slug === currentConversation.modelSlug);
+    if (lastUsedCustomModelId) {
+      const customModel = models.find((m) => m.isCustom && m.id === lastUsedCustomModelId);
+      if (customModel) return customModel;
+    }
+
+    const model = models.find((m) => !m.isCustom && m.slug === currentConversation.modelSlug);
     return model || models[0];
-  }, [models, currentConversation.modelSlug]);
+  }, [models, currentConversation.modelSlug, lastUsedCustomModelId]);
 
   const setModel = useCallback(
     (model: Model) => {
       setLastUsedModelSlug(model.slug);
+      setLastUsedCustomModelId(model.isCustom ? (model.id ?? "") : "");
       setCurrentConversation({
         ...currentConversation,
         modelSlug: model.slug,
       });
     },
-    [setCurrentConversation, currentConversation, setLastUsedModelSlug],
+    [setCurrentConversation, currentConversation, setLastUsedModelSlug, setLastUsedCustomModelId],
   );
 
   return { models, currentModel, setModel };

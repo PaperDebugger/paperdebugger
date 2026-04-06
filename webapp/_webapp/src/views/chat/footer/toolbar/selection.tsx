@@ -12,6 +12,8 @@ export type SelectionItem<T> = {
   value: T;
   disabled?: boolean;
   disabledReason?: string;
+  id?: string;
+  isCustom: boolean;
 };
 
 type SelectionProps<T> = {
