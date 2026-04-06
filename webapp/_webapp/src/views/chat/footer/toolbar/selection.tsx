@@ -13,7 +13,7 @@ export type SelectionItem<T> = {
   disabled?: boolean;
   disabledReason?: string;
   id?: string;
-  isCustom: boolean;
+  isCustom?: boolean;
 };
 
 type SelectionProps<T> = {
