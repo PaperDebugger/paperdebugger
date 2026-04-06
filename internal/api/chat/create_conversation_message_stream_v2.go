@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
@@ -281,13 +282,20 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 	var llmProvider *models.LLMProviderConfig
 	var customModel *models.CustomModel
 	customModel = nil
-	for i := range settings.CustomModels {
-		if settings.CustomModels[i].Slug == modelSlug {
-			customModel = &settings.CustomModels[i]
-		}
-	}
 
-	// Usage is the same as ChatCompletion, just passing the stream parameter
+	customModelID := req.GetCustomModelId()
+	if customModelID != "" {
+		for i := range settings.CustomModels {
+			if settings.CustomModels[i].Id.Hex() == customModelID {
+				customModel = &settings.CustomModels[i]
+				break
+			}
+		}
+		if customModel == nil {
+			return s.sendStreamError(stream, fmt.Errorf("custom model not found: %q", customModelID))
+		}
+		modelSlug = customModel.Slug
+	}
 
 	if customModel == nil {
 		// User did not specify API key for this model

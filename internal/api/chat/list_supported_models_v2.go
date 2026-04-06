@@ -222,7 +222,9 @@ func (s *ChatServerV2) ListSupportedModels(
 	var models []*chatv2.SupportedModel
 
 	for _, model := range settings.CustomModels {
+		modelID := model.Id.Hex()
 		models = append(models, &chatv2.SupportedModel{
+			Id:           &modelID,
 			Name:         model.Name,
 			Slug:         model.Slug,
 			TotalContext: int64(model.ContextWindow),

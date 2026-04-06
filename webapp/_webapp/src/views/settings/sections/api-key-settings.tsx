@@ -105,6 +105,8 @@ type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelS
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
   const id = customModel?.id || "";
   const [isEditing, setIsEditing] = useState(isNew);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingAction, setProcessingAction] = useState<"save" | "delete" | null>(null);
   const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
   const [slug, setSlug] = useState(customModel?.slug ?? "");
   const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
@@ -126,11 +128,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const errorInputClassName = "!border-red-500 focus:!border-red-500";
 
   const handleOnChange = async (isDelete: boolean) => {
+    if (isProcessing) return;
+
+    const isSaveAction = !isDelete;
+
     if (
-      modelName.trim().length < 1 ||
-      slug.trim().length < 1 ||
-      baseUrl.trim().length < 1 ||
-      apiKey.trim().length < 1
+      isSaveAction &&
+      (modelName.trim().length < 1 || slug.trim().length < 1 || baseUrl.trim().length < 1 || apiKey.trim().length < 1)
     ) {
       setIsModelNameValid(modelName.trim().length > 0);
       setIsSlugValid(slug.trim().length > 0);
@@ -139,32 +143,40 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       return;
     }
 
-    await onChange(
-      {
-        id: id,
-        name: modelName.trim(),
-        baseUrl: baseUrl.trim(),
-        slug: slug.trim(),
-        apiKey: apiKey.trim(),
-        contextWindow: contextWindow,
-        maxOutput: maxOutput,
-        inputPrice: inputPrice,
-        outputPrice: outputPrice,
-      },
-      isDelete,
-    );
+    setIsProcessing(true);
+    setProcessingAction(isDelete ? "delete" : "save");
 
-    if (isNew) {
-      setModelName("");
-      setBaseUrl("");
-      setSlug("");
-      setApiKey("");
-      setContextWindow(0);
-      setMaxOutput(0);
-      setInputPrice(0);
-      setOutputPrice(0);
-    } else {
-      setIsEditing(false);
+    try {
+      await onChange(
+        {
+          id: id,
+          name: modelName.trim(),
+          baseUrl: baseUrl.trim(),
+          slug: slug.trim(),
+          apiKey: apiKey.trim(),
+          contextWindow: contextWindow,
+          maxOutput: maxOutput,
+          inputPrice: inputPrice,
+          outputPrice: outputPrice,
+        },
+        isDelete,
+      );
+
+      if (isNew) {
+        setModelName("");
+        setBaseUrl("");
+        setSlug("");
+        setApiKey("");
+        setContextWindow(0);
+        setMaxOutput(0);
+        setInputPrice(0);
+        setOutputPrice(0);
+      } else if (isSaveAction) {
+        setIsEditing(false);
+      }
+    } finally {
+      setIsProcessing(false);
+      setProcessingAction(null);
     }
   };
 
@@ -176,7 +188,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           value={modelName}
           placeholder="My Model"
           type="text"
-          disabled={!isEditing}
+          disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsModelNameValid(true);
             setModelName(e.target.value);
@@ -185,8 +197,16 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
 
         {isNew ? (
           <Tooltip content="Add" placement="bottom" className="noselect" delay={500}>
-            <button onClick={() => handleOnChange(false)} className="p-1 hover:bg-default-100 rounded">
-              <Icon icon="tabler:device-floppy" width="16" />
+            <button
+              onClick={() => handleOnChange(false)}
+              disabled={isProcessing}
+              className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
+            >
+              <Icon
+                icon={isProcessing && processingAction === "save" ? "tabler:loader-2" : "tabler:device-floppy"}
+                width="16"
+                className={isProcessing && processingAction === "save" ? "animate-spin" : ""}
+              />
             </button>
           </Tooltip>
         ) : (
@@ -200,14 +220,33 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                     setIsEditing(true);
                   }
                 }}
-                className="p-1 hover:bg-default-100 rounded"
+                disabled={isProcessing}
+                className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
               >
-                <Icon icon={isEditing ? "tabler:device-floppy" : "tabler:pencil"} width="16" />
+                <Icon
+                  icon={
+                    isEditing
+                      ? isProcessing && processingAction === "save"
+                        ? "tabler:loader-2"
+                        : "tabler:device-floppy"
+                      : "tabler:pencil"
+                  }
+                  width="16"
+                  className={isEditing && isProcessing && processingAction === "save" ? "animate-spin" : ""}
+                />
               </button>
             </Tooltip>
             <Tooltip content="Delete" placement="bottom" className="noselect" delay={500}>
-              <button onClick={() => handleOnChange(true)} className="p-1 hover:bg-default-100 rounded">
-                <Icon icon="tabler:trash" width="16" />
+              <button
+                onClick={() => handleOnChange(true)}
+                disabled={isProcessing}
+                className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
+              >
+                <Icon
+                  icon={isProcessing && processingAction === "delete" ? "tabler:loader-2" : "tabler:trash"}
+                  width="16"
+                  className={isProcessing && processingAction === "delete" ? "animate-spin" : ""}
+                />
               </button>
             </Tooltip>
           </div>
@@ -221,7 +260,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           value={slug}
           placeholder="e.g., gemini-2.5-flash"
           type="text"
-          disabled={!isEditing}
+          disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsSlugValid(true);
             setSlug(e.target.value);
@@ -236,7 +275,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           value={baseUrl}
           placeholder="An OpenAI-compatible endpoint"
           type="text"
-          disabled={!isEditing}
+          disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsBaseUrlValid(true);
             setBaseUrl(e.target.value);
@@ -251,7 +290,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           value={apiKey}
           placeholder="Your API Key"
           type={!isEditing && !isNew ? "password" : "text"}
-          disabled={!isEditing}
+          disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsApiKeyValid(true);
             setApiKey(e.target.value);
@@ -278,7 +317,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 type="number"
                 min={0}
                 step="1"
-                disabled={!isEditing}
+                disabled={!isEditing || isProcessing}
                 onChange={(e) => setContextWindow(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
@@ -291,7 +330,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 type="number"
                 min={0}
                 step="1"
-                disabled={!isEditing}
+                disabled={!isEditing || isProcessing}
                 onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
@@ -304,7 +343,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 type="number"
                 min={0}
                 step="1"
-                disabled={!isEditing}
+                disabled={!isEditing || isProcessing}
                 onChange={(e) => setInputPrice(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
@@ -318,7 +357,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 min={0}
                 step="1"
                 pattern="[0-9]*"
-                disabled={!isEditing}
+                disabled={!isEditing || isProcessing}
                 onChange={(e) => setOutputPrice(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
