@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
@@ -18,6 +18,16 @@ export const ApiKeySettings = () => {
         customModels: otherCustomModels,
       });
     } else {
+      const hasDuplicate = otherCustomModels.some(
+        (model) =>
+          model.name.trim().toLowerCase() === newModel.name.trim().toLowerCase() &&
+          model.slug.trim().toLowerCase() === newModel.slug.trim().toLowerCase(),
+      );
+
+      if (hasDuplicate) {
+        throw new Error("A model with the same name and slug already exists.");
+      }
+
       await updateSettings({
         customModels: [
           ...otherCustomModels,
@@ -90,13 +100,13 @@ type CustomModel = {
 
 type NewCustomModelSectionProps = {
   isNew: true;
-  onChange: (model: CustomModel, isDelete: boolean) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => Promise<void>;
   model?: never;
 };
 
 type ExistingCustomModelSectionProps = {
   isNew: false;
-  onChange: (model: CustomModel, isDelete: boolean) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => Promise<void>;
   model: CustomModel;
 };
 
@@ -110,15 +120,16 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
   const [slug, setSlug] = useState(customModel?.slug ?? "");
   const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
-  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow || 0);
-  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
-  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
-  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
+  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow ?? 0);
+  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput ?? 4000);
+  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice ?? 0);
+  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice ?? 0);
   const [modelName, setModelName] = useState(customModel?.name || "");
   const [isModelNameValid, setIsModelNameValid] = useState(true);
   const [isSlugValid, setIsSlugValid] = useState(true);
   const [isBaseUrlValid, setIsBaseUrlValid] = useState(true);
   const [isApiKeyValid, setIsApiKeyValid] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const borderedInputClassName = "rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md";
   const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70";
@@ -127,22 +138,49 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
   const errorInputClassName = "!border-red-500 focus:!border-red-500";
 
+  useEffect(() => {
+    if (isNew || !customModel) return;
+    if (isEditing) return;
+
+    setModelName(customModel.name || "");
+    setBaseUrl(customModel.baseUrl || "");
+    setSlug(customModel.slug || "");
+    setApiKey(customModel.apiKey || "");
+    setContextWindow(customModel.contextWindow ?? 0);
+    setMaxOutput(customModel.maxOutput ?? 4000);
+    setInputPrice(customModel.inputPrice ?? 0);
+    setOutputPrice(customModel.outputPrice ?? 0);
+  }, [isNew, isEditing, customModel]);
+
   const handleOnChange = async (isDelete: boolean) => {
     if (isProcessing) return;
 
     const isSaveAction = !isDelete;
 
-    if (
-      isSaveAction &&
-      (modelName.trim().length < 1 || slug.trim().length < 1 || baseUrl.trim().length < 1 || apiKey.trim().length < 1)
-    ) {
-      setIsModelNameValid(modelName.trim().length > 0);
-      setIsSlugValid(slug.trim().length > 0);
-      setIsBaseUrlValid(baseUrl.trim().length > 0);
-      setIsApiKeyValid(apiKey.trim().length > 0);
-      return;
+    if (isSaveAction) {
+      // Input validation
+      const missingFields: string[] = [];
+      if (modelName.trim().length < 1) missingFields.push("Model Name");
+      if (slug.trim().length < 1) missingFields.push("Slug");
+      if (baseUrl.trim().length < 1) missingFields.push("Base URL");
+      if (apiKey.trim().length < 1) missingFields.push("API Key");
+
+      if (missingFields.length > 0) {
+        setIsModelNameValid(modelName.trim().length > 0);
+        setIsSlugValid(slug.trim().length > 0);
+        setIsBaseUrlValid(baseUrl.trim().length > 0);
+        setIsApiKeyValid(apiKey.trim().length > 0);
+        setSubmitError(`Please fill in required fields: ${missingFields.join(", ")}.`);
+        return;
+      }
+
+      if (maxOutput < 1) {
+        setSubmitError("Max Output cannot be less than 1.");
+        return;
+      }
     }
 
+    setSubmitError(null);
     setIsProcessing(true);
     setProcessingAction(isDelete ? "delete" : "save");
 
@@ -168,12 +206,14 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         setSlug("");
         setApiKey("");
         setContextWindow(0);
-        setMaxOutput(0);
+        setMaxOutput(4000);
         setInputPrice(0);
         setOutputPrice(0);
       } else if (isSaveAction) {
         setIsEditing(false);
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to save new model.");
     } finally {
       setIsProcessing(false);
       setProcessingAction(null);
@@ -191,6 +231,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsModelNameValid(true);
+            setSubmitError(null);
             setModelName(e.target.value);
           }}
         ></input>
@@ -263,6 +304,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsSlugValid(true);
+            setSubmitError(null);
             setSlug(e.target.value);
           }}
         />
@@ -278,6 +320,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsBaseUrlValid(true);
+            setSubmitError(null);
             setBaseUrl(e.target.value);
           }}
         />
@@ -293,8 +336,22 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsApiKeyValid(true);
+            setSubmitError(null);
             setApiKey(e.target.value);
           }}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <label className={labelClassName}>Max Output</label>
+        <input
+          className={detailInputClassName}
+          value={String(maxOutput)}
+          type="number"
+          min={0}
+          step="1"
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
         />
       </div>
 
@@ -319,19 +376,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 step="1"
                 disabled={!isEditing || isProcessing}
                 onChange={(e) => setContextWindow(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
-              />
-            </div>
-
-            <div className="flex flex-row">
-              <label className={labelClassName}>Max Output</label>
-              <input
-                className={detailInputClassName}
-                value={String(maxOutput)}
-                type="number"
-                min={0}
-                step="1"
-                disabled={!isEditing || isProcessing}
-                onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
 
@@ -364,6 +408,8 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </div>
         </AccordionItem>
       </Accordion>
+
+      {submitError && <div className="mt-2 px-1 text-xs text-red-500">{submitError}</div>}
     </div>
   );
 };
