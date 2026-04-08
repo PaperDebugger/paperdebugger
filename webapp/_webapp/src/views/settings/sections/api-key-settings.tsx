@@ -41,6 +41,9 @@ export const ApiKeySettings = () => {
             maxOutput: newModel.maxOutput,
             inputPrice: newModel.inputPrice,
             outputPrice: newModel.outputPrice,
+            temperature: newModel.temperature,
+            parallelToolCalls: newModel.parallelToolCalls,
+            store: newModel.store,
           },
         ],
       });
@@ -75,6 +78,9 @@ export const ApiKeySettings = () => {
                     maxOutput: m.maxOutput,
                     inputPrice: m.inputPrice,
                     outputPrice: m.outputPrice,
+                    temperature: m.temperature,
+                    parallelToolCalls: m.parallelToolCalls,
+                    store: m.store,
                   }}
                 />
               </Fragment>
@@ -94,6 +100,9 @@ type CustomModel = {
   apiKey: string;
   contextWindow: number;
   maxOutput: number;
+  temperature: number;
+  parallelToolCalls: boolean;
+  store: boolean;
   inputPrice: number;
   outputPrice: number;
 };
@@ -122,6 +131,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
   const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow ?? 0);
   const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput ?? 4000);
+  const [temperature, setTemperature] = useState<number>(customModel?.temperature ?? 0.7);
+  const [parallelToolCalls, setParallelToolCalls] = useState<boolean>(customModel?.parallelToolCalls ?? true);
+  const [store, setStore] = useState<boolean>(customModel?.store ?? false);
   const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice ?? 0);
   const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice ?? 0);
   const [modelName, setModelName] = useState(customModel?.name || "");
@@ -150,6 +162,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     setMaxOutput(customModel.maxOutput ?? 4000);
     setInputPrice(customModel.inputPrice ?? 0);
     setOutputPrice(customModel.outputPrice ?? 0);
+    setTemperature(customModel.temperature ?? 0.7);
+    setParallelToolCalls(customModel.parallelToolCalls ?? true);
+    setStore(customModel.store ?? false);
   }, [isNew, isEditing, customModel]);
 
   const handleOnChange = async (isDelete: boolean) => {
@@ -196,6 +211,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           maxOutput: maxOutput,
           inputPrice: inputPrice,
           outputPrice: outputPrice,
+          temperature: temperature,
+          parallelToolCalls: parallelToolCalls,
+          store: store,
         },
         isDelete,
       );
@@ -209,6 +227,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         setMaxOutput(4000);
         setInputPrice(0);
         setOutputPrice(0);
+        setTemperature(0.7);
+        setParallelToolCalls(true);
+        setStore(false);
       } else if (isSaveAction) {
         setIsEditing(false);
       }
@@ -400,6 +421,44 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           step="1"
           disabled={!isEditing || isProcessing}
           onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <label className={`${labelClassName}`}>Temperature</label>
+        <input
+          className={detailInputClassName}
+          value={String(temperature)}
+          type="number"
+          min={0}
+          max={2}
+          step="0.1"
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setTemperature(e.target.value === "" ? 0 : Number(e.target.value))}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <label className={`${labelClassName}`}>Parallel Tool Calls</label>
+        <input
+          id={`parallel-${id}`}
+          className="mr-2"
+          type="checkbox"
+          checked={parallelToolCalls}
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setParallelToolCalls(e.target.checked)}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <label className={`${labelClassName}`}>Store</label>
+        <input
+          id={`store-${id}`}
+          className="mr-2"
+          type="checkbox"
+          checked={store}
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setStore(e.target.checked)}
         />
       </div>
 
