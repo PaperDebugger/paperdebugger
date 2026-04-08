@@ -295,7 +295,30 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>Slug</label>
+        <Tooltip
+          content={
+            <div>
+              Slugs are unique, short identifiers for AI models in API calls.
+              <br />
+              <strong>Common examples:</strong>
+              <br />
+              - gemini-2.5-flash
+              <br />
+              - MiniMax-M2.5
+              <br />
+              - glm-4.7
+              <br />
+              - gpt-5.1
+              <br />
+              - openai/gpt-5.1 (OpenRouter)
+              <br />
+            </div>
+          }
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Slug</label>
+        </Tooltip>
         <input
           className={`${detailInputClassName} ${!isSlugValid && errorInputClassName}`}
           value={slug}
@@ -311,7 +334,26 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>Base URL</label>
+        <Tooltip
+          content={
+            <div>
+              Only OpenAI-compatible endpoints are supported currently.
+              <br />
+              <strong>Common examples:</strong>
+              <br />
+              - https://api.anthropic.com/v1/
+              <br />
+              - https://api.openai.com/v1
+              <br />
+              - https://generativelanguage.googleapis.com/v1beta/openai/
+              <br />
+            </div>
+          }
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Base URL</label>
+        </Tooltip>
         <input
           className={`${detailInputClassName} ${!isBaseUrlValid && errorInputClassName}`}
           value={baseUrl}
@@ -327,7 +369,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>API Key</label>
+        <label className={`${labelClassName}`}>API Key</label>
         <input
           className={`${detailInputClassName} ${!isApiKeyValid && errorInputClassName}`}
           value={apiKey}
@@ -343,7 +385,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>Max Output</label>
+        <Tooltip
+          content="An upper bound for the number of tokens that can be generated for a completion."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Max Output</label>
+        </Tooltip>
         <input
           className={detailInputClassName}
           value={String(maxOutput)}
