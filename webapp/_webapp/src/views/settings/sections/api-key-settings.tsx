@@ -425,7 +425,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={`${labelClassName}`}>Temperature</label>
+        <Tooltip
+          content="Hyperparameter that controls the randomness and creativity of text generation."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Temperature</label>
+        </Tooltip>
         <input
           className={detailInputClassName}
           value={String(temperature)}
@@ -439,7 +445,15 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={`${labelClassName}`}>Parallel Tool Calls</label>
+        <Tooltip
+          content="Allow a model to request multiple tool executions in a single response."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>
+            Parallel Tool Calls
+          </label>
+        </Tooltip>
         <input
           id={`parallel-${id}`}
           className="mr-2"
@@ -451,7 +465,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={`${labelClassName}`}>Store</label>
+        <Tooltip
+          content="Controls whether request and response pairs are persisted on OpenAI's servers."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Store</label>
+        </Tooltip>
         <input
           id={`store-${id}`}
           className="mr-2"
