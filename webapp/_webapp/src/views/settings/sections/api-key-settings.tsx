@@ -62,29 +62,31 @@ export const ApiKeySettings = () => {
         content={
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
             <CustomModelSection key={"new_custom_model"} isNew onChange={handleCustomModelChange} />
-            {Array.from(settings?.customModels || []).map((m) => (
-              <Fragment key={m.id}>
-                <hr></hr>
-                <CustomModelSection
-                  isNew={false}
-                  onChange={handleCustomModelChange}
-                  model={{
-                    id: m.id,
-                    name: m.name,
-                    baseUrl: m.baseUrl,
-                    slug: m.slug,
-                    apiKey: m.apiKey,
-                    contextWindow: m.contextWindow,
-                    maxOutput: m.maxOutput,
-                    inputPrice: m.inputPrice,
-                    outputPrice: m.outputPrice,
-                    temperature: m.temperature,
-                    parallelToolCalls: m.parallelToolCalls,
-                    store: m.store,
-                  }}
-                />
-              </Fragment>
-            ))}
+            {Array.from(settings?.customModels || [])
+              .sort((m1, m2) => m1.name.localeCompare(m2.name))
+              .map((m) => (
+                <Fragment key={m.id}>
+                  <hr></hr>
+                  <CustomModelSection
+                    isNew={false}
+                    onChange={handleCustomModelChange}
+                    model={{
+                      id: m.id,
+                      name: m.name,
+                      baseUrl: m.baseUrl,
+                      slug: m.slug,
+                      apiKey: m.apiKey,
+                      contextWindow: m.contextWindow,
+                      maxOutput: m.maxOutput,
+                      inputPrice: m.inputPrice,
+                      outputPrice: m.outputPrice,
+                      temperature: m.temperature,
+                      parallelToolCalls: m.parallelToolCalls,
+                      store: m.store,
+                    }}
+                  />
+                </Fragment>
+              ))}
           </div>
         }
       />
@@ -258,7 +260,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         ></input>
 
         {isNew ? (
-          <Tooltip content="Add" placement="bottom" className="noselect" delay={500}>
+          <Tooltip content="Save" placement="bottom" className="noselect" delay={500}>
             <button
               onClick={() => handleOnChange(false)}
               disabled={isProcessing}
@@ -273,7 +275,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </Tooltip>
         ) : (
           <div>
-            <Tooltip content="Edit" placement="bottom" className="noselect" delay={500}>
+            <Tooltip content={isEditing ? "Save" : "Edit"} placement="bottom" className="noselect" delay={500}>
               <button
                 onClick={() => {
                   if (isEditing) {
@@ -338,7 +340,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Slug</label>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>Slug</label>
         </Tooltip>
         <input
           className={`${detailInputClassName} ${!isSlugValid && errorInputClassName}`}
@@ -373,7 +375,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Base URL</label>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Base URL
+          </label>
         </Tooltip>
         <input
           className={`${detailInputClassName} ${!isBaseUrlValid && errorInputClassName}`}
@@ -411,7 +415,9 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Max Output</label>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Max Output
+          </label>
         </Tooltip>
         <input
           className={detailInputClassName}
@@ -426,11 +432,19 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
 
       <div className="flex flex-row mt-[4px]">
         <Tooltip
-          content="Hyperparameter that controls the randomness and creativity of text generation."
+          content={
+            <div>
+              Hyperparameter that controls the randomness and creativity of text generation.
+              <br />
+              Higher values make outputs more creative, diverse, or random
+            </div>
+          }
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Temperature</label>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Temperature
+          </label>
         </Tooltip>
         <input
           className={detailInputClassName}
@@ -450,13 +464,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
             Parallel Tool Calls
           </label>
         </Tooltip>
         <input
           id={`parallel-${id}`}
-          className="mr-2"
+          className="ml-1"
           type="checkbox"
           checked={parallelToolCalls}
           disabled={!isEditing || isProcessing}
@@ -470,11 +484,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           placement="bottom"
           delay={100}
         >
-          <label className={`${labelClassName} underline decoration-dotted underline-offset-2`}>Store</label>
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Store
+          </label>
         </Tooltip>
         <input
           id={`store-${id}`}
-          className="mr-2"
+          className="ml-1"
           type="checkbox"
           checked={store}
           disabled={!isEditing || isProcessing}

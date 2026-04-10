@@ -13,7 +13,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string) (string, error) {
+func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string, customModel *models.CustomModel) (string, error) {
 	messages := lo.Map(inappChatHistory, func(message *chatv2.Message, _ int) string {
 		if _, ok := message.Payload.MessageType.(*chatv2.MessagePayload_Assistant); ok {
 			return fmt.Sprintf("Assistant: %s", message.Payload.GetAssistant().GetContent())
@@ -38,7 +38,7 @@ func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistor
 	_, resp, err := a.ChatCompletionV2(ctx, modelToUse, OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that generates a title for a conversation."),
 		openai.UserMessage(message),
-	}, llmProvider)
+	}, llmProvider, customModel)
 	if err != nil {
 		return "", err
 	}
