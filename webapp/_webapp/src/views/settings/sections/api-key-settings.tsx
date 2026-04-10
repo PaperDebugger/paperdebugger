@@ -441,7 +441,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           className={detailInputClassName}
           value={String(maxOutput)}
           type="number"
-          min={0}
+          min={1}
           step="1"
           disabled={!isEditing || isProcessing}
           onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
@@ -487,7 +487,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </label>
         </Tooltip>
         <input
-          id={`parallel-${id}`}
           className="ml-1"
           type="checkbox"
           checked={parallelToolCalls}
@@ -507,7 +506,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </label>
         </Tooltip>
         <input
-          id={`store-${id}`}
           className="ml-1"
           type="checkbox"
           checked={store}
