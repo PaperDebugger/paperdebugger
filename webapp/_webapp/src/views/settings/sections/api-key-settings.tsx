@@ -124,21 +124,37 @@ type ExistingCustomModelSectionProps = {
 type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelSectionProps;
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
+  const defaults = {
+    modelName: "",
+    slug: "",
+    baseUrl: "",
+    apiKey: "",
+    maxOutput: 4000,
+    temperature: 0.7,
+    parallelToolCalls: true,
+    store: false,
+    contextWindow: 0,
+    inputPrice: 0,
+    outputPrice: 0,
+  };
+
   const id = customModel?.id || "";
   const [isEditing, setIsEditing] = useState(isNew);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"save" | "delete" | null>(null);
-  const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
-  const [slug, setSlug] = useState(customModel?.slug ?? "");
-  const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
-  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow ?? 0);
-  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput ?? 4000);
-  const [temperature, setTemperature] = useState<number>(customModel?.temperature ?? 0.7);
-  const [parallelToolCalls, setParallelToolCalls] = useState<boolean>(customModel?.parallelToolCalls ?? true);
-  const [store, setStore] = useState<boolean>(customModel?.store ?? false);
-  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice ?? 0);
-  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice ?? 0);
-  const [modelName, setModelName] = useState(customModel?.name || "");
+  const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || defaults.baseUrl);
+  const [slug, setSlug] = useState(customModel?.slug ?? defaults.slug);
+  const [apiKey, setApiKey] = useState(customModel?.apiKey || defaults.apiKey);
+  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow ?? defaults.contextWindow);
+  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput ?? defaults.maxOutput);
+  const [temperature, setTemperature] = useState<number>(customModel?.temperature ?? defaults.temperature);
+  const [parallelToolCalls, setParallelToolCalls] = useState<boolean>(
+    customModel?.parallelToolCalls ?? defaults.parallelToolCalls,
+  );
+  const [store, setStore] = useState<boolean>(customModel?.store ?? defaults.store);
+  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice ?? defaults.inputPrice);
+  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice ?? defaults.outputPrice);
+  const [modelName, setModelName] = useState(customModel?.name || defaults.modelName);
   const [isModelNameValid, setIsModelNameValid] = useState(true);
   const [isSlugValid, setIsSlugValid] = useState(true);
   const [isBaseUrlValid, setIsBaseUrlValid] = useState(true);
@@ -156,17 +172,17 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
     if (isNew || !customModel) return;
     if (isEditing) return;
 
-    setModelName(customModel.name || "");
-    setBaseUrl(customModel.baseUrl || "");
-    setSlug(customModel.slug || "");
-    setApiKey(customModel.apiKey || "");
-    setContextWindow(customModel.contextWindow ?? 0);
-    setMaxOutput(customModel.maxOutput ?? 4000);
-    setInputPrice(customModel.inputPrice ?? 0);
-    setOutputPrice(customModel.outputPrice ?? 0);
-    setTemperature(customModel.temperature ?? 0.7);
-    setParallelToolCalls(customModel.parallelToolCalls ?? true);
-    setStore(customModel.store ?? false);
+    setModelName(customModel.name || defaults.modelName);
+    setBaseUrl(customModel.baseUrl || defaults.baseUrl);
+    setSlug(customModel.slug || defaults.slug);
+    setApiKey(customModel.apiKey || defaults.apiKey);
+    setContextWindow(customModel.contextWindow ?? defaults.contextWindow);
+    setMaxOutput(customModel.maxOutput ?? defaults.maxOutput);
+    setInputPrice(customModel.inputPrice ?? defaults.inputPrice);
+    setOutputPrice(customModel.outputPrice ?? defaults.outputPrice);
+    setTemperature(customModel.temperature ?? defaults.temperature);
+    setParallelToolCalls(customModel.parallelToolCalls ?? defaults.parallelToolCalls);
+    setStore(customModel.store ?? defaults.store);
   }, [isNew, isEditing, customModel]);
 
   const handleOnChange = async (isDelete: boolean) => {
@@ -221,17 +237,17 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       );
 
       if (isNew) {
-        setModelName("");
-        setBaseUrl("");
-        setSlug("");
-        setApiKey("");
-        setContextWindow(0);
-        setMaxOutput(4000);
-        setInputPrice(0);
-        setOutputPrice(0);
-        setTemperature(0.7);
-        setParallelToolCalls(true);
-        setStore(false);
+        setModelName(defaults.modelName);
+        setBaseUrl(defaults.baseUrl);
+        setSlug(defaults.slug);
+        setApiKey(defaults.apiKey);
+        setContextWindow(defaults.contextWindow);
+        setMaxOutput(defaults.maxOutput);
+        setInputPrice(defaults.inputPrice);
+        setOutputPrice(defaults.outputPrice);
+        setTemperature(defaults.temperature);
+        setParallelToolCalls(defaults.parallelToolCalls);
+        setStore(defaults.store);
       } else if (isSaveAction) {
         setIsEditing(false);
       }
@@ -335,6 +351,8 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
               <br />
               - openai/gpt-5.1 (OpenRouter)
               <br />
+              <br />
+              PaperDebugger currently only supports models that support the Chat Completions API.
             </div>
           }
           placement="bottom"
@@ -502,7 +520,17 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         <AccordionItem
           key="optional-fields"
           aria-label="More"
-          title={<span className="text-xs text-default-900">{isNew ? "Optional Fields" : "More"}</span>}
+          title={
+            <Tooltip
+              content="These fields are purely for user reference. Click to expand."
+              placement="bottom"
+              delay={100}
+            >
+              <label className="text-xs text-default-900 underline decoration-dotted underline-offset-2 cursor-pointer">
+                Optional Fields
+              </label>
+            </Tooltip>
+          }
           classNames={{
             trigger: "px-1 py-0 min-h-0",
             content: "pt-1 pb-1",
