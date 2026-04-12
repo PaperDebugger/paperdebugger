@@ -19,15 +19,18 @@ func MapProtoSettingsToModel(settings *userv1.Settings) *models.Settings {
 		}
 
 		customModels[i] = models.CustomModel{
-			Id:            id,
-			Slug:          m.Slug,
-			Name:          m.Name,
-			BaseUrl:       m.BaseUrl,
-			APIKey:        m.ApiKey,
-			ContextWindow: m.ContextWindow,
-			MaxOutput:     m.MaxOutput,
-			InputPrice:    m.InputPrice,
-			OutputPrice:   m.OutputPrice,
+			Id:                id,
+			Slug:              m.Slug,
+			Name:              m.Name,
+			BaseUrl:           m.BaseUrl,
+			APIKey:            m.ApiKey,
+			ContextWindow:     m.ContextWindow,
+			MaxOutput:         m.MaxOutput,
+			InputPrice:        m.InputPrice,
+			OutputPrice:       m.OutputPrice,
+			Temperature:       m.Temperature,
+			ParallelToolCalls: m.ParallelToolCalls,
+			Store:             m.Store,
 		}
 	}
 
@@ -47,15 +50,18 @@ func MapModelSettingsToProto(settings *models.Settings) *userv1.Settings {
 	customModels := make([]*userv1.CustomModel, len(settings.CustomModels))
 	for i, m := range settings.CustomModels {
 		customModels[i] = &userv1.CustomModel{
-			Id:            m.Id.Hex(),
-			Slug:          m.Slug,
-			Name:          m.Name,
-			BaseUrl:       m.BaseUrl,
-			ApiKey:        m.APIKey,
-			ContextWindow: m.ContextWindow,
-			MaxOutput:     m.MaxOutput,
-			InputPrice:    m.InputPrice,
-			OutputPrice:   m.OutputPrice,
+			Id:                m.Id.Hex(),
+			Slug:              m.Slug,
+			Name:              m.Name,
+			BaseUrl:           m.BaseUrl,
+			ApiKey:            m.APIKey,
+			ContextWindow:     m.ContextWindow,
+			MaxOutput:         m.MaxOutput,
+			InputPrice:        m.InputPrice,
+			OutputPrice:       m.OutputPrice,
+			Temperature:       m.Temperature,
+			ParallelToolCalls: m.ParallelToolCalls,
+			Store:             m.Store,
 		}
 	}
 

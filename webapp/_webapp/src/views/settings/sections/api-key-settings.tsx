@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "../../../components/modal";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
@@ -18,6 +18,16 @@ export const ApiKeySettings = () => {
         customModels: otherCustomModels,
       });
     } else {
+      const hasDuplicate = otherCustomModels.some(
+        (model) =>
+          model.name.trim().toLowerCase() === newModel.name.trim().toLowerCase() &&
+          model.slug.trim().toLowerCase() === newModel.slug.trim().toLowerCase(),
+      );
+
+      if (hasDuplicate) {
+        throw new Error("A model with the same name and slug already exists.");
+      }
+
       await updateSettings({
         customModels: [
           ...otherCustomModels,
@@ -31,6 +41,9 @@ export const ApiKeySettings = () => {
             maxOutput: newModel.maxOutput,
             inputPrice: newModel.inputPrice,
             outputPrice: newModel.outputPrice,
+            temperature: newModel.temperature,
+            parallelToolCalls: newModel.parallelToolCalls,
+            store: newModel.store,
           },
         ],
       });
@@ -49,26 +62,31 @@ export const ApiKeySettings = () => {
         content={
           <div className="flex flex-col h-[80vh] gap-4 p-4 overflow-y-auto">
             <CustomModelSection key={"new_custom_model"} isNew onChange={handleCustomModelChange} />
-            {Array.from(settings?.customModels || []).map((m) => (
-              <Fragment key={m.id}>
-                <hr></hr>
-                <CustomModelSection
-                  isNew={false}
-                  onChange={handleCustomModelChange}
-                  model={{
-                    id: m.id,
-                    name: m.name,
-                    baseUrl: m.baseUrl,
-                    slug: m.slug,
-                    apiKey: m.apiKey,
-                    contextWindow: m.contextWindow,
-                    maxOutput: m.maxOutput,
-                    inputPrice: m.inputPrice,
-                    outputPrice: m.outputPrice,
-                  }}
-                />
-              </Fragment>
-            ))}
+            {Array.from(settings?.customModels || [])
+              .sort((m1, m2) => m1.name.localeCompare(m2.name))
+              .map((m) => (
+                <Fragment key={m.id}>
+                  <hr></hr>
+                  <CustomModelSection
+                    isNew={false}
+                    onChange={handleCustomModelChange}
+                    model={{
+                      id: m.id,
+                      name: m.name,
+                      baseUrl: m.baseUrl,
+                      slug: m.slug,
+                      apiKey: m.apiKey,
+                      contextWindow: m.contextWindow,
+                      maxOutput: m.maxOutput,
+                      inputPrice: m.inputPrice,
+                      outputPrice: m.outputPrice,
+                      temperature: m.temperature,
+                      parallelToolCalls: m.parallelToolCalls,
+                      store: m.store,
+                    }}
+                  />
+                </Fragment>
+              ))}
           </div>
         }
       />
@@ -84,41 +102,64 @@ type CustomModel = {
   apiKey: string;
   contextWindow: number;
   maxOutput: number;
+  temperature: number;
+  parallelToolCalls: boolean;
+  store: boolean;
   inputPrice: number;
   outputPrice: number;
 };
 
 type NewCustomModelSectionProps = {
   isNew: true;
-  onChange: (model: CustomModel, isDelete: boolean) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => Promise<void>;
   model?: never;
 };
 
 type ExistingCustomModelSectionProps = {
   isNew: false;
-  onChange: (model: CustomModel, isDelete: boolean) => void;
+  onChange: (model: CustomModel, isDelete: boolean) => Promise<void>;
   model: CustomModel;
 };
 
 type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelSectionProps;
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
+  const defaults = {
+    modelName: "",
+    slug: "",
+    baseUrl: "",
+    apiKey: "",
+    maxOutput: 4000,
+    temperature: 0.7,
+    parallelToolCalls: true,
+    store: false,
+    contextWindow: 0,
+    inputPrice: 0,
+    outputPrice: 0,
+  };
+
   const id = customModel?.id || "";
   const [isEditing, setIsEditing] = useState(isNew);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState<"save" | "delete" | null>(null);
-  const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || "");
-  const [slug, setSlug] = useState(customModel?.slug ?? "");
-  const [apiKey, setApiKey] = useState(customModel?.apiKey || "");
-  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow || 0);
-  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput || 0);
-  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice || 0);
-  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice || 0);
-  const [modelName, setModelName] = useState(customModel?.name || "");
+  const [baseUrl, setBaseUrl] = useState(customModel?.baseUrl || defaults.baseUrl);
+  const [slug, setSlug] = useState(customModel?.slug ?? defaults.slug);
+  const [apiKey, setApiKey] = useState(customModel?.apiKey || defaults.apiKey);
+  const [contextWindow, setContextWindow] = useState<number>(customModel?.contextWindow ?? defaults.contextWindow);
+  const [maxOutput, setMaxOutput] = useState<number>(customModel?.maxOutput ?? defaults.maxOutput);
+  const [temperature, setTemperature] = useState<number>(customModel?.temperature ?? defaults.temperature);
+  const [parallelToolCalls, setParallelToolCalls] = useState<boolean>(
+    customModel?.parallelToolCalls ?? defaults.parallelToolCalls,
+  );
+  const [store, setStore] = useState<boolean>(customModel?.store ?? defaults.store);
+  const [inputPrice, setInputPrice] = useState<number>(customModel?.inputPrice ?? defaults.inputPrice);
+  const [outputPrice, setOutputPrice] = useState<number>(customModel?.outputPrice ?? defaults.outputPrice);
+  const [modelName, setModelName] = useState(customModel?.name || defaults.modelName);
   const [isModelNameValid, setIsModelNameValid] = useState(true);
   const [isSlugValid, setIsSlugValid] = useState(true);
   const [isBaseUrlValid, setIsBaseUrlValid] = useState(true);
   const [isApiKeyValid, setIsApiKeyValid] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const borderedInputClassName = "rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md";
   const baseClassName = "bg-transparent p-1 focus:outline-none disabled:opacity-70";
@@ -127,22 +168,52 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
   const detailInputClassName = `${baseClassName} ${isEditing || isNew ? borderedInputClassName : ""} flex-1 noselect focus:outline-none text-xs text-default-700 placeholder:text-default-400`;
   const errorInputClassName = "!border-red-500 focus:!border-red-500";
 
+  useEffect(() => {
+    if (isNew || !customModel) return;
+    if (isEditing) return;
+
+    setModelName(customModel.name || defaults.modelName);
+    setBaseUrl(customModel.baseUrl || defaults.baseUrl);
+    setSlug(customModel.slug || defaults.slug);
+    setApiKey(customModel.apiKey || defaults.apiKey);
+    setContextWindow(customModel.contextWindow ?? defaults.contextWindow);
+    setMaxOutput(customModel.maxOutput ?? defaults.maxOutput);
+    setInputPrice(customModel.inputPrice ?? defaults.inputPrice);
+    setOutputPrice(customModel.outputPrice ?? defaults.outputPrice);
+    setTemperature(customModel.temperature ?? defaults.temperature);
+    setParallelToolCalls(customModel.parallelToolCalls ?? defaults.parallelToolCalls);
+    setStore(customModel.store ?? defaults.store);
+  }, [isNew, isEditing, customModel]);
+
   const handleOnChange = async (isDelete: boolean) => {
     if (isProcessing) return;
 
     const isSaveAction = !isDelete;
 
-    if (
-      isSaveAction &&
-      (modelName.trim().length < 1 || slug.trim().length < 1 || baseUrl.trim().length < 1 || apiKey.trim().length < 1)
-    ) {
-      setIsModelNameValid(modelName.trim().length > 0);
-      setIsSlugValid(slug.trim().length > 0);
-      setIsBaseUrlValid(baseUrl.trim().length > 0);
-      setIsApiKeyValid(apiKey.trim().length > 0);
-      return;
+    if (isSaveAction) {
+      // Input validation
+      const missingFields: string[] = [];
+      if (modelName.trim().length < 1) missingFields.push("Model Name");
+      if (slug.trim().length < 1) missingFields.push("Slug");
+      if (baseUrl.trim().length < 1) missingFields.push("Base URL");
+      if (apiKey.trim().length < 1) missingFields.push("API Key");
+
+      if (missingFields.length > 0) {
+        setIsModelNameValid(modelName.trim().length > 0);
+        setIsSlugValid(slug.trim().length > 0);
+        setIsBaseUrlValid(baseUrl.trim().length > 0);
+        setIsApiKeyValid(apiKey.trim().length > 0);
+        setSubmitError(`Please fill in required fields: ${missingFields.join(", ")}.`);
+        return;
+      }
+
+      if (maxOutput < 1) {
+        setSubmitError("Max Output cannot be less than 1.");
+        return;
+      }
     }
 
+    setSubmitError(null);
     setIsProcessing(true);
     setProcessingAction(isDelete ? "delete" : "save");
 
@@ -158,22 +229,30 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           maxOutput: maxOutput,
           inputPrice: inputPrice,
           outputPrice: outputPrice,
+          temperature: temperature,
+          parallelToolCalls: parallelToolCalls,
+          store: store,
         },
         isDelete,
       );
 
       if (isNew) {
-        setModelName("");
-        setBaseUrl("");
-        setSlug("");
-        setApiKey("");
-        setContextWindow(0);
-        setMaxOutput(0);
-        setInputPrice(0);
-        setOutputPrice(0);
+        setModelName(defaults.modelName);
+        setBaseUrl(defaults.baseUrl);
+        setSlug(defaults.slug);
+        setApiKey(defaults.apiKey);
+        setContextWindow(defaults.contextWindow);
+        setMaxOutput(defaults.maxOutput);
+        setInputPrice(defaults.inputPrice);
+        setOutputPrice(defaults.outputPrice);
+        setTemperature(defaults.temperature);
+        setParallelToolCalls(defaults.parallelToolCalls);
+        setStore(defaults.store);
       } else if (isSaveAction) {
         setIsEditing(false);
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to save new model.");
     } finally {
       setIsProcessing(false);
       setProcessingAction(null);
@@ -191,12 +270,13 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsModelNameValid(true);
+            setSubmitError(null);
             setModelName(e.target.value);
           }}
         ></input>
 
         {isNew ? (
-          <Tooltip content="Add" placement="bottom" className="noselect" delay={500}>
+          <Tooltip content="Save" placement="bottom" className="noselect" delay={500}>
             <button
               onClick={() => handleOnChange(false)}
               disabled={isProcessing}
@@ -211,7 +291,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </Tooltip>
         ) : (
           <div>
-            <Tooltip content="Edit" placement="bottom" className="noselect" delay={500}>
+            <Tooltip content={isEditing ? "Save" : "Edit"} placement="bottom" className="noselect" delay={500}>
               <button
                 onClick={() => {
                   if (isEditing) {
@@ -254,7 +334,32 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>Slug</label>
+        <Tooltip
+          content={
+            <div>
+              Slugs are unique, short identifiers for AI models in API calls.
+              <br />
+              <strong>Common examples:</strong>
+              <br />
+              - gemini-2.5-flash
+              <br />
+              - MiniMax-M2.5
+              <br />
+              - glm-4.7
+              <br />
+              - gpt-5.1
+              <br />
+              - openai/gpt-5.1 (OpenRouter)
+              <br />
+              <br />
+              PaperDebugger currently only supports models that support the Chat Completions API.
+            </div>
+          }
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>Slug</label>
+        </Tooltip>
         <input
           className={`${detailInputClassName} ${!isSlugValid && errorInputClassName}`}
           value={slug}
@@ -263,13 +368,35 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsSlugValid(true);
+            setSubmitError(null);
             setSlug(e.target.value);
           }}
         />
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>Base URL</label>
+        <Tooltip
+          content={
+            <div>
+              Only OpenAI-compatible endpoints are supported currently.
+              <br />
+              <strong>Common examples:</strong>
+              <br />
+              - https://api.anthropic.com/v1/
+              <br />
+              - https://api.openai.com/v1
+              <br />
+              - https://generativelanguage.googleapis.com/v1beta/openai/
+              <br />
+            </div>
+          }
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Base URL
+          </label>
+        </Tooltip>
         <input
           className={`${detailInputClassName} ${!isBaseUrlValid && errorInputClassName}`}
           value={baseUrl}
@@ -278,13 +405,14 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsBaseUrlValid(true);
+            setSubmitError(null);
             setBaseUrl(e.target.value);
           }}
         />
       </div>
 
       <div className="flex flex-row mt-[4px]">
-        <label className={labelClassName}>API Key</label>
+        <label className={`${labelClassName}`}>API Key</label>
         <input
           className={`${detailInputClassName} ${!isApiKeyValid && errorInputClassName}`}
           value={apiKey}
@@ -293,8 +421,96 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
             setIsApiKeyValid(true);
+            setSubmitError(null);
             setApiKey(e.target.value);
           }}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <Tooltip
+          content="An upper bound for the number of tokens that can be generated for a completion."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Max Output
+          </label>
+        </Tooltip>
+        <input
+          className={detailInputClassName}
+          value={String(maxOutput)}
+          type="number"
+          min={1}
+          step="1"
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <Tooltip
+          content={
+            <div>
+              Hyperparameter that controls the randomness and creativity of text generation.
+              <br />
+              Higher values make outputs more creative, diverse, or random
+            </div>
+          }
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Temperature
+          </label>
+        </Tooltip>
+        <input
+          className={detailInputClassName}
+          value={String(temperature)}
+          type="number"
+          min={0}
+          max={2}
+          step="0.1"
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setTemperature(e.target.value === "" ? 0 : Number(e.target.value))}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <Tooltip
+          content="Allow a model to request multiple tool executions in a single response."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Parallel Tool Calls
+          </label>
+        </Tooltip>
+        <input
+          className="ml-1"
+          type="checkbox"
+          checked={parallelToolCalls}
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setParallelToolCalls(e.target.checked)}
+        />
+      </div>
+
+      <div className="flex flex-row mt-[4px]">
+        <Tooltip
+          content="Controls whether request and response pairs are persisted on OpenAI's servers."
+          placement="bottom"
+          delay={100}
+        >
+          <label className={`${labelClassName} underline decoration-dotted underline-offset-2 cursor-help`}>
+            Store
+          </label>
+        </Tooltip>
+        <input
+          className="ml-1"
+          type="checkbox"
+          checked={store}
+          disabled={!isEditing || isProcessing}
+          onChange={(e) => setStore(e.target.checked)}
         />
       </div>
 
@@ -302,7 +518,17 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         <AccordionItem
           key="optional-fields"
           aria-label="More"
-          title={<span className="text-xs text-default-900">{isNew ? "Optional Fields" : "More"}</span>}
+          title={
+            <Tooltip
+              content="These fields are purely for user reference. Click to expand."
+              placement="bottom"
+              delay={100}
+            >
+              <label className="text-xs text-default-900 underline decoration-dotted underline-offset-2 cursor-pointer">
+                Optional Fields
+              </label>
+            </Tooltip>
+          }
           classNames={{
             trigger: "px-1 py-0 min-h-0",
             content: "pt-1 pb-1",
@@ -319,19 +545,6 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 step="1"
                 disabled={!isEditing || isProcessing}
                 onChange={(e) => setContextWindow(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
-              />
-            </div>
-
-            <div className="flex flex-row">
-              <label className={labelClassName}>Max Output</label>
-              <input
-                className={detailInputClassName}
-                value={String(maxOutput)}
-                type="number"
-                min={0}
-                step="1"
-                disabled={!isEditing || isProcessing}
-                onChange={(e) => setMaxOutput(e.target.value === "" ? 0 : Math.trunc(Number(e.target.value)))}
               />
             </div>
 
@@ -364,6 +577,8 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
           </div>
         </AccordionItem>
       </Accordion>
+
+      {submitError && <div className="mt-2 px-1 text-xs text-red-500">{submitError}</div>}
     </div>
   );
 };
