@@ -12,12 +12,14 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
+	maintools "paperdebugger/internal/services/toolkit/tools"
 	chatv1 "paperdebugger/pkg/gen/api/chat/v1"
+	"strings"
 
 	"github.com/openai/openai-go/v2"
 	openaiv2 "github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/responses"
-	"github.com/samber/lo"
+	sharedv2 "github.com/openai/openai-go/v2/shared"
 )
 
 // appendAssistantTextResponse appends the assistant's response to both OpenAI and in-app chat histories.
@@ -52,6 +54,9 @@ func appendAssistantTextResponse(openaiChatHistory *responses.ResponseNewParamsI
 func getDefaultParams(modelSlug string, toolRegistry *registry.ToolRegistry) responses.ResponseNewParams {
 	var reasoningModels = []string{
 		"gpt-5",
+		"gpt-5.4",
+		"gpt-5.4-mini",
+		"gpt-5.4-nano",
 		"gpt-5-mini",
 		"gpt-5-nano",
 		"gpt-5-chat-latest",
@@ -61,12 +66,36 @@ func getDefaultParams(modelSlug string, toolRegistry *registry.ToolRegistry) res
 		"o1-mini",
 		"o1",
 		"codex-mini-latest",
+		"claude-opus-4.6",
+		"claude-4.6-opus",
 	}
-	if lo.Contains(reasoningModels, modelSlug) {
-		return responses.ResponseNewParams{
-			Model: modelSlug,
-			Tools: toolRegistry.GetTools(),
-			Store: openaiv2.Bool(false),
+	for _, model := range reasoningModels {
+		if strings.Contains(modelSlug, model) {
+			params := responses.ResponseNewParams{
+				Model: modelSlug,
+				Tools: toolRegistry.GetTools(),
+				Store: openaiv2.Bool(false),
+			}
+			if strings.Contains(modelSlug, "claude-opus-4.6") || strings.Contains(modelSlug, "claude-4.6-opus") {
+				params.SetExtraFields(map[string]any{
+					"reasoning": map[string]any{
+						"enabled":    true,
+						"max_tokens": 2000,
+					},
+				})
+			} else if strings.Contains(modelSlug, "/") {
+				params.SetExtraFields(map[string]any{
+					"reasoning": map[string]any{
+						"enabled": true,
+						"effort":  "medium",
+					},
+				})
+			} else {
+				params.Reasoning = sharedv2.ReasoningParam{
+					Effort: sharedv2.ReasoningEffortMedium,
+				}
+			}
+			return params
 		}
 	}
 
@@ -123,6 +152,12 @@ func initializeToolkit(
 	// 		logger.Info("[XtraMCP Client] Successfully loaded XtraMCP tools")
 	// 	}
 	// }
+
+	paperScoreTool := maintools.NewPaperScoreTool(db, projectService)
+	toolRegistry.Register("paper_score", maintools.PaperScoreToolDescription, paperScoreTool.Call)
+
+	paperScoreCommentTool := maintools.NewPaperScoreCommentTool(db, projectService, services.NewReverseCommentService(db, cfg, logger, projectService))
+	toolRegistry.Register("paper_score_comment", paperScoreCommentTool.Description, paperScoreCommentTool.Call)
 
 	return toolRegistry
 }

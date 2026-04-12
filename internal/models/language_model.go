@@ -33,11 +33,11 @@ func (x LanguageModel) Name() string {
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI:
 		return openai.ChatModelGPT4_1Mini
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5:
-		return openai.ChatModelGPT5
+		return openai.ChatModel("gpt-5.4")
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI:
-		return openai.ChatModelGPT5Mini
+		return openai.ChatModel("gpt-5.4-mini")
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO:
-		return openai.ChatModelGPT5Nano
+		return openai.ChatModel("gpt-5.4-nano")
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST:
 		return openai.ChatModelGPT5ChatLatest
 	case chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1:
@@ -66,10 +66,16 @@ func LanguageModelFromSlug(slug string) LanguageModel {
 	case "gpt-4.1-mini":
 		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI)
 	case "gpt-5":
+		fallthrough
+	case "gpt-5.4":
 		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5)
 	case "gpt-5-mini":
+		fallthrough
+	case "gpt-5.4-mini":
 		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI)
 	case "gpt-5-nano":
+		fallthrough
+	case "gpt-5.4-nano":
 		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO)
 	case "gpt-5-chat-latest":
 		return LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST)
@@ -99,11 +105,11 @@ func SlugFromLanguageModel(languageModel LanguageModel) string {
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT41_MINI):
 		return "gpt-4.1-mini"
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5):
-		return "gpt-5"
+		return "gpt-5.4"
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_MINI):
-		return "gpt-5-mini"
+		return "gpt-5.4-mini"
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_NANO):
-		return "gpt-5-nano"
+		return "gpt-5.4-nano"
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_GPT5_CHAT_LATEST):
 		return "gpt-5-chat-latest"
 	case LanguageModel(chatv1.LanguageModel_LANGUAGE_MODEL_OPENAI_O1):

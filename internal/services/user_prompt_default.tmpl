@@ -11,6 +11,14 @@ Context around the selection:
 ```
 {{- end }}
 
+If the user asks for critique, review, referee-style feedback, or author guidance on the selected text, structure the response step by step:
+1. Issue
+2. Why it matters
+3. How to fix it
+4. Optional improved wording or local revision strategy
+
+If the user asks to add comments directly into Overleaf, directly into the paper, or directly into the TeX source, do not return manual review markup by default. Prefer structured Overleaf-ready comments via the available paper review tools.
+
 If the user requests to revise the selected text, include a separate block where the revised text is wrapped inside `<PaperDebugger>` tags, like `<PaperDebugger>...revised text...</PaperDebugger>`.
 The content inside `<PaperDebugger>` MUST be only the revised text (no explanations, no markdown formatting, no surrounding backticks); any explanations should be placed outside of the `<PaperDebugger>` block.
 Otherwise, just answer the question normally.

@@ -16,6 +16,11 @@ import { useActions } from "../actions/actions";
 import { ChatActions } from "./toolbar/chat-actions";
 import { ModelSelection } from "./toolbar/model-selection";
 import { useSettingStore } from "../../../stores/setting-store";
+import {
+  shouldAutoReviewAndInsert,
+  shouldUseAssistantTextFallback,
+  useReviewAndInsert,
+} from "../../../hooks/useReviewAndInsert";
 
 // Add animation keyframes
 const blinkAnimation = `@keyframes blink {
@@ -45,14 +50,8 @@ export function PromptInput() {
 
   const searchPrompts = usePromptLibraryStore((s) => s.searchPrompts);
   const [showModelSelection, setShowModelSelection] = useState(false);
-  const prompts = useMemo(
-    () => (!prompt.startsWith("/") ? [] : searchPrompts(prompt.slice(1))),
-    [prompt, searchPrompts],
-  );
-  const actions = useActions({
-    enabled: prompt.startsWith(":"),
-    filter: prompt.startsWith(":") ? prompt.slice(1) : undefined,
-  });
+  const reviewAndInsertPrompt =
+    'Review this paper and add direct comments into the Overleaf TeX source. Prefer using the paper_score and paper_score_comment tools. If tools are unavailable, format every issue as `Section name:` followed by a ```latex block that contains exactly one `% REVIEW: ...` line so PaperDebugger can insert it into the paper automatically.';
 
   const user = useAuthStore((s) => s.user);
   const isStreaming = useConversationStore((s) => s.isStreaming);
@@ -64,39 +63,86 @@ export function PromptInput() {
   const setSurroundingText = useSelectionStore((s) => s.setSurroundingText);
 
   const { sendMessageStream } = useSendMessageStream();
+  const { reviewAndInsert, insertCommentsFromLatestAssistantResponse } = useReviewAndInsert();
   const minimalistMode = useSettingStore((s) => s.minimalistMode);
+
+  const submitPrompt = useCallback(
+    async (message: string, selectedTextOverride?: string) => {
+      const trimmedMessage = message.trim();
+      if (!trimmedMessage) {
+        return;
+      }
+
+      googleAnalytics.fireEvent(user?.id, "Send Chat Message", {
+        promptLength: trimmedMessage.length,
+        selectedTextLength: selectedTextOverride?.length,
+        userId: user?.id,
+      });
+      setPrompt("");
+      if (selectedTextOverride) {
+        setSelectedText(null);
+        setSurroundingText(null);
+      } else {
+        clearSelection();
+      }
+      setIsStreaming(true);
+
+      let messageForChat = trimmedMessage;
+      const shouldInsertDirectly = shouldAutoReviewAndInsert(trimmedMessage);
+      let shouldTryAssistantFallback = false;
+
+      try {
+        if (shouldInsertDirectly) {
+          try {
+            const insertResult = await reviewAndInsert(trimmedMessage);
+            messageForChat = insertResult.summaryPrompt;
+          } catch (error) {
+            shouldTryAssistantFallback = shouldUseAssistantTextFallback(error);
+            messageForChat = trimmedMessage;
+          }
+        }
+
+        await sendMessageStream(messageForChat, selectedTextOverride ?? "");
+
+        if (shouldTryAssistantFallback) {
+          await insertCommentsFromLatestAssistantResponse(trimmedMessage);
+        }
+      } finally {
+        setIsStreaming(false);
+      }
+    },
+    [
+      clearSelection,
+      insertCommentsFromLatestAssistantResponse,
+      reviewAndInsert,
+      sendMessageStream,
+      setIsStreaming,
+      setPrompt,
+      setSelectedText,
+      setSurroundingText,
+      user?.id,
+    ],
+  );
+
+  const prompts = useMemo(
+    () => (!prompt.startsWith("/") ? [] : searchPrompts(prompt.slice(1))),
+    [prompt, searchPrompts],
+  );
+  const actions = useActions({
+    enabled: prompt.startsWith(":"),
+    filter: prompt.startsWith(":") ? prompt.slice(1) : undefined,
+    onReviewAndInsert: () => {
+      void submitPrompt(reviewAndInsertPrompt, "");
+    },
+  });
 
   const handleModelSelect = useCallback(() => {
     setShowModelSelection(false);
   }, []);
 
   const submit = useCallback(async () => {
-    googleAnalytics.fireEvent(user?.id, "Send Chat Message", {
-      promptLength: prompt.length,
-      selectedTextLength: selectedText?.length,
-      userId: user?.id,
-    });
-    setPrompt("");
-    if (selectedText) {
-      setSelectedText(null);
-      setSurroundingText(null);
-    } else {
-      clearSelection();
-    }
-    setIsStreaming(true);
-    await sendMessageStream(prompt, selectedText ?? "");
-    setIsStreaming(false);
-  }, [
-    sendMessageStream,
-    prompt,
-    selectedText,
-    user?.id,
-    setIsStreaming,
-    setPrompt,
-    clearSelection,
-    setSelectedText,
-    setSurroundingText,
-  ]);
+    await submitPrompt(prompt, selectedText ?? "");
+  }, [prompt, selectedText, submitPrompt]);
   const handleKeyDown = useCallback(
     async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Check if IME composition is in progress to avoid submitting during Chinese input
@@ -128,7 +174,13 @@ export function PromptInput() {
       )}
 
       <div className={cn("pd-chat-toolbar noselect", heightCollapseRequired || minimalistMode ? "collapsed" : "")}>
-        <ChatActions onShowModelSelection={() => setShowModelSelection(true)} />
+        <ChatActions
+          onShowModelSelection={() => setShowModelSelection(true)}
+          onReviewAndInsert={() => {
+            void submitPrompt(reviewAndInsertPrompt, "");
+          }}
+          reviewAndInsertDisabled={isStreaming}
+        />
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}

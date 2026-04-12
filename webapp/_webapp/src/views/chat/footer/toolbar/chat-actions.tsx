@@ -4,6 +4,8 @@ import { ChatButton } from "../../header/chat-button";
 
 type ChatActionsProps = {
   onShowModelSelection: () => void;
+  onReviewAndInsert: () => void;
+  reviewAndInsertDisabled?: boolean;
 };
 
 // Map provider names to their respective icons
@@ -24,7 +26,7 @@ const getProviderIcon = (provider: string | undefined): string => {
   }
 };
 
-export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
+export function ChatActions({ onShowModelSelection, onReviewAndInsert, reviewAndInsertDisabled }: ChatActionsProps) {
   const { inputRef, setPrompt, prompt } = useConversationUiStore();
   const { currentModel } = useLanguageModels();
 
@@ -58,6 +60,14 @@ export function ChatActions({ onShowModelSelection }: ChatActionsProps) {
             inputRef.current.focus();
           }
         }}
+      />
+      <ChatButton
+        onMouseDown={(e) => e.stopPropagation()}
+        icon="tabler:file-pencil"
+        text="Review & Insert"
+        alwaysShowText
+        disabled={reviewAndInsertDisabled}
+        onClick={onReviewAndInsert}
       />
       <div className="flex-1"></div>
       <ChatButton

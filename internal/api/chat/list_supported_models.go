@@ -28,6 +28,22 @@ func (s *ChatServerV1) ListSupportedModels(
 	if strings.TrimSpace(settings.OpenAIAPIKey) == "" {
 		models = []*chatv1.SupportedModel{
 			{
+				Name: "GPT-5.4",
+				Slug: "openai/gpt-5.4",
+			},
+			{
+				Name: "GPT-5.4 Mini",
+				Slug: "openai/gpt-5.4-mini",
+			},
+			{
+				Name: "GPT-5.4 Nano",
+				Slug: "openai/gpt-5.4-nano",
+			},
+			{
+				Name: "Claude Opus 4.6",
+				Slug: "anthropic/claude-opus-4.6",
+			},
+			{
 
 				Name: "GPT-4o",
 				Slug: openai.ChatModelGPT4o,
@@ -44,6 +60,22 @@ func (s *ChatServerV1) ListSupportedModels(
 	} else {
 		models = []*chatv1.SupportedModel{
 			{
+				Name: "GPT-5.4",
+				Slug: "gpt-5.4",
+			},
+			{
+				Name: "GPT-5.4 Mini",
+				Slug: "gpt-5.4-mini",
+			},
+			{
+				Name: "GPT-5.4 Nano",
+				Slug: "gpt-5.4-nano",
+			},
+			{
+				Name: "Claude Opus 4.6",
+				Slug: "anthropic/claude-opus-4.6",
+			},
+			{
 				Name: "GPT 4o",
 				Slug: openai.ChatModelGPT4o,
 			},
@@ -54,18 +86,6 @@ func (s *ChatServerV1) ListSupportedModels(
 			{
 				Name: "GPT 4.1 mini",
 				Slug: openai.ChatModelGPT4_1Mini,
-			},
-			{
-				Name: "GPT 5",
-				Slug: openai.ChatModelGPT5,
-			},
-			{
-				Name: "GPT 5 mini",
-				Slug: openai.ChatModelGPT5Mini,
-			},
-			{
-				Name: "GPT 5 nano",
-				Slug: openai.ChatModelGPT5Nano,
 			},
 			{
 				Name: "GPT 5 Chat Latest",

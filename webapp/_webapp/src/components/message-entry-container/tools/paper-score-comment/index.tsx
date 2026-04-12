@@ -13,6 +13,7 @@ import { StatsSummary } from "./stats-summary";
 import { FilterControls } from "./filter-controls";
 import { CommentsList } from "./comments-list";
 import { AddCommentsButton } from "./add-comments-button";
+import { useMessageStore } from "../../../../stores/message-store";
 
 const CardBody = ({ children }: { children: React.ReactNode }) => {
   return <div className="tool-card noselect">{children}</div>;
@@ -20,6 +21,7 @@ const CardBody = ({ children }: { children: React.ReactNode }) => {
 
 export const PaperScoreCommentCard = ({ messageId, message, preparing, animated }: PaperScoreCommentCardProps) => {
   const projectId = getProjectId();
+  const visibleMessages = useMessageStore((state) => state.visibleDisplayMessages);
   const [overleafSession, setOverleafSession] = useState("");
   const [gclb, setGclb] = useState("");
   const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(false);
@@ -55,6 +57,29 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
       }
     }
   }, [message]);
+
+  const latestUserMessage = [...visibleMessages].reverse().find((entry) => entry.type === "user");
+  const latestUserIntent = latestUserMessage?.content?.toLowerCase() ?? "";
+  const texInsertIntentPhrases = [
+    "add direct comments",
+    "direct comments in the paper",
+    "directly add comments",
+    "insert comments in the tex",
+    "insert comments into the tex",
+    "add comments into the tex",
+    "add comments into the tex source",
+    "comment directly in overleaf",
+    "add comments in overleaf",
+    "add comments into overleaf",
+    "add comments to the paper",
+    "add the real comments",
+    "tex file in overleaf",
+    "tex file of overleaf",
+    "insert into the tex file",
+    "review and insert",
+    "review & insert",
+  ];
+  const shouldAutoInsertTexComments = texInsertIntentPhrases.some((phrase) => latestUserIntent.includes(phrase));
 
   if (preparing) {
     return (
@@ -160,6 +185,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
           overleafSession={overleafSession}
           gclb={gclb}
           setIsSuggestionsExpanded={setIsSuggestionsExpanded}
+          shouldAutoInsertTexComments={shouldAutoInsertTexComments}
         />
       </CardBody>
     );

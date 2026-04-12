@@ -36,11 +36,21 @@ function getBrowserAPI(): typeof chrome | undefined {
   try {
     // @ts-expect-error: browser may not be defined in all environments
     const candidateBrowser = typeof browser !== "undefined" ? browser : undefined;
-    if (candidateBrowser && typeof candidateBrowser.runtime?.sendMessage === "function") {
+    if (
+      candidateBrowser &&
+      typeof candidateBrowser.runtime?.sendMessage === "function" &&
+      typeof candidateBrowser.runtime?.id === "string" &&
+      candidateBrowser.runtime.id.length > 0
+    ) {
       return candidateBrowser;
     }
     const candidateChrome = typeof chrome !== "undefined" ? chrome : undefined;
-    if (candidateChrome && typeof candidateChrome.runtime?.sendMessage === "function") {
+    if (
+      candidateChrome &&
+      typeof candidateChrome.runtime?.sendMessage === "function" &&
+      typeof candidateChrome.runtime?.id === "string" &&
+      candidateChrome.runtime.id.length > 0
+    ) {
       return candidateChrome;
     }
   } catch {

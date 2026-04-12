@@ -127,7 +127,8 @@ browserAPI.runtime?.onMessage?.addListener(
 
     const handler = handlers.find((h) => h.name === request.action) as HandlerAny;
     if (!handler) {
-      return true;
+      sendResponse({ error: `Unknown background action: ${request.action}` });
+      return false;
     }
 
     (async () => {

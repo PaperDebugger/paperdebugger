@@ -27,3 +27,21 @@ export const getImportanceIcon = (importance: string) => {
 export const cleanCommentText = (comment: string) => {
   return comment.replace("👨🏻‍💻 Medium:", "").replace("👨🏻‍💻 High:", "").replace("👨🏻‍💻 Critical:", "").replace("👨🏻‍💻 Low:", "");
 };
+
+const wrapCommentLine = (line: string) => {
+  const trimmed = line.trim();
+  return trimmed.length > 0 ? `% ${trimmed}` : "%";
+};
+
+export const formatTexSourceComment = (importance: string, section: string, comment: string) => {
+  const cleanedComment = cleanCommentText(comment).trim();
+  const header = importance ? `PaperDebugger ${importance} review comment` : "PaperDebugger review comment";
+  const sectionLine = section ? `Section: ${section}` : "";
+
+  const lines = [header, sectionLine, cleanedComment]
+    .filter((line) => line.trim().length > 0)
+    .flatMap((line) => line.split("\n"))
+    .map(wrapCommentLine);
+
+  return `\n${lines.join("\n")}\n`;
+};

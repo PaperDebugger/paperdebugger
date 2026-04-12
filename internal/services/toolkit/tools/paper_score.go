@@ -17,6 +17,8 @@ import (
 
 	"github.com/openai/openai-go/v2/packages/param"
 	"github.com/openai/openai-go/v2/responses"
+	openaiv3 "github.com/openai/openai-go/v3"
+	paramv3 "github.com/openai/openai-go/v3/packages/param"
 )
 
 type PaperScoreTool struct {
@@ -31,8 +33,21 @@ type PaperScoreTool struct {
 var PaperScoreToolDescription = responses.ToolUnionParam{
 	OfFunction: &responses.FunctionToolParam{
 		Name:        "paper_score",
-		Description: param.NewOpt("Scoring the paper and get the score, percentile, details, and suggestions. After the score is generated, you can call the paper_score_comment function to get the actionable comment for the paper score."),
+		Description: param.NewOpt("Score the paper and return its score, percentile, details, and suggestions. After scoring, call paper_score_comment to generate author-facing, actionable, Overleaf-ready review comments."),
 		// No parameters, because we can get the paper content from the database.
+	},
+}
+
+var PaperScoreToolDescriptionV2 = openaiv3.ChatCompletionToolUnionParam{
+	OfFunction: &openaiv3.ChatCompletionFunctionToolParam{
+		Function: openaiv3.FunctionDefinitionParam{
+			Name:        "paper_score",
+			Description: paramv3.NewOpt("Score the paper and return its score, percentile, details, and suggestions. After scoring, call paper_score_comment to generate author-facing, actionable, Overleaf-ready review comments."),
+			Parameters: openaiv3.FunctionParameters{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
 	},
 }
 
@@ -89,7 +104,7 @@ func (t *PaperScoreTool) Call(ctx context.Context, toolCallId string, args json.
 		return "", "", err
 	}
 
-	furtherInstruction := "Then, call the paper_score_comment function to get the actionable comment for the paper score."
+	furtherInstruction := "Then, call the paper_score_comment function to generate step-by-step, author-facing review comments that can be added to Overleaf."
 	return string(responseJSON), furtherInstruction, nil
 }
 
