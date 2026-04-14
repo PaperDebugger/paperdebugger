@@ -20,6 +20,7 @@ type AIClientV2 struct {
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
+	usageService          *services.UsageService
 	cfg                   *cfg.Cfg
 	logger                *logger.Logger
 }
@@ -62,6 +63,7 @@ func NewAIClientV2(
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
+	usageService *services.UsageService,
 	cfg *cfg.Cfg,
 	logger *logger.Logger,
 ) *AIClientV2 {
@@ -109,6 +111,7 @@ func NewAIClientV2(
 
 		reverseCommentService: reverseCommentService,
 		projectService:        projectService,
+		usageService:          usageService,
 		cfg:                   cfg,
 		logger:                logger,
 	}

@@ -43,6 +43,7 @@ var Set = wire.NewSet(
 	services.NewProjectService,
 	services.NewPromptService,
 	services.NewOAuthService,
+	services.NewUsageService,
 
 	cfg.GetCfg,
 	logger.GetLogger,
