@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, userID bson.ObjectID, projectID string, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string) (string, error) {
+func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, userID bson.ObjectID, projectID string, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string, customModel *models.CustomModel) (string, error) {
 	messages := lo.Map(inappChatHistory, func(message *chatv2.Message, _ int) string {
 		if _, ok := message.Payload.MessageType.(*chatv2.MessagePayload_Assistant); ok {
 			return fmt.Sprintf("Assistant: %s", message.Payload.GetAssistant().GetContent())

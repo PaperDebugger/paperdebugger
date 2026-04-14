@@ -34,8 +34,8 @@ type UsageCost struct {
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
 //  3. Cost information (in USD).
 //  4. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
-	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, userID, projectID, "", modelSlug, messages, llmProvider)
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
+	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, userID, projectID, "", modelSlug, messages, llmProvider, customModel)
 	if err != nil {
 		return nil, nil, usage, err
 	}
@@ -64,7 +64,7 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID,
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
 //   - Finally, it returns the updated chat histories, accumulated cost, and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, userID bson.ObjectID, projectID string, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, userID bson.ObjectID, projectID string, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
 	usage := UsageCost{}
