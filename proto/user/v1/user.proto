@@ -124,6 +124,9 @@ message CustomModel {
   int32 max_output = 7;
   int32 input_price = 8;
   int32 output_price = 9;
+  float temperature = 10;
+  bool parallel_tool_calls = 11;
+  bool store = 12;
 }
 
 message Settings {

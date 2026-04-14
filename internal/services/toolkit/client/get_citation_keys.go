@@ -244,7 +244,7 @@ func (a *AIClientV2) GetCitationKeys(ctx context.Context, sentence string, userI
 	_, resp, _, err := a.ChatCompletionV2(ctx, userId, projectId, "gpt-5.2", OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that suggests relevant citation keys."),
 		openai.UserMessage(message),
-	}, llmProvider)
+	}, llmProvider, nil)
 
 	if err != nil {
 		return nil, err

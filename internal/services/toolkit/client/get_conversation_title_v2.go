@@ -39,7 +39,7 @@ func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, userID bson.Obj
 	_, resp, _, err := a.ChatCompletionV2(ctx, userID, projectID, modelToUse, OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that generates a title for a conversation."),
 		openai.UserMessage(message),
-	}, llmProvider)
+	}, llmProvider, customModel)
 	if err != nil {
 		return "", err
 	}

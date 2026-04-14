@@ -41,6 +41,7 @@ import { useAuthStore } from "../stores/auth-store";
 import { useDevtoolStore } from "../stores/devtool-store";
 import { useSelectionStore } from "../stores/selection-store";
 import { useSettingStore } from "../stores/setting-store";
+import { useConversationUiStore } from "../stores/conversation/conversation-ui-store";
 import { useSync } from "./useSync";
 import { useAdapter } from "../adapters";
 import { getProjectId } from "../libs/helpers";
@@ -86,6 +87,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
   const surroundingText = useSelectionStore((s) => s.surroundingText);
   const alwaysSyncProject = useDevtoolStore((s) => s.alwaysSyncProject);
   const conversationMode = useSettingStore((s) => s.conversationMode);
+  const lastUsedCustomModelId = useConversationUiStore((s) => s.lastUsedCustomModelId);
 
   /**
    * Add the user message to the streaming state.
@@ -165,6 +167,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
         projectId,
         conversationId: currentConversation.id,
         modelSlug: currentConversation.modelSlug,
+        customModelId: lastUsedCustomModelId || undefined,
         surroundingText: surroundingText ?? undefined,
         conversationMode: conversationMode === "debug" ? "debug" : "default",
       };
@@ -251,6 +254,7 @@ export function useSendMessageStream(): UseSendMessageStreamResult {
       alwaysSyncProject,
       conversationMode,
       surroundingText,
+      lastUsedCustomModelId,
       addUserMessageToStream,
       truncateConversationIfEditing,
     ],
