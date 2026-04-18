@@ -40,7 +40,7 @@ export const UserDeveloperTools = () => {
         label="Backend Endpoint"
         description="You need to refresh the page to apply the changes"
         value={endpoint}
-        onChange={setEndpoint}
+        onChange={(value) => setEndpoint(value.replace(/\s+/g, "").replace(/\/+$/, ""))}
         showResetButton={true}
         onReset={() => {
           resetApiClientEndpoint();
