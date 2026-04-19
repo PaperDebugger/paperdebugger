@@ -52,7 +52,24 @@ export const ApiKeySettings = () => {
 
   return (
     <SettingsSectionContainer>
-      <SettingsSectionTitle>Bring Your Own Key (BYOK)</SettingsSectionTitle>
+      <SettingsSectionTitle>
+        Bring Your Own Key (BYOK) -{" "}
+        <Tooltip
+          content={
+            <>
+              You can use your custom models and API keys by selecting it in the chat tab.
+              <br />
+              Your models are labeled with "(Custom)".
+            </>
+          }
+          placement="top"
+          delay={100}
+        >
+          <span className="underline decoration-dotted underline-offset-2 cursor-help">
+            {settings?.customModels.length ?? 0} Model(s) Found
+          </span>
+        </Tooltip>
+      </SettingsSectionTitle>
       <Button size="sm" variant="bordered" onPress={() => setIsShowModal((i) => !i)} className="shrink-0">
         Edit
       </Button>

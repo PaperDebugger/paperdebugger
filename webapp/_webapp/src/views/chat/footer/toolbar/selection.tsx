@@ -178,7 +178,7 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
         if (item.isDivider) {
           return (
             <div key={`divider-${idx}`} className="my-1 px-1">
-              <div className="border-t !border-gray-200 dark:!border-default-200" />
+              <div className="border-t-1 !border-gray-400 dark:!border-default-500" />
             </div>
           );
         }
