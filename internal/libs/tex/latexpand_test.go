@@ -20,6 +20,18 @@ Hello, world!
 \end{document}`, removeComments(input))
 }
 
+func TestRemoveCommentsPreservesEscapedPercent(t *testing.T) {
+	const input = `accuracy improved by 12\% over baseline % TODO: recheck`
+	assert.Equal(t, `accuracy improved by 12\% over baseline`, removeComments(input))
+}
+
+func TestRemoveCommentsDoubleBackslashBeforePercent(t *testing.T) {
+	const input = `line one \\% this is a real comment after a line break
+next line`
+	assert.Equal(t, `line one \\
+next line`, removeComments(input))
+}
+
 func TestLatexpand(t *testing.T) {
 	input := map[string]string{
 		"main.tex": `
