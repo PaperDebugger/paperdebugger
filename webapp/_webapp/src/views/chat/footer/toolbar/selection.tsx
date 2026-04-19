@@ -240,7 +240,19 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
                     heightCollapseRequired || minimalistMode ? "text-[0.55rem]" : "text-[0.6rem]",
                   )}
                 >
-                  {item.subtitle}
+                  {(() => {
+                    const CUSTOM_SUFFIX = " (Custom)";
+                    if (item.subtitle.endsWith(CUSTOM_SUFFIX)) {
+                      const main = item.subtitle.slice(0, -CUSTOM_SUFFIX.length);
+                      return (
+                        <>
+                          <span>{main}</span>
+                          <span className="underline ml-1">{CUSTOM_SUFFIX.trim()}</span>
+                        </>
+                      );
+                    }
+                    return <>{item.subtitle}</>;
+                  })()}
                 </span>
               )}
             </div>
