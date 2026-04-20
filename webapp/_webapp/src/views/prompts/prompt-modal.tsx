@@ -1,9 +1,9 @@
 import { Button, Input, Textarea } from "@heroui/react";
-import { useCreatePromptMutation, useDeletePromptMutation, useUpdatePromptMutation } from "../../query";
+import { useCreatePromptMutation, useDeletePromptMutation, useUpdatePromptMutation } from "@/query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Prompt } from "../../pkg/gen/apiclient/user/v1/user_pb";
-import { Modal } from "../../components/modal";
-import { usePromptLibraryStore } from "../../stores/prompt-library-store";
+import { Prompt } from "@gen/apiclient/user/v1/user_pb";
+import { Modal } from "@/components/modal";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 
 type PromptModalProps = {
   mode: "create" | "update" | "view" | "delete";

@@ -19,10 +19,10 @@
 
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { Message, Conversation } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { Message, Conversation } from "@gen/apiclient/chat/v2/chat_pb";
 import { InternalMessage } from "./streaming/types";
 import { DisplayMessage } from "./types";
-import { messageToDisplayMessage, internalMessageToDisplayMessage, filterDisplayMessages } from "./converters";
+import { fromApiMessage, toDisplayMessage, filterDisplayMessages } from "../utils/message-converters";
 import { useConversationStore } from "./conversation/conversation-store";
 import { useStreamingStateMachine } from "./streaming";
 
@@ -98,12 +98,18 @@ function computeDisplayMessages(
   messages: Message[],
   streamingEntries: InternalMessage[],
 ): { all: DisplayMessage[]; visible: DisplayMessage[] } {
-  // Convert finalized messages
-  const finalizedDisplayMessages = messages.map(messageToDisplayMessage).filter((m): m is DisplayMessage => m !== null);
+  // Convert finalized messages: Message → InternalMessage → DisplayMessage
+  const finalizedDisplayMessages = messages
+    .map((msg) => {
+      const internalMsg = fromApiMessage(msg);
+      if (!internalMsg) return null;
+      return toDisplayMessage(internalMsg);
+    })
+    .filter((m): m is DisplayMessage => m !== null);
 
-  // Convert streaming entries
+  // Convert streaming entries: InternalMessage → DisplayMessage
   const streamingDisplayMessages = streamingEntries
-    .map(internalMessageToDisplayMessage)
+    .map(toDisplayMessage)
     .filter((m): m is DisplayMessage => m !== null);
 
   // Combine: finalized first, then streaming

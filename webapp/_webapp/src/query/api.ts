@@ -6,7 +6,7 @@ import {
   LoginByOverleafResponseSchema,
   LogoutRequest,
   LogoutResponseSchema,
-} from "../pkg/gen/apiclient/auth/v1/auth_pb";
+} from "@gen/apiclient/auth/v1/auth_pb";
 import {
   CreateConversationMessageStreamRequest,
   CreateConversationMessageStreamResponse,
@@ -23,7 +23,7 @@ import {
   UpdateConversationResponseSchema,
   GetCitationKeysRequest,
   GetCitationKeysResponseSchema,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
+} from "@gen/apiclient/chat/v2/chat_pb";
 import {
   GetProjectRequest,
   GetProjectResponseSchema,
@@ -33,7 +33,7 @@ import {
   GetProjectInstructionsResponseSchema,
   UpsertProjectInstructionsRequest,
   UpsertProjectInstructionsResponseSchema,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
+} from "@gen/apiclient/project/v1/project_pb";
 import {
   GetSettingsResponseSchema,
   GetUserResponseSchema,
@@ -53,11 +53,11 @@ import {
   UpsertUserInstructionsRequest,
   UpsertUserInstructionsResponseSchema,
   GetUserInstructionsRequest,
-} from "../pkg/gen/apiclient/user/v1/user_pb";
+} from "@gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "./types";
 import { fromJson } from "../libs/protobuf-utils";
 import { processStream } from "./utils";
-import { CommentsAcceptedRequest, CommentsAcceptedResponseSchema } from "../pkg/gen/apiclient/comment/v1/comment_pb";
+import { CommentsAcceptedRequest, CommentsAcceptedResponseSchema } from "@gen/apiclient/comment/v1/comment_pb";
 
 export const loginByOverleaf = async (data: PlainMessage<LoginByOverleafRequest>) => {
   const response = await apiclient.post("/auth/login/overleaf", data);

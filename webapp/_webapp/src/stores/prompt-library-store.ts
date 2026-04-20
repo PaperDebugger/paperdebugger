@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Prompt } from "../pkg/gen/apiclient/user/v1/user_pb";
+import { Prompt } from "@gen/apiclient/user/v1/user_pb";
 import { listPrompts } from "../query/api";
 
 type PromptLibraryStore = {

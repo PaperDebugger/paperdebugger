@@ -3,7 +3,7 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -18,6 +18,10 @@
     /* Type resolution */
     "types": ["vite/client", "node", "chrome", "react"],
     "typeRoots": ["./node_modules/@types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@gen/*": ["./src/pkg/gen/*"]
+    },
 
     /* Linting */
     "strict": true,

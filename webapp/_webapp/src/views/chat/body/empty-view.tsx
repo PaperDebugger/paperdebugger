@@ -1,4 +1,4 @@
-import { Logo } from "../../../components/logo";
+import { Logo } from "@/components/logo";
 
 export const EmptyView = () => (
   <div className="pd-app-tab-content-body noselect" id="pd-chat-item-container-empty">

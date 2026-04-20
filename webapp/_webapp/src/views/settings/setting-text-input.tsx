@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, cn } from "@heroui/react";
-import { useSettingStore } from "../../stores/setting-store";
-import { Settings } from "../../pkg/gen/apiclient/user/v1/user_pb";
-import { PlainMessage } from "../../query/types";
-import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { listSupportedModels } from "../../query/api";
-import { queryKeys } from "../../query/keys";
+import { useSettingStore } from "@/stores/setting-store";
+import { Settings } from "@gen/apiclient/user/v1/user_pb";
+import { PlainMessage } from "@/query/types";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { listSupportedModels } from "@/query/api";
+import { queryKeys } from "@/query/keys";
 
 type SettingKey = keyof PlainMessage<Settings>;
 
@@ -107,7 +107,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     );
 
     const inputClassName = cn(
-      "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md w-full",
+      "grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200! dark:!border-default-200 rounded-md w-full",
       className,
     );
 
@@ -119,7 +119,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
     };
 
     const textDisplayClassName = cn(
-      "px-2 py-1 text-xs whitespace-pre-wrap break-words min-h-[32px] bg-gray-100 dark:!bg-default-200 rounded-md content-center",
+      "px-2 py-1 text-xs whitespace-pre-wrap wrap-break-word min-h-[32px] bg-gray-100 dark:!bg-default-200 rounded-md content-center",
       !value && "text-default-400 italic",
     );
 
@@ -171,7 +171,7 @@ export function createSettingsTextInput<K extends SettingKey>(settingKey: K) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className={cn(textDisplayClassName, "flex-grow")}>
+            <div className={cn(textDisplayClassName, "grow")}>
               {password && value.trim().length > 0
                 ? "•".repeat(16)
                 : value.trim() || placeholder?.trim() || "No value set"}

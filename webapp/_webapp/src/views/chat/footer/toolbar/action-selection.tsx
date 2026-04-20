@@ -1,7 +1,7 @@
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { Action } from "@/views/chat/actions/actions";
 import { useCallback, useMemo } from "react";
-import { Action } from "../../actions/actions";
 import { Selection, SelectionItem } from "./selection";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
 
 type ActionSelectionProps = {
   actions: Action[];

@@ -1,7 +1,7 @@
 import { Button } from "@heroui/react";
-import { CodeBlock } from "../../../../components/code-block";
-import { useSelectionStore } from "../../../../stores/selection-store";
-import { Modal } from "../../../../components/modal";
+import { CodeBlock } from "@/components/code-block";
+import { useSelectionStore } from "@/stores/selection-store";
+import { Modal } from "@/components/modal";
 
 type SelectedTextModalProps = {
   isOpen?: boolean;

@@ -1,10 +1,10 @@
 import { useCallback, useRef, useEffect, useState } from "react";
 import { Button, cn } from "@heroui/react";
 import { SettingsSectionContainer, SettingsSectionTitle } from "../settings/sections/components";
-import { useGetProjectInstructionsQuery, useUpsertProjectInstructionsMutation } from "../../query";
+import { useGetProjectInstructionsQuery, useUpsertProjectInstructionsMutation } from "@/query";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "../../query/keys";
-import { getProjectId } from "../../libs/helpers";
+import { queryKeys } from "@/query/keys";
+import { getProjectId } from "@/libs/helpers";
 
 export function ProjectInstructions() {
   const projectInstructionRef = useRef<HTMLTextAreaElement>(null);
@@ -86,7 +86,7 @@ export function ProjectInstructions() {
           id="pd-chat-prompt-input-project"
           ref={projectInstructionRef}
           className={cn(
-            "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md w-full",
+            "grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200! dark:!border-default-200 rounded-md w-full",
           )}
           style={{
             fontSize: "12px",

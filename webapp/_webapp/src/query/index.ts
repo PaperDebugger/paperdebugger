@@ -5,7 +5,7 @@ import {
   ListConversationsResponse,
   ListSupportedModelsResponse,
   UpdateConversationResponse,
-} from "../pkg/gen/apiclient/chat/v2/chat_pb";
+} from "@gen/apiclient/chat/v2/chat_pb";
 import { UseMutationOptionsOverride, UseQueryOptionsOverride } from "./types";
 import {
   createPrompt,
@@ -30,13 +30,13 @@ import {
   UpdatePromptResponse,
   GetUserInstructionsResponse,
   UpsertUserInstructionsResponse,
-} from "../pkg/gen/apiclient/user/v1/user_pb";
+} from "@gen/apiclient/user/v1/user_pb";
 import { queryKeys } from "./keys";
 import {
   GetProjectResponse,
   GetProjectInstructionsResponse,
   UpsertProjectInstructionsResponse,
-} from "../pkg/gen/apiclient/project/v1/project_pb";
+} from "@gen/apiclient/project/v1/project_pb";
 import { useAuthStore } from "../stores/auth-store";
 
 export const useGetProjectQuery = (projectId: string, opts?: UseQueryOptionsOverride<GetProjectResponse>) => {

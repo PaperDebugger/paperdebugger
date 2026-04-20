@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { getSettings, resetSettings, updateSettings } from "../query/api";
-import { Settings, UpdateSettingsRequest } from "../pkg/gen/apiclient/user/v1/user_pb";
+import { Settings, UpdateSettingsRequest } from "@gen/apiclient/user/v1/user_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import { storage } from "../libs/storage";

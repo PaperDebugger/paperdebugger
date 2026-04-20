@@ -1,15 +1,15 @@
 import r2wc from "@r2wc/react-to-web-component";
-import { MainDrawer } from "..";
-import { useConversationUiStore } from "../../stores/conversation/conversation-ui-store";
+import { MainDrawer } from "@/views/index";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Providers } from "./providers";
-import { AdapterProvider, type DocumentAdapter } from "../../adapters";
-import { useAuthStore } from "../../stores/auth-store";
-import { useSettingStore } from "../../stores/setting-store";
-import { useThemeSync } from "../../hooks/useThemeSync";
+import { AdapterProvider, type DocumentAdapter } from "@/adapters";
+import { useAuthStore } from "@/stores/auth-store";
+import { useSettingStore } from "@/stores/setting-store";
+import { useThemeSync } from "@/hooks/useThemeSync";
 import { getAdapter } from "./registry";
 
-import "../../index.css";
+import "@/index.css";
 
 interface PaperDebuggerProps {
   displayMode?: "floating" | "bottom-fixed" | "right-fixed" | "fullscreen";

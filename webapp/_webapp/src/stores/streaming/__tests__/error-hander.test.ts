@@ -17,14 +17,14 @@ import { StreamingError, StreamingErrorCode, RecoveryStrategy } from "../types";
 
 // Mock toast and logger
 const mockErrorToast = mock(() => {});
-mock.module("../../../libs/toasts", () => ({
+mock.module("@/libs/toasts", () => ({
   errorToast: mockErrorToast,
 }));
 
 const mockLogError = mock(() => {});
 const mockLogWarn = mock(() => {});
 const mockLogInfo = mock(() => {});
-mock.module("../../../libs/logger", () => ({
+mock.module("@/libs/logger", () => ({
   logError: mockLogError,
   logWarn: mockLogWarn,
   logInfo: mockLogInfo,

@@ -9,16 +9,16 @@
  */
 
 import { useCallback } from "react";
-import { useAdapter } from "../adapters";
-import { useSocketStore } from "../stores/socket-store";
-import { useAuthStore } from "../stores/auth-store";
-import { getCookies } from "../intermediate";
-import { getProjectId } from "../libs/helpers";
-import { upsertProject } from "../query/api";
-import { UpsertProjectRequest, ProjectDoc } from "../pkg/gen/apiclient/project/v1/project_pb";
-import { PlainMessage } from "../query/types";
-import { logError, logInfo } from "../libs/logger";
-import googleAnalytics from "../libs/google-analytics";
+import { useAdapter } from "@/adapters";
+import { useSocketStore } from "@/stores/socket-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { getCookies } from "@/intermediate";
+import { getProjectId } from "@/libs/helpers";
+import { upsertProject } from "@/query/api";
+import { UpsertProjectRequest, ProjectDoc } from "@gen/apiclient/project/v1/project_pb";
+import { PlainMessage } from "@/query/types";
+import { logError, logInfo } from "@/libs/logger";
+import googleAnalytics from "@/libs/google-analytics";
 
 interface SyncOptions {
   onProgress?: (progress: number) => void;

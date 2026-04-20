@@ -26,7 +26,7 @@ export const SettingItemInput = ({
         <input
           className={cn(
             className,
-            "w-full text-xs bg-transparent p-2 rnd-cancel border !border-gray-200 dark:!border-default-200 rounded-md",
+            "w-full text-xs bg-transparent p-2 rnd-cancel border border-gray-200! dark:!border-default-200 rounded-md",
           )}
           aria-label={label}
           value={value}

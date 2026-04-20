@@ -1,6 +1,6 @@
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
-import { useLanguageModels } from "../../../../hooks/useLanguageModels";
-import { ChatButton } from "../../header/chat-button";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useLanguageModels } from "@/hooks/useLanguageModels";
+import { ChatButton } from "@/views/chat/header/chat-button";
 
 type ChatActionsProps = {
   onShowModelSelection: () => void;

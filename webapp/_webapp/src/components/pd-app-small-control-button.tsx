@@ -9,7 +9,7 @@ export function PdAppSmallControlButton({
 }: React.HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
   const { minimalistMode } = useSettingStore();
   return (
-    <div className={cn("pd-app-small-control-button", minimalistMode ? "!p-[0.1rem]" : "", className)} {...props}>
+    <div className={cn("pd-app-small-control-button", minimalistMode ? "p-[0.1rem]!" : "", className)} {...props}>
       {children}
     </div>
   );

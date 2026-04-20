@@ -1,10 +1,10 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { JsonValue } from "@bufbuild/protobuf";
 import { fromJson } from "./protobuf-utils";
-import { RefreshTokenResponseSchema } from "../pkg/gen/apiclient/auth/v1/auth_pb";
-import { GetUserResponseSchema } from "../pkg/gen/apiclient/user/v1/user_pb";
+import { RefreshTokenResponseSchema } from "@gen/apiclient/auth/v1/auth_pb";
+import { GetUserResponseSchema } from "@gen/apiclient/user/v1/user_pb";
 import { EventEmitter } from "events";
-import { ErrorCode, ErrorSchema } from "../pkg/gen/apiclient/shared/v1/shared_pb";
+import { ErrorCode, ErrorSchema } from "@gen/apiclient/shared/v1/shared_pb";
 import { errorToast } from "./toasts";
 import { storage } from "./storage";
 import { useAuthStore } from "../stores/auth-store";

@@ -15,7 +15,7 @@ interface MarkdownComponentProps {
 const MarkdownComponent = memo(({ children, animated }: MarkdownComponentProps) => {
   return (
     <Streamdown
-      className="space-y-1 leading-[1.50]"
+      className="space-y-1 leading-normal"
       shikiTheme={["github-light", "ayu-dark"]}
       components={{
         h1: ({ children }) => (

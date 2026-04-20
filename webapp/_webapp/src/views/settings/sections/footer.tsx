@@ -1,7 +1,7 @@
+import { getManifest } from "@/libs/manifest";
+import { useSettingStore } from "@/stores/setting-store";
+import { ChatButton } from "@/views/chat/header/chat-button";
 import { useState } from "react";
-import { getManifest } from "../../../libs/manifest";
-import { ChatButton } from "../../chat/header/chat-button";
-import { useSettingStore } from "../../../stores/setting-store";
 
 export const SettingsFooter = () => {
   const manifest = getManifest();

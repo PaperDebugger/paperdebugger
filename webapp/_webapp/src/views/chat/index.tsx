@@ -2,8 +2,8 @@ import { useEffect } from "react";
 
 import { ChatBody } from "./body";
 import { ChatHeader } from "./header";
-import { useConversationStore } from "../../stores/conversation/conversation-store";
-import { useConversationUiStore } from "../../stores/conversation/conversation-ui-store";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 import { PromptInput } from "./footer";
 
 export const Chat = () => {

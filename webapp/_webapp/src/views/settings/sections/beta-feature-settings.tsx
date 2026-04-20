@@ -1,5 +1,5 @@
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import { useSettingStore } from "../../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 import { SettingItem } from "../setting-items";
 
 export const BetaFeatureSettings = () => {

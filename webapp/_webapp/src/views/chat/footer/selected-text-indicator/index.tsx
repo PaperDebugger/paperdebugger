@@ -1,10 +1,10 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useTrackableDisclosure } from "../../../../hooks/useTrackableDisclosure";
-import { useSelectionStore } from "../../../../stores/selection-store";
+import { useTrackableDisclosure } from "@/hooks/useTrackableDisclosure";
+import { useSelectionStore } from "@/stores/selection-store";
 import { SelectedTextModal } from "./modal";
 import { cn, Tooltip } from "@heroui/react";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
-import { useSettingStore } from "../../../../stores/setting-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 export const SelectedTextIndicator = () => {
   const { heightCollapseRequired } = useConversationUiStore();

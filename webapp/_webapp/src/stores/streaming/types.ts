@@ -14,8 +14,8 @@ import {
   StreamInitialization,
   StreamPartBegin,
   StreamPartEnd,
-} from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { InternalMessage, MessageStatus } from "../../types/message";
+} from "@gen/apiclient/chat/v2/chat_pb";
+import { InternalMessage, MessageStatus } from "@/types/message";
 
 // Re-export InternalMessage for convenience
 export type { InternalMessage, MessageStatus };

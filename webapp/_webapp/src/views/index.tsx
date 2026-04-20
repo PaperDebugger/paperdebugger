@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 import { COLLAPSED_HEIGHT, useConversationUiStore } from "../stores/conversation/conversation-ui-store";
 import { debounce } from "../libs/helpers";
-import { PdAppContainer } from "../components/pd-app-container";
+import { PdAppContainer } from "@/components/pd-app-container";
 import { useSettingStore } from "../stores/setting-store";
 import { WindowController } from "./window-controller";
 import { Body } from "./body";

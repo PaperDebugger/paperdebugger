@@ -10,7 +10,7 @@ const CellWrapper = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
     <div
       ref={ref}
       className={cn(
-        "flex items-center justify-between gap-2 rounded-medium bg-content2 !p-2 !pr-[12px] !pl-[20px]",
+        "flex items-center justify-between gap-2 rounded-medium bg-content2 p-2! pr-[12px]! pl-[20px]!",
         className,
       )}
       {...props}

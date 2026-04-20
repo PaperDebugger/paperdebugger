@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 import { NewConversation, ShowHistory } from "../header";
 
 export type Action = {
