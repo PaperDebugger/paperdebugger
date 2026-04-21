@@ -6,4 +6,4 @@ cloudflareNodeSelector:
   kubernetes.io/hostname: nuc
 
 mongo:
-  in_cluster: true
+  in_cluster: false
