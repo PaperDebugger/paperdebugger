@@ -44,7 +44,7 @@ class ApiClient {
   }
 
   updateBaseURL(baseURL: string, apiVersion: ApiVersion): void {
-    this.axiosInstance.defaults.baseURL = `${baseURL}/_pd/api/${apiVersion}`;
+    this.axiosInstance.defaults.baseURL = `${sanitizeEndpoint(baseURL)}/_pd/api/${apiVersion}`;
     switch (apiVersion) {
       case "v1":
         storage.setItem(API_VERSION_STORAGE_KEYS.v1, this.axiosInstance.defaults.baseURL);
@@ -265,6 +265,8 @@ const DEFAULT_ENDPOINT = `${process.env.PD_API_ENDPOINT || "http://localhost:300
 const LOCAL_STORAGE_KEY_V1 = "pd.devtool.endpoint";
 const LOCAL_STORAGE_KEY_V2 = "pd.devtool.endpoint.v2";
 
+const sanitizeEndpoint = (url: string) => url.trim().replace(/\/+$/, "");
+
 // Create apiclient instance with endpoint from storage or default
 export const getEndpointFromStorage = () => {
   let endpoint = "";
@@ -275,7 +277,7 @@ export const getEndpointFromStorage = () => {
     endpoint = DEFAULT_ENDPOINT;
   }
 
-  return endpoint.replace("/_pd/api/v1", "").replace("/_pd/api/v2", ""); // compatible with old endpoint
+  return sanitizeEndpoint(endpoint.replace("/_pd/api/v1", "").replace("/_pd/api/v2", "")); // compatible with old endpoint
 };
 
 /**
