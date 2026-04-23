@@ -10,9 +10,12 @@ import (
 
 // commentRegex matches a LaTeX comment: an unescaped % and everything after it
 // until end of line. The leading group captures either start-of-line or a
-// non-backslash character so that \% (an escaped percent) is preserved. Pairs
-// of backslashes (\\) before % are treated as a line-break followed by a real
-// comment, matching LaTeX semantics.
+// non-backslash character, then consumes pairs of backslashes (\\) before %.
+// This generalizes to any run of N backslashes preceding %: if N is even
+// (including 0), every backslash pairs up as a literal-backslash escape and
+// the % is unescaped, so the comment is stripped; if N is odd, the final
+// backslash escapes the % itself, so the % (and the surrounding text) is
+// preserved.
 var commentRegex = regexp.MustCompile(`(^|[^\\])((?:\\\\)*)%.*$`)
 
 func removeComments(text string) string {
