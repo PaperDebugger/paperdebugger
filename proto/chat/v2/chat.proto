@@ -136,6 +136,8 @@ message SupportedModel {
   int64 output_price = 6; // in cents per 1M tokens
   bool disabled = 7; // If true, the model is disabled and cannot be used
   optional string disabled_reason = 8; // The reason why the model is disabled
+  bool is_custom = 9;
+  optional string id = 10; // Custom model unique ID (empty for built-in models)
 }
 
 message ListSupportedModelsRequest {
@@ -222,6 +224,7 @@ message CreateConversationMessageStreamRequest {
   optional string user_selected_text = 5;
   optional ConversationType conversation_type = 6;
   optional string surrounding = 8;
+  optional string custom_model_id = 9; // Selected custom model ID
 }
 
 // Response for streaming a message within an existing conversation

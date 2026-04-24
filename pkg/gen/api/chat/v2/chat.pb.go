@@ -7,13 +7,12 @@
 package chatv2
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -1035,6 +1034,8 @@ type SupportedModel struct {
 	OutputPrice    int64                  `protobuf:"varint,6,opt,name=output_price,json=outputPrice,proto3" json:"output_price,omitempty"`               // in cents per 1M tokens
 	Disabled       bool                   `protobuf:"varint,7,opt,name=disabled,proto3" json:"disabled,omitempty"`                                        // If true, the model is disabled and cannot be used
 	DisabledReason *string                `protobuf:"bytes,8,opt,name=disabled_reason,json=disabledReason,proto3,oneof" json:"disabled_reason,omitempty"` // The reason why the model is disabled
+	IsCustom       bool                   `protobuf:"varint,9,opt,name=is_custom,json=isCustom,proto3" json:"is_custom,omitempty"`
+	Id             *string                `protobuf:"bytes,10,opt,name=id,proto3,oneof" json:"id,omitempty"` // Custom model unique ID (empty for built-in models)
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1121,6 +1122,20 @@ func (x *SupportedModel) GetDisabled() bool {
 func (x *SupportedModel) GetDisabledReason() string {
 	if x != nil && x.DisabledReason != nil {
 		return *x.DisabledReason
+	}
+	return ""
+}
+
+func (x *SupportedModel) GetIsCustom() bool {
+	if x != nil {
+		return x.IsCustom
+	}
+	return false
+}
+
+func (x *SupportedModel) GetId() string {
+	if x != nil && x.Id != nil {
+		return *x.Id
 	}
 	return ""
 }
@@ -1628,6 +1643,7 @@ type CreateConversationMessageStreamRequest struct {
 	UserSelectedText *string                `protobuf:"bytes,5,opt,name=user_selected_text,json=userSelectedText,proto3,oneof" json:"user_selected_text,omitempty"`
 	ConversationType *ConversationType      `protobuf:"varint,6,opt,name=conversation_type,json=conversationType,proto3,enum=chat.v2.ConversationType,oneof" json:"conversation_type,omitempty"`
 	Surrounding      *string                `protobuf:"bytes,8,opt,name=surrounding,proto3,oneof" json:"surrounding,omitempty"`
+	CustomModelId    *string                `protobuf:"bytes,9,opt,name=custom_model_id,json=customModelId,proto3,oneof" json:"custom_model_id,omitempty"` // Selected custom model ID
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1707,6 +1723,13 @@ func (x *CreateConversationMessageStreamRequest) GetConversationType() Conversat
 func (x *CreateConversationMessageStreamRequest) GetSurrounding() string {
 	if x != nil && x.Surrounding != nil {
 		return *x.Surrounding
+	}
+	return ""
+}
+
+func (x *CreateConversationMessageStreamRequest) GetCustomModelId() string {
+	if x != nil && x.CustomModelId != nil {
+		return *x.CustomModelId
 	}
 	return ""
 }
@@ -2062,7 +2085,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fconversation\x18\x01 \x01(\v2\x15.chat.v2.ConversationR\fconversation\"D\n" +
 	"\x19DeleteConversationRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"\x1c\n" +
-	"\x1aDeleteConversationResponse\"\x9e\x02\n" +
+	"\x1aDeleteConversationResponse\"\xd7\x02\n" +
 	"\x0eSupportedModel\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12#\n" +
@@ -2073,8 +2096,12 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"inputPrice\x12!\n" +
 	"\foutput_price\x18\x06 \x01(\x03R\voutputPrice\x12\x1a\n" +
 	"\bdisabled\x18\a \x01(\bR\bdisabled\x12,\n" +
-	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01B\x12\n" +
-	"\x10_disabled_reason\"\x1c\n" +
+	"\x0fdisabled_reason\x18\b \x01(\tH\x00R\x0edisabledReason\x88\x01\x01\x12\x1b\n" +
+	"\tis_custom\x18\t \x01(\bR\bisCustom\x12\x13\n" +
+	"\x02id\x18\n" +
+	" \x01(\tH\x01R\x02id\x88\x01\x01B\x12\n" +
+	"\x10_disabled_reasonB\x05\n" +
+	"\x03_id\"\x1c\n" +
 	"\x1aListSupportedModelsRequest\"N\n" +
 	"\x1bListSupportedModelsResponse\x12/\n" +
 	"\x06models\x18\x01 \x03(\v2\x17.chat.v2.SupportedModelR\x06models\"^\n" +
@@ -2105,7 +2132,7 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\x12StreamFinalization\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\"2\n" +
 	"\vStreamError\x12#\n" +
-	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xaf\x03\n" +
+	"\rerror_message\x18\x01 \x01(\tR\ferrorMessage\"\xf0\x03\n" +
 	"&CreateConversationMessageStreamRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12,\n" +
@@ -2115,11 +2142,13 @@ const file_chat_v2_chat_proto_rawDesc = "" +
 	"\fuser_message\x18\x04 \x01(\tR\vuserMessage\x121\n" +
 	"\x12user_selected_text\x18\x05 \x01(\tH\x01R\x10userSelectedText\x88\x01\x01\x12K\n" +
 	"\x11conversation_type\x18\x06 \x01(\x0e2\x19.chat.v2.ConversationTypeH\x02R\x10conversationType\x88\x01\x01\x12%\n" +
-	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01B\x12\n" +
+	"\vsurrounding\x18\b \x01(\tH\x03R\vsurrounding\x88\x01\x01\x12+\n" +
+	"\x0fcustom_model_id\x18\t \x01(\tH\x04R\rcustomModelId\x88\x01\x01B\x12\n" +
 	"\x10_conversation_idB\x15\n" +
 	"\x13_user_selected_textB\x14\n" +
 	"\x12_conversation_typeB\x0e\n" +
-	"\f_surrounding\"\xfd\x04\n" +
+	"\f_surroundingB\x12\n" +
+	"\x10_custom_model_id\"\xfd\x04\n" +
 	"'CreateConversationMessageStreamResponse\x12T\n" +
 	"\x15stream_initialization\x18\x01 \x01(\v2\x1d.chat.v2.StreamInitializationH\x00R\x14streamInitialization\x12F\n" +
 	"\x11stream_part_begin\x18\x02 \x01(\v2\x18.chat.v2.StreamPartBeginH\x00R\x0fstreamPartBegin\x12<\n" +

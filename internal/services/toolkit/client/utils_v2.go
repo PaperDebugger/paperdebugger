@@ -10,6 +10,7 @@ import (
 	"paperdebugger/internal/libs/cfg"
 	"paperdebugger/internal/libs/db"
 	"paperdebugger/internal/libs/logger"
+	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
 	filetools "paperdebugger/internal/services/toolkit/tools/files"
@@ -53,7 +54,7 @@ func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappCh
 	})
 }
 
-func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2) openaiv3.ChatCompletionNewParams {
+func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2, customModel *models.CustomModel) openaiv3.ChatCompletionNewParams {
 	var reasoningModels = []string{
 		"gpt-5",
 		"gpt-5-mini",
@@ -66,6 +67,25 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		"o1",
 		"codex-mini-latest",
 	}
+
+	if customModel != nil {
+		params := openaiv3.ChatCompletionNewParams{
+			Model:               customModel.Slug,
+			Temperature:         openaiv3.Float(float64(customModel.Temperature)),
+			MaxCompletionTokens: openaiv3.Int(int64(customModel.MaxOutput)),
+			Tools:               toolRegistry.GetTools(),
+			ParallelToolCalls:   openaiv3.Bool(customModel.ParallelToolCalls),
+		}
+
+		// Store param should only be included if it is true
+		// Some providers like Gemini might not support the param at all even if false
+		if customModel.Store {
+			params.Store = openaiv3.Bool(customModel.Store)
+		}
+
+		return params
+	}
+
 	for _, model := range reasoningModels {
 		if strings.Contains(modelSlug, model) {
 			return openaiv3.ChatCompletionNewParams{

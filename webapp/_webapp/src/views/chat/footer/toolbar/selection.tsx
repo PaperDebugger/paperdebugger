@@ -12,6 +12,9 @@ export type SelectionItem<T> = {
   value: T;
   disabled?: boolean;
   disabledReason?: string;
+  id?: string;
+  isCustom?: boolean;
+  isDivider?: boolean;
 };
 
 type SelectionProps<T> = {
@@ -171,77 +174,99 @@ export function Selection<T>({ items, initialValue, onSelect, onClose }: Selecti
         heightCollapseRequired || minimalistMode ? "p-0 max-h-[100px]" : "p-2 max-h-[200px]",
       )}
     >
-      {items?.map((item, idx) => (
-        <div
-          key={`${item.title}-${item.subtitle ?? ""}-${item.description ?? ""}`}
-          className={cn(
-            "prompt-selection-item w-full flex flex-col rounded-lg",
-            item.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-            idx === selectedIdx && !item.disabled && "bg-gray-100 dark:!bg-default-200",
-            heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
-          )}
-          role="button"
-          tabIndex={item.disabled ? -1 : 0}
-          onClick={() => {
-            if (item.disabled) return;
-            googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
-            onSelect?.(item);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+      {items?.map((item, idx) => {
+        if (item.isDivider) {
+          return (
+            <div key={`divider-${idx}`} className="my-1 px-1">
+              <div className="border-t-1 !border-gray-400 dark:!border-default-500" />
+            </div>
+          );
+        }
+
+        return (
+          <div
+            key={`${item.title}-${item.subtitle ?? ""}-${item.description ?? ""}`}
+            className={cn(
+              "prompt-selection-item w-full flex flex-col rounded-lg",
+              item.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+              idx === selectedIdx && !item.disabled && "bg-gray-100 dark:!bg-default-200",
+              heightCollapseRequired || minimalistMode ? "px-2 py-1" : "p-2",
+            )}
+            role="button"
+            tabIndex={item.disabled ? -1 : 0}
+            onClick={() => {
               if (item.disabled) return;
               googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
               onSelect?.(item);
-            }
-          }}
-          onMouseEnter={() => {
-            if (!isKeyboardNavigation && !item.disabled) {
-              setSelectedIdx(idx);
-            }
-          }}
-        >
-          <div
-            className={cn(
-              "font-semibold flex items-center gap-2",
-              heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs",
-            )}
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                if (item.disabled) return;
+                googleAnalytics.fireEvent(user?.id, `select_${normalizeName(item.title)}`, {});
+                onSelect?.(item);
+              }
+            }}
+            onMouseEnter={() => {
+              if (!isKeyboardNavigation && !item.disabled) {
+                setSelectedIdx(idx);
+              }
+            }}
           >
-            <span>{item.title}</span>
-            {item.disabled && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-3 h-3 text-gray-400"
+            <div
+              className={cn(
+                "font-semibold flex items-center gap-2",
+                heightCollapseRequired || minimalistMode ? "text-[0.65rem]" : "text-xs",
+              )}
+            >
+              <span>{item.title}</span>
+              {item.disabled && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-3 h-3 text-gray-400"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+              {item.subtitle && (
+                <span
+                  className={cn(
+                    "text-gray-500 font-normal",
+                    heightCollapseRequired || minimalistMode ? "text-[0.55rem]" : "text-[0.6rem]",
+                  )}
+                >
+                  {(() => {
+                    const CUSTOM_SUFFIX = " (Custom)";
+                    if (item.subtitle.endsWith(CUSTOM_SUFFIX)) {
+                      const main = item.subtitle.slice(0, -CUSTOM_SUFFIX.length);
+                      return (
+                        <>
+                          <span>{main}</span>
+                          <span className="underline ml-1">{CUSTOM_SUFFIX.trim()}</span>
+                        </>
+                      );
+                    }
+                    return <>{item.subtitle}</>;
+                  })()}
+                </span>
+              )}
+            </div>
+            {(item.description || item.disabledReason) && (
+              <div
+                className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
+                style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            {item.subtitle && (
-              <span
-                className={cn(
-                  "text-gray-500 font-normal",
-                  heightCollapseRequired || minimalistMode ? "text-[0.55rem]" : "text-[0.6rem]",
-                )}
-              >
-                {item.subtitle}
-              </span>
+                {item.disabledReason || item.description}
+              </div>
             )}
           </div>
-          {(item.description || item.disabledReason) && (
-            <div
-              className="text-gray-500 text-nowrap whitespace-nowrap text-ellipsis overflow-hidden"
-              style={{ fontSize: heightCollapseRequired || minimalistMode ? "0.5rem" : "0.65rem" }}
-            >
-              {item.disabledReason || item.description}
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
