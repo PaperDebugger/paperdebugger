@@ -96,7 +96,7 @@ The PaperDebugger backend is built with modern technologies:
 - **Language**: Go 1.24+
 - **Framework**: Gin (HTTP) + gRPC (API)
 - **Database**: MongoDB
-- **AI Integration**: OpenAI API
+- **AI Integration**: OpenAI API, [MiniMax](https://www.minimaxi.com/) (via OpenAI-compatible API)
 - **Architecture**: Microservices with Protocol Buffers
 - **Authentication**: JWT-based with OAuth support
 

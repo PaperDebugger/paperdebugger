@@ -28,12 +28,17 @@ type AIClientV2 struct {
 // If the config specifies a custom endpoint and API key, a new client is created for that endpoint.
 // V2 uses the inference endpoint by default.
 // When a user provides their own API key, use the /openai endpoint instead of /openrouter.
+// MiniMax models are routed to the MiniMax API when MINIMAX_API_KEY is configured.
 func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *openai.Client {
 	var Endpoint string = llmConfig.Endpoint
 	var APIKey string = llmConfig.APIKey
 
 	if Endpoint == "" {
-		if APIKey != "" {
+		if models.IsMiniMaxModel(llmConfig.ModelName) && a.cfg.MiniMaxAPIKey != "" {
+			// Route MiniMax models to MiniMax API when server has MiniMax API key
+			Endpoint = a.cfg.MiniMaxBaseURL
+			APIKey = a.cfg.MiniMaxAPIKey
+		} else if APIKey != "" {
 			// User provided their own API key, use the OpenAI-compatible endpoint
 			Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
 		} else {

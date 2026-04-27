@@ -65,6 +65,8 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		streamHandler.SendFinalization()
 	}()
 
+	// Set model name for provider routing (e.g., MiniMax direct API)
+	llmProvider.ModelName = modelSlug
 	oaiClient := a.GetOpenAIClient(llmProvider)
 	params := getDefaultParamsV2(modelSlug, a.toolCallHandler.Registry)
 

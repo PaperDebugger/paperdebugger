@@ -165,6 +165,26 @@ var allModels = []modelConfig{
 		requireOwnKey:  false,
 	},
 	{
+		name:           "MiniMax M2.7",
+		slugOpenRouter: "minimax/MiniMax-M2.7",
+		slugOpenAI:     "MiniMax-M2.7",
+		totalContext:   1000000,
+		maxOutput:      128000,
+		inputPrice:     100, // $1.00
+		outputPrice:    400, // $4.00
+		requireOwnKey:  false,
+	},
+	{
+		name:           "MiniMax M2.7 Highspeed",
+		slugOpenRouter: "minimax/MiniMax-M2.7-highspeed",
+		slugOpenAI:     "MiniMax-M2.7-highspeed",
+		totalContext:   1000000,
+		maxOutput:      128000,
+		inputPrice:     50,  // $0.50
+		outputPrice:    200, // $2.00
+		requireOwnKey:  false,
+	},
+	{
 		name:           "o1 Mini",
 		slugOpenRouter: "openai/o1-mini",
 		slugOpenAI:     openai.ChatModelO1Mini,
@@ -221,6 +241,7 @@ func (s *ChatServerV2) ListSupportedModels(
 	}
 
 	hasOwnAPIKey := strings.TrimSpace(settings.OpenAIAPIKey) != ""
+	hasMiniMaxAPIKey := strings.TrimSpace(s.cfg.MiniMaxAPIKey) != ""
 
 	var models []*chatv2.SupportedModel
 	for _, config := range allModels {
@@ -230,6 +251,11 @@ func (s *ChatServerV2) ListSupportedModels(
 		// In that case, keep using the OpenRouter slug to avoid returning an empty model slug.
 		slug := config.slugOpenRouter
 		if hasOwnAPIKey && strings.TrimSpace(config.slugOpenAI) != "" {
+			slug = config.slugOpenAI
+		}
+
+		// For MiniMax models, use direct API slug when server has MiniMax API key
+		if hasMiniMaxAPIKey && isMiniMaxModelConfig(config) && strings.TrimSpace(config.slugOpenAI) != "" {
 			slug = config.slugOpenAI
 		}
 
@@ -254,6 +280,11 @@ func (s *ChatServerV2) ListSupportedModels(
 	return &chatv2.ListSupportedModelsResponse{
 		Models: models,
 	}, nil
+}
+
+// isMiniMaxModelConfig checks if a model config belongs to MiniMax.
+func isMiniMaxModelConfig(config modelConfig) bool {
+	return strings.Contains(strings.ToLower(config.slugOpenRouter), "minimax")
 }
 
 // stringPtr returns a pointer to the given string
