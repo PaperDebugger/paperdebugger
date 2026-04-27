@@ -11,11 +11,46 @@ import {
   wsConnect,
 } from "../libs/overleaf-socket";
 import { generateId } from "../libs/helpers";
+import { generateOverleafDocSHA1 } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import { UpsertProjectRequest, ProjectDoc } from "../pkg/gen/apiclient/project/v1/project_pb";
+import { UpsertProjectRequest, ProjectDoc, OverleafComment } from "../pkg/gen/apiclient/project/v1/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";
+
+const SOCKET_REQUEST_TIMEOUT_MS = 60000;
+
+function clampPosition(position: number, max: number): number {
+  return Math.max(0, Math.min(position, max));
+}
+
+function findClosestAnchorIndex(content: string, anchor: string, requestedPosition: number): number {
+  if (!anchor) {
+    return requestedPosition;
+  }
+
+  if (content.slice(requestedPosition, requestedPosition + anchor.length) === anchor) {
+    return requestedPosition;
+  }
+
+  let bestIndex = -1;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let searchIndex = content.indexOf(anchor);
+
+  while (searchIndex >= 0) {
+    const distance = Math.abs(searchIndex - requestedPosition);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = searchIndex;
+      if (distance === 0) {
+        break;
+      }
+    }
+    searchIndex = content.indexOf(anchor, searchIndex + 1);
+  }
+
+  return bestIndex;
+}
 
 // Types
 export interface SocketStore {
@@ -55,15 +90,17 @@ export interface SocketStore {
     comment: string,
     csrfToken: string,
   ) => Promise<string>;
+  addTexComment: (comment: OverleafComment) => Promise<void>;
+  addTexComments: (comments: OverleafComment[]) => Promise<void>;
 
   // Internal API - Document Management
   _updateDocById: (docId: string, options: { newPath?: string; newVersion?: number; newLines?: string[] }) => void;
   _overleafJoinDoc: (docId: string) => Promise<void>;
   _overleafLeaveDoc: (docId: string) => Promise<void>;
-  _applyOtUpdate: (docId: string, hash: string, op: unknown, version: number) => Promise<object>;
+  _applyOtUpdate: (docId: string, hash: string, op: unknown, version: number) => Promise<unknown>;
 
   // Internal API - WebSocket Communication
-  _sendRequest: (message: OverleafSocketRequest) => Promise<object>;
+  _sendRequest: (message: OverleafSocketRequest) => Promise<unknown>;
   _overleafUpdatePosition: (docId: string | null, position: number | undefined) => void;
   _overleafMessageHandler: (event: MessageEvent) => void;
   _overleafJsonMessageHandler: (data: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -166,10 +203,19 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
     // Configure WebSocket event handlers
     ws.onclose = () => {
+      const { socketRequestResponse } = get();
+      for (const [seq, requestResponse] of socketRequestResponse.entries()) {
+        if (requestResponse.timeoutId) {
+          clearTimeout(requestResponse.timeoutId);
+        }
+        requestResponse.reject?.(new Error(`Socket closed before response for ${requestResponse.request.name} (${seq})`));
+      }
+      socketRequestResponse.clear();
       set({
         docs: new Map<string, OverleafVersionedDoc>(),
         socketRef: null,
         socketJoined: false,
+        socketRequestResponse: new Map<string, RequestResponse>(),
       });
     };
 
@@ -203,7 +249,14 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
    * Disconnect from Overleaf WebSocket and clean up state
    */
   disconnectSocket: () => {
-    const { socketRef } = get();
+    const { socketRef, socketRequestResponse } = get();
+    for (const requestResponse of socketRequestResponse.values()) {
+      if (requestResponse.timeoutId) {
+        clearTimeout(requestResponse.timeoutId);
+      }
+      requestResponse.reject?.(new Error(`Socket disconnected before response for ${requestResponse.request.name}`));
+    }
+    socketRequestResponse.clear();
     if (socketRef) socketRef.close();
 
     set({
@@ -276,6 +329,85 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     return threadId;
   },
 
+  addTexComment: async (comment) => {
+    await get().addTexComments([comment]);
+  },
+
+  addTexComments: async (comments) => {
+    if (comments.length === 0) return;
+
+    const { _overleafJoinDoc, _overleafLeaveDoc, _applyOtUpdate, docs, _updateDocById } = get();
+    const commentsByDoc = new Map<string, OverleafComment[]>();
+
+    for (const comment of comments) {
+      if (!comment.docId) {
+        throw new Error("Document id is missing for TeX comment insertion.");
+      }
+      const list = commentsByDoc.get(comment.docId) ?? [];
+      list.push(comment);
+      commentsByDoc.set(comment.docId, list);
+    }
+
+    for (const [docId, docComments] of commentsByDoc.entries()) {
+      await _overleafJoinDoc(docId);
+
+      try {
+        const liveDoc = docs.get(docId);
+        if (!liveDoc) {
+          throw new Error("Document content is not available.");
+        }
+
+        const originalContent = liveDoc.lines.join("\n");
+        let workingContent = originalContent;
+        const sortedComments = [...docComments].sort((left, right) => right.quotePosition - left.quotePosition);
+        const ops: Array<{ p: number; i: string }> = [];
+
+        for (const comment of sortedComments) {
+          const currentContent = workingContent;
+          const anchor = comment.quoteText || "";
+          const requestedPosition = clampPosition(comment.quotePosition, currentContent.length);
+
+          let anchorStart = requestedPosition;
+          if (anchor) {
+            const closestAnchorIndex = findClosestAnchorIndex(currentContent, anchor, requestedPosition);
+            if (closestAnchorIndex >= 0) {
+              anchorStart = closestAnchorIndex;
+            }
+          }
+
+          let insertPosition = anchor ? anchorStart + anchor.length : requestedPosition;
+          const nextNewlineIndex = currentContent.indexOf("\n", insertPosition);
+          if (nextNewlineIndex >= 0) {
+            insertPosition = nextNewlineIndex + 1;
+          } else {
+            insertPosition = currentContent.length;
+          }
+
+          const insertText = comment.comment;
+          workingContent = currentContent.slice(0, insertPosition) + insertText + currentContent.slice(insertPosition);
+          ops.push({ p: insertPosition, i: insertText });
+        }
+
+        const currentHash = generateOverleafDocSHA1(originalContent);
+        await _applyOtUpdate(docId, currentHash, ops, liveDoc.version);
+
+        _updateDocById(docId, {
+          newVersion: liveDoc.version + 1,
+          newLines: workingContent.split("\n"),
+        });
+      } finally {
+        const { socketRef } = get();
+        if (socketRef?.readyState === WebSocket.OPEN) {
+          try {
+            await _overleafLeaveDoc(docId);
+          } catch (error) {
+            logError(`Failed to leave doc ${docId} after TeX comment insertion:`, error);
+          }
+        }
+      }
+    }
+  },
+
   // Internal API - Document Management
   /**
    * Update a document by ID with new properties
@@ -341,14 +473,18 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
       set({ socketMessageSeq: socketMessageSeq + 1 });
 
       // Store callback to resolve promise when response arrives
+      const timeoutId = setTimeout(() => {
+        socketRequestResponse.delete(`${socketMessageSeq}`);
+        reject(new Error(`Response timeout for ${message.name}`));
+      }, SOCKET_REQUEST_TIMEOUT_MS);
+
       socketRequestResponse.set(`${socketMessageSeq}`, {
         request: message,
         response: null,
-        callback: (response: object) => resolve(response),
+        callback: (response: unknown) => resolve(response),
+        reject,
+        timeoutId,
       });
-
-      // Set timeout to prevent hanging promises
-      setTimeout(() => reject(new Error("Response timeout")), 5000);
     });
   },
 
@@ -458,41 +594,47 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     const responseBodyText = data.slice(responseHeaderText.length + 1);
     const contentData = JSON.parse(responseBodyText);
 
-    const { _responseReceivedWithoutData, _updateDocById } = get();
-    _responseReceivedWithoutData(parseInt(seq), contentData);
+    const { _updateDocById, socketRequestResponse } = get();
+    const existingRequestResponse = socketRequestResponse.get(seq);
+    if (!existingRequestResponse) {
+      return;
+    }
 
-    // Handle joinDoc response specifically
-    const { socketRequestResponse } = get();
-    if (socketRequestResponse.get(seq)?.request.name === "joinDoc") {
-      const docId = (socketRequestResponse.get(seq)?.request.args[0] as string) || "";
+    if (existingRequestResponse.request.name === "joinDoc") {
+      const docId = (existingRequestResponse.request.args[0] as string) || "";
       const nullArg = contentData[0]; // Should be null per Overleaf API. Check `overleaf/services/real-time/app/js/WebsocketController.js:354`
 
       if (nullArg !== null) {
         logError("joinDoc response[0] is not null:", nullArg);
-        return;
+      } else {
+        const escapedLines = contentData[1] || ["CANT_FIND_DOC_CONTENT"];
+        const version = contentData[2] || 0;
+        // const ops = contentData[3];
+        // const comments = contentData[4];
+
+        // Decode the lines to UTF-8
+        const decodedLines = escapedLines.map((line: string) => {
+          try {
+            const bytes = new Uint8Array([...line].map((c) => c.charCodeAt(0)));
+            return new TextDecoder("utf-8").decode(bytes);
+          } catch (e) {
+            logError("Failed to decode line:", e);
+            return line;
+          }
+        });
+
+        _updateDocById(docId, {
+          newVersion: version,
+          newLines: decodedLines,
+        });
       }
-
-      const escapedLines = contentData[1] || ["CANT_FIND_DOC_CONTENT"];
-      const version = contentData[2] || 0;
-      // const ops = contentData[3];
-      // const comments = contentData[4];
-
-      // Decode the lines to UTF-8
-      const decodedLines = escapedLines.map((line: string) => {
-        try {
-          const bytes = new Uint8Array([...line].map((c) => c.charCodeAt(0)));
-          return new TextDecoder("utf-8").decode(bytes);
-        } catch (e) {
-          logError("Failed to decode line:", e);
-          return line;
-        }
-      });
-
-      _updateDocById(docId, {
-        newVersion: version,
-        newLines: decodedLines,
-      });
     }
+
+    if (existingRequestResponse.timeoutId) {
+      clearTimeout(existingRequestResponse.timeoutId);
+    }
+    socketRequestResponse.delete(seq);
+    existingRequestResponse.callback?.(contentData);
   },
 
   /**
@@ -501,21 +643,15 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   _responseReceivedWithoutData: (seq: number, data: OverleafSocketResponse) => {
     const { socketRequestResponse } = get();
     const existingRequestResponse = socketRequestResponse.get(seq.toString());
-
-    // Update request/response map
-    socketRequestResponse.set(seq.toString(), {
-      request: existingRequestResponse?.request || {
-        name: "unknown",
-        args: [],
-      },
-      response: data || null,
-      callback: existingRequestResponse?.callback,
-    });
-
-    // Call the callback to resolve waiting promise
-    if (existingRequestResponse?.callback) {
-      existingRequestResponse.callback(data);
+    if (!existingRequestResponse) {
+      return;
     }
+
+    if (existingRequestResponse.timeoutId) {
+      clearTimeout(existingRequestResponse.timeoutId);
+    }
+    socketRequestResponse.delete(seq.toString());
+    existingRequestResponse.callback?.(data);
   },
 }));
 

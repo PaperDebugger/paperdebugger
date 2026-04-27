@@ -18,6 +18,8 @@ import (
 
 	"github.com/openai/openai-go/v2/packages/param"
 	"github.com/openai/openai-go/v2/responses"
+	openaiv3 "github.com/openai/openai-go/v3"
+	paramv3 "github.com/openai/openai-go/v3/packages/param"
 )
 
 type PaperScoreCommentRequest struct {
@@ -35,12 +37,25 @@ type PaperScoreCommentTool struct {
 	client                *http.Client
 }
 
+var PaperScoreCommentToolDescriptionV2 = openaiv3.ChatCompletionToolUnionParam{
+	OfFunction: &openaiv3.ChatCompletionFunctionToolParam{
+		Function: openaiv3.FunctionDefinitionParam{
+			Name:        "paper_score_comment",
+			Description: paramv3.NewOpt("Generate actionable, author-facing review comments for the paper score. Use this when the user wants comments added directly into Overleaf or the TeX source. Return structured comments instead of manually writing raw annotated LaTeX review snippets."),
+			Parameters: openaiv3.FunctionParameters{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+	},
+}
+
 func NewPaperScoreCommentTool(db *db.DB, projectService *services.ProjectService, reverseCommentService *services.ReverseCommentService) *PaperScoreCommentTool {
 	toolCallRecordDB := toolCallRecordDB.NewToolCallRecordDB(db)
 	paperScoreCommentToolDescription := responses.ToolUnionParam{
 		OfFunction: &responses.FunctionToolParam{
 			Name:        "paper_score_comment",
-			Description: param.NewOpt("Get the actionable comment for the paper score. usually the comment is about the weakness of the paper."),
+			Description: param.NewOpt("Generate actionable, author-facing review comments for the paper score. Use this when the user wants comments added directly into Overleaf or the TeX source. Return structured comments instead of manually writing raw annotated LaTeX review snippets."),
 		},
 	}
 

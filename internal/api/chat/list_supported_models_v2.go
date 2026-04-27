@@ -25,43 +25,43 @@ type modelConfig struct {
 // allModels defines all available models in the system
 var allModels = []modelConfig{
 	{
-		name:           "GPT-5.1",
-		slugOpenRouter: "openai/gpt-5.1",
-		slugOpenAI:     openai.ChatModelGPT5_1,
-		totalContext:   400000,
+		name:           "GPT-5.4",
+		slugOpenRouter: "openai/gpt-5.4",
+		slugOpenAI:     "gpt-5.4",
+		totalContext:   1050000,
 		maxOutput:      128000,
-		inputPrice:     125,  // $1.25
-		outputPrice:    1000, // $10.00
+		inputPrice:     250,  // $2.50
+		outputPrice:    1500, // $15.00
 		requireOwnKey:  false,
 	},
 	{
-		name:           "GPT-5.2",
-		slugOpenRouter: "openai/gpt-5.2",
-		slugOpenAI:     openai.ChatModelGPT5_2,
+		name:           "GPT-5.4 Mini",
+		slugOpenRouter: "openai/gpt-5.4-mini",
+		slugOpenAI:     "gpt-5.4-mini",
 		totalContext:   400000,
 		maxOutput:      128000,
-		inputPrice:     175,  // $1.75
-		outputPrice:    1400, // $14.00
-		requireOwnKey:  true,
-	},
-	{
-		name:           "GPT-5 Mini",
-		slugOpenRouter: "openai/gpt-5-mini",
-		slugOpenAI:     openai.ChatModelGPT5Mini,
-		totalContext:   400000,
-		maxOutput:      128000,
-		inputPrice:     25,
-		outputPrice:    200,
+		inputPrice:     75,  // $0.75
+		outputPrice:    450, // $4.50
 		requireOwnKey:  false,
 	},
 	{
-		name:           "GPT-5 Nano",
-		slugOpenRouter: "openai/gpt-5-nano",
-		slugOpenAI:     openai.ChatModelGPT5Nano,
+		name:           "GPT-5.4 Nano",
+		slugOpenRouter: "openai/gpt-5.4-nano",
+		slugOpenAI:     "gpt-5.4-nano",
 		totalContext:   400000,
 		maxOutput:      128000,
-		inputPrice:     5,  // $0.20
-		outputPrice:    40, // $0.80
+		inputPrice:     20,
+		outputPrice:    125,
+		requireOwnKey:  false,
+	},
+	{
+		name:           "Claude Opus 4.6",
+		slugOpenRouter: "anthropic/claude-opus-4.6",
+		slugOpenAI:     "",
+		totalContext:   1000000,
+		maxOutput:      128000,
+		inputPrice:     500,  // $5.00
+		outputPrice:    2500, // $25.00
 		requireOwnKey:  false,
 	},
 	{

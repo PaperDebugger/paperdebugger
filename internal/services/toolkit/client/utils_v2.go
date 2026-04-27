@@ -12,6 +12,7 @@ import (
 	"paperdebugger/internal/libs/logger"
 	"paperdebugger/internal/services"
 	"paperdebugger/internal/services/toolkit/registry"
+	maintools "paperdebugger/internal/services/toolkit/tools"
 	filetools "paperdebugger/internal/services/toolkit/tools/files"
 	latextools "paperdebugger/internal/services/toolkit/tools/latex"
 	"paperdebugger/internal/services/toolkit/tools/xtramcp"
@@ -20,42 +21,86 @@ import (
 	"time"
 
 	openaiv3 "github.com/openai/openai-go/v3"
+	sharedv3 "github.com/openai/openai-go/v3/shared"
 )
 
-func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string, modelSlug string) {
-	*openaiChatHistory = append(*openaiChatHistory, openaiv3.ChatCompletionMessageParamUnion{
-		OfAssistant: &openaiv3.ChatCompletionAssistantMessageParam{
-			Role: "assistant",
-			Content: openaiv3.ChatCompletionAssistantMessageParamContentUnion{
-				OfArrayOfContentParts: []openaiv3.ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion{
-					{
-						OfText: &openaiv3.ChatCompletionContentPartTextParam{
-							Type: "text",
-							Text: content,
-						},
+func appendAssistantTextResponseV2(openaiChatHistory *OpenAIChatHistory, inappChatHistory *AppChatHistory, content string, contentId string, modelSlug string, reasoning string) {
+	assistantMessage := openaiv3.ChatCompletionAssistantMessageParam{
+		Role: "assistant",
+		Content: openaiv3.ChatCompletionAssistantMessageParamContentUnion{
+			OfArrayOfContentParts: []openaiv3.ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion{
+				{
+					OfText: &openaiv3.ChatCompletionContentPartTextParam{
+						Type: "text",
+						Text: content,
 					},
 				},
 			},
 		},
+	}
+	if strings.TrimSpace(reasoning) != "" {
+		assistantMessage.SetExtraFields(map[string]any{
+			"reasoning": reasoning,
+		})
+	}
+
+	*openaiChatHistory = append(*openaiChatHistory, openaiv3.ChatCompletionMessageParamUnion{
+		OfAssistant: &assistantMessage,
 	})
+
+	assistantPayload := &chatv2.MessageTypeAssistant{
+		Content:   content,
+		ModelSlug: modelSlug,
+	}
+	if strings.TrimSpace(reasoning) != "" {
+		assistantPayload.Reasoning = &reasoning
+	}
 
 	*inappChatHistory = append(*inappChatHistory, chatv2.Message{
 		MessageId: contentId,
 		Payload: &chatv2.MessagePayload{
 			MessageType: &chatv2.MessagePayload_Assistant{
-				Assistant: &chatv2.MessageTypeAssistant{
-					Content:   content,
-					ModelSlug: modelSlug,
-				},
+				Assistant: assistantPayload,
 			},
 		},
 		Timestamp: time.Now().Unix(),
 	})
 }
 
+func isClaudeOpus46Model(modelSlug string) bool {
+	return strings.Contains(modelSlug, "claude-opus-4.6") || strings.Contains(modelSlug, "claude-4.6-opus")
+}
+
+func configureReasoningDefaultsV2(params *openaiv3.ChatCompletionNewParams, modelSlug string) {
+	if isClaudeOpus46Model(modelSlug) {
+		params.SetExtraFields(map[string]any{
+			"reasoning": map[string]any{
+				"enabled":    true,
+				"max_tokens": 2000,
+			},
+		})
+		return
+	}
+
+	if strings.Contains(modelSlug, "/") {
+		params.SetExtraFields(map[string]any{
+			"reasoning": map[string]any{
+				"enabled": true,
+				"effort":  "medium",
+			},
+		})
+		return
+	}
+
+	params.ReasoningEffort = sharedv3.ReasoningEffortMedium
+}
+
 func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2) openaiv3.ChatCompletionNewParams {
 	var reasoningModels = []string{
 		"gpt-5",
+		"gpt-5.4",
+		"gpt-5.4-mini",
+		"gpt-5.4-nano",
 		"gpt-5-mini",
 		"gpt-5-nano",
 		"gpt-5-chat-latest",
@@ -65,16 +110,20 @@ func getDefaultParamsV2(modelSlug string, toolRegistry *registry.ToolRegistryV2)
 		"o1-mini",
 		"o1",
 		"codex-mini-latest",
+		"claude-opus-4.6",
+		"claude-4.6-opus",
 	}
 	for _, model := range reasoningModels {
 		if strings.Contains(modelSlug, model) {
-			return openaiv3.ChatCompletionNewParams{
+			params := openaiv3.ChatCompletionNewParams{
 				Model:               modelSlug,
 				MaxCompletionTokens: openaiv3.Int(4000),
 				Tools:               toolRegistry.GetTools(),
 				ParallelToolCalls:   openaiv3.Bool(true),
 				Store:               openaiv3.Bool(false),
 			}
+			configureReasoningDefaultsV2(&params, modelSlug)
+			return params
 		}
 	}
 
@@ -134,13 +183,21 @@ func initializeToolkitV2(
 	documentStructureTool := latextools.NewDocumentStructureTool(projectService)
 	toolRegistry.Register("get_document_structure", latextools.GetDocumentStructureToolDescriptionV2, documentStructureTool.Call)
 
-	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, latextools.LocateSectionTool)
+	locateSectionTool := latextools.NewLocateSectionTool(projectService)
+	toolRegistry.Register("locate_section", latextools.LocateSectionToolDescriptionV2, locateSectionTool.Call)
 
 	readSectionSourceTool := latextools.NewReadSectionSourceTool(projectService)
 	toolRegistry.Register("read_section_source", latextools.ReadSectionSourceToolDescriptionV2, readSectionSourceTool.Call)
 
 	readSourceLineRangeTool := latextools.NewReadSourceLineRangeTool(projectService)
 	toolRegistry.Register("read_source_line_range", latextools.ReadSourceLineRangeToolDescriptionV2, readSourceLineRangeTool.Call)
+
+	// Register review tools so the agent can produce structured Overleaf/TeX comments.
+	paperScoreTool := maintools.NewPaperScoreTool(db, projectService)
+	toolRegistry.Register("paper_score", maintools.PaperScoreToolDescriptionV2, paperScoreTool.Call)
+
+	paperScoreCommentTool := maintools.NewPaperScoreCommentTool(db, projectService, services.NewReverseCommentService(db, cfg, logger, projectService))
+	toolRegistry.Register("paper_score_comment", maintools.PaperScoreCommentToolDescriptionV2, paperScoreCommentTool.Call)
 
 	// Load tools dynamically from backend
 	xtraMCPLoader := xtramcp.NewXtraMCPLoaderV2(db, projectService, cfg.XtraMCPURI)

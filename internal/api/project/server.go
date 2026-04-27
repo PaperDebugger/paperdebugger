@@ -9,19 +9,22 @@ import (
 
 type ProjectServer struct {
 	projectv1.UnimplementedProjectServiceServer
-	projectService *services.ProjectService
-	logger         *logger.Logger
-	cfg            *cfg.Cfg
+	projectService        *services.ProjectService
+	reverseCommentService *services.ReverseCommentService
+	logger                *logger.Logger
+	cfg                   *cfg.Cfg
 }
 
 func NewProjectServer(
 	projectService *services.ProjectService,
+	reverseCommentService *services.ReverseCommentService,
 	logger *logger.Logger,
 	cfg *cfg.Cfg,
 ) projectv1.ProjectServiceServer {
 	return &ProjectServer{
-		projectService: projectService,
-		logger:         logger,
-		cfg:            cfg,
+		projectService:        projectService,
+		reverseCommentService: reverseCommentService,
+		logger:                logger,
+		cfg:                   cfg,
 	}
 }

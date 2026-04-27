@@ -30,7 +30,7 @@ export function getQueryParamsAsString<
 export const processStream = async <T>(
   stream: ReadableStream<Uint8Array>,
   schema: DescMessage,
-  onMessage: (chunk: T) => void,
+  onMessage: (chunk: T) => void | Promise<void>,
 ) => {
   const { slowStreamingMode } = useDevtoolStore.getState();
   const reader = stream.getReader();
@@ -51,7 +51,7 @@ export const processStream = async <T>(
       try {
         const parsedValue = JSON.parse(message);
         const messageData = parsedValue.result || parsedValue;
-        onMessage(fromJson(schema, messageData) as T);
+        await onMessage(fromJson(schema, messageData) as T);
       } catch (err) {
         logError("Error parsing message from stream", err, message);
       }

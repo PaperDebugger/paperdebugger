@@ -127,8 +127,10 @@ export interface RequestResponse {
   // can be any type of request
   request: { name: string; args: unknown[] };
   // can be any type of response
-  response: object | null;
-  callback?: (response: object) => void;
+  response: unknown | null;
+  callback?: (response: unknown) => void;
+  reject?: (error: Error) => void;
+  timeoutId?: ReturnType<typeof setTimeout>;
 }
 
 export interface OverleafVersionedDoc {

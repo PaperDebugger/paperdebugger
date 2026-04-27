@@ -77,13 +77,13 @@ func NewAIClientV2(
 	if llmProvider != nil && llmProvider.IsCustom() {
 		baseUrl = cfg.OpenAIBaseURL
 		apiKey = cfg.OpenAIAPIKey
-		modelSlug = "gpt-5-nano"
+		modelSlug = "gpt-5.4-nano"
 		// Use the default inference endpoint
 	} else {
 		// suffix needed for cloudflare gateway
 		baseUrl = cfg.InferenceBaseURL + "/openrouter"
 		apiKey = cfg.InferenceAPIKey
-		modelSlug = "openai/gpt-5-nano"
+		modelSlug = "openai/gpt-5.4-nano"
 	}
 
 	CheckOpenAIWorksV2(

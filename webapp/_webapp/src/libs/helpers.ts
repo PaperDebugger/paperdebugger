@@ -172,8 +172,14 @@ export function generateSHA1Hash(inputString: string): string {
   return result.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+export function generateOverleafDocSHA1(content: string): string {
+  const runeCount = Array.from(content).length;
+  return generateSHA1Hash(`blob ${runeCount}\x00${content}`);
+}
+
 // --- Overleaf Comments Clicked Storage ---
 const OVERLEAF_COMMENTS_CLICKED_PREFIX = "pd.overleaf_comments_clicked.";
+const OVERLEAF_TEX_COMMENTS_CLICKED_PREFIX = "pd.overleaf_tex_comments_clicked.";
 const MAX_CLICKED_COMMENTS = 200;
 
 export function getClickedOverleafComments(projectId: string): string[] {
@@ -207,6 +213,38 @@ export function addClickedOverleafComment(projectId: string, messageId: string) 
 export function hasClickedOverleafComment(projectId: string, messageId: string): boolean {
   if (!projectId || !messageId) return false;
   const arr = getClickedOverleafComments(projectId);
+  return arr.includes(messageId);
+}
+
+export function getClickedOverleafTexComments(projectId: string): string[] {
+  if (!projectId) return [];
+  const key = OVERLEAF_TEX_COMMENTS_CLICKED_PREFIX + projectId;
+  try {
+    const raw = storage.getItem(key);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) return arr;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function addClickedOverleafTexComment(projectId: string, messageId: string) {
+  if (!projectId || !messageId) return;
+  const key = OVERLEAF_TEX_COMMENTS_CLICKED_PREFIX + projectId;
+  let arr = getClickedOverleafTexComments(projectId);
+  arr = arr.filter((id) => id !== messageId);
+  arr.push(messageId);
+  if (arr.length > MAX_CLICKED_COMMENTS) {
+    arr = arr.slice(arr.length - MAX_CLICKED_COMMENTS);
+  }
+  storage.setItem(key, JSON.stringify(arr));
+}
+
+export function hasClickedOverleafTexComment(projectId: string, messageId: string): boolean {
+  if (!projectId || !messageId) return false;
+  const arr = getClickedOverleafTexComments(projectId);
   return arr.includes(messageId);
 }
 

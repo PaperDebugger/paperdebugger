@@ -43,7 +43,7 @@ func InitializeApp() (*api.Server, error) {
 	chatv2ChatServiceServer := chat.NewChatServerV2(aiClientV2, chatServiceV2, projectService, userService, loggerLogger, cfgCfg)
 	promptService := services.NewPromptService(dbDB, cfgCfg, loggerLogger)
 	userServiceServer := user.NewUserServer(userService, promptService, cfgCfg, loggerLogger)
-	projectServiceServer := project.NewProjectServer(projectService, loggerLogger, cfgCfg)
+	projectServiceServer := project.NewProjectServer(projectService, reverseCommentService, loggerLogger, cfgCfg)
 	commentServiceServer := comment.NewCommentServer(projectService, chatService, reverseCommentService, loggerLogger, cfgCfg)
 	grpcServer := api.NewGrpcServer(userService, cfgCfg, authServiceServer, chatServiceServer, chatv2ChatServiceServer, userServiceServer, projectServiceServer, commentServiceServer)
 	oAuthService := services.NewOAuthService(dbDB, cfgCfg, loggerLogger)

@@ -39,7 +39,7 @@ type AppChatHistory []chatv2.Message
 //   - openaiChatHistory: The OpenAI-compatible chat history including tool call and output items.
 //   - inappChatHistory:  The in-app chat history as a slice of chatv2.Message, reflecting tool call events.
 //   - error:             Any error encountered during processing (always nil in current implementation).
-func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []openai.FinishedChatCompletionToolCall, streamHandler *StreamHandlerV2) (OpenAIChatHistory, AppChatHistory, error) {
+func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []openai.FinishedChatCompletionToolCall, assistantContent string, assistantReasoning string, streamHandler *StreamHandlerV2) (OpenAIChatHistory, AppChatHistory, error) {
 	if len(toolCalls) == 0 {
 		return nil, nil, nil
 	}
@@ -61,10 +61,29 @@ func (h *ToolCallHandlerV2) HandleToolCallsV2(ctx context.Context, toolCalls []o
 		}
 	}
 
+	assistantMessage := openai.ChatCompletionAssistantMessageParam{
+		ToolCalls: toolCallsParam,
+	}
+	if strings.TrimSpace(assistantContent) != "" {
+		assistantMessage.Content = openai.ChatCompletionAssistantMessageParamContentUnion{
+			OfArrayOfContentParts: []openai.ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion{
+				{
+					OfText: &openai.ChatCompletionContentPartTextParam{
+						Type: "text",
+						Text: assistantContent,
+					},
+				},
+			},
+		}
+	}
+	if strings.TrimSpace(assistantReasoning) != "" {
+		assistantMessage.SetExtraFields(map[string]any{
+			"reasoning": assistantReasoning,
+		})
+	}
+
 	openaiChatHistory = append(openaiChatHistory, openai.ChatCompletionMessageParamUnion{
-		OfAssistant: &openai.ChatCompletionAssistantMessageParam{
-			ToolCalls: toolCallsParam,
-		},
+		OfAssistant: &assistantMessage,
 	})
 
 	// Iterate over each output item to process tool calls

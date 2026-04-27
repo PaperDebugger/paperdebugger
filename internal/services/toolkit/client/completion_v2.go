@@ -11,6 +11,96 @@ import (
 	"github.com/openai/openai-go/v3"
 )
 
+var directCommentIntentPhrasesV2 = []string{
+	"add direct comments",
+	"direct comments in the paper",
+	"directly add comments",
+	"insert comments in the tex",
+	"insert comments into the tex",
+	"add comments into the tex",
+	"add comments into the tex source",
+	"add comments into the overleaf tex source",
+	"comment directly in overleaf",
+	"add comments in overleaf",
+	"add comments into overleaf",
+	"add comments to the paper",
+	"add the real comments",
+	"tex file in overleaf",
+	"tex file of overleaf",
+	"insert into the tex file",
+	"insert comments into the paper",
+	"review and insert",
+	"review & insert",
+	"paper_score_comment",
+}
+
+func containsDirectCommentIntentV2(text string) bool {
+	text = strings.ToLower(text)
+	for _, phrase := range directCommentIntentPhrasesV2 {
+		if strings.Contains(text, phrase) {
+			return true
+		}
+	}
+	return false
+}
+
+func forceToolChoiceV2(name string) openai.ChatCompletionToolChoiceOptionUnionParam {
+	return openai.ChatCompletionToolChoiceOptionUnionParam{
+		OfFunctionToolChoice: &openai.ChatCompletionNamedToolChoiceParam{
+			Function: openai.ChatCompletionNamedToolChoiceFunctionParam{
+				Name: name,
+			},
+		},
+	}
+}
+
+func getForcedReviewToolChoiceV2(messages OpenAIChatHistory) (openai.ChatCompletionToolChoiceOptionUnionParam, bool) {
+	lastUserIndex := -1
+	lastUserText := ""
+	for i := len(messages) - 1; i >= 0; i-- {
+		if user := messages[i].OfUser; user != nil {
+			lastUserIndex = i
+			if user.Content.OfString.Valid() {
+				lastUserText = user.Content.OfString.Value
+			}
+			break
+		}
+	}
+
+	if lastUserIndex == -1 || !containsDirectCommentIntentV2(lastUserText) {
+		return openai.ChatCompletionToolChoiceOptionUnionParam{}, false
+	}
+
+	hasPaperScore := false
+	hasPaperScoreComment := false
+	for i := lastUserIndex + 1; i < len(messages); i++ {
+		assistant := messages[i].OfAssistant
+		if assistant == nil {
+			continue
+		}
+		for _, toolCall := range assistant.ToolCalls {
+			if toolCall.OfFunction == nil {
+				continue
+			}
+			switch toolCall.OfFunction.Function.Name {
+			case "paper_score":
+				hasPaperScore = true
+			case "paper_score_comment":
+				hasPaperScoreComment = true
+			}
+		}
+	}
+
+	if !hasPaperScore {
+		return forceToolChoiceV2("paper_score"), true
+	}
+	if !hasPaperScoreComment {
+		return forceToolChoiceV2("paper_score_comment"), true
+	}
+
+	return openai.ChatCompletionToolChoiceOptionUnionParam{}, false
+}
+
 // define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
 
 // ChatCompletion orchestrates a chat completion process with a language model (e.g., GPT), handling tool calls and message history management.
@@ -70,6 +160,11 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 
 	for {
 		params.Messages = openaiChatHistory
+		if forcedToolChoice, ok := getForcedReviewToolChoiceV2(openaiChatHistory); ok {
+			params.ToolChoice = forcedToolChoice
+		} else {
+			params.ToolChoice = openai.ChatCompletionToolChoiceOptionUnionParam{}
+		}
 		// var openaiOutput OpenAIChatHistory
 		stream := oaiClient.Chat.Completions.NewStreaming(context.Background(), params)
 
@@ -193,12 +288,12 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 			return nil, nil, err
 		}
 
-		if answer_content != "" {
-			appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id, modelSlug)
+		if answer_content != "" && len(toolCalls) == 0 {
+			appendAssistantTextResponseV2(&openaiChatHistory, &inappChatHistory, answer_content, answer_content_id, modelSlug, reasoning_content)
 		}
 
 		// Execute the calls (if any), return incremental data
-		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, toolCalls, streamHandler)
+		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, toolCalls, answer_content, reasoning_content, streamHandler)
 		if err != nil {
 			return nil, nil, err
 		}

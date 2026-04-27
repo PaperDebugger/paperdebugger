@@ -12,6 +12,7 @@ import (
 	"paperdebugger/internal/libs/stringutil"
 	"paperdebugger/internal/models"
 	projectv1 "paperdebugger/pkg/gen/api/project/v1"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -80,6 +81,77 @@ func isSectionHeader(line string) bool {
 		}
 	}
 	return false
+}
+
+var nonAlphaNumSectionPattern = regexp.MustCompile(`[^a-z0-9]+`)
+
+func normalizeSectionName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	name = regexp.MustCompile(`\\[a-zA-Z]+\{([^}]*)\}`).ReplaceAllString(name, "$1")
+	name = regexp.MustCompile(`\\[a-zA-Z]+`).ReplaceAllString(name, "")
+	name = nonAlphaNumSectionPattern.ReplaceAllString(name, " ")
+	return strings.Join(strings.Fields(name), " ")
+}
+
+func extractSectionHeaderTitle(line string) string {
+	patterns := []*regexp.Regexp{
+		regexp.MustCompile(`^[^%]*\\section\*?\{([^}]*)\}`),
+		regexp.MustCompile(`^[^%]*\\subsection\*?\{([^}]*)\}`),
+		regexp.MustCompile(`^[^%]*\\subsubsection\*?\{([^}]*)\}`),
+	}
+	for _, pattern := range patterns {
+		matches := pattern.FindStringSubmatch(line)
+		if len(matches) > 1 {
+			return strings.TrimSpace(matches[1])
+		}
+	}
+	return ""
+}
+
+func orderedProjectDocs(project *models.Project) []*models.ProjectDoc {
+	ordered := make([]*models.ProjectDoc, 0, len(project.Docs))
+	for idx := range project.Docs {
+		if project.Docs[idx].ID == project.RootDocID {
+			ordered = append(ordered, &project.Docs[idx])
+			break
+		}
+	}
+	for idx := range project.Docs {
+		if project.Docs[idx].ID == project.RootDocID {
+			continue
+		}
+		ordered = append(ordered, &project.Docs[idx])
+	}
+	return ordered
+}
+
+func findSpecialSectionMarkerPosition(docContent string, sectionName string) (int, string) {
+	normalized := normalizeSectionName(sectionName)
+	lines := strings.Split(docContent, "\n")
+	runeOffset := 0
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		switch normalized {
+		case "title":
+			if strings.Contains(trimmed, `\title{`) || strings.HasPrefix(trimmed, `\title[`) || strings.Contains(trimmed, `\maketitle`) {
+				return runeOffset, strings.TrimSpace(line)
+			}
+		case "abstract":
+			if strings.Contains(trimmed, `\begin{abstract}`) {
+				return runeOffset, strings.TrimSpace(line)
+			}
+		default:
+			title := extractSectionHeaderTitle(line)
+			if title != "" {
+				normalizedTitle := normalizeSectionName(title)
+				if normalizedTitle == normalized || strings.Contains(normalizedTitle, normalized) || strings.Contains(normalized, normalizedTitle) {
+					return runeOffset, strings.TrimSpace(line)
+				}
+			}
+		}
+		runeOffset += utf8.RuneCountInString(line) + 1
+	}
+	return NoMatchPosition, ""
 }
 
 // generateDocSHA1 generates a SHA1 hash for the document content
@@ -205,13 +277,36 @@ func (s *ReverseCommentService) fuzzyMatchPosition(docContent, anchorText string
 // findTargetDocBySection searches for a document containing the target section name
 // It handles both direct section definitions and sections with input statements
 func (s *ReverseCommentService) findTargetDocBySection(project *models.Project, targetSectionName string) *models.ProjectDoc {
+	normalizedTarget := normalizeSectionName(targetSectionName)
+	if normalizedTarget == "title" || normalizedTarget == "abstract" {
+		for _, doc := range orderedProjectDocs(project) {
+			for _, line := range doc.Lines {
+				trimmed := strings.TrimSpace(line)
+				if normalizedTarget == "title" && (strings.Contains(trimmed, `\title{`) || strings.HasPrefix(trimmed, `\title[`) || strings.Contains(trimmed, `\maketitle`)) {
+					return doc
+				}
+				if normalizedTarget == "abstract" && strings.Contains(trimmed, `\begin{abstract}`) {
+					return doc
+				}
+			}
+		}
+		for _, doc := range orderedProjectDocs(project) {
+			return doc
+		}
+	}
+
 	// First pass: look for direct section matches
 	for _, doc := range project.Docs {
 		for i, line := range doc.Lines {
-			if isSectionHeader(line) && strings.Contains(
-				strings.ToLower(line),
-				strings.ToLower(targetSectionName),
-			) {
+			headerTitle := extractSectionHeaderTitle(line)
+			if isSectionHeader(line) && headerTitle != "" {
+				normalizedHeader := normalizeSectionName(headerTitle)
+				if normalizedHeader != normalizedTarget &&
+					!strings.Contains(normalizedHeader, normalizedTarget) &&
+					!strings.Contains(normalizedTarget, normalizedHeader) {
+					continue
+				}
+
 				// Check if this section is followed by an input statement
 				if i+1 < len(doc.Lines) {
 					nextLine := strings.TrimSpace(doc.Lines[i+1])
@@ -246,11 +341,14 @@ func (s *ReverseCommentService) findTargetDocBySection(project *models.Project, 
 					if strings.HasSuffix(inputDoc.Filepath, inputFile+".tex") {
 						// Check if this input file contains the target section
 						for _, inputLine := range inputDoc.Lines {
-							if isSectionHeader(inputLine) && strings.Contains(
-								strings.ToLower(inputLine),
-								strings.ToLower(targetSectionName),
-							) {
-								return &inputDoc
+							headerTitle := extractSectionHeaderTitle(inputLine)
+							if isSectionHeader(inputLine) && headerTitle != "" {
+								normalizedHeader := normalizeSectionName(headerTitle)
+								if normalizedHeader == normalizedTarget ||
+									strings.Contains(normalizedHeader, normalizedTarget) ||
+									strings.Contains(normalizedTarget, normalizedHeader) {
+									return &inputDoc
+								}
 							}
 						}
 					}
@@ -295,15 +393,18 @@ func (s *ReverseCommentService) ReverseComments(ctx context.Context, comments *p
 		}
 
 		comment.AnchorText = strings.TrimSpace(comment.AnchorText)
-		comment.Weakness = fmt.Sprintf(`👨🏻‍💻 %s: %s`, comment.Importance, comment.Weakness)
+		comment.Weakness = formatOverleafReviewComment(comment)
 
 		// Generate SHA1 hash for the document content
 		docContent := strings.Join(targetDoc.Lines, "\n")
 		docSHA1 := generateDocSHA1(docContent)
 		quotePosition, matchedText := s.findBestMatchPosition(docContent, comment.AnchorText)
 		if quotePosition == -1 {
-			s.logger.Info("No sufficiently similar match found for comment", "comment", comment)
-			continue
+			quotePosition, matchedText = findSpecialSectionMarkerPosition(docContent, comment.Section)
+			if quotePosition == -1 {
+				s.logger.Info("No sufficiently similar match found for comment", "comment", comment)
+				continue
+			}
 		}
 
 		commentRecord := s.createCommentRecord(actor.ID, projectId, targetDoc, docSHA1, quotePosition, matchedText, comment)
@@ -317,6 +418,25 @@ func (s *ReverseCommentService) ReverseComments(ctx context.Context, comments *p
 	}
 
 	return requests, nil
+}
+
+func formatOverleafReviewComment(comment *projectv1.PaperScoreCommentEntry) string {
+	importance := strings.TrimSpace(comment.GetImportance())
+	issue := strings.TrimSpace(comment.GetWeakness())
+	if issue == "" {
+		issue = "This passage needs a clearer and better-supported revision."
+	}
+
+	header := "Review comment"
+	if importance != "" {
+		header = fmt.Sprintf("[%s] Review comment", importance)
+	}
+
+	return fmt.Sprintf(
+		"%s\nIssue: %s\nNext steps:\n1. Revise the highlighted passage so the local claim is precise and defensible.\n2. Add the missing justification, evidence, citation, derivation detail, baseline, or experimental context at this location.\n3. Check nearby sentences, notation, and claims so the fix stays consistent across the section.",
+		header,
+		issue,
+	)
 }
 
 // createCommentRecord creates a models.Comment from the provided data

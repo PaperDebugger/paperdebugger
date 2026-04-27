@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { SupportedModel } from "../pkg/gen/apiclient/chat/v2/chat_pb";
 import { useConversationStore } from "../stores/conversation/conversation-store";
 import { useListSupportedModelsQuery } from "../query";
@@ -22,16 +22,54 @@ const extractProvider = (slug: string): string => {
   return parts.length > 1 ? parts[0] : "openai";
 };
 
+const normalizeModelId = (slug: string): string => slug.toLowerCase().trim().split("/").filter(Boolean).pop() ?? "";
+
+const normalizeModelAlias = (slug: string): string => {
+  const modelId = normalizeModelId(slug);
+  if (modelId === "claude-4.6-opus") return "claude-opus-4.6";
+  return modelId;
+};
+
 // Fallback models in case the API fails
 const fallbackModels: Model[] = [
   {
-    name: "GPT-4.1",
-    slug: "openai/gpt-4.1",
+    name: "GPT-5.4",
+    slug: "openai/gpt-5.4",
     provider: "openai",
     totalContext: 1050000,
-    maxOutput: 32800,
-    inputPrice: 200,
-    outputPrice: 800,
+    maxOutput: 128000,
+    inputPrice: 250,
+    outputPrice: 1500,
+    disabled: false,
+  },
+  {
+    name: "GPT-5.4 Mini",
+    slug: "openai/gpt-5.4-mini",
+    provider: "openai",
+    totalContext: 400000,
+    maxOutput: 128000,
+    inputPrice: 75,
+    outputPrice: 450,
+    disabled: false,
+  },
+  {
+    name: "GPT-5.4 Nano",
+    slug: "openai/gpt-5.4-nano",
+    provider: "openai",
+    totalContext: 400000,
+    maxOutput: 128000,
+    inputPrice: 20,
+    outputPrice: 125,
+    disabled: false,
+  },
+  {
+    name: "Claude Opus 4.6",
+    slug: "anthropic/claude-opus-4.6",
+    provider: "anthropic",
+    totalContext: 1000000,
+    maxOutput: 128000,
+    inputPrice: 500,
+    outputPrice: 2500,
     disabled: false,
   },
 ];
@@ -54,16 +92,39 @@ export const useLanguageModels = () => {
   const { data: supportedModelsResponse } = useListSupportedModelsQuery();
 
   const models: Model[] = useMemo(() => {
-    if (supportedModelsResponse?.models && supportedModelsResponse.models.length > 0) {
-      return supportedModelsResponse.models.map(mapSupportedModelToModel);
+    const supportedModels = supportedModelsResponse?.models?.map(mapSupportedModelToModel) ?? [];
+    const mergedModels = [...supportedModels];
+    const seen = new Set(supportedModels.map((model) => normalizeModelAlias(model.slug)));
+
+    for (const fallbackModel of fallbackModels) {
+      const normalizedSlug = normalizeModelAlias(fallbackModel.slug);
+      if (seen.has(normalizedSlug)) continue;
+      mergedModels.push(fallbackModel);
+      seen.add(normalizedSlug);
     }
-    return fallbackModels;
+
+    return mergedModels.length > 0 ? mergedModels : fallbackModels;
   }, [supportedModelsResponse]);
 
   const currentModel = useMemo(() => {
     const model = models.find((m) => m.slug === currentConversation.modelSlug);
     return model || models[0];
   }, [models, currentConversation.modelSlug]);
+
+  useEffect(() => {
+    if (!supportedModelsResponse?.models?.length) return;
+    if (models.some((model) => model.slug === currentConversation.modelSlug)) return;
+
+    const currentId = normalizeModelAlias(currentConversation.modelSlug);
+    const matchingModel = models.find((model) => normalizeModelAlias(model.slug) === currentId) ?? models[0];
+    if (!matchingModel || matchingModel.slug === currentConversation.modelSlug) return;
+
+    setCurrentConversation({
+      ...currentConversation,
+      modelSlug: matchingModel.slug,
+    });
+    setLastUsedModelSlug(matchingModel.slug);
+  }, [currentConversation, models, setCurrentConversation, setLastUsedModelSlug, supportedModelsResponse]);
 
   const setModel = useCallback(
     (model: Model) => {

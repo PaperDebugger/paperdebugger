@@ -27,6 +27,12 @@ import {
 import {
   GetProjectRequest,
   GetProjectResponseSchema,
+  RunProjectOverleafCommentRequest,
+  RunProjectOverleafCommentResponseSchema,
+  RunProjectPaperScoreCommentRequest,
+  RunProjectPaperScoreCommentResponseSchema,
+  RunProjectPaperScoreRequest,
+  RunProjectPaperScoreResponseSchema,
   UpsertProjectRequest,
   UpsertProjectResponseSchema,
   GetProjectInstructionsRequest,
@@ -157,6 +163,27 @@ export const getCitationKeys = async (data: PlainMessage<GetCitationKeysRequest>
 export const upsertProject = async (data: PlainMessage<UpsertProjectRequest>) => {
   const response = await apiclient.put(`/projects/${data.projectId}`, data);
   return fromJson(UpsertProjectResponseSchema, response);
+};
+
+export const runProjectPaperScore = async (data: PlainMessage<RunProjectPaperScoreRequest>) => {
+  const response = await apiclient.post(`/projects/${data.projectId}/paper-score`, data, {
+    ignoreErrorToast: true,
+  });
+  return fromJson(RunProjectPaperScoreResponseSchema, response);
+};
+
+export const runProjectPaperScoreComment = async (data: PlainMessage<RunProjectPaperScoreCommentRequest>) => {
+  const response = await apiclient.post(`/projects/${data.projectId}/paper-score-comment`, data, {
+    ignoreErrorToast: true,
+  });
+  return fromJson(RunProjectPaperScoreCommentResponseSchema, response);
+};
+
+export const runProjectOverleafComment = async (data: PlainMessage<RunProjectOverleafCommentRequest>) => {
+  const response = await apiclient.post(`/projects/${data.projectId}/overleaf-comment`, data, {
+    ignoreErrorToast: true,
+  });
+  return fromJson(RunProjectOverleafCommentResponseSchema, response);
 };
 
 export const listPrompts = async () => {
