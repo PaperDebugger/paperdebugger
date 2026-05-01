@@ -64,6 +64,9 @@ interface ConversationUiStore {
   lastUsedModelSlug: string;
   setLastUsedModelSlug: (lastUsedModelSlug: string) => void;
 
+  lastUsedCustomModelId: string;
+  setLastUsedCustomModelId: (lastUsedCustomModelId: string) => void;
+
   resetPosition: () => void;
 }
 
@@ -119,6 +122,9 @@ export const useConversationUiStore = create<ConversationUiStore>()(
 
       lastUsedModelSlug: "openai/gpt-4.1",
       setLastUsedModelSlug: (lastUsedModelSlug: string) => set({ lastUsedModelSlug }),
+
+      lastUsedCustomModelId: "",
+      setLastUsedCustomModelId: (lastUsedCustomModelId: string) => set({ lastUsedCustomModelId }),
 
       resetPosition: () => {
         set({

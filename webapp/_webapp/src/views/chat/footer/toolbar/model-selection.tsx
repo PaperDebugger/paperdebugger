@@ -12,19 +12,48 @@ export function ModelSelection({ onSelectModel }: ModelSelectionProps) {
   const { models, currentModel, setModel } = useLanguageModels();
 
   const items: SelectionItem<string>[] = useMemo(() => {
-    return models.map((model) => ({
+    const customModels = models.filter((m) => m.isCustom);
+    const builtInModels = models.filter((m) => !m.isCustom);
+
+    const mapToItem = (model: (typeof models)[number]): SelectionItem<string> => ({
       title: model.name,
-      subtitle: model.slug,
+      subtitle: `${model.slug}${model.isCustom ? " (Custom)" : ""}`,
       value: model.slug,
       disabled: model.disabled,
       disabledReason: model.disabledReason,
-    }));
+      id: model.id ?? undefined,
+      isCustom: model.isCustom,
+    });
+
+    const customItems = customModels.map(mapToItem);
+    const builtInItems = builtInModels.map(mapToItem);
+
+    if (customItems.length > 0 && builtInItems.length > 0) {
+      return [
+        ...customItems,
+        {
+          title: "divider",
+          value: "__divider__" as string,
+          disabled: true,
+          isDivider: true,
+        },
+        ...builtInItems,
+      ];
+    }
+
+    return [...customItems, ...builtInItems];
   }, [models]);
 
   const onSelect = useCallback(
     (item: SelectionItem<string>) => {
-      if (item.disabled) return;
-      setModel(models.find((m) => m.slug === item.value)!);
+      if (item.disabled || item.isDivider) return;
+
+      const selectedModel = item.isCustom
+        ? ((item.id ? models.find((m) => m.id === item.id) : undefined) ?? models.find((m) => m.slug === item.value))
+        : models.find((m) => m.slug === item.value);
+      if (!selectedModel) return;
+
+      setModel(selectedModel);
       onSelectModel();
       inputRef.current?.focus();
     },

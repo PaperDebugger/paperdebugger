@@ -2,12 +2,14 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"paperdebugger/internal/api/mapper"
 	"paperdebugger/internal/libs/contextutil"
 	"paperdebugger/internal/libs/shared"
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/openai/openai-go/v3"
@@ -276,12 +278,50 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 		return s.sendStreamError(stream, err)
 	}
 
-	// Usage is the same as ChatCompletion, just passing the stream parameter
-	llmProvider := &models.LLMProviderConfig{
-		APIKey: settings.OpenAIAPIKey,
+	// Check if user has an API key for requested model
+	var llmProvider *models.LLMProviderConfig
+	var customModel *models.CustomModel
+	customModel = nil
+
+	customModelID := req.GetCustomModelId()
+	if customModelID != "" {
+		for i := range settings.CustomModels {
+			if settings.CustomModels[i].Id.Hex() == customModelID {
+				customModel = &settings.CustomModels[i]
+				break
+			}
+		}
+		if customModel == nil {
+			return s.sendStreamError(stream, fmt.Errorf("custom model not found: %q", customModelID))
+		}
+		modelSlug = customModel.Slug
 	}
 
-	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider)
+	if customModel == nil {
+		// User did not specify API key for this model
+		llmProvider = &models.LLMProviderConfig{
+			APIKey:        "",
+			IsCustomModel: false,
+		}
+	} else {
+		customModel.BaseUrl = strings.ToLower(customModel.BaseUrl)
+
+		if strings.Contains(customModel.BaseUrl, "paperdebugger.com") {
+			customModel.BaseUrl = ""
+		}
+		if !strings.HasPrefix(customModel.BaseUrl, "https://") {
+			customModel.BaseUrl = strings.Replace(customModel.BaseUrl, "http://", "", 1)
+			customModel.BaseUrl = "https://" + customModel.BaseUrl
+		}
+
+		llmProvider = &models.LLMProviderConfig{
+			APIKey:        customModel.APIKey,
+			Endpoint:      customModel.BaseUrl,
+			IsCustomModel: true,
+		}
+	}
+
+	openaiChatHistory, inappChatHistory, err := s.aiClientV2.ChatCompletionStreamV2(ctx, stream, conversation.ID.Hex(), modelSlug, conversation.OpenaiChatHistoryCompletion, llmProvider, customModel)
 	if err != nil {
 		return s.sendStreamError(stream, err)
 	}
@@ -307,7 +347,7 @@ func (s *ChatServerV2) CreateConversationMessageStream(
 			for i, bsonMsg := range conversation.InappChatHistory {
 				protoMessages[i] = mapper.BSONToChatMessageV2(bsonMsg)
 			}
-			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider)
+			title, err := s.aiClientV2.GetConversationTitleV2(ctx, protoMessages, llmProvider, modelSlug, customModel)
 			if err != nil {
 				s.logger.Error("Failed to get conversation title", "error", err, "conversationID", conversation.ID.Hex())
 				return
