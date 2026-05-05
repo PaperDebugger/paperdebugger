@@ -11,9 +11,10 @@ import (
 
 	"github.com/openai/openai-go/v3"
 	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string, customModel *models.CustomModel) (string, error) {
+func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, userID bson.ObjectID, projectID string, inappChatHistory []*chatv2.Message, llmProvider *models.LLMProviderConfig, modelSlug string, customModel *models.CustomModel) (string, error) {
 	messages := lo.Map(inappChatHistory, func(message *chatv2.Message, _ int) string {
 		if _, ok := message.Payload.MessageType.(*chatv2.MessagePayload_Assistant); ok {
 			return fmt.Sprintf("Assistant: %s", message.Payload.GetAssistant().GetContent())
@@ -35,7 +36,7 @@ func (a *AIClientV2) GetConversationTitleV2(ctx context.Context, inappChatHistor
 		modelToUse = modelSlug
 	}
 
-	_, resp, err := a.ChatCompletionV2(ctx, modelToUse, OpenAIChatHistory{
+	_, resp, _, err := a.ChatCompletionV2(ctx, userID, projectID, modelToUse, OpenAIChatHistory{
 		openai.SystemMessage("You are a helpful assistant that generates a title for a conversation."),
 		openai.UserMessage(message),
 	}, llmProvider, customModel)

@@ -6,10 +6,18 @@ import (
 	"paperdebugger/internal/models"
 	"paperdebugger/internal/services/toolkit/handler"
 	chatv2 "paperdebugger/pkg/gen/api/chat/v2"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/openai/openai-go/v3"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
+
+// UsageCost holds cost information from a completion.
+type UsageCost struct {
+	Cost float64
+}
 
 // define []openai.ChatCompletionMessageParamUnion as OpenAIChatHistory
 
@@ -24,13 +32,14 @@ import (
 // Returns:
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
-//  3. An error, if any occurred during the process.
-func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, error) {
-	openaiChatHistory, inappChatHistory, err := a.ChatCompletionStreamV2(ctx, nil, "", modelSlug, messages, llmProvider, customModel)
+//  3. Cost information (in USD).
+//  4. An error, if any occurred during the process.
+func (a *AIClientV2) ChatCompletionV2(ctx context.Context, userID bson.ObjectID, projectID string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
+	openaiChatHistory, inappChatHistory, usage, err := a.ChatCompletionStreamV2(ctx, nil, userID, projectID, "", modelSlug, messages, llmProvider, customModel)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, usage, err
 	}
-	return openaiChatHistory, inappChatHistory, nil
+	return openaiChatHistory, inappChatHistory, usage, nil
 }
 
 // ChatCompletionStream orchestrates a streaming chat completion process with a language model (e.g., GPT), handling tool calls, message history management, and real-time streaming of responses to the client.
@@ -46,23 +55,39 @@ func (a *AIClientV2) ChatCompletionV2(ctx context.Context, modelSlug string, mes
 // Returns: (same as ChatCompletion)
 //  1. The full chat history sent to the language model (including any tool call results).
 //  2. The incremental chat history visible to the user (including tool call results and assistant responses).
-//  3. An error, if any occurred during the process. (However, in the streaming mode, the error is not returned, but sending by callbackStream)
+//  3. Cost information (in USD, accumulated across all calls).
+//  4. An error, if any occurred during the process. (However, in the streaming mode, the error is not returned, but sending by callbackStream)
 //
 // This function works as follows: (same as ChatCompletion)
 //   - It initializes the chat history for the language model and the user, and sets up a stream handler for real-time updates.
 //   - It repeatedly sends the current chat history to the language model, receives streaming responses, and forwards them to the client as they arrive.
 //   - If tool calls are required, it handles them and appends the results to the chat history, then continues the loop.
 //   - If no tool calls are needed, it appends the assistant's response and exits the loop.
-//   - Finally, it returns the updated chat histories and any error encountered.
-func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, error) {
+//   - Finally, it returns the updated chat histories, accumulated cost, and any error encountered.
+func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream chatv2.ChatService_CreateConversationMessageStreamServer, userID bson.ObjectID, projectID string, conversationId string, modelSlug string, messages OpenAIChatHistory, llmProvider *models.LLMProviderConfig, customModel *models.CustomModel) (OpenAIChatHistory, AppChatHistory, UsageCost, error) {
 	openaiChatHistory := messages
 	inappChatHistory := AppChatHistory{}
+	usage := UsageCost{}
+	success := false // Track whether the request completed successfully
 
 	streamHandler := handler.NewStreamHandlerV2(callbackStream, conversationId, modelSlug)
 
 	streamHandler.SendInitialization()
 	defer func() {
 		streamHandler.SendFinalization()
+	}()
+
+	// Track usage on all exit paths (success or error) to prevent abuse
+	// Only track if userID is provided and user is not using their own API key (BYOK)
+	defer func() {
+		if !userID.IsZero() && !llmProvider.IsCustomModel && usage.Cost > 0 {
+			// Use a detached context since the request context may be canceled
+			trackCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := a.usageService.TrackUsage(trackCtx, userID, projectID, usage.Cost, success); err != nil {
+				a.logger.Error("Error while tracking usage", "error", err)
+			}
+		}
 	}()
 
 	oaiClient := a.GetOpenAIClient(llmProvider)
@@ -77,6 +102,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		answer_content := ""
 		answer_content_id := ""
 		has_sent_part_begin := false
+		has_finished := false
 		tool_info := map[int]map[string]string{}
 		toolCalls := []openai.FinishedChatCompletionToolCall{}
 		handleReasoning := func(raw string) (string, bool) {
@@ -92,12 +118,18 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 
 		for stream.Next() {
-			// time.Sleep(5000 * time.Millisecond) // DEBUG POINT: change this to test in a slow mode
 			chunk := stream.Current()
 
+			// Capture cost from any chunk that has usage data (OpenRouter sends usage in a separate chunk after FinishReason)
+			if chunk.Usage.PromptTokens > 0 || chunk.Usage.CompletionTokens > 0 {
+				if costField, ok := chunk.Usage.JSON.ExtraFields["cost"]; ok {
+					if cost, err := strconv.ParseFloat(costField.Raw(), 64); err == nil {
+						usage.Cost += cost
+					}
+				}
+			}
+
 			if len(chunk.Choices) == 0 {
-				// Handle usage information
-				// fmt.Printf("Usage: %+v\n", chunk.Usage)
 				continue
 			}
 
@@ -180,17 +212,15 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 				}
 			}
 
-			if chunk.Choices[0].FinishReason != "" {
-				// fmt.Printf("FinishReason: %s\n", chunk.Choices[0].FinishReason)
-				// answer_content += chunk.Choices[0].Delta.Content
-				// fmt.Printf("answer_content: %s\n", answer_content)
+			if chunk.Choices[0].FinishReason != "" && !has_finished {
 				streamHandler.HandleTextDoneItem(chunk, answer_content, reasoning_content)
-				break
+				has_finished = true
+				// Don't break - continue reading to capture the usage chunk that comes after
 			}
 		}
 
 		if err := stream.Err(); err != nil {
-			return nil, nil, err
+			return nil, nil, usage, err
 		}
 
 		if answer_content != "" {
@@ -200,7 +230,7 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		// Execute the calls (if any), return incremental data
 		openaiToolHistory, inappToolHistory, err := a.toolCallHandler.HandleToolCallsV2(ctx, toolCalls, streamHandler)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, usage, err
 		}
 
 		// // Record the tool call results
@@ -213,5 +243,6 @@ func (a *AIClientV2) ChatCompletionStreamV2(ctx context.Context, callbackStream 
 		}
 	}
 
-	return openaiChatHistory, inappChatHistory, nil
+	success = true
+	return openaiChatHistory, inappChatHistory, usage, nil
 }
