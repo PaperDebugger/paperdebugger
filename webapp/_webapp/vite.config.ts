@@ -14,10 +14,7 @@ function generateConfig(
   return produce<UserConfig>(
     {
       base: "/_pd/webapp",
-      plugins: [
-        react(),
-
-      ],
+      plugins: [react()],
       esbuild: {
         charset: "ascii",
       },
@@ -80,29 +77,10 @@ function generateOfficeBundleCopyPlugin(targetPath: string): Plugin {
   };
 }
 
-// Redirects Vite's bundled CSS injection (identified by the /*$vite$:1*/ marker)
-// from document.head into window.__pdStyles[], so the shadow root can adopt them.
-function shadowDomCssPlugin(): Plugin {
-  return {
-    name: "shadow-dom-css",
-    apply: "build",
-    renderChunk(code) {
-      // Pattern: VAR.textContent=`.../*$vite$:1*/`,document.head.appendChild(VAR)
-      const patched = code.replace(
-        /(\w+)\.textContent=(`[^`]*\/\*\$vite\$[^`]*`),document\.head\.appendChild\(\1\)/,
-        (_match, varName, cssLiteral) =>
-          `${varName}.textContent=${cssLiteral},(window.__pdStyles=window.__pdStyles||[]).push(${varName})`,
-      );
-      return patched === code ? null : patched;
-    },
-  };
-}
-
 const configs: Record<string, UserConfig> = {
   default: generateConfig("./src/main.tsx", "paperdebugger", (draft) => {
     draft.build.copyPublicDir = true;
     draft.plugins.push(generateManifestPlugin());
-    draft.plugins.push(shadowDomCssPlugin());
   }),
   office: generateConfig("./src/views/office/app.tsx", "office", (draft) => {
     draft.build.emptyOutDir = true;

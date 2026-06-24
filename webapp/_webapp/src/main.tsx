@@ -178,38 +178,20 @@ export const Main = () => {
 if (!import.meta.env.DEV) {
   onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {
     logInfo("initializing");
-    if (document.getElementById("paper-debugger-host")) {
+    if (document.getElementById("paper-debugger-root")) {
       logInfo("already initialized");
       return;
     }
+    const div = document.createElement("div");
+    div.id = "paper-debugger-root";
+    document.body.appendChild(div);
 
-    // Shadow root host — isolates our CSS from Overleaf
-    const host = document.createElement("div");
-    host.id = "paper-debugger-host";
-    document.body.appendChild(host);
-    const shadow = host.attachShadow({ mode: "open" });
-
-    // Flush CSS that the Vite bundle buffered into window.__pdStyles
-    // (redirected from document.head by the shadowDomCssPlugin in vite.config.ts)
-    ((window as unknown as { __pdStyles?: HTMLStyleElement[] }).__pdStyles ?? []).forEach((s) =>
-      shadow.appendChild(s),
-    );
-
-    // Portal container: HeroUI modals/dropdowns render here instead of document.body
-    const portalRoot = document.createElement("div");
-    portalRoot.id = "paper-debugger-portal";
-    shadow.appendChild(portalRoot);
-
-    const mountPoint = document.createElement("div");
-    mountPoint.id = "paper-debugger-root";
-    shadow.appendChild(mountPoint);
-
-    const root = createRoot(mountPoint);
+    const root = createRoot(div);
     const adapter = getOverleafAdapter();
     useSettingStore.getState().initLocalSettings();
     // This block only runs in production (!DEV), so always render without StrictMode
     root.render(
-      <Providers portalContainer={portalRoot}>
+      <Providers>
         <AdapterProvider adapter={adapter}>
           <Main />
         </AdapterProvider>
