@@ -27,6 +27,7 @@ function generateConfig(
           VERSION: process.env.VERSION,
           MONOREPO_REVISION: process.env.MONOREPO_REVISION,
           SAFARI_BUILD: process.env.SAFARI_BUILD || "false",
+          OTEL_AUTH_TOKEN: process.env.OTEL_AUTH_TOKEN || "ff4b3c7c2a66c5c9252696cf6cb111f79ff983d68700ff1051455cfe4ecf55ef",
         },
       },
       build: {

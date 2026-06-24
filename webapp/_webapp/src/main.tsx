@@ -20,6 +20,7 @@ import { MainDrawer } from "./views";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
+import "./libs/telemetry";
 import { AdapterProvider, getOverleafAdapter } from "./adapters";
 
 export const Main = () => {
