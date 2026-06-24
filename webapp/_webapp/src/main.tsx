@@ -20,37 +20,7 @@ import { MainDrawer } from "./views";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
-import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
-import { TracingInstrumentation } from "@grafana/faro-web-tracing";
-import { getManifest } from "./libs/manifest";
 import { AdapterProvider, getOverleafAdapter } from "./adapters";
-
-initializeFaro({
-  url: "https://faro-collector-prod-ap-southeast-1.grafana.net/collect/79c7648395df4df8b58c228fad42af57",
-  app: {
-    name: getManifest().name,
-    version: getManifest().version,
-    environment: "production",
-  },
-  sessionTracking: {
-    samplingRate: 1,
-    persistent: true,
-  },
-  instrumentations: [
-    // Mandatory, omits default instrumentations otherwise.
-    ...getWebInstrumentations(),
-
-    // Tracing package to get end-to-end visibility for HTTP requests.
-    new TracingInstrumentation(),
-  ],
-  ignoreUrls: [
-    /overleaf\.com/,
-    /compiles\.overleafusercontent\.com/,
-    /writefull\.ai/,
-    /bugsnag\.com/,
-    /google-analytics\.com/,
-  ],
-});
 
 export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();
@@ -208,20 +178,38 @@ export const Main = () => {
 if (!import.meta.env.DEV) {
   onElementAppeared(".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar", () => {
     logInfo("initializing");
-    if (document.getElementById("paper-debugger-root")) {
+    if (document.getElementById("paper-debugger-host")) {
       logInfo("already initialized");
       return;
     }
-    const div = document.createElement("div");
-    div.id = "paper-debugger-root";
-    document.body.appendChild(div);
 
-    const root = createRoot(div);
+    // Shadow root host — isolates our CSS from Overleaf
+    const host = document.createElement("div");
+    host.id = "paper-debugger-host";
+    document.body.appendChild(host);
+    const shadow = host.attachShadow({ mode: "open" });
+
+    // Flush CSS that the Vite bundle buffered into window.__pdStyles
+    // (redirected from document.head by the shadowDomCssPlugin in vite.config.ts)
+    ((window as unknown as { __pdStyles?: HTMLStyleElement[] }).__pdStyles ?? []).forEach((s) =>
+      shadow.appendChild(s),
+    );
+
+    // Portal container: HeroUI modals/dropdowns render here instead of document.body
+    const portalRoot = document.createElement("div");
+    portalRoot.id = "paper-debugger-portal";
+    shadow.appendChild(portalRoot);
+
+    const mountPoint = document.createElement("div");
+    mountPoint.id = "paper-debugger-root";
+    shadow.appendChild(mountPoint);
+
+    const root = createRoot(mountPoint);
     const adapter = getOverleafAdapter();
     useSettingStore.getState().initLocalSettings();
     // This block only runs in production (!DEV), so always render without StrictMode
     root.render(
-      <Providers>
+      <Providers portalContainer={portalRoot}>
         <AdapterProvider adapter={adapter}>
           <Main />
         </AdapterProvider>
