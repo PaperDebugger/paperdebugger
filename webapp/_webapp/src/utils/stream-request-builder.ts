@@ -31,7 +31,8 @@ export interface StreamRequestParams {
   surroundingText?: string;
   /** Conversation mode (debug or default) */
   conversationMode: "debug" | "default";
-  /** Parent message ID for message editing/branching */
+  /** User-specified custom model ID for the conversation */
+  customModelId?: string;
 }
 
 // ============================================================================
@@ -68,6 +69,7 @@ export function buildStreamRequest(params: StreamRequestParams): PlainMessage<Cr
     projectId: params.projectId,
     conversationId: params.conversationId,
     modelSlug: params.modelSlug,
+    customModelId: params.customModelId || undefined,
     userMessage: params.message,
     userSelectedText: params.selectedText,
     surrounding: params.surroundingText ?? undefined,

@@ -136,6 +136,13 @@ class ApiClient {
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
+        if (!errorData || typeof errorData !== "object") {
+          const message = error.message || "Network error";
+          if (!options?.ignoreErrorToast) {
+            errorToast(message, "Request Failed");
+          }
+          throw new Error(message);
+        }
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
           const message = this.cleanErrorMessage(errorPayload.message);

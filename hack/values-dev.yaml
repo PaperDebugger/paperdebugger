@@ -1,4 +1,9 @@
 namespace: paperdebugger-dev
 
+nodeSelector:
+  kubernetes.io/hostname: xtras3
+cloudflareNodeSelector:
+  kubernetes.io/hostname: nuc
+
 mongo:
-  in_cluster: false
+  in_cluster: true

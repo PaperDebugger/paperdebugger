@@ -20,6 +20,7 @@ type AIClientV2 struct {
 
 	reverseCommentService *services.ReverseCommentService
 	projectService        *services.ProjectService
+	usageService          *services.UsageService
 	cfg                   *cfg.Cfg
 	logger                *logger.Logger
 }
@@ -32,18 +33,20 @@ func (a *AIClientV2) GetOpenAIClient(llmConfig *models.LLMProviderConfig) *opena
 	var Endpoint string = llmConfig.Endpoint
 	var APIKey string = llmConfig.APIKey
 
-	if Endpoint == "" {
-		if APIKey != "" {
-			// User provided their own API key, use the OpenAI-compatible endpoint
-			Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
-		} else {
-			// suffix needed for cloudflare gateway
-			Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
+	if !llmConfig.IsCustomModel {
+		if Endpoint == "" {
+			if APIKey != "" {
+				// User provided their own API key, use the OpenAI-compatible endpoint
+				Endpoint = a.cfg.OpenAIBaseURL // standard openai base url
+			} else {
+				// suffix needed for cloudflare gateway
+				Endpoint = a.cfg.InferenceBaseURL + "/openrouter"
+			}
 		}
-	}
 
-	if APIKey == "" {
-		APIKey = a.cfg.InferenceAPIKey
+		if APIKey == "" {
+			APIKey = a.cfg.InferenceAPIKey
+		}
 	}
 
 	opts := []option.RequestOption{
@@ -60,6 +63,7 @@ func NewAIClientV2(
 
 	reverseCommentService *services.ReverseCommentService,
 	projectService *services.ProjectService,
+	usageService *services.UsageService,
 	cfg *cfg.Cfg,
 	logger *logger.Logger,
 ) *AIClientV2 {
@@ -107,6 +111,7 @@ func NewAIClientV2(
 
 		reverseCommentService: reverseCommentService,
 		projectService:        projectService,
+		usageService:          usageService,
 		cfg:                   cfg,
 		logger:                logger,
 	}

@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file user/v1/user.proto.
  */
 export const file_user_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJ1c2VyL3YxL3VzZXIucHJvdG8SB3VzZXIudjEiQAoEVXNlchIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIMCgRuYW1lGAMgASgJEg8KB3BpY3R1cmUYBCABKAkiEAoOR2V0VXNlclJlcXVlc3QiLgoPR2V0VXNlclJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS51c2VyLnYxLlVzZXIirAEKBlByb21wdBIKCgJpZBgBIAEoCRIuCgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgV0aXRsZRgEIAEoCRIPCgdjb250ZW50GAUgASgJEhYKDmlzX3VzZXJfcHJvbXB0GAYgASgIIhQKEkxpc3RQcm9tcHRzUmVxdWVzdCI3ChNMaXN0UHJvbXB0c1Jlc3BvbnNlEiAKB3Byb21wdHMYASADKAsyDy51c2VyLnYxLlByb21wdCI1ChNDcmVhdGVQcm9tcHRSZXF1ZXN0Eg0KBXRpdGxlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkiNwoUQ3JlYXRlUHJvbXB0UmVzcG9uc2USHwoGcHJvbXB0GAEgASgLMg8udXNlci52MS5Qcm9tcHQiSAoTVXBkYXRlUHJvbXB0UmVxdWVzdBIRCglwcm9tcHRfaWQYASABKAkSDQoFdGl0bGUYAiABKAkSDwoHY29udGVudBgDIAEoCSI3ChRVcGRhdGVQcm9tcHRSZXNwb25zZRIfCgZwcm9tcHQYASABKAsyDy51c2VyLnYxLlByb21wdCIoChNEZWxldGVQcm9tcHRSZXF1ZXN0EhEKCXByb21wdF9pZBgBIAEoCSIWChREZWxldGVQcm9tcHRSZXNwb25zZSLOAQoIU2V0dGluZ3MSJgoec2hvd19zaG9ydGN1dHNfYWZ0ZXJfc2VsZWN0aW9uGAEgASgIEigKIGZ1bGxfd2lkdGhfcGFwZXJfZGVidWdnZXJfYnV0dG9uGAIgASgIEiIKGmVuYWJsZV9jaXRhdGlvbl9zdWdnZXN0aW9uGAMgASgIEhkKEWZ1bGxfZG9jdW1lbnRfcmFnGAQgASgIEhkKEXNob3dlZF9vbmJvYXJkaW5nGAUgASgIEhYKDm9wZW5haV9hcGlfa2V5GAYgASgJIhQKEkdldFNldHRpbmdzUmVxdWVzdCI6ChNHZXRTZXR0aW5nc1Jlc3BvbnNlEiMKCHNldHRpbmdzGAEgASgLMhEudXNlci52MS5TZXR0aW5ncyI8ChVVcGRhdGVTZXR0aW5nc1JlcXVlc3QSIwoIc2V0dGluZ3MYASABKAsyES51c2VyLnYxLlNldHRpbmdzIj0KFlVwZGF0ZVNldHRpbmdzUmVzcG9uc2USIwoIc2V0dGluZ3MYASABKAsyES51c2VyLnYxLlNldHRpbmdzIhYKFFJlc2V0U2V0dGluZ3NSZXF1ZXN0IjwKFVJlc2V0U2V0dGluZ3NSZXNwb25zZRIjCghzZXR0aW5ncxgBIAEoCzIRLnVzZXIudjEuU2V0dGluZ3MiHAoaR2V0VXNlckluc3RydWN0aW9uc1JlcXVlc3QiMwobR2V0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlEhQKDGluc3RydWN0aW9ucxgBIAEoCSI1Ch1VcHNlcnRVc2VySW5zdHJ1Y3Rpb25zUmVxdWVzdBIUCgxpbnN0cnVjdGlvbnMYASABKAkiNgoeVXBzZXJ0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlEhQKDGluc3RydWN0aW9ucxgBIAEoCTKDCgoLVXNlclNlcnZpY2USXQoHR2V0VXNlchIXLnVzZXIudjEuR2V0VXNlclJlcXVlc3QaGC51c2VyLnYxLkdldFVzZXJSZXNwb25zZSIfgtPkkwIZEhcvX3BkL2FwaS92MS91c2Vycy9Ac2VsZhJxCgtMaXN0UHJvbXB0cxIbLnVzZXIudjEuTGlzdFByb21wdHNSZXF1ZXN0GhwudXNlci52MS5MaXN0UHJvbXB0c1Jlc3BvbnNlIieC0+STAiESHy9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3Byb21wdHMSdwoMQ3JlYXRlUHJvbXB0EhwudXNlci52MS5DcmVhdGVQcm9tcHRSZXF1ZXN0Gh0udXNlci52MS5DcmVhdGVQcm9tcHRSZXNwb25zZSIqgtPkkwIkOgEqIh8vX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9wcm9tcHRzEoMBCgxVcGRhdGVQcm9tcHQSHC51c2VyLnYxLlVwZGF0ZVByb21wdFJlcXVlc3QaHS51c2VyLnYxLlVwZGF0ZVByb21wdFJlc3BvbnNlIjaC0+STAjA6ASoaKy9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3Byb21wdHMve3Byb21wdF9pZH0SjgEKE0dldFVzZXJJbnN0cnVjdGlvbnMSIy51c2VyLnYxLkdldFVzZXJJbnN0cnVjdGlvbnNSZXF1ZXN0GiQudXNlci52MS5HZXRVc2VySW5zdHJ1Y3Rpb25zUmVzcG9uc2UiLILT5JMCJhIkL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvaW5zdHJ1Y3Rpb25zEpoBChZVcHNlcnRVc2VySW5zdHJ1Y3Rpb25zEiYudXNlci52MS5VcHNlcnRVc2VySW5zdHJ1Y3Rpb25zUmVxdWVzdBonLnVzZXIudjEuVXBzZXJ0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlIi+C0+STAik6ASoiJC9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL2luc3RydWN0aW9ucxKAAQoMRGVsZXRlUHJvbXB0EhwudXNlci52MS5EZWxldGVQcm9tcHRSZXF1ZXN0Gh0udXNlci52MS5EZWxldGVQcm9tcHRSZXNwb25zZSIzgtPkkwItKisvX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9wcm9tcHRzL3twcm9tcHRfaWR9EnIKC0dldFNldHRpbmdzEhsudXNlci52MS5HZXRTZXR0aW5nc1JlcXVlc3QaHC51c2VyLnYxLkdldFNldHRpbmdzUmVzcG9uc2UiKILT5JMCIhIgL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvc2V0dGluZ3MSfgoOVXBkYXRlU2V0dGluZ3MSHi51c2VyLnYxLlVwZGF0ZVNldHRpbmdzUmVxdWVzdBofLnVzZXIudjEuVXBkYXRlU2V0dGluZ3NSZXNwb25zZSIrgtPkkwIlOgEqGiAvX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9zZXR0aW5ncxJ+Cg1SZXNldFNldHRpbmdzEh0udXNlci52MS5SZXNldFNldHRpbmdzUmVxdWVzdBoeLnVzZXIudjEuUmVzZXRTZXR0aW5nc1Jlc3BvbnNlIi6C0+STAigiJi9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3NldHRpbmdzL3Jlc2V0Qn8KC2NvbS51c2VyLnYxQglVc2VyUHJvdG9QAVoocGFwZXJkZWJ1Z2dlci9wa2cvZ2VuL2FwaS91c2VyL3YxO3VzZXJ2MaICA1VYWKoCB1VzZXIuVjHKAgdVc2VyXFYx4gITVXNlclxWMVxHUEJNZXRhZGF0YeoCCFVzZXI6OlYxYgZwcm90bzM", [file_google_api_annotations, file_google_protobuf_timestamp]);
+  fileDesc("ChJ1c2VyL3YxL3VzZXIucHJvdG8SB3VzZXIudjEiQAoEVXNlchIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIMCgRuYW1lGAMgASgJEg8KB3BpY3R1cmUYBCABKAkiEAoOR2V0VXNlclJlcXVlc3QiLgoPR2V0VXNlclJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS51c2VyLnYxLlVzZXIirAEKBlByb21wdBIKCgJpZBgBIAEoCRIuCgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgV0aXRsZRgEIAEoCRIPCgdjb250ZW50GAUgASgJEhYKDmlzX3VzZXJfcHJvbXB0GAYgASgIIhQKEkxpc3RQcm9tcHRzUmVxdWVzdCI3ChNMaXN0UHJvbXB0c1Jlc3BvbnNlEiAKB3Byb21wdHMYASADKAsyDy51c2VyLnYxLlByb21wdCI1ChNDcmVhdGVQcm9tcHRSZXF1ZXN0Eg0KBXRpdGxlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkiNwoUQ3JlYXRlUHJvbXB0UmVzcG9uc2USHwoGcHJvbXB0GAEgASgLMg8udXNlci52MS5Qcm9tcHQiSAoTVXBkYXRlUHJvbXB0UmVxdWVzdBIRCglwcm9tcHRfaWQYASABKAkSDQoFdGl0bGUYAiABKAkSDwoHY29udGVudBgDIAEoCSI3ChRVcGRhdGVQcm9tcHRSZXNwb25zZRIfCgZwcm9tcHQYASABKAsyDy51c2VyLnYxLlByb21wdCIoChNEZWxldGVQcm9tcHRSZXF1ZXN0EhEKCXByb21wdF9pZBgBIAEoCSIWChREZWxldGVQcm9tcHRSZXNwb25zZSLwAQoLQ3VzdG9tTW9kZWwSCgoCaWQYASABKAkSDAoEc2x1ZxgCIAEoCRIMCgRuYW1lGAMgASgJEhAKCGJhc2VfdXJsGAQgASgJEg8KB2FwaV9rZXkYBSABKAkSFgoOY29udGV4dF93aW5kb3cYBiABKAUSEgoKbWF4X291dHB1dBgHIAEoBRITCgtpbnB1dF9wcmljZRgIIAEoBRIUCgxvdXRwdXRfcHJpY2UYCSABKAUSEwoLdGVtcGVyYXR1cmUYCiABKAISGwoTcGFyYWxsZWxfdG9vbF9jYWxscxgLIAEoCBINCgVzdG9yZRgMIAEoCCL7AQoIU2V0dGluZ3MSJgoec2hvd19zaG9ydGN1dHNfYWZ0ZXJfc2VsZWN0aW9uGAEgASgIEigKIGZ1bGxfd2lkdGhfcGFwZXJfZGVidWdnZXJfYnV0dG9uGAIgASgIEiIKGmVuYWJsZV9jaXRhdGlvbl9zdWdnZXN0aW9uGAMgASgIEhkKEWZ1bGxfZG9jdW1lbnRfcmFnGAQgASgIEhkKEXNob3dlZF9vbmJvYXJkaW5nGAUgASgIEhYKDm9wZW5haV9hcGlfa2V5GAYgASgJEisKDWN1c3RvbV9tb2RlbHMYByADKAsyFC51c2VyLnYxLkN1c3RvbU1vZGVsIhQKEkdldFNldHRpbmdzUmVxdWVzdCI6ChNHZXRTZXR0aW5nc1Jlc3BvbnNlEiMKCHNldHRpbmdzGAEgASgLMhEudXNlci52MS5TZXR0aW5ncyI8ChVVcGRhdGVTZXR0aW5nc1JlcXVlc3QSIwoIc2V0dGluZ3MYASABKAsyES51c2VyLnYxLlNldHRpbmdzIj0KFlVwZGF0ZVNldHRpbmdzUmVzcG9uc2USIwoIc2V0dGluZ3MYASABKAsyES51c2VyLnYxLlNldHRpbmdzIhYKFFJlc2V0U2V0dGluZ3NSZXF1ZXN0IjwKFVJlc2V0U2V0dGluZ3NSZXNwb25zZRIjCghzZXR0aW5ncxgBIAEoCzIRLnVzZXIudjEuU2V0dGluZ3MiHAoaR2V0VXNlckluc3RydWN0aW9uc1JlcXVlc3QiMwobR2V0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlEhQKDGluc3RydWN0aW9ucxgBIAEoCSI1Ch1VcHNlcnRVc2VySW5zdHJ1Y3Rpb25zUmVxdWVzdBIUCgxpbnN0cnVjdGlvbnMYASABKAkiNgoeVXBzZXJ0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlEhQKDGluc3RydWN0aW9ucxgBIAEoCTKDCgoLVXNlclNlcnZpY2USXQoHR2V0VXNlchIXLnVzZXIudjEuR2V0VXNlclJlcXVlc3QaGC51c2VyLnYxLkdldFVzZXJSZXNwb25zZSIfgtPkkwIZEhcvX3BkL2FwaS92MS91c2Vycy9Ac2VsZhJxCgtMaXN0UHJvbXB0cxIbLnVzZXIudjEuTGlzdFByb21wdHNSZXF1ZXN0GhwudXNlci52MS5MaXN0UHJvbXB0c1Jlc3BvbnNlIieC0+STAiESHy9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3Byb21wdHMSdwoMQ3JlYXRlUHJvbXB0EhwudXNlci52MS5DcmVhdGVQcm9tcHRSZXF1ZXN0Gh0udXNlci52MS5DcmVhdGVQcm9tcHRSZXNwb25zZSIqgtPkkwIkOgEqIh8vX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9wcm9tcHRzEoMBCgxVcGRhdGVQcm9tcHQSHC51c2VyLnYxLlVwZGF0ZVByb21wdFJlcXVlc3QaHS51c2VyLnYxLlVwZGF0ZVByb21wdFJlc3BvbnNlIjaC0+STAjA6ASoaKy9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3Byb21wdHMve3Byb21wdF9pZH0SjgEKE0dldFVzZXJJbnN0cnVjdGlvbnMSIy51c2VyLnYxLkdldFVzZXJJbnN0cnVjdGlvbnNSZXF1ZXN0GiQudXNlci52MS5HZXRVc2VySW5zdHJ1Y3Rpb25zUmVzcG9uc2UiLILT5JMCJhIkL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvaW5zdHJ1Y3Rpb25zEpoBChZVcHNlcnRVc2VySW5zdHJ1Y3Rpb25zEiYudXNlci52MS5VcHNlcnRVc2VySW5zdHJ1Y3Rpb25zUmVxdWVzdBonLnVzZXIudjEuVXBzZXJ0VXNlckluc3RydWN0aW9uc1Jlc3BvbnNlIi+C0+STAik6ASoiJC9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL2luc3RydWN0aW9ucxKAAQoMRGVsZXRlUHJvbXB0EhwudXNlci52MS5EZWxldGVQcm9tcHRSZXF1ZXN0Gh0udXNlci52MS5EZWxldGVQcm9tcHRSZXNwb25zZSIzgtPkkwItKisvX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9wcm9tcHRzL3twcm9tcHRfaWR9EnIKC0dldFNldHRpbmdzEhsudXNlci52MS5HZXRTZXR0aW5nc1JlcXVlc3QaHC51c2VyLnYxLkdldFNldHRpbmdzUmVzcG9uc2UiKILT5JMCIhIgL19wZC9hcGkvdjEvdXNlcnMvQHNlbGYvc2V0dGluZ3MSfgoOVXBkYXRlU2V0dGluZ3MSHi51c2VyLnYxLlVwZGF0ZVNldHRpbmdzUmVxdWVzdBofLnVzZXIudjEuVXBkYXRlU2V0dGluZ3NSZXNwb25zZSIrgtPkkwIlOgEqGiAvX3BkL2FwaS92MS91c2Vycy9Ac2VsZi9zZXR0aW5ncxJ+Cg1SZXNldFNldHRpbmdzEh0udXNlci52MS5SZXNldFNldHRpbmdzUmVxdWVzdBoeLnVzZXIudjEuUmVzZXRTZXR0aW5nc1Jlc3BvbnNlIi6C0+STAigiJi9fcGQvYXBpL3YxL3VzZXJzL0BzZWxmL3NldHRpbmdzL3Jlc2V0Qn8KC2NvbS51c2VyLnYxQglVc2VyUHJvdG9QAVoocGFwZXJkZWJ1Z2dlci9wa2cvZ2VuL2FwaS91c2VyL3YxO3VzZXJ2MaICA1VYWKoCB1VzZXIuVjHKAgdVc2VyXFYx4gITVXNlclxWMVxHUEJNZXRhZGF0YeoCCFVzZXI6OlYxYgZwcm90bzM", [file_google_api_annotations, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message user.v1.User
@@ -263,6 +263,78 @@ export const DeletePromptResponseSchema: GenMessage<DeletePromptResponse> = /*@_
   messageDesc(file_user_v1_user, 11);
 
 /**
+ * @generated from message user.v1.CustomModel
+ */
+export type CustomModel = Message<"user.v1.CustomModel"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string slug = 2;
+   */
+  slug: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string base_url = 4;
+   */
+  baseUrl: string;
+
+  /**
+   * @generated from field: string api_key = 5;
+   */
+  apiKey: string;
+
+  /**
+   * @generated from field: int32 context_window = 6;
+   */
+  contextWindow: number;
+
+  /**
+   * @generated from field: int32 max_output = 7;
+   */
+  maxOutput: number;
+
+  /**
+   * @generated from field: int32 input_price = 8;
+   */
+  inputPrice: number;
+
+  /**
+   * @generated from field: int32 output_price = 9;
+   */
+  outputPrice: number;
+
+  /**
+   * @generated from field: float temperature = 10;
+   */
+  temperature: number;
+
+  /**
+   * @generated from field: bool parallel_tool_calls = 11;
+   */
+  parallelToolCalls: boolean;
+
+  /**
+   * @generated from field: bool store = 12;
+   */
+  store: boolean;
+};
+
+/**
+ * Describes the message user.v1.CustomModel.
+ * Use `create(CustomModelSchema)` to create a new message.
+ */
+export const CustomModelSchema: GenMessage<CustomModel> = /*@__PURE__*/
+  messageDesc(file_user_v1_user, 12);
+
+/**
  * @generated from message user.v1.Settings
  */
 export type Settings = Message<"user.v1.Settings"> & {
@@ -295,6 +367,11 @@ export type Settings = Message<"user.v1.Settings"> & {
    * @generated from field: string openai_api_key = 6;
    */
   openaiApiKey: string;
+
+  /**
+   * @generated from field: repeated user.v1.CustomModel custom_models = 7;
+   */
+  customModels: CustomModel[];
 };
 
 /**
@@ -302,7 +379,7 @@ export type Settings = Message<"user.v1.Settings"> & {
  * Use `create(SettingsSchema)` to create a new message.
  */
 export const SettingsSchema: GenMessage<Settings> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 12);
+  messageDesc(file_user_v1_user, 13);
 
 /**
  * @generated from message user.v1.GetSettingsRequest
@@ -315,7 +392,7 @@ export type GetSettingsRequest = Message<"user.v1.GetSettingsRequest"> & {
  * Use `create(GetSettingsRequestSchema)` to create a new message.
  */
 export const GetSettingsRequestSchema: GenMessage<GetSettingsRequest> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 13);
+  messageDesc(file_user_v1_user, 14);
 
 /**
  * @generated from message user.v1.GetSettingsResponse
@@ -332,7 +409,7 @@ export type GetSettingsResponse = Message<"user.v1.GetSettingsResponse"> & {
  * Use `create(GetSettingsResponseSchema)` to create a new message.
  */
 export const GetSettingsResponseSchema: GenMessage<GetSettingsResponse> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 14);
+  messageDesc(file_user_v1_user, 15);
 
 /**
  * @generated from message user.v1.UpdateSettingsRequest
@@ -349,7 +426,7 @@ export type UpdateSettingsRequest = Message<"user.v1.UpdateSettingsRequest"> & {
  * Use `create(UpdateSettingsRequestSchema)` to create a new message.
  */
 export const UpdateSettingsRequestSchema: GenMessage<UpdateSettingsRequest> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 15);
+  messageDesc(file_user_v1_user, 16);
 
 /**
  * @generated from message user.v1.UpdateSettingsResponse
@@ -366,7 +443,7 @@ export type UpdateSettingsResponse = Message<"user.v1.UpdateSettingsResponse"> &
  * Use `create(UpdateSettingsResponseSchema)` to create a new message.
  */
 export const UpdateSettingsResponseSchema: GenMessage<UpdateSettingsResponse> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 16);
+  messageDesc(file_user_v1_user, 17);
 
 /**
  * @generated from message user.v1.ResetSettingsRequest
@@ -379,7 +456,7 @@ export type ResetSettingsRequest = Message<"user.v1.ResetSettingsRequest"> & {
  * Use `create(ResetSettingsRequestSchema)` to create a new message.
  */
 export const ResetSettingsRequestSchema: GenMessage<ResetSettingsRequest> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 17);
+  messageDesc(file_user_v1_user, 18);
 
 /**
  * @generated from message user.v1.ResetSettingsResponse
@@ -396,7 +473,7 @@ export type ResetSettingsResponse = Message<"user.v1.ResetSettingsResponse"> & {
  * Use `create(ResetSettingsResponseSchema)` to create a new message.
  */
 export const ResetSettingsResponseSchema: GenMessage<ResetSettingsResponse> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 18);
+  messageDesc(file_user_v1_user, 19);
 
 /**
  * @generated from message user.v1.GetUserInstructionsRequest
@@ -409,7 +486,7 @@ export type GetUserInstructionsRequest = Message<"user.v1.GetUserInstructionsReq
  * Use `create(GetUserInstructionsRequestSchema)` to create a new message.
  */
 export const GetUserInstructionsRequestSchema: GenMessage<GetUserInstructionsRequest> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 19);
+  messageDesc(file_user_v1_user, 20);
 
 /**
  * @generated from message user.v1.GetUserInstructionsResponse
@@ -426,7 +503,7 @@ export type GetUserInstructionsResponse = Message<"user.v1.GetUserInstructionsRe
  * Use `create(GetUserInstructionsResponseSchema)` to create a new message.
  */
 export const GetUserInstructionsResponseSchema: GenMessage<GetUserInstructionsResponse> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 20);
+  messageDesc(file_user_v1_user, 21);
 
 /**
  * @generated from message user.v1.UpsertUserInstructionsRequest
@@ -443,7 +520,7 @@ export type UpsertUserInstructionsRequest = Message<"user.v1.UpsertUserInstructi
  * Use `create(UpsertUserInstructionsRequestSchema)` to create a new message.
  */
 export const UpsertUserInstructionsRequestSchema: GenMessage<UpsertUserInstructionsRequest> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 21);
+  messageDesc(file_user_v1_user, 22);
 
 /**
  * @generated from message user.v1.UpsertUserInstructionsResponse
@@ -460,7 +537,7 @@ export type UpsertUserInstructionsResponse = Message<"user.v1.UpsertUserInstruct
  * Use `create(UpsertUserInstructionsResponseSchema)` to create a new message.
  */
 export const UpsertUserInstructionsResponseSchema: GenMessage<UpsertUserInstructionsResponse> = /*@__PURE__*/
-  messageDesc(file_user_v1_user, 22);
+  messageDesc(file_user_v1_user, 23);
 
 /**
  * @generated from service user.v1.UserService
