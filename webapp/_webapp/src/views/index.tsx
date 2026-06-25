@@ -104,7 +104,7 @@ export const MainDrawer = () => {
     <Rnd
       id="paper-debugger-rnd"
       cancel=".rnd-cancel"
-      className={cn("pd-rnd", isOpen ? "opacity-100 " : "opacity-0 pointer-events-none", dragging && "dragging")}
+      className={cn("pd-scope pd-rnd", isOpen ? "opacity-100 " : "opacity-0 pointer-events-none", dragging && "dragging")}
       {...rndProps}
       style={{
         // visibility: isOpen ? "visible" : "hidden",

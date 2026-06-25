@@ -20,7 +20,6 @@ import { MainDrawer } from "./views";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
-import "./libs/telemetry";
 import { AdapterProvider, getOverleafAdapter } from "./adapters";
 
 export const Main = () => {
@@ -147,25 +146,34 @@ export const Main = () => {
     );
   }
 
-  const buttonPortal = createPortal(<TopMenuButton />, anchorElement);
+  // These portals mount into Overleaf-owned elements (outside #paper-debugger-root),
+  // so wrap them in a .pd-scope span (display:contents) to keep our scoped CSS applying.
+  const buttonPortal = createPortal(
+    <span className="pd-scope" style={{ display: "contents" }}>
+      <TopMenuButton />
+    </span>,
+    anchorElement,
+  );
 
   return (
     <>
       {menuElement &&
         settings?.showShortcutsAfterSelection &&
         createPortal(
-          <ToolbarButton
-            onClick={() => {
-              selectAndOpenPaperDebugger();
-              useConversationUiStore.getState().inputRef.current?.focus();
-            }}
-          >
-            <div className="flex flex-row items-center gap-0">
-              <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
-              <p>Add to Chat</p>
-              <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
-            </div>
-          </ToolbarButton>,
+          <span className="pd-scope" style={{ display: "contents" }}>
+            <ToolbarButton
+              onClick={() => {
+                selectAndOpenPaperDebugger();
+                useConversationUiStore.getState().inputRef.current?.focus();
+              }}
+            >
+              <div className="flex flex-row items-center gap-0">
+                <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
+                <p>Add to Chat</p>
+                <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
+              </div>
+            </ToolbarButton>
+          </span>,
           menuElement,
         )}
 
@@ -185,7 +193,18 @@ if (!import.meta.env.DEV) {
     }
     const div = document.createElement("div");
     div.id = "paper-debugger-root";
+    div.classList.add("pd-scope");
     document.body.appendChild(div);
+
+    // Dedicated, scoped host for heroui/react-aria portals (modals, popovers,
+    // tooltips). Kept separate from #paper-debugger-root so we never portal into
+    // React's own mount container (which breaks reconciliation).
+    if (!document.getElementById("pd-portal")) {
+      const portalHost = document.createElement("div");
+      portalHost.id = "pd-portal";
+      portalHost.classList.add("pd-scope");
+      document.body.appendChild(portalHost);
+    }
 
     const root = createRoot(div);
     const adapter = getOverleafAdapter();

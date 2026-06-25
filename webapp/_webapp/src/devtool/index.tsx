@@ -7,7 +7,7 @@ import { AdapterProvider, getOverleafAdapter } from "../adapters";
 const devTool = createRoot(document.getElementById("root-devtools")!);
 devTool.render(<App />);
 
-const paperDebugger = createRoot(document.getElementById("root-paper-debugger")!);
+const paperDebugger = createRoot(document.getElementById("paper-debugger-root")!);
 const adapter = getOverleafAdapter();
 paperDebugger.render(
   <Providers>

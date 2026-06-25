@@ -3,6 +3,9 @@ const { heroui } = require("@heroui/react");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // corePlugins: {
+  //   preflight: false, // 关闭全局 Preflight
+  // },
   content: ["./src/**/*.{js,ts,jsx,tsx}", "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
