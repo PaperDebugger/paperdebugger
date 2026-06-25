@@ -1,7 +1,7 @@
 import { cn } from "@heroui/react";
 import { useEffect, useState, useRef } from "react";
 import { Streamdown } from "streamdown";
-import { code } from "@streamdown/code";
+import { code } from "../../../libs/code-plugin";
 import { mermaid } from "@streamdown/mermaid";
 import { math } from "@streamdown/math";
 import { cjk } from "@streamdown/cjk";

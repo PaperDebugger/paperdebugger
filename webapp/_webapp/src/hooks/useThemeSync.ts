@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { useSettingStore } from "../stores/setting-store";
 
-const THEME_ROOT_ID = "paper-debugger-root";
-
-function getThemeRoot(): HTMLElement {
-  return document.getElementById(THEME_ROOT_ID) ?? document.documentElement;
-}
+// Every container that carries .pd-scope; the .dark class must sit on these so
+// scoped heroui rules (.pd-scope.dark ...) resolve. Falls back to <html> on
+// standalone pages (settings/popup) where no scope root exists.
+const SCOPE_ROOT_IDS = ["paper-debugger-root", "pd-portal", "pd-embed-sidebar"];
 
 function applyThemeToElement(el: HTMLElement, isDark: boolean): void {
   if (isDark) {
@@ -15,37 +14,31 @@ function applyThemeToElement(el: HTMLElement, isDark: boolean): void {
   }
 }
 
-/**
- * Apply theme to all elements that may contain our UI.
- * In Overleaf embed mode, the sidebar is rendered via portal into #pd-embed-sidebar
- * (inside .ide-redesign-body), which is outside #paper-debugger-root. So we must
- * also set the theme on documentElement so that portal content gets dark mode.
- */
-function applyTheme(root: HTMLElement, isDark: boolean): void {
-  applyThemeToElement(root, isDark);
-  if (root.id === THEME_ROOT_ID && root !== document.documentElement) {
+function applyTheme(isDark: boolean): void {
+  const roots = SCOPE_ROOT_IDS.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+  if (roots.length === 0) {
     applyThemeToElement(document.documentElement, isDark);
+    return;
   }
+  for (const root of roots) applyThemeToElement(root, isDark);
 }
 
 export function useThemeSync(): void {
   const themeMode = useSettingStore((s) => s.themeMode);
 
   useEffect(() => {
-    const root = getThemeRoot();
-
     if (themeMode === "light") {
-      applyTheme(root, false);
+      applyTheme(false);
       return;
     }
     if (themeMode === "dark") {
-      applyTheme(root, true);
+      applyTheme(true);
       return;
     }
 
     // themeMode === "auto": follow system
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const update = () => applyTheme(root, media.matches);
+    const update = () => applyTheme(media.matches);
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
