@@ -33,7 +33,7 @@ spec:
           - name: net.ipv4.ping_group_range
             value: "65532 65532"
       containers:
-        - image: cloudflare/cloudflared:latest
+        - image: {{ .Values.cloudflared.image }}
           name: cloudflared
           env:
             # Defines an environment variable for the tunnel token.
@@ -50,16 +50,28 @@ spec:
             - --protocol
             - http2
             - --loglevel
-            - debug
+            - info
             - --metrics
             - 0.0.0.0:2000
             - run
-          livenessProbe:
+          resources:
+            {{- toYaml .Values.cloudflared.resources | nindent 12 }}
+          # cloudflared's /ready returns 200 only when at least one tunnel
+          # connection is active. Cloudflare rotates edge connections
+          # periodically, so transient /ready failures are expected and
+          # cloudflared reconnects on its own. We therefore drop livenessProbe
+          # (which was killing healthy pods on every reconnect) and rely on
+          # startupProbe for first-connect tolerance plus readinessProbe for
+          # rolling-deploy gating.
+          startupProbe:
             httpGet:
-              # Cloudflared has a /ready endpoint which returns 200 if and only if
-              # it has an active connection to Cloudflare's network.
               path: /ready
               port: 2000
-            failureThreshold: 1
-            initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            periodSeconds: 10
+            failureThreshold: 3
