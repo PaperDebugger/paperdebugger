@@ -20,37 +20,7 @@ import { MainDrawer } from "./views";
 import { usePromptLibraryStore } from "./stores/prompt-library-store";
 import { TopMenuButton } from "./components/top-menu-button";
 import { Logo } from "./components/logo";
-import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
-import { TracingInstrumentation } from "@grafana/faro-web-tracing";
-import { getManifest } from "./libs/manifest";
 import { AdapterProvider, getOverleafAdapter } from "./adapters";
-
-initializeFaro({
-  url: "https://faro-collector-prod-ap-southeast-1.grafana.net/collect/79c7648395df4df8b58c228fad42af57",
-  app: {
-    name: getManifest().name,
-    version: getManifest().version,
-    environment: "production",
-  },
-  sessionTracking: {
-    samplingRate: 1,
-    persistent: true,
-  },
-  instrumentations: [
-    // Mandatory, omits default instrumentations otherwise.
-    ...getWebInstrumentations(),
-
-    // Tracing package to get end-to-end visibility for HTTP requests.
-    new TracingInstrumentation(),
-  ],
-  ignoreUrls: [
-    /overleaf\.com/,
-    /compiles\.overleafusercontent\.com/,
-    /writefull\.ai/,
-    /bugsnag\.com/,
-    /google-analytics\.com/,
-  ],
-});
 
 export const Main = () => {
   const { inputRef, setActiveTab } = useConversationUiStore();
@@ -176,6 +146,8 @@ export const Main = () => {
     );
   }
 
+  // TopMenuButton scopes its own inner content; the native Overleaf <button> is
+  // kept out of .pd-scope so Overleaf's color rules win (see top-menu-button.tsx).
   const buttonPortal = createPortal(<TopMenuButton />, anchorElement);
 
   return (
@@ -183,17 +155,20 @@ export const Main = () => {
       {menuElement &&
         settings?.showShortcutsAfterSelection &&
         createPortal(
+          // Native Overleaf <button> stays unscoped; only its content is scoped.
           <ToolbarButton
             onClick={() => {
               selectAndOpenPaperDebugger();
               useConversationUiStore.getState().inputRef.current?.focus();
             }}
           >
-            <div className="flex flex-row items-center gap-0">
-              <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
-              <p>Add to Chat</p>
-              <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
-            </div>
+            <span className="pd-scope" style={{ display: "contents" }}>
+              <div className="flex flex-row items-center gap-0">
+                <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
+                <p>Add to Chat</p>
+                <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
+              </div>
+            </span>
           </ToolbarButton>,
           menuElement,
         )}
@@ -214,7 +189,18 @@ if (!import.meta.env.DEV) {
     }
     const div = document.createElement("div");
     div.id = "paper-debugger-root";
+    div.classList.add("pd-scope");
     document.body.appendChild(div);
+
+    // Dedicated, scoped host for heroui/react-aria portals (modals, popovers,
+    // tooltips). Kept separate from #paper-debugger-root so we never portal into
+    // React's own mount container (which breaks reconciliation).
+    if (!document.getElementById("pd-portal")) {
+      const portalHost = document.createElement("div");
+      portalHost.id = "pd-portal";
+      portalHost.classList.add("pd-scope");
+      document.body.appendChild(portalHost);
+    }
 
     const root = createRoot(div);
     const adapter = getOverleafAdapter();
