@@ -30,9 +30,8 @@
   --pd-default-bg: #fafafa;
 }
 
-/* Dark mode variables (applied when .dark is on theme root) */
-#paper-debugger-root.dark,
-html.dark {
+/* Dark mode variables (applied when .dark is on the scope root) */
+.dark {
   --pd-border-color: oklch(35% 0 0);
   --pd-border-color-error: var(--color-red-400);
   --pd-default-bg: #18181b;

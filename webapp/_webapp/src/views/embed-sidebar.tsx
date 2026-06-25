@@ -138,7 +138,11 @@ export const EmbedSidebar = () => {
     // Create sidebar container
     const sidebarDiv = document.createElement("div");
     sidebarDiv.id = "pd-embed-sidebar";
-    sidebarDiv.className = "pd-embed-sidebar";
+    sidebarDiv.className = "pd-embed-sidebar pd-scope";
+    // Seed theme from the always-present scope root (useThemeSync keeps it in sync afterwards).
+    if (document.getElementById("paper-debugger-root")?.classList.contains("dark")) {
+      sidebarDiv.classList.add("dark");
+    }
     sidebarDiv.style.width = `${embedWidthRef.current}px`;
     sidebarDiv.style.height = "100%"; // Use 100% to match parent height
     sidebarDiv.style.display = "flex";
