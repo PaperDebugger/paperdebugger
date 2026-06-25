@@ -146,34 +146,30 @@ export const Main = () => {
     );
   }
 
-  // These portals mount into Overleaf-owned elements (outside #paper-debugger-root),
-  // so wrap them in a .pd-scope span (display:contents) to keep our scoped CSS applying.
-  const buttonPortal = createPortal(
-    <span className="pd-scope" style={{ display: "contents" }}>
-      <TopMenuButton />
-    </span>,
-    anchorElement,
-  );
+  // TopMenuButton scopes its own inner content; the native Overleaf <button> is
+  // kept out of .pd-scope so Overleaf's color rules win (see top-menu-button.tsx).
+  const buttonPortal = createPortal(<TopMenuButton />, anchorElement);
 
   return (
     <>
       {menuElement &&
         settings?.showShortcutsAfterSelection &&
         createPortal(
-          <span className="pd-scope" style={{ display: "contents" }}>
-            <ToolbarButton
-              onClick={() => {
-                selectAndOpenPaperDebugger();
-                useConversationUiStore.getState().inputRef.current?.focus();
-              }}
-            >
+          // Native Overleaf <button> stays unscoped; only its content is scoped.
+          <ToolbarButton
+            onClick={() => {
+              selectAndOpenPaperDebugger();
+              useConversationUiStore.getState().inputRef.current?.focus();
+            }}
+          >
+            <span className="pd-scope" style={{ display: "contents" }}>
               <div className="flex flex-row items-center gap-0">
                 <Logo className="bg-transparent p-0 m-0 flex items-center justify-center w-6 h-6 align-middle" />
                 <p>Add to Chat</p>
                 <p className="ml-1 text-xs text-white bg-gray-700 rounded-md px-1 py-0.5 ml-0.5">⌘ + K</p>
               </div>
-            </ToolbarButton>
-          </span>,
+            </span>
+          </ToolbarButton>,
           menuElement,
         )}
 

@@ -104,10 +104,15 @@ export const MainDrawer = () => {
     <Rnd
       id="paper-debugger-rnd"
       cancel=".rnd-cancel"
-      className={cn("pd-scope pd-rnd", isOpen ? "opacity-100 " : "opacity-0 pointer-events-none", dragging && "dragging")}
+      className={cn("pd-scope pd-rnd", dragging && "dragging")}
       {...rndProps}
       style={{
-        // visibility: isOpen ? "visible" : "hidden",
+        // opacity/pointer-events set inline: these are .pd-scope utilities, which
+        // become descendant selectors and never match the .pd-scope Rnd element itself.
+        // Without pointer-events:none the hidden window would still capture clicks
+        // and block the Overleaf editor.
+        opacity: isOpen ? 1 : 0,
+        pointerEvents: isOpen ? "auto" : "none",
         cursor: "default",
         zIndex: 998,
         borderRadius: "0.75rem",
