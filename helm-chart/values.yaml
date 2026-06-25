@@ -19,6 +19,16 @@ paperdebuggerXtraMcpServer:
 nodeSelector: {}
 cloudflareNodeSelector: {}
 
+cloudflared:
+  image: cloudflare/cloudflared:2026.5.0
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
 mongo:
   in_cluster: true
   uri: "" # if in_cluster is false, use the external mongo instead
