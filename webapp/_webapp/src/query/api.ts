@@ -1,4 +1,5 @@
 import apiclient, { apiclientV2 } from "../libs/apiclient";
+import { recordLLMTTFT } from "../libs/telemetry";
 import {
   LoginByGoogleRequest,
   LoginByGoogleResponseSchema,
@@ -126,8 +127,16 @@ export const createConversationMessageStream = async (
   data: PlainMessage<CreateConversationMessageStreamRequest>,
   onMessage: (chunk: CreateConversationMessageStreamResponse) => void,
 ) => {
+  const start = performance.now();
+  let ttftRecorded = false;
   const stream = await apiclientV2.postStream(`/chats/conversations/messages/stream`, data);
-  await processStream(stream, CreateConversationMessageStreamResponseSchema, onMessage);
+  await processStream(stream, CreateConversationMessageStreamResponseSchema, (chunk: CreateConversationMessageStreamResponse) => {
+    if (!ttftRecorded) {
+      recordLLMTTFT(performance.now() - start, data.modelSlug);
+      ttftRecorded = true;
+    }
+    onMessage(chunk);
+  });
 };
 
 export const deleteConversation = async (data: PlainMessage<DeleteConversationRequest>) => {
