@@ -52,7 +52,21 @@ onLCP((m) => vitalsMs.record(m.value, { vital: "LCP" }));
 onINP((m) => vitalsMs.record(m.value, { vital: "INP" }));
 onCLS((m) => vitalsCls.record(m.value));
 
-// Error capture — also exported for manual use
+// Memory — JS heap size sampled every export interval
+const heapGauge = meter.createObservableGauge("js_heap_bytes", { unit: "By" });
+heapGauge.addCallback((result) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mem = (performance as any).memory;
+  if (mem) result.observe(mem.usedJSHeapSize);
+});
+
+// LLM metrics
+const llmTTFT = meter.createHistogram("llm_ttft_ms", { unit: "ms", description: "Time to first token" });
+export function recordLLMTTFT(ms: number, model: string) {
+  llmTTFT.record(ms, { model });
+}
+
+// Error capture
 export function captureError(error: unknown, attrs?: Record<string, string>) {
   const err = error instanceof Error ? error : new Error(String(error));
   logger.emit({
@@ -64,6 +78,15 @@ export function captureError(error: unknown, attrs?: Record<string, string>) {
       "exception.stacktrace": err.stack ?? "",
       ...attrs,
     },
+  });
+}
+
+// Event capture
+export function captureEvent(name: string, attrs?: Record<string, string>) {
+  logger.emit({
+    severityText: "INFO",
+    body: name,
+    attributes: attrs,
   });
 }
 
