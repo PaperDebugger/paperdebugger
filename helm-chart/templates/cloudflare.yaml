@@ -33,7 +33,7 @@ spec:
           - name: net.ipv4.ping_group_range
             value: "65532 65532"
       containers:
-        - image: cloudflare/cloudflared:2026.5.0
+        - image: {{ .Values.cloudflared.image }}
           name: cloudflared
           env:
             # Defines an environment variable for the tunnel token.
@@ -55,12 +55,7 @@ spec:
             - 0.0.0.0:2000
             - run
           resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
+            {{- toYaml .Values.cloudflared.resources | nindent 12 }}
           # cloudflared's /ready returns 200 only when at least one tunnel
           # connection is active. Cloudflare rotates edge connections
           # periodically, so transient /ready failures are expected and
