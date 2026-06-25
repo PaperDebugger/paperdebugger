@@ -17,10 +17,9 @@ interface ParsedMessage {
 const parseMessage = (message: string): ParsedMessage => {
   const regex = /<PaperDebugger>([\s\S]*?)<\/PaperDebugger>/g;
   const paperDebuggerContents: string[] = [];
-  let regularContent = message;
 
   // Extract all PaperDebugger blocks
-  regularContent = message.replace(regex, (_, content) => {
+  const regularContent = message.replace(regex, (_, content) => {
     const processedContent = content.replace(/\n/g, "§NEWLINE§");
     paperDebuggerContents.push(processedContent);
     return ""; // Remove the tag from regular content

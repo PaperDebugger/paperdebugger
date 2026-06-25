@@ -141,7 +141,7 @@ class ApiClient {
           if (!options?.ignoreErrorToast) {
             errorToast(message, "Request Failed");
           }
-          throw new Error(message);
+          throw new Error(message, { cause: error });
         }
         const errorPayload = fromJson(ErrorSchema, errorData);
         if (!options?.ignoreErrorToast) {
@@ -274,7 +274,7 @@ const LOCAL_STORAGE_KEY_V2 = "pd.devtool.endpoint.v2";
 
 // Create apiclient instance with endpoint from storage or default
 export const getEndpointFromStorage = () => {
-  let endpoint = "";
+  let endpoint;
   try {
     endpoint = storage.getItem(LOCAL_STORAGE_KEY_V1) || DEFAULT_ENDPOINT;
   } catch {
