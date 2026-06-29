@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { OverleafComment } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
+import { OverleafComment } from "@gen/apiclient/project/v1/project_pb";
 import { CommentItem } from "./comment-item";
 
 type CommentsListProps = {
@@ -52,9 +52,9 @@ export const CommentsList = ({
 
   if (filteredComments.length === 0) {
     return (
-      <div className="!text-center !py-8 !text-gray-500">
-        <Icon icon="tabler:search" className="!w-8 !h-8 !mx-auto !mb-2 !text-gray-400" />
-        <p className="!text-sm">
+      <div className="text-center! py-8! text-gray-500!">
+        <Icon icon="tabler:search" className="w-8! h-8! mx-auto! mb-2! text-gray-400!" />
+        <p className="text-sm!">
           {searchTerm || filterImportance ? "No matching suggestions found" : "No suggestions"}
         </p>
         {(searchTerm || filterImportance) && (
@@ -63,7 +63,7 @@ export const CommentsList = ({
               setSearchTerm("");
               setFilterImportance("");
             }}
-            className="!mt-2 !text-xs !text-primary-600 !underline hover:!text-primary-800"
+            className="mt-2! text-xs! !text-primary-600 underline! hover:!text-primary-800"
           >
             Clear Filter
           </button>
@@ -73,22 +73,22 @@ export const CommentsList = ({
   }
 
   return (
-    <div className="!space-y-2">
+    <div className="space-y-2!">
       {/* Selection controls */}
-      <div className="!flex !items-center !justify-between !text-xs !text-gray-600 !mb-2 text-nowrap overflow-hidden text-ellipsis whitespace-nowrap px-2">
+      <div className="flex! items-center! justify-between! text-xs! text-gray-600! mb-2! text-nowrap overflow-hidden text-ellipsis whitespace-nowrap px-2">
         <span>
           {selectedCount} of {filteredComments.length} selected
         </span>
-        <div className="!flex !gap-2">
-          <button onClick={onSelectAll} className="!text-primary-600 !underline hover:!text-primary-800">
+        <div className="flex! gap-2!">
+          <button onClick={onSelectAll} className="!text-primary-600 underline! hover:!text-primary-800">
             Select All
           </button>
-          <button onClick={onDeselectAll} className="!text-primary-600 !underline hover:!text-primary-800">
+          <button onClick={onDeselectAll} className="!text-primary-600 underline! hover:!text-primary-800">
             Deselect All
           </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="!text-primary-600 !underline hover:!text-primary-800"
+            className="!text-primary-600 underline! hover:!text-primary-800"
           >
             Toggle Filter
           </button>
@@ -96,7 +96,7 @@ export const CommentsList = ({
       </div>
 
       {/* Comments list */}
-      <div className="!max-h-96 !overflow-y-auto">
+      <div className="max-h-96! overflow-y-auto!">
         {filteredComments.map((comment) => {
           const commentId = comment.commentId || `${comment.docPath}:${comment.quotePosition}`;
           const isSelected = selectedComments.has(commentId);

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Logo } from "../../components/logo";
+import { Logo } from "@/components/logo";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import LoginWithGoogle from "./login-with-google";
 import LoginWithOverleaf from "./login-with-overleaf";
 import AdvancedSettings from "./advanced-settings";
-import { useAdapterOptional } from "../../adapters";
+import { useAdapterOptional } from "@/adapters";
 
 export const Login = () => {
   const [isLoginLoading, setIsLoginLoading] = useState(false);

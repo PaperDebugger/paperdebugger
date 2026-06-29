@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { Prompt } from "../../../pkg/gen/apiclient/user/v1/user_pb";
-import { useTrackableDisclosure } from "../../../hooks/useTrackableDisclosure";
+import { Prompt } from "@gen/apiclient/user/v1/user_pb";
+import { useTrackableDisclosure } from "@/hooks/useTrackableDisclosure";
 
 export function usePromptModal() {
   const [mode, setMode] = useState<"create" | "update" | "view" | "delete">("create");

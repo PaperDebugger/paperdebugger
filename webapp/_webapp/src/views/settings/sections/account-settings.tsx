@@ -1,11 +1,11 @@
 import { Button, cn } from "@heroui/react";
 import { SettingsSectionContainer, SettingsSectionTitle } from "./components";
-import CellWrapper from "../../../components/cell-wrapper";
-import { useSettingStore } from "../../../stores/setting-store";
-import { useAuthStore } from "../../../stores/auth-store";
+import CellWrapper from "@/components/cell-wrapper";
+import { useSettingStore } from "@/stores/setting-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { useEffect, useState } from "react";
-import { getCookies } from "../../../intermediate";
-import { useAdapterOptional } from "../../../adapters/context";
+import { getCookies } from "@/intermediate";
+import { useAdapterOptional } from "@/adapters/context";
 
 export const AccountSettings = () => {
   const { updateSettings } = useSettingStore();

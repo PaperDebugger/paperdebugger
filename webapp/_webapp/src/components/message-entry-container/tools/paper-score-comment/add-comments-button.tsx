@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { OverleafComment } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
-import { useSocketStore } from "../../../../stores/socket-store";
-import { addClickedOverleafComment, hasClickedOverleafComment } from "../../../../libs/helpers";
-import { acceptComments } from "../../../../query/api";
-import { fromJson } from "../../../../libs/protobuf-utils";
-import { CommentsAcceptedRequestSchema } from "../../../../pkg/gen/apiclient/comment/v1/comment_pb";
-import { useConversationStore } from "../../../../stores/conversation/conversation-store";
+import { OverleafComment } from "@gen/apiclient/project/v1/project_pb";
+import { useSocketStore } from "@/stores/socket-store";
+import { addClickedOverleafComment, hasClickedOverleafComment } from "@/libs/helpers";
+import { acceptComments } from "@/query/api";
+import { fromJson } from "@/libs/protobuf-utils";
+import { CommentsAcceptedRequestSchema } from "@gen/apiclient/comment/v1/comment_pb";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
 
 type AddCommentsButtonProps = {
   projectId: string;
@@ -91,18 +91,18 @@ export const AddCommentsButton = ({
       <button
         onClick={handleAddComments}
         disabled={isLoading || comments.length === 0 || alreadyClicked || !hasValidCookies || errorMessage.length > 0}
-        className="w-full !bg-primary-600 hover:!bg-primary-700 !text-white !font-medium !py-2 !px-4 !rounded-lg !transition-colors !duration-200 !flex !items-center !justify-center !gap-2 disabled:!opacity-50 disabled:!cursor-not-allowed noselect mt-2"
+        className="w-full !bg-primary-600 hover:!bg-primary-700 text-white! font-medium! py-2! px-4! rounded-lg! transition-colors! duration-200! flex! items-center! justify-center! gap-2! disabled:opacity-50! disabled:cursor-not-allowed! noselect mt-2"
       >
         {isLoading ? (
           <div className="flex flex-row items-center justify-center">
-            <Icon icon="tabler:loader" className="!animate-spin !-ml-1 !mr-3 !h-5 !w-5 !text-white" />
+            <Icon icon="tabler:loader" className="animate-spin! -ml-1! mr-3! h-5! w-5! text-white!" />
             <div className="text-nowrap text-ellipsis overflow-hidden">
               Adding Comments ({currentProgress}/{comments.length})
             </div>
           </div>
         ) : alreadyClicked ? (
           <span className="text-nowrap text-ellipsis overflow-hidden flex flex-row items-center justify-center">
-            <Icon icon="tabler:check" className="!w-4 !h-4 !mr-2" />
+            <Icon icon="tabler:check" className="w-4! h-4! mr-2!" />
             Added to Overleaf
           </span>
         ) : !hasValidCookies ? (
@@ -116,11 +116,11 @@ export const AddCommentsButton = ({
         )}
       </button>
       {errorMessage.length > 0 && (
-        <div className="!mt-2 !text-xs font-bold !text-red-500 noselect text-nowrap text-ellipsis overflow-hidden animate-pulse">
+        <div className="mt-2! text-xs! font-bold text-red-500! noselect text-nowrap text-ellipsis overflow-hidden shimmer">
           Error: {errorMessage}
         </div>
       )}
-      <div className="!mt-2 !text-xs !text-primary-600 noselect text-nowrap text-ellipsis overflow-hidden">
+      <div className="mt-2! text-xs! !text-primary-600 noselect text-nowrap text-ellipsis overflow-hidden">
         Note: this operation does not modify your paper.
       </div>
       {/* TODO: report user selected comments to server */}

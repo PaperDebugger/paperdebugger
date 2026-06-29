@@ -15,21 +15,7 @@ export const ToolCallPrepareMessageContainer = ({
     return (
       <div className="chat-message-entry">
         <span
-          className="text-xs pl-2 text-gray-400 loading-shimmer"
-          style={{
-            WebkitTextFillColor: "transparent",
-            animationDelay: "0.5s",
-            animationDuration: "3s",
-            animationIterationCount: "infinite",
-            animationName: "shimmer",
-            background:
-              "#cdcdcd -webkit-gradient(linear, 100% 0, 0 0, from(#cdcdcd), color-stop(.5, #1a1a1a), to(#cdcdcd))",
-            WebkitBackgroundClip: "text",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "50% 200%",
-            backgroundPositionX: "-100%",
-          }}
-        >
+          className="text-xs pl-2 text-gray-400 shimmer">
           Preparing function {functionName}...
         </span>
       </div>

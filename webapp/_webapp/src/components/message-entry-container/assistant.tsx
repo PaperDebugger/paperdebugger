@@ -1,11 +1,11 @@
 import { cn, Tooltip } from "@heroui/react";
 import { GeneralToolCard } from "./tools/general";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import googleAnalytics from "../../libs/google-analytics";
-import { getProjectId } from "../../libs/helpers";
+import googleAnalytics from "@/libs/google-analytics";
+import { getProjectId } from "@/libs/helpers";
 import MarkdownComponent from "../markdown";
 import { TextPatches } from "../text-patches";
-import { useAuthStore } from "../../stores/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 // Helper functions
@@ -17,10 +17,9 @@ interface ParsedMessage {
 const parseMessage = (message: string): ParsedMessage => {
   const regex = /<PaperDebugger>([\s\S]*?)<\/PaperDebugger>/g;
   const paperDebuggerContents: string[] = [];
-  let regularContent = message;
 
   // Extract all PaperDebugger blocks
-  regularContent = message.replace(regex, (_, content) => {
+  const regularContent = message.replace(regex, (_, content) => {
     const processedContent = content.replace(/\n/g, "§NEWLINE§");
     paperDebuggerContents.push(processedContent);
     return ""; // Remove the tag from regular content
@@ -96,11 +95,11 @@ export const AssistantMessageContainer = ({
       <Icon
         icon="tabler:pencil"
         className={cn(
-          "!w-4 !h-4 !text-[14px] !text-gray-400  !animate-bounce",
-          "!transition-all !duration-300 !ease-in-out",
-          "!inline-block !align-middle !ml-1",
-          preparing && "!opacity-100",
-          !preparing && "!opacity-0 !hidden",
+          "w-4! h-4! text-[14px]! text-gray-400!  animate-bounce!",
+          "transition-all! duration-300! ease-in-out!",
+          "inline-block! align-middle! ml-1!",
+          preparing && "opacity-100!",
+          !preparing && "opacity-0! hidden!",
         )}
       />
     );
@@ -118,7 +117,7 @@ export const AssistantMessageContainer = ({
   return (
     showMessage && (
       <div className="chat-message-entry noselect">
-        <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "!text-red-500")}>
+        <div className={cn("message-box-assistant rnd-cancel", messageId.startsWith("error-") && "text-red-500!")}>
           {/* Reasoning content */}
           {reasoningComponent}
 

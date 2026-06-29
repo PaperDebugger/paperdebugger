@@ -2,9 +2,9 @@ import { cn, Tooltip } from "@heroui/react";
 import { useCallback, useState } from "react";
 import { AttachmentPopover } from "./attachment-popover";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import googleAnalytics from "../../libs/google-analytics";
-import { getProjectId } from "../../libs/helpers";
-import { useAuthStore } from "../../stores/auth-store";
+import googleAnalytics from "@/libs/google-analytics";
+import { getProjectId } from "@/libs/helpers";
+import { useAuthStore } from "@/stores/auth-store";
 // import MarkdownComponent from "../markdown";
 
 export const UserMessageContainer = ({

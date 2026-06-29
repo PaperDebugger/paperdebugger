@@ -16,9 +16,9 @@ import {
   MessageTypeToolCallPrepareArguments,
   StreamPartBegin,
   StreamPartEnd,
-} from "../../pkg/gen/apiclient/chat/v2/chat_pb";
+} from "@gen/apiclient/chat/v2/chat_pb";
 import { InternalMessage, MessageRole, MessageTypeHandler, MessageTypeHandlerRegistry } from "./types";
-import { createAssistantMessage, createToolCallMessage, createToolCallPrepareMessage } from "../../types/message";
+import { createAssistantMessage, createToolCallMessage, createToolCallPrepareMessage } from "@/types/message";
 
 // ============================================================================
 // Handler Implementations

@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import LogoOverleaf from "../../components/logo-overleaf";
-import { getCookies } from "../../intermediate";
-import { loginByOverleaf } from "../../query/api";
-import { useAuthStore } from "../../stores/auth-store";
-import { useSettingStore } from "../../stores/setting-store";
-import { usePromptLibraryStore } from "../../stores/prompt-library-store";
+import LogoOverleaf from "@/components/logo-overleaf";
+import { getCookies } from "@/intermediate";
+import { loginByOverleaf } from "@/query/api";
+import { useAuthStore } from "@/stores/auth-store";
+import { useSettingStore } from "@/stores/setting-store";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 
 interface LoginWithOverleafProps {
   isLoginLoading: boolean;
@@ -55,7 +55,7 @@ export default function LoginWithOverleaf({
 
   return (
     <div
-      className="mt-[1rem] border !border-primary-700 rounded-lg px-3 h-[32px] min-h-[32px] w-[196px] flex flex-row items-center bg-primary-700 text-white cursor-pointer"
+      className="mt-4 border !border-primary-700 rounded-lg px-3 h-[32px] min-h-[32px] w-[196px] flex flex-row items-center bg-primary-700 text-white cursor-pointer"
       role="button"
       tabIndex={0}
       onClick={() => onOverleafLogin()}

@@ -1,21 +1,21 @@
 import { Button } from "@heroui/button";
 import { useCallback, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
-import { useSelectionStore } from "../../../stores/selection-store";
-import googleAnalytics from "../../../libs/google-analytics";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
-import { useConversationStore } from "../../../stores/conversation/conversation-store";
-import { useSendMessageStream } from "../../../hooks/useSendMessageStream";
-import { useAuthStore } from "../../../stores/auth-store";
+import { useSelectionStore } from "@/stores/selection-store";
+import googleAnalytics from "@/libs/google-analytics";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useSendMessageStream } from "@/hooks/useSendMessageStream";
+import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@heroui/react";
 import { SelectedTextIndicator } from "./selected-text-indicator";
 import { PromptSelection } from "./toolbar/prompt-selection";
 import { ActionSelection } from "./toolbar/action-selection";
-import { usePromptLibraryStore } from "../../../stores/prompt-library-store";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 import { useActions } from "../actions/actions";
 import { ChatActions } from "./toolbar/chat-actions";
 import { ModelSelection } from "./toolbar/model-selection";
-import { useSettingStore } from "../../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 // Add animation keyframes
 const blinkAnimation = `@keyframes blink {
@@ -132,14 +132,14 @@ export function PromptInput() {
       </div>
       <div className="w-full noselect">
         {selectedText && <SelectedTextIndicator />}
-        <div className="border !border-gray-100 dark:!border-default-200 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white dark:!bg-default-100 transition-all">
+        <div className="border border-gray-100! dark:!border-default-200 rounded-lg p-2 flex flex-col gap-2 relative prompt-input-container bg-white dark:!bg-default-100 transition-all">
           <textarea
             onMouseDown={(e) => e.stopPropagation()}
             onFocus={() => setShowModelSelection(false)}
             id="pd-chat-prompt-input"
             ref={inputRef}
             className={cn(
-              "flex-grow border-none resize-none noselect focus:outline-none rnd-cancel",
+              "grow border-none resize-none noselect focus:outline-none rnd-cancel",
               heightCollapseRequired || minimalistMode ? "w-[calc(100%-1rem)]" : "w-full",
             )}
             style={{

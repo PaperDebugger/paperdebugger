@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { Conversation, ConversationSchema } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { fromJson } from "../../libs/protobuf-utils";
+import { Conversation, ConversationSchema } from "@gen/apiclient/chat/v2/chat_pb";
+import { fromJson } from "@/libs/protobuf-utils";
 import { useConversationUiStore } from "./conversation-ui-store";
 
 interface ConversationStore {

@@ -23,7 +23,7 @@ export const TabHeader = ({ title, actions }: TabHeaderProps) => {
       <div className="min-w-0">
         <div className="font-bold text-xs whitespace-nowrap text-ellipsis overflow-hidden">{title}</div>
       </div>
-      <div className="ms-auto flex-shrink-0 flex flex-row gap-0">{actions}</div>
+      <div className="ms-auto shrink-0 flex flex-row gap-0">{actions}</div>
     </div>
   );
 

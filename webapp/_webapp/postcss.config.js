@@ -2,12 +2,16 @@
 // (VITE_CONFIG=default) so preflight/heroui don't leak into Overleaf. The
 // .pd-scope class sits on every container we mount into (#paper-debugger-root
 // and #pd-embed-sidebar). Settings/popup are standalone pages and stay unscoped.
+//
+// Tailwind v4 via @tailwindcss/postcss (not the Vite plugin) so the prefix step
+// runs AFTER Tailwind emits its CSS. v4 handles vendor prefixing internally, so
+// autoprefixer is gone.
 const SCOPE = ".pd-scope";
 const scoped = process.env.VITE_CONFIG === "default";
 
 export default {
   plugins: {
-    tailwindcss: {},
+    "@tailwindcss/postcss": {},
     ...(scoped && {
       "postcss-prefix-selector": {
         prefix: SCOPE,
@@ -33,6 +37,5 @@ export default {
         },
       },
     }),
-    autoprefixer: {},
   },
 };

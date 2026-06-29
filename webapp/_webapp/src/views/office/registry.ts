@@ -1,5 +1,5 @@
-import type { DocumentAdapter, SelectionInfo } from "../../adapters";
-import { useSelectionStore } from "../../stores/selection-store";
+import type { DocumentAdapter, SelectionInfo } from "@/adapters";
+import { useSelectionStore } from "@/stores/selection-store";
 
 // Global adapter registry for Web Component communication
 const adapterRegistry = new Map<string, DocumentAdapter>();

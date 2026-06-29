@@ -16,23 +16,6 @@ interface LoadingIndicatorProps {
 // Constants
 // ============================================================================
 
-const STYLES = {
-  loading: {
-    animation: {
-      WebkitTextFillColor: "transparent",
-      animationDelay: "0.5s",
-      animationDuration: "3s",
-      animationIterationCount: "infinite",
-      animationName: "shimmer",
-      background: "#cdcdcd -webkit-gradient(linear, 100% 0, 0 0, from(#cdcdcd), color-stop(.5, #1a1a1a), to(#cdcdcd))",
-      WebkitBackgroundClip: "text",
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "50% 200%",
-      backgroundPositionX: "-100%",
-    },
-  },
-} as const;
-
 const PHASE_STYLES = {
   green: {
     background: "linear-gradient(90deg, #35aa6b 0%, #7cc89f 100%)",
@@ -170,8 +153,7 @@ export const LoadingIndicator = ({ text = "Thinking", estimatedSeconds = 0, erro
     <div className="indicator">
       {/* Status Text */}
       <div
-        className={`flex space-x-1 text-xs ${!isTimeout && !errorMessage ? "loading-shimmer" : ""}`}
-        style={!isTimeout && !errorMessage ? STYLES.loading.animation : undefined}
+        className={`flex space-x-1 text-xs ${!isTimeout && !errorMessage ? "shimmer" : ""}`}
       >
         <span className={isTimeout || errorMessage ? "text-rose-400" : ""}>{getStatusMessage()}</span>
       </div>

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { SelectionItem, Selection } from "./selection";
-import { useLanguageModels } from "../../../../hooks/useLanguageModels";
-import { useConversationUiStore } from "../../../../stores/conversation/conversation-ui-store";
+import { useLanguageModels } from "@/hooks/useLanguageModels";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 
 type ModelSelectionProps = {
   onSelectModel: () => void;

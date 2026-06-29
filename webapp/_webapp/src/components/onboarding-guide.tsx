@@ -214,7 +214,7 @@ function OnboardingStep({ step, imageUrl, imageError, onImageClick, onImageError
           />
         </div>
       )}
-      <div className="flex-grow">{step.content}</div>
+      <div className="grow">{step.content}</div>
     </div>
   );
 }

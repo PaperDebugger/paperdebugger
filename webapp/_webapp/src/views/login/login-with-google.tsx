@@ -1,9 +1,9 @@
 import { useCallback } from "react";
-import { useAuthStore } from "../../stores/auth-store";
-import { useSettingStore } from "../../stores/setting-store";
-import { loginByGoogle } from "../../query/api";
-import { getGoogleAuthToken } from "../../libs/oauth";
-import { usePromptLibraryStore } from "../../stores/prompt-library-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { useSettingStore } from "@/stores/setting-store";
+import { loginByGoogle } from "@/query/api";
+import { getGoogleAuthToken } from "@/libs/oauth";
+import { usePromptLibraryStore } from "@/stores/prompt-library-store";
 
 interface LoginWithGoogleProps {
   isLoginLoading: boolean;

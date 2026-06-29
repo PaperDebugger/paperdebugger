@@ -1,8 +1,8 @@
-import { TabHeader } from "../../../components/tab-header";
+import { TabHeader } from "@/components/tab-header";
 import { ChatButton } from "./chat-button";
-import { useConversationStore } from "../../../stores/conversation/conversation-store";
-import { useStreamingStateMachine } from "../../../stores/streaming";
-import { useConversationUiStore } from "../../../stores/conversation/conversation-ui-store";
+import { useConversationStore } from "@/stores/conversation/conversation-store";
+import { useStreamingStateMachine } from "@/stores/streaming";
+import { useConversationUiStore } from "@/stores/conversation/conversation-ui-store";
 import { ChatHistoryModal } from "./chat-history-modal";
 
 export const NewConversation = () => {

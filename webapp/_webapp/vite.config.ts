@@ -1,9 +1,14 @@
 import react from "@vitejs/plugin-react-swc";
 import fs from "fs";
-import { produce } from "immer";
+import { produce, setAutoFreeze } from "immer";
 import path from "path";
 import { defineConfig, Plugin, type UserConfig } from "vite";
 import { getManifest } from "./src/libs/manifest";
+
+// immer freezes produce() output; Vite mutates resolve.conditions on the
+// config at startup, so disable auto-freeze or the build throws once we add a
+// resolve.alias block.
+setAutoFreeze(false);
 
 function generateConfig(
   entry: string,
@@ -14,6 +19,12 @@ function generateConfig(
   return produce<UserConfig>(
     {
       base: "/_pd/webapp",
+      resolve: {
+        alias: {
+          "@": path.resolve(__dirname, "./src"),
+          "@gen": path.resolve(__dirname, "./src/pkg/gen"),
+        },
+      },
       plugins: [react()],
       esbuild: {
         charset: "ascii",

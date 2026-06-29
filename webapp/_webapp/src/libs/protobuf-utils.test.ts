@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "bun:test";
 import { fromJson } from "./protobuf-utils";
-import { MessageSchema } from "../pkg/gen/apiclient/chat/v2/chat_pb";
+import { MessageSchema } from "@gen/apiclient/chat/v2/chat_pb";
 
 describe("protobuf-utils", () => {
   describe("fromJson", () => {

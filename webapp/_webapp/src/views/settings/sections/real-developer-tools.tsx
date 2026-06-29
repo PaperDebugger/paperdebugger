@@ -1,12 +1,12 @@
 import { Button, cn } from "@heroui/react";
-import CellWrapper from "../../../components/cell-wrapper";
+import CellWrapper from "@/components/cell-wrapper";
 import { SettingItemSelect } from "../setting-item-select";
 import { SettingsSectionContainer } from "./components";
 
 import { SettingsSectionTitle } from "./components";
 import { SettingItem } from "../setting-items";
-import { useDevtoolStore } from "../../../stores/devtool-store";
-import { storage } from "../../../libs/storage";
+import { useDevtoolStore } from "@/stores/devtool-store";
+import { storage } from "@/libs/storage";
 
 // Keys to preserve during reset
 const PRESERVED_KEY_PREFIXES = ["pd.auth.", "pd.devtool.", "pd.projectId"];

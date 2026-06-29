@@ -135,7 +135,7 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
           <div
             className={cn(
               "transition-all duration-300 whitespace-nowrap overflow-hidden",
-              sidebarCollapsed ? "opacity-0 max-w-0 !mx-0" : "opacity-100 max-w-[100px]",
+              sidebarCollapsed ? "opacity-0 max-w-0 mx-0!" : "opacity-100 max-w-[100px]",
             )}
           >
             {item.title}
@@ -182,8 +182,8 @@ export const Tabs = forwardRef<TabRef, TabProps>(({ items }, ref) => {
 
         <div className="flex-1"></div>
         <div className={cn("pd-bottom-logo-group", sidebarCollapsed ? "text-[8px]" : "text-md px-3")}>
-          <span className="!font-light">Paper</span>
-          <span className="!font-bold">Debugger</span>
+          <span className="font-light!">Paper</span>
+          <span className="font-bold!">Debugger</span>
         </div>
       </div>
       {items.find((item) => item.key === activeTab)?.children}

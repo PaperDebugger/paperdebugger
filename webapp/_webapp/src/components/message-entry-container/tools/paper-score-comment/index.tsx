@@ -1,13 +1,13 @@
 import { JsonValue } from "@bufbuild/protobuf";
-import { fromJson } from "../../../../libs/protobuf-utils";
-import { OverleafCommentSchema } from "../../../../pkg/gen/apiclient/project/v1/project_pb";
-import { getProjectId } from "../../../../libs/helpers";
+import { fromJson } from "@/libs/protobuf-utils";
+import { OverleafCommentSchema } from "@gen/apiclient/project/v1/project_pb";
+import { getProjectId } from "@/libs/helpers";
 import { useEffect, useState } from "react";
-import { LoadingIndicator } from "../../../loading-indicator";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { cn } from "@heroui/react";
 import { ErrorToolCard } from "../error";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { getCookies } from "../../../../intermediate";
+import { getCookies } from "@/intermediate";
 import { PaperScoreCommentCardProps } from "./types";
 import { StatsSummary } from "./stats-summary";
 import { FilterControls } from "./filter-controls";
@@ -82,9 +82,9 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
     if (comments.length === 0) {
       return (
         <CardBody>
-          <div className="!text-gray-500">
-            <Icon icon="tabler:file-like" className="!w-12 !h-12 !mx-auto !mb-2" />
-            <p className="!text-sm !text-gray-600 !text-center">No comments left for this paper.</p>
+          <div className="text-gray-500!">
+            <Icon icon="tabler:file-like" className="w-12! h-12! mx-auto! mb-2!" />
+            <p className="text-sm! text-gray-600! text-center!">No comments left for this paper.</p>
           </div>
         </CardBody>
       );
@@ -124,7 +124,7 @@ export const PaperScoreCommentCard = ({ messageId, message, preparing, animated 
         <div
           className={cn(
             "border rounded-lg pt-1 transition-all duration-300 noselect",
-            isSuggestionsExpanded ? "h-[27.45rem] overflow-y-auto" : "h-[2rem] overflow-hidden",
+            isSuggestionsExpanded ? "h-[27.45rem] overflow-y-auto" : "h-8 overflow-hidden",
           )}
         >
           <FilterControls

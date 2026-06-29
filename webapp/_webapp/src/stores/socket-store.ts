@@ -12,7 +12,7 @@ import {
 } from "../libs/overleaf-socket";
 import { generateId } from "../libs/helpers";
 import { upsertProject } from "../query/api";
-import { UpsertProjectRequest, ProjectDoc } from "../pkg/gen/apiclient/project/v1/project_pb";
+import { UpsertProjectRequest, ProjectDoc } from "@gen/apiclient/project/v1/project_pb";
 import { PlainMessage } from "../query/types";
 import { logError } from "../libs/logger";
 import googleAnalytics from "../libs/google-analytics";

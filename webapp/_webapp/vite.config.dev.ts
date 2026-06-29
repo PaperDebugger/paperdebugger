@@ -1,11 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { resolve } from "path";
+import tailwindcss from '@tailwindcss/vite';
 
 // Simplified development configuration
 export default defineConfig({
   root: "src/devtool",
-  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+      "@gen": resolve(__dirname, "./src/pkg/gen"),
+    },
+  },
+  plugins: [tailwindcss(), react()],
   server: {
     port: 3000,
     open: true,

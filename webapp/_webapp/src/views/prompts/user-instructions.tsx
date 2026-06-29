@@ -1,9 +1,9 @@
 import { useCallback, useRef, useEffect, useState } from "react";
 import { Button, cn } from "@heroui/react";
 import { SettingsSectionContainer, SettingsSectionTitle } from "../settings/sections/components";
-import { useGetUserInstructionsQuery, useUpsertUserInstructionsMutation } from "../../query";
+import { useGetUserInstructionsQuery, useUpsertUserInstructionsMutation } from "@/query";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "../../query/keys";
+import { queryKeys } from "@/query/keys";
 
 export function UserInstructions() {
   const userLevelPromptRef = useRef<HTMLTextAreaElement>(null);
@@ -77,7 +77,7 @@ export function UserInstructions() {
           id="pd-chat-prompt-input-user"
           ref={userLevelPromptRef}
           className={cn(
-            "flex-grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border !border-gray-200 dark:!border-default-200 rounded-md w-full",
+            "grow resize-none noselect focus:outline-none rnd-cancel px-2 py-1 border border-gray-200! dark:!border-default-200 rounded-md w-full",
           )}
           style={{
             fontSize: "12px",

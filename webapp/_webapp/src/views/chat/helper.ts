@@ -1,8 +1,8 @@
-import { Conversation, Message, MessageTypeUser } from "../../pkg/gen/apiclient/chat/v2/chat_pb";
-import { useMessageStore } from "../../stores/message-store";
-import { DisplayMessage } from "../../stores/types";
-import { fromApiMessage } from "../../utils/message-converters";
-import { InternalMessage } from "../../stores/streaming";
+import { useMessageStore } from "@/stores/message-store";
+import { InternalMessage } from "@/stores/streaming";
+import { DisplayMessage } from "@/stores/types";
+import { fromApiMessage } from "@/utils/message-converters";
+import { Conversation, Message, MessageTypeUser } from "@gen/apiclient/chat/v2/chat_pb";
 
 // ============================================================================
 // Message-based helpers (existing, for backward compatibility)

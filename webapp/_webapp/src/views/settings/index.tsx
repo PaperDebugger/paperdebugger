@@ -1,6 +1,6 @@
 import { Spinner } from "@heroui/react";
 import { useEffect } from "react";
-import { useSettingStore } from "../../stores/setting-store";
+import { useSettingStore } from "@/stores/setting-store";
 
 import { SettingsHeader } from "./settings-header";
 import { UserDeveloperTools } from "./sections/user-developer-tools";
@@ -29,7 +29,7 @@ export const Settings = () => {
   }
 
   return (
-    <div className="pd-app-tab-content noselect !min-w-[400px]">
+    <div className="pd-app-tab-content noselect min-w-[400px]!">
       <SettingsHeader />
       <div className="pd-app-tab-content-body">
         <UISettings />

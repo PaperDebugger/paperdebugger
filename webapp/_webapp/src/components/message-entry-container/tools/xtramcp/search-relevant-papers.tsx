@@ -1,6 +1,6 @@
 import { cn } from "@heroui/react";
-import { LoadingIndicator } from "../../../loading-indicator";
-import MarkdownComponent from "../../../markdown";
+import { LoadingIndicator } from "@/components/loading-indicator";
+import MarkdownComponent from "@/components/markdown";
 import { useState } from "react";
 import { XtraMcpToolCardProps, parseXtraMcpToolResult, CollapseArrowButton, CollapseWrapper } from "./utils/common";
 
@@ -106,7 +106,7 @@ export const SearchRelevantPapersCard = ({ functionName, message, preparing, ani
           {/* Metadata dropdown - INSIDE the tool card */}
           {result.metadata && Object.keys(result.metadata).length > 0 && (
             <CollapseWrapper isCollapsed={isMetadataCollapsed}>
-              <div className="text-xs text-gray-600 mt-2 pt-2 border-t !border-gray-200">
+              <div className="text-xs text-gray-600 mt-2 pt-2 border-t border-gray-200!">
                 {/* Custom metadata rendering; NOTE: hard-coded the CAA date */}
                 <div className="mb-2">
                   <span className="font-medium">⚠️ Papers searched from a pool updated as of 31st Dec 2025.</span>
