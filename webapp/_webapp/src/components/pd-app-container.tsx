@@ -7,7 +7,7 @@ export function PdAppContainer({
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
   return (
-    <div className={cn("pd-app-container", className)} {...props}>
+    <div className={cn("pd-app-container", className)} id="pd-container" {...props}>
       {children}
     </div>
   );

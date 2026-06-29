@@ -8,14 +8,23 @@ import (
 	"paperdebugger/internal/libs/shared"
 )
 
+// commentRegex matches a LaTeX comment: an unescaped % and everything after it
+// until end of line. The leading group captures either start-of-line or a
+// non-backslash character, then consumes pairs of backslashes (\\) before %.
+// This generalizes to any run of N backslashes preceding %: if N is even
+// (including 0), every backslash pairs up as a literal-backslash escape and
+// the % is unescaped, so the comment is stripped; if N is odd, the final
+// backslash escapes the % itself, so the % (and the surrounding text) is
+// preserved.
+var commentRegex = regexp.MustCompile(`(^|[^\\])((?:\\\\)*)%.*$`)
+
 func removeComments(text string) string {
 	// Split into lines, trim each line and filter empty ones
 	lines := strings.Split(text, "\n")
 	var result []string
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		commentRegex := regexp.MustCompile(`%.*$`)
-		cleaned := commentRegex.ReplaceAllString(trimmed, "")
+		cleaned := commentRegex.ReplaceAllString(trimmed, "$1$2")
 		cleaned = strings.TrimSpace(cleaned)
 		if len(cleaned) == 0 {
 			continue
