@@ -69,11 +69,11 @@ interface CollapseArrowButtonProps {
 
 export const CollapseArrowButton = ({ isCollapsed, ariaLabel }: CollapseArrowButtonProps) => (
   <button
-    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded"
+    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded flex"
     aria-label={ariaLabel || (isCollapsed ? "Expand" : "Collapse")}
   >
     <svg
-      className={cn("w-4 h-4 transition-transform duration-200", {
+      className={cn("w-4 transition-transform duration-200", {
         "rotate-180": !isCollapsed,
       })}
       fill="none"

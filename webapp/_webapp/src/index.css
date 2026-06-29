@@ -119,6 +119,9 @@ object {
 .tool-card {
   @apply overflow-hidden max-w-xl p-4 my-2;
   border-color: var(--pd-border-color) !important;
+  border: 1px solid;
+  border-radius: 0.75rem;
+  padding-left: 1rem;
 }
 
 .tool-card.narrow {

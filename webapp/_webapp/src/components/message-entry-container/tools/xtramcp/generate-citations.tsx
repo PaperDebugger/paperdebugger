@@ -89,7 +89,7 @@ export const GenerateCitationsCard = ({ functionName, message, preparing, animat
               aria-label={isMetadataCollapsed ? "Expand" : "Collapse"}
             >
               <svg
-                className={cn("w-3 h-3 transition-transform duration-200 rotate-[-90deg]", {
+                className={cn("w-3 transition-transform duration-200 rotate-[-90deg]", {
                   "rotate-0": !isMetadataCollapsed,
                 })}
                 fill="none"
