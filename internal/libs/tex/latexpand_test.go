@@ -20,6 +20,27 @@ Hello, world!
 \end{document}`, removeComments(input))
 }
 
+func TestRemoveCommentsBackslashRunsBeforePercent(t *testing.T) {
+	cases := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"1 backslash (odd) preserves %", `a\% keep`, `a\% keep`},
+		{"2 backslashes (even) strips comment", `a\\% drop`, `a\\`},
+		{"3 backslashes (odd) preserves %", `a\\\% keep`, `a\\\% keep`},
+		{"4 backslashes (even) strips comment", `a\\\\% drop`, `a\\\\`},
+		{"5 backslashes (odd) preserves %", `a\\\\\% keep`, `a\\\\\% keep`},
+		{"3 backslashes at line start preserves %", `\\\% keep`, `\\\% keep`},
+		{"4 backslashes at line start strips comment", `\\\\% drop`, `\\\\`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, removeComments(tc.input))
+		})
+	}
+}
+
 func TestLatexpand(t *testing.T) {
 	input := map[string]string{
 		"main.tex": `

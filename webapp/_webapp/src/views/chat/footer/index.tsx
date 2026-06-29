@@ -1,4 +1,4 @@
-import { Button } from "@heroui/button";
+import { Button } from "@heroui/react";
 import { useCallback, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import { useSelectionStore } from "@/stores/selection-store";

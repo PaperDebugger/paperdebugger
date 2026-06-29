@@ -52,7 +52,24 @@ export const ApiKeySettings = () => {
 
   return (
     <SettingsSectionContainer>
-      <SettingsSectionTitle>Bring Your Own Key (BYOK)</SettingsSectionTitle>
+      <SettingsSectionTitle>
+        Bring Your Own Key (BYOK) -{" "}
+        <Tooltip
+          content={
+            <>
+              You can use your custom models and API keys by selecting it in the chat tab.
+              <br />
+              Your models are labeled with "(Custom)".
+            </>
+          }
+          placement="top"
+          delay={100}
+        >
+          <span className="underline decoration-dotted underline-offset-2 cursor-help">
+            {settings?.customModels.length ?? 0} Model(s) Found
+          </span>
+        </Tooltip>
+      </SettingsSectionTitle>
       <Button size="sm" variant="bordered" onPress={() => setIsShowModal((i) => !i)} className="shrink-0">
         Edit
       </Button>
@@ -125,7 +142,7 @@ type CustomModelSectionProps = NewCustomModelSectionProps | ExistingCustomModelS
 
 const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModelSectionProps) => {
   const defaults = {
-    modelName: "",
+    modelName: "My Model",
     slug: "",
     baseUrl: "",
     apiKey: "",
@@ -265,7 +282,7 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
         <input
           className={`${modelNameInputClassName} ${!isModelNameValid && errorInputClassName}`}
           value={modelName}
-          placeholder="My Model"
+          placeholder="Model Name"
           type="text"
           disabled={!isEditing || isProcessing}
           onChange={(e) => {
@@ -282,11 +299,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
               disabled={isProcessing}
               className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
             >
-              <Icon
-                icon={isProcessing && processingAction === "save" ? "tabler:loader-2" : "tabler:device-floppy"}
-                width="16"
-                className={isProcessing && processingAction === "save" ? "animate-spin" : ""}
-              />
+              {isProcessing && processingAction === "save" ? (
+                <Icon icon="tabler:loader-2" width="16" className="animate-spin" />
+              ) : (
+                <span className="text-xs">Save</span>
+              )}
             </button>
           </Tooltip>
         ) : (
@@ -303,17 +320,15 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 disabled={isProcessing}
                 className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
               >
-                <Icon
-                  icon={
-                    isEditing
-                      ? isProcessing && processingAction === "save"
-                        ? "tabler:loader-2"
-                        : "tabler:device-floppy"
-                      : "tabler:pencil"
-                  }
-                  width="16"
-                  className={isEditing && isProcessing && processingAction === "save" ? "animate-spin" : ""}
-                />
+                {isEditing ? (
+                  isProcessing && processingAction === "save" ? (
+                    <Icon icon="tabler:loader-2" width="16" className="animate-spin" />
+                  ) : (
+                    <span className="text-xs">Save</span>
+                  )
+                ) : (
+                  <span className="text-xs">Edit</span>
+                )}
               </button>
             </Tooltip>
             <Tooltip content="Delete" placement="bottom" className="noselect" delay={500}>
@@ -322,11 +337,11 @@ const CustomModelSection = ({ isNew, onChange, model: customModel }: CustomModel
                 disabled={isProcessing}
                 className="p-1 hover:bg-default-100 rounded disabled:opacity-60"
               >
-                <Icon
-                  icon={isProcessing && processingAction === "delete" ? "tabler:loader-2" : "tabler:trash"}
-                  width="16"
-                  className={isProcessing && processingAction === "delete" ? "animate-spin" : ""}
-                />
+                {isProcessing && processingAction === "delete" ? (
+                  <Icon icon="tabler:loader-2" width="16" className="animate-spin" />
+                ) : (
+                  <span className="text-xs">Delete</span>
+                )}
               </button>
             </Tooltip>
           </div>
