@@ -6,6 +6,11 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   vite: () => ({
     plugins: [tailwindcss()],
+    // react-draggable's log() reads process.env.DRAGGABLE_DEBUG; MAIN world has
+    // no `process` global, so replace it at build time to avoid a ReferenceError.
+    define: {
+      'process.env.DRAGGABLE_DEBUG': 'false',
+    },
   }),
   webExt: {
     chromiumArgs: ['--user-data-dir=./.wxt/chrome-data'],

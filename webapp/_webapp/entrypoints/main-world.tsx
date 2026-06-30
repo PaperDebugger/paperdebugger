@@ -3,6 +3,9 @@
 import { createRoot } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { onElementAppeared } from '@/lib/dom';
+import { usePaperDebuggerUiStore } from '@/stores/paper-debugger-ui-store';
+import { MainDrawer } from '@/components/main-drawer';
+import pdCss from '@/assets/pd.css?inline';
 
 // Anchor the button waits for (old + redesigned Overleaf toolbars).
 const ANCHOR_APPEARED = '.toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar';
@@ -23,15 +26,16 @@ function Logo({ size = 24 }: { size?: number }) {
 }
 
 // ponytail: placeholder button — keeps Overleaf's native toolbar classes so it
-// sits in the bar, but the click just logs for now. Real panel/stores land with
-// the rest of the UI migration.
+// sits in the bar. Toggles the drawer; the rest of its behaviour (context menu,
+// shortcuts) lands with the inner-content rewrite.
 function ToolbarButton() {
+  const { isOpen, setIsOpen } = usePaperDebuggerUiStore();
   return (
     <button
       id="paper-debugger-button"
       className="btn btn-full-height ide-redesign-toolbar-dropdown-toggle-subdued ide-redesign-toolbar-button-subdued menu-bar-toggle toolbar-item"
       style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', justifyContent: 'center' }}
-      onClick={() => console.log('[PaperDebugger] toolbar button clicked')}
+      onClick={() => setIsOpen(!isOpen)}
     >
       <Logo />
       <span style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -44,8 +48,21 @@ function ToolbarButton() {
 
 function App() {
   const anchor = findAnchor();
-  if (!anchor) return null;
-  return createPortal(<ToolbarButton />, anchor);
+  return (
+    <>
+      {anchor && createPortal(<ToolbarButton />, anchor)}
+      <MainDrawer />
+    </>
+  );
+}
+
+// Tailwind's preflight is global; inject our compiled CSS once into the page.
+function injectStyles() {
+  if (document.getElementById('pd-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'pd-styles';
+  style.textContent = pdCss;
+  document.head.appendChild(style);
 }
 
 export default defineUnlistedScript(() => {
@@ -53,10 +70,12 @@ export default defineUnlistedScript(() => {
 
   onElementAppeared(ANCHOR_APPEARED, () => {
     if (document.getElementById('paper-debugger-root')) return; // already injected
+    injectStyles();
     const root = document.createElement('div');
     root.id = 'paper-debugger-root';
+    root.classList.add('pd-scope');
     document.body.appendChild(root);
     createRoot(root).render(<App />);
-    console.log('[PaperDebugger] toolbar button injected');
+    console.log('[PaperDebugger] drawer + toolbar button injected');
   });
 });

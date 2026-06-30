@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* ── Theme tokens ─────────────────────────────────────────────────────────
+   Tailwind v4 @theme: these become both `var(--color-pd-*)` and utilities
+   (bg-pd-surface, text-pd-muted, …). Override in `.dark` to theme later. */
+@theme {
+  --color-pd-bg: #fafafa;
+  --color-pd-surface: #f3f4f6;
+  --color-pd-border: #e5e7eb;
+  --color-pd-text: #27272a;
+  --color-pd-muted: #6b7280;
+  --color-pd-control-hover: #e5e7eb;
+  --color-pd-control-hover-text: #374151;
+
+  --radius-pd: 0.75rem;
+  --radius-pd-sm: 0.375rem;
+
+  --shadow-pd: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-pd-strong: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+:root {
+  --pd-titlebar-height: 40px;
+}
+
+.dark {
+  --color-pd-bg: #18181b;
+  --color-pd-surface: #27272a;
+  --color-pd-border: #3f3f46;
+  --color-pd-text: #e4e4e7;
+  --color-pd-muted: #a1a1aa;
+  --color-pd-control-hover: #3f3f46;
+  --color-pd-control-hover-text: #e4e4e7;
+}
+
+/* ── Overleaf compatibility ───────────────────────────────────────────────
+   Tailwind's preflight is global; undo the parts that break Overleaf. */
+img,
+svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+}
+.collapse {
+  visibility: visible !important;
+}
+
+/* ── Drawer frame ─────────────────────────────────────────────────────────── */
+.pd-rnd {
+  box-shadow: var(--shadow-pd);
+  transition:
+    box-shadow 0.2s,
+    opacity 0.3s;
+}
+.pd-rnd:hover,
+.pd-rnd.dragging {
+  box-shadow: var(--shadow-pd-strong);
+}
+
+.pd-app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pd);
+  border: 1px solid var(--color-pd-border);
+  background-color: var(--color-pd-bg);
+  color: var(--color-pd-text);
+  overflow: hidden;
+}
+
+.pd-app-title-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--pd-titlebar-height);
+  padding: 0 0.5rem;
+  flex: 0 0 auto;
+  background-color: var(--color-pd-surface);
+}
+.pd-drag-handle {
+  cursor: move;
+}
+
+.pd-ctl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--color-pd-muted);
+  border-radius: var(--radius-pd-sm);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.pd-ctl-btn:hover {
+  background-color: var(--color-pd-control-hover);
+  color: var(--color-pd-control-hover-text);
+}
+
+.pd-app-body {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--color-pd-bg);
+}
