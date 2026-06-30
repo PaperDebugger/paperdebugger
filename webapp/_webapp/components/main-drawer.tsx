@@ -1,7 +1,7 @@
 import { Rnd } from "react-rnd";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { usePaperDebuggerUiStore, type DisplayMode } from "@/stores/paper-debugger-ui-store";
+import { usePaperDebuggerUiStore, type DisplayMode, type TabOrientation } from "@/stores/paper-debugger-ui-store";
 
 // ponytail: @iconify dropped — inline lucide-style SVGs, no icon dep.
 const Icon = ({ children }: { children: ReactNode }) => (
@@ -59,13 +59,67 @@ function TitleBar() {
   );
 }
 
-// ponytail: stub panel — outer body frame only. Inner content (chat / settings)
-// is the rewrite you're doing separately.
-function Body() {
+// ponytail: tab content is stubbed — the chat / settings panels are the rewrite
+// you're doing separately. This wires up switching + layout only.
+type Tab = { id: string; label: string; icon: ReactNode; content: ReactNode };
+
+const TAB_ICON = {
+  chat: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </>
+  ),
+};
+
+const Stub = ({ children }: { children: ReactNode }) => (
+  <div style={{ padding: 16, fontSize: 13, color: "var(--color-pd-muted)" }}>{children}</div>
+);
+
+function SettingsPanel() {
+  const { tabOrientation, setTabOrientation } = usePaperDebuggerUiStore();
   return (
-    <div className="pd-app-body">
-      <div style={{ padding: 16, fontSize: 13, color: "#6b7280" }}>
-        PaperDebugger panel — inner content (chat / settings) pending rewrite.
+    <div style={{ padding: 16, fontSize: 13 }}>
+      <div style={{ marginBottom: 8, fontWeight: 600 }}>Tab layout</div>
+      <div className="pd-seg" role="radiogroup" aria-label="Tab layout">
+        {(["vertical", "horizontal"] as const).map((o) => (
+          <button key={o} role="radio" aria-checked={tabOrientation === o} onClick={() => setTabOrientation(o)}>
+            {o}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const TABS: Tab[] = [
+  { id: "chat", label: "Chat", icon: TAB_ICON.chat, content: <Stub>Chat panel — pending rewrite.</Stub> },
+  { id: "settings", label: "Settings", icon: TAB_ICON.settings, content: <SettingsPanel /> },
+];
+
+function Tabs({ orientation }: { orientation: TabOrientation }) {
+  const [active, setActive] = useState(TABS[0].id);
+  const current = TABS.find((t) => t.id === active) ?? TABS[0];
+  return (
+    <div className={`pd-tabs pd-tabs-${orientation}`}>
+      <div className="pd-tablist" role="tablist" aria-orientation={orientation}>
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={t.id === active}
+            className="pd-tab"
+            title={t.label}
+            onClick={() => setActive(t.id)}
+          >
+            <Icon>{t.icon}</Icon>
+            {orientation === "horizontal" && <span>{t.label}</span>}
+          </button>
+        ))}
+      </div>
+      <div className="pd-tabpanel" role="tabpanel">
+        {current.content}
       </div>
     </div>
   );
@@ -161,7 +215,7 @@ export const MainDrawer = () => {
     >
       <Container>
         <TitleBar />
-        <Body />
+        <Tabs orientation={s.tabOrientation} />
       </Container>
     </Rnd>,
     document.body,

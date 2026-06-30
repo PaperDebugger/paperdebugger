@@ -108,8 +108,91 @@ object {
   color: var(--color-pd-control-hover-text);
 }
 
-.pd-app-body {
+/* ── Tabs ─────────────────────────────────────────────────────────────────
+   .pd-tabs is the body region: a tablist (rail or strip) + a scrolling panel.
+   Orientation flips the flex axis; the component picks it from displayMode. */
+.pd-tabs {
+  display: flex;
   flex: 1;
+  min-height: 0; /* let the panel scroll instead of growing the flex item */
+}
+.pd-tabs-vertical {
+  flex-direction: row;
+}
+.pd-tabs-horizontal {
+  flex-direction: column;
+}
+
+.pd-tablist {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+  background-color: var(--color-pd-surface);
+}
+.pd-tabs-vertical .pd-tablist {
+  flex-direction: column;
+  padding: 0.5rem 0.25rem;
+  border-right: 1px solid var(--color-pd-border);
+}
+.pd-tabs-horizontal .pd-tablist {
+  flex-direction: row;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--color-pd-border);
+}
+
+.pd-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--color-pd-muted);
+  border-radius: var(--radius-pd-sm);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.pd-tab:hover {
+  background-color: var(--color-pd-control-hover);
+  color: var(--color-pd-control-hover-text);
+}
+.pd-tab[aria-selected="true"] {
+  background-color: var(--color-pd-bg);
+  color: var(--color-pd-text);
+}
+
+.pd-tabpanel {
+  flex: 1;
+  min-width: 0;
   overflow: auto;
   background-color: var(--color-pd-bg);
+}
+
+/* ── Segmented control ─────────────────────────────────────────────────────── */
+.pd-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+}
+.pd-seg button {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--color-pd-muted);
+  border-radius: calc(var(--radius-pd-sm) - 1px);
+  font: inherit;
+  cursor: pointer;
+  text-transform: capitalize;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.pd-seg button[aria-checked="true"] {
+  background-color: var(--color-pd-surface);
+  color: var(--color-pd-text);
 }

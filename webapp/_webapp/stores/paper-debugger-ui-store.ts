@@ -2,10 +2,14 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export type DisplayMode = "floating" | "right-fixed" | "bottom-fixed";
+export type TabOrientation = "vertical" | "horizontal";
 
 interface PaperDebuggerUiStore {
   displayMode: DisplayMode;
   setDisplayMode: (displayMode: DisplayMode) => void;
+
+  tabOrientation: TabOrientation;
+  setTabOrientation: (tabOrientation: TabOrientation) => void;
 
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -32,6 +36,9 @@ export const usePaperDebuggerUiStore = create<PaperDebuggerUiStore>()(
     (set) => ({
       displayMode: "right-fixed",
       setDisplayMode: (displayMode) => set({ displayMode }),
+
+      tabOrientation: "vertical",
+      setTabOrientation: (tabOrientation) => set({ tabOrientation }),
 
       isOpen: false,
       setIsOpen: (isOpen) => set({ isOpen }),
