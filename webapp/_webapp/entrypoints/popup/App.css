@@ -1,42 +1,77 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.popup-shell {
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #212529;
+  background-color: #ffffff;
+  padding: 14px 12px;
+  max-width: 700px;
+  line-height: 1.2;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #54bc4ae0);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 800;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.subtitle {
+  margin: 0 0 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2933;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.card {
-  padding: 2em;
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-left: 14px;
+  border-left: 4px solid #e5e7eb;
 }
 
-.read-the-docs {
-  color: #888;
+.step-number {
+  color: #1f7aec;
+  font-weight: 800;
+  font-size: 14px;
+  min-width: 14px;
+}
+
+.step-text {
+  margin: 0;
+  font-size: 14px;
+  color: #1f2933;
+}
+
+.step-link {
+  color: #1f7aec;
+  text-decoration: none;
+}
+
+.step-link:hover {
+  text-decoration: underline;
+}
+
+.footnote {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 12px;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

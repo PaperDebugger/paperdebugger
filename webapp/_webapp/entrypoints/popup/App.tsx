@@ -1,34 +1,54 @@
-import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
 import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0);
+const openSettingsPage = () => {
+  if (browser.runtime?.openOptionsPage) {
+    browser.runtime.openOptionsPage();
+    return;
+  }
+  window.open(browser.runtime.getURL('/options.html'), '_blank', 'noopener,noreferrer');
+};
 
+function App() {
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="popup-shell noselect">
+      <h1 className="title">PaperDebugger</h1>
+      <h2 className="subtitle">How to use</h2>
+
+      <div className="steps">
+        <div className="step">
+          <span className="step-number">1.</span>
+          <p className="step-text">
+            In{' '}
+            <a className="step-link" href="https://overleaf.com" target="_blank" rel="noreferrer">
+              overleaf.com
+            </a>
+            , open any of your projects.
+          </p>
+        </div>
+        <div className="step">
+          <span className="step-number">2.</span>
+          <p className="step-text">PaperDebugger is in the "top left" of the project page.</p>
+        </div>
       </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
+
+      <img src="/images/locator.png" alt="PaperDebugger Location" style={{ width: '100%' }} />
+
+      <p className="footnote">
+        Self-hosted Overleaf?{' '}
+        <a
+          className="step-link"
+          href={browser.runtime.getURL('/options.html')}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => {
+            e.preventDefault();
+            openSettingsPage();
+          }}
+        >
+          Allow PaperDebugger access here.
+        </a>
       </p>
-    </>
+    </div>
   );
 }
 
