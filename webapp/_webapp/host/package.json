@@ -1,0 +1,23 @@
+{
+  "name": "paperdebugger-host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local native-messaging host bridging the PaperDebugger extension to your Claude Code / Codex CLI.",
+  "bin": {
+    "pd-host": "./dist/native.js"
+  },
+  "scripts": {
+    "setup": "bun src/install.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.14"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.3"
+  }
+}
