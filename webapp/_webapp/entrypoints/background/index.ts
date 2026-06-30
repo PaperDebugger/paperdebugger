@@ -14,8 +14,8 @@
  * The core function is `chrome.runtime.onMessage.addListener`
  * and `sendResponse` to send a response back to the content script (intermediate.js).
  */
-import { HANDLER_NAMES } from '@/lib/constants';
-import { syncContentScripts } from './permissions';
+import { HANDLER_NAMES } from "@/lib/constants";
+import { syncContentScripts } from "./permissions";
 
 export default defineBackground({
   // Set manifest options
@@ -43,5 +43,3 @@ export default defineBackground({
     });
   },
 });
-
-

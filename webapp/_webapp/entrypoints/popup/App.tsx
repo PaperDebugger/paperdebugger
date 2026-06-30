@@ -1,11 +1,11 @@
-import './App.css';
+import "./App.css";
 
 const openSettingsPage = () => {
   if (browser.runtime?.openOptionsPage) {
     browser.runtime.openOptionsPage();
     return;
   }
-  window.open(browser.runtime.getURL('/options.html'), '_blank', 'noopener,noreferrer');
+  window.open(browser.runtime.getURL("/options.html"), "_blank", "noopener,noreferrer");
 };
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
         <div className="step">
           <span className="step-number">1.</span>
           <p className="step-text">
-            In{' '}
+            In{" "}
             <a className="step-link" href="https://overleaf.com" target="_blank" rel="noreferrer">
               overleaf.com
             </a>
@@ -31,13 +31,13 @@ function App() {
         </div>
       </div>
 
-      <img src="/images/locator.png" alt="PaperDebugger Location" style={{ width: '100%', marginTop: "1em" }} />
+      <img src="/images/locator.png" alt="PaperDebugger Location" style={{ width: "100%", marginTop: "1em" }} />
 
       <p className="footnote">
-        Self-hosted Overleaf?{' '}
+        Self-hosted Overleaf?{" "}
         <a
           className="step-link"
-          href={browser.runtime.getURL('/options.html')}
+          href={browser.runtime.getURL("/options.html")}
           target="_blank"
           rel="noreferrer"
           onClick={(e) => {

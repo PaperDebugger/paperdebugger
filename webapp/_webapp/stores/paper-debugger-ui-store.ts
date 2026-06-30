@@ -4,30 +4,22 @@ import { persist, createJSONStorage } from "zustand/middleware";
 export type DisplayMode = "floating" | "right-fixed" | "bottom-fixed";
 export type TabOrientation = "vertical" | "horizontal";
 
-interface PaperDebuggerUiStore {
+interface PaperDebuggerUiState {
   displayMode: DisplayMode;
-  setDisplayMode: (displayMode: DisplayMode) => void;
-
   tabOrientation: TabOrientation;
-  setTabOrientation: (tabOrientation: TabOrientation) => void;
-
   isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
 
   floatingX: number;
-  setFloatingX: (floatingX: number) => void;
   floatingY: number;
-  setFloatingY: (floatingY: number) => void;
   floatingWidth: number;
-  setFloatingWidth: (floatingWidth: number) => void;
   floatingHeight: number;
-  setFloatingHeight: (floatingHeight: number) => void;
 
   rightFixedWidth: number;
-  setRightFixedWidth: (rightFixedWidth: number) => void;
   bottomFixedHeight: number;
-  setBottomFixedHeight: (bottomFixedHeight: number) => void;
+}
 
+interface PaperDebuggerUiStore extends PaperDebuggerUiState {
+  update: (patch: Partial<PaperDebuggerUiState>) => void;
   resetPosition: () => void;
 }
 
@@ -35,29 +27,20 @@ export const usePaperDebuggerUiStore = create<PaperDebuggerUiStore>()(
   persist(
     (set) => ({
       displayMode: "right-fixed",
-      setDisplayMode: (displayMode) => set({ displayMode }),
-
       tabOrientation: "vertical",
-      setTabOrientation: (tabOrientation) => set({ tabOrientation }),
-
       isOpen: false,
-      setIsOpen: (isOpen) => set({ isOpen }),
 
       floatingX: 100,
-      setFloatingX: (floatingX) => set({ floatingX }),
       floatingY: 100,
-      setFloatingY: (floatingY) => set({ floatingY }),
       floatingWidth: 660,
-      setFloatingWidth: (floatingWidth) => set({ floatingWidth }),
       floatingHeight: 500,
-      setFloatingHeight: (floatingHeight) => set({ floatingHeight }),
 
       rightFixedWidth: 580,
-      setRightFixedWidth: (rightFixedWidth) => set({ rightFixedWidth }),
       bottomFixedHeight: 470,
-      setBottomFixedHeight: (bottomFixedHeight) => set({ bottomFixedHeight }),
 
-      resetPosition: () => set({ floatingX: 100, floatingY: 100, floatingWidth: 500, floatingHeight: 500, displayMode: "floating" }),
+      update: (patch) => set(patch),
+      resetPosition: () =>
+        set({ displayMode: "floating", floatingX: 100, floatingY: 100, floatingWidth: 500, floatingHeight: 500 }),
     }),
     {
       name: "pd.layout-storage",

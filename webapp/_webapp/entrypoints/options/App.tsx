@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import './App.css';
+import { useCallback, useEffect, useState } from "react";
+import "./App.css";
 
-type MessageType = 'success' | 'error' | 'info';
+type MessageType = "success" | "error" | "info";
 interface PermissionMessage {
   text: string;
   type: MessageType;
@@ -10,12 +10,10 @@ interface PermissionMessage {
 // Normalize a user-entered URL/wildcard into a Chrome host-permission pattern
 // (<scheme>://<host><path>). Kept verbatim from the old webapp — it's the one
 // security-sensitive piece here.
-function normalizeWildcardPattern(
-  url: string,
-): { valid: true; origin: string } | { valid: false; error: string } {
+function normalizeWildcardPattern(url: string): { valid: true; origin: string } | { valid: false; error: string } {
   const trimmed = url.trim();
   if (!trimmed) {
-    return { valid: false, error: 'Please enter a URL' };
+    return { valid: false, error: "Please enter a URL" };
   }
 
   const hostPermissionPattern = /^(\*|https?):\/\/((?:\*\.)?[^/\s]+)(\/.*)?$/i;
@@ -24,29 +22,29 @@ function normalizeWildcardPattern(
   if (match) {
     const scheme = match[1].toLowerCase();
     const host = match[2];
-    const path = match[3] || '/*';
-    const normalizedScheme = scheme === '*' ? '*' : scheme;
-    const normalizedPath = path === '/' ? '/*' : path.endsWith('/*') ? path : `${path}/*`;
+    const path = match[3] || "/*";
+    const normalizedScheme = scheme === "*" ? "*" : scheme;
+    const normalizedPath = path === "/" ? "/*" : path.endsWith("/*") ? path : `${path}/*`;
     return { valid: true, origin: `${normalizedScheme}://${host}${normalizedPath}` };
   }
 
   try {
     const urlObj = new URL(trimmed);
-    if (!['http:', 'https:'].includes(urlObj.protocol)) {
-      return { valid: false, error: 'URL must start with http://, https://, or *://' };
+    if (!["http:", "https:"].includes(urlObj.protocol)) {
+      return { valid: false, error: "URL must start with http://, https://, or *://" };
     }
     return { valid: true, origin: `${urlObj.protocol}//${urlObj.host}/*` };
   } catch {
     return {
       valid: false,
       error:
-        'Invalid URL. Use a full URL (e.g., https://example.com) or a wildcard pattern (e.g., https://*.example.com/*, *://*.example.com/*)',
+        "Invalid URL. Use a full URL (e.g., https://example.com) or a wildcard pattern (e.g., https://*.example.com/*, *://*.example.com/*)",
     };
   }
 }
 
 function App() {
-  const [permissionUrl, setPermissionUrl] = useState('');
+  const [permissionUrl, setPermissionUrl] = useState("");
   const [origins, setOrigins] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,8 +56,8 @@ function App() {
       const all = await browser.permissions.getAll();
       setOrigins(all.origins ?? []);
     } catch (error) {
-      console.error('[PaperDebugger] Error loading permissions.', error);
-      setMessage({ text: 'Error loading permissions.', type: 'error' });
+      console.error("[PaperDebugger] Error loading permissions.", error);
+      setMessage({ text: "Error loading permissions.", type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +76,7 @@ function App() {
   const submit = useCallback(async () => {
     const validation = normalizeWildcardPattern(permissionUrl);
     if (!validation.valid) {
-      setMessage({ text: validation.error, type: 'error' });
+      setMessage({ text: validation.error, type: "error" });
       return;
     }
     const { origin } = validation;
@@ -87,7 +85,7 @@ function App() {
     setIsSubmitting(true);
     try {
       if (await browser.permissions.contains({ origins: [origin] })) {
-        setMessage({ text: `Permission for ${origin} is already granted.`, type: 'info' });
+        setMessage({ text: `Permission for ${origin} is already granted.`, type: "info" });
         await loadPermissions();
         return;
       }
@@ -96,14 +94,14 @@ function App() {
       const granted = await browser.permissions.request({ origins: [origin] });
       setMessage(
         granted
-          ? { text: `Permission granted for ${origin}`, type: 'success' }
-          : { text: `Permission denied for ${origin}`, type: 'error' },
+          ? { text: `Permission granted for ${origin}`, type: "success" }
+          : { text: `Permission denied for ${origin}`, type: "error" },
       );
       if (granted) await loadPermissions();
     } catch (error) {
-      console.error('[PaperDebugger] Error requesting permission', error);
-      const text = error instanceof Error ? error.message : 'Error requesting permission';
-      setMessage({ text: `Error: ${text}`, type: 'error' });
+      console.error("[PaperDebugger] Error requesting permission", error);
+      const text = error instanceof Error ? error.message : "Error requesting permission";
+      setMessage({ text: `Error: ${text}`, type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -116,9 +114,7 @@ function App() {
 
         <div className="pd-section">
           <div className="pd-section-title">Host Permissions</div>
-          <p className="pd-section-desc">
-            Add your self-hosted Overleaf domain so PaperDebugger can interact with it.
-          </p>
+          <p className="pd-section-desc">Add your self-hosted Overleaf domain so PaperDebugger can interact with it.</p>
 
           <label className="pd-label" htmlFor="pd-url">
             Website URL:
@@ -130,7 +126,7 @@ function App() {
             value={permissionUrl}
             onChange={(e) => setPermissionUrl(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !isSubmitting) submit();
+              if (e.key === "Enter" && !isSubmitting) submit();
             }}
           />
           <p className="pd-hint">
@@ -142,7 +138,7 @@ function App() {
 
           <div className="pd-actions">
             <button className="pd-button" onClick={submit} disabled={isSubmitting}>
-              {isSubmitting ? 'Requesting...' : 'Request Permission'}
+              {isSubmitting ? "Requesting..." : "Request Permission"}
             </button>
           </div>
 

@@ -1,0 +1,7 @@
+.output
+.wxt
+node_modules
+dist
+package-lock.json
+public
+*.svg

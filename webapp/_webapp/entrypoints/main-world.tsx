@@ -1,16 +1,17 @@
 // MAIN world. Has page JS (Overleaf's cmView etc.) but NO chrome.runtime —
 // reach the background through the ISOLATED bridge (lib/intermediate makeFunction).
-import { createRoot } from 'react-dom/client';
-import { createPortal } from 'react-dom';
-import { onElementAppeared } from '@/lib/dom';
-import { usePaperDebuggerUiStore } from '@/stores/paper-debugger-ui-store';
-import { MainDrawer } from '@/components/main-drawer';
-import pdCss from '@/assets/pd.css?inline';
+import { createRoot } from "react-dom/client";
+import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
+import { onElementAppeared } from "@/lib/dom";
+import { usePaperDebuggerUiStore } from "@/stores/paper-debugger-ui-store";
+import { MainDrawer } from "@/components/main-drawer";
+import pdCss from "@/assets/pd.css?inline";
 
 // Anchor the button waits for (old + redesigned Overleaf toolbars).
-const ANCHOR_APPEARED = '.toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar';
+const ANCHOR_APPEARED = ".toolbar-left .toolbar-item, .ide-redesign-toolbar-menu-bar";
 const findAnchor = () =>
-  document.querySelector('.toolbar-left') ?? document.querySelector('.ide-redesign-toolbar-menu-bar');
+  document.querySelector(".toolbar-left") ?? document.querySelector(".ide-redesign-toolbar-menu-bar");
 
 function Logo({ size = 24 }: { size?: number }) {
   return (
@@ -29,20 +30,100 @@ function Logo({ size = 24 }: { size?: number }) {
 // sits in the bar. Toggles the drawer; the rest of its behaviour (context menu,
 // shortcuts) lands with the inner-content rewrite.
 function ToolbarButton() {
-  const { isOpen, setIsOpen } = usePaperDebuggerUiStore();
+  const { isOpen, update, resetPosition } = usePaperDebuggerUiStore();
+  const clickTimes = useRef<number[]>([]);
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Reset to a known on-screen spot and force it open — the rescue hatch for a
+  // drawer that drifted off-screen.
+  const rescue = () => {
+    resetPosition();
+    update({ isOpen: true });
+    setMenu(null);
+  };
+
+  const onClick = () => {
+    const now = Date.now();
+    clickTimes.current = [...clickTimes.current, now].filter((t) => now - t <= 2000);
+    if (clickTimes.current.length >= 4) {
+      clickTimes.current = [];
+      rescue();
+      return;
+    }
+    update({ isOpen: !isOpen });
+  };
+
+  // Dismiss the context menu on any outside interaction.
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const events = ["click", "scroll", "blur"] as const;
+    events.forEach((e) => window.addEventListener(e, close, true));
+    return () => events.forEach((e) => window.removeEventListener(e, close, true));
+  }, [menu]);
+
   return (
-    <button
-      id="paper-debugger-button"
-      className="btn btn-full-height ide-redesign-toolbar-dropdown-toggle-subdued ide-redesign-toolbar-button-subdued menu-bar-toggle toolbar-item"
-      style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', justifyContent: 'center' }}
-      onClick={() => setIsOpen(!isOpen)}
-    >
-      <Logo />
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-        <span style={{ fontWeight: 300 }}>Paper</span>
-        <span style={{ fontWeight: 700 }}>Debugger</span>
-      </span>
-    </button>
+    <>
+      <button
+        id="paper-debugger-button"
+        className="btn btn-full-height ide-redesign-toolbar-dropdown-toggle-subdued ide-redesign-toolbar-button-subdued menu-bar-toggle toolbar-item"
+        style={{ display: "flex", gap: "0.25rem", alignItems: "center", justifyContent: "center" }}
+        onClick={onClick}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setMenu({ x: e.clientX, y: e.clientY });
+        }}
+      >
+        <Logo />
+        <span style={{ display: "inline-flex", alignItems: "center" }}>
+          <span style={{ fontWeight: 300 }}>Paper</span>
+          <span style={{ fontWeight: 700 }}>Debugger</span>
+        </span>
+      </button>
+      {menu &&
+        createPortal(
+          // ponytail: inline-styled — the menu lives in document.body, outside the
+          // #paper-debugger-root scope, so pd.css doesn't reach it.
+          <div
+            role="menu"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "fixed",
+              top: menu.y,
+              left: menu.x,
+              zIndex: 2147483647,
+              minWidth: 140,
+              padding: 4,
+              background: "#fff",
+              color: "#27272a",
+              border: "1px solid #e5e7eb",
+              borderRadius: 6,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              fontSize: 13,
+            }}
+          >
+            <button
+              role="menuitem"
+              onClick={rescue}
+              style={{
+                display: "block",
+                width: "100%",
+                padding: "6px 10px",
+                textAlign: "left",
+                border: "none",
+                borderRadius: 4,
+                background: "transparent",
+                color: "inherit",
+                font: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              Reset position
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -58,24 +139,34 @@ function App() {
 
 // Tailwind's preflight is global; inject our compiled CSS once into the page.
 function injectStyles() {
-  if (document.getElementById('pd-styles')) return;
-  const style = document.createElement('style');
-  style.id = 'pd-styles';
+  if (document.getElementById("pd-styles")) return;
+  const style = document.createElement("style");
+  style.id = "pd-styles";
   style.textContent = pdCss;
   document.head.appendChild(style);
 }
 
 export default defineUnlistedScript(() => {
-  console.log('[PaperDebugger] main-world script loaded');
+  console.log("[PaperDebugger] main-world script loaded");
 
   onElementAppeared(ANCHOR_APPEARED, () => {
-    if (document.getElementById('paper-debugger-root')) return; // already injected
+    if (document.getElementById("paper-debugger-root")) return; // already injected
     injectStyles();
-    const root = document.createElement('div');
-    root.id = 'paper-debugger-root';
-    root.classList.add('pd-scope');
+    const root = document.createElement("div");
+    root.id = "paper-debugger-root";
+    root.classList.add("pd-scope");
+    // Full-viewport overlay: gives the absolutely-positioned drawer a real
+    // containing block anchored to the viewport (not Overleaf's layout), so it
+    // can't drift off-screen. pointer-events:none lets clicks through to
+    // Overleaf; the drawer re-enables them on its own element.
+    Object.assign(root.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483646",
+      pointerEvents: "none",
+    });
     document.body.appendChild(root);
     createRoot(root).render(<App />);
-    console.log('[PaperDebugger] drawer + toolbar button injected');
+    console.log("[PaperDebugger] drawer + toolbar button injected");
   });
 });
