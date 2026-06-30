@@ -14,6 +14,7 @@
  * The core function is `chrome.runtime.onMessage.addListener`
  * and `sendResponse` to send a response back to the content script (intermediate.js).
  */
+import { HANDLER_NAMES } from '@/lib/constants';
 import { syncContentScripts } from './permissions';
 
 export default defineBackground({
@@ -30,6 +31,16 @@ export default defineBackground({
     syncContentScripts(); // service worker 启动时按已授权 origin 重建动态脚本
     browser.permissions.onAdded.addListener(syncContentScripts);
     browser.permissions.onRemoved.addListener(syncContentScripts);
+
+    // Handlers reached via the ISOLATED bridge ({ action, args } -> response).
+    // ponytail: only getUrl is live; cookies/sessionId/fetchImage land as their
+    // impls are migrated.
+    browser.runtime.onMessage.addListener((request: { action: string; args: unknown }) => {
+      switch (request?.action) {
+        case HANDLER_NAMES.GET_URL:
+          return Promise.resolve((browser.runtime.getURL as (p: string) => string)(request.args as string));
+      }
+    });
   },
 });
 

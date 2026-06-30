@@ -26,6 +26,11 @@ export default defineConfig({
       {
         resources: ["images/*"],
         matches: ["*://*/*"]
+      },
+      {
+        // MAIN-world UI script, injected by the ISOLATED content script
+        resources: ["main-world.js"],
+        matches: ["*://*/*"]
       }
     ]
   }
