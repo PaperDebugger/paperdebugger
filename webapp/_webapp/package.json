@@ -16,12 +16,16 @@
   },
   "dependencies": {
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "react-rnd": "^10.5.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@wxt-dev/module-react": "^1.1.5",
+    "tailwindcss": "^4.3.2",
     "typescript": "^5.9.3",
     "wxt": "^0.20.27"
   }
