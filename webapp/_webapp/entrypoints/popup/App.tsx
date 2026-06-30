@@ -31,7 +31,7 @@ function App() {
         </div>
       </div>
 
-      <img src="/images/locator.png" alt="PaperDebugger Location" style={{ width: '100%' }} />
+      <img src="/images/locator.png" alt="PaperDebugger Location" style={{ width: '100%', marginTop: "1em" }} />
 
       <p className="footnote">
         Self-hosted Overleaf?{' '}

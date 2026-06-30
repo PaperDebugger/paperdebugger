@@ -1,6 +1,6 @@
 export default defineContentScript({
   matches: ['*://*.overleaf.com/*'],
   main() {
-    console.log('Hello content.');
+    console.log('[PaperDebugger] Hello content.');
   },
 });
