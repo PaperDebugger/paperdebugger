@@ -2,6 +2,7 @@ import { Rnd } from "react-rnd";
 import { Component, useEffect, useState, type ReactNode } from "react";
 import { usePaperDebuggerUiStore, type DisplayMode, type TabOrientation } from "@/stores/paper-debugger-ui-store";
 import { ChatPanel } from "@/components/chat-panel";
+import { chatStream, type ChatProvider } from "@/lib/chat-stream";
 
 // A crashing panel (e.g. assistant-ui mount error) shouldn't blank the whole
 // drawer — catch it and show the message instead.
@@ -93,23 +94,59 @@ const TAB_ICON = {
   ),
 };
 
+type ConnStatus = { state: "idle" | "checking" | "ok" | "fail"; message?: string };
+
 function SettingsPanel() {
-  const { tabOrientation, update } = usePaperDebuggerUiStore();
+  const { tabOrientation, provider, update } = usePaperDebuggerUiStore();
+  const [conn, setConn] = useState<ConnStatus>({ state: "idle" });
+
+  const testConnection = () => {
+    setConn({ state: "checking" });
+    chatStream({ type: "ping" }, () => {}).then(
+      () => setConn({ state: "ok" }),
+      (err) => setConn({ state: "fail", message: err instanceof Error ? err.message : String(err) }),
+    );
+  };
+
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ marginBottom: 8, fontWeight: 600 }}>Tab layout</div>
-      <div className="pd-seg" role="radiogroup" aria-label="Tab layout">
-        {(["vertical", "horizontal"] as const).map((o) => (
-          <button
-            key={o}
-            role="radio"
-            aria-checked={tabOrientation === o}
-            onClick={() => update({ tabOrientation: o })}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
+    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 20 }}>
+      <section>
+        <div style={{ marginBottom: 8, fontWeight: 600 }}>Provider</div>
+        <div className="pd-seg" role="radiogroup" aria-label="Provider">
+          {(["claude", "codex"] as ChatProvider[]).map((p) => (
+            <button key={p} role="radio" aria-checked={provider === p} onClick={() => update({ provider: p })}>
+              {p}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div style={{ marginBottom: 8, fontWeight: 600 }}>Local host</div>
+        <button className="pd-action" onClick={testConnection} disabled={conn.state === "checking"}>
+          {conn.state === "checking" ? "Checking…" : "Test connection"}
+        </button>
+        {conn.state === "ok" && <div style={{ marginTop: 8, color: "#16a34a" }}>✓ Connected to pd-host.</div>}
+        {conn.state === "fail" && (
+          <div style={{ marginTop: 8, color: "#dc2626", whiteSpace: "pre-wrap" }}>✗ {conn.message}</div>
+        )}
+      </section>
+
+      <section>
+        <div style={{ marginBottom: 8, fontWeight: 600 }}>Tab layout</div>
+        <div className="pd-seg" role="radiogroup" aria-label="Tab layout">
+          {(["vertical", "horizontal"] as const).map((o) => (
+            <button
+              key={o}
+              role="radio"
+              aria-checked={tabOrientation === o}
+              onClick={() => update({ tabOrientation: o })}
+            >
+              {o}
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

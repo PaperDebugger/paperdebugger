@@ -180,6 +180,23 @@
   color: var(--color-pd-text);
 }
 
+.pd-action {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  background-color: var(--color-pd-surface);
+  color: var(--color-pd-text);
+  font: inherit;
+  cursor: pointer;
+}
+.pd-action:hover {
+  background-color: var(--color-pd-control-hover);
+}
+.pd-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ── Chat thread (assistant-ui primitives) ─────────────────────────────────
    assistant-ui ships unstyled primitives; these are our own styles for them. */
 .pd-thread {

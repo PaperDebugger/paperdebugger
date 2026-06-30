@@ -5,3 +5,10 @@ export const HANDLER_NAMES = {
   FETCH_IMAGE: "fetchImage",
   REQUEST_HOST_PERMISSION: "requestHostPermission",
 } as const;
+
+// Native-messaging host that bridges to the local Claude Code / Codex CLI.
+// Must match host/install.mjs and the installed manifest.
+export const NATIVE_HOST_NAME = "com.paperdebugger.host";
+
+// Long-lived runtime port name for streamed chat (background ⇄ content script).
+export const CHAT_STREAM_PORT = "pd-chat-stream";

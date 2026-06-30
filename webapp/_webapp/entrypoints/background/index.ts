@@ -14,8 +14,55 @@
  * The core function is `chrome.runtime.onMessage.addListener`
  * and `sendResponse` to send a response back to the content script (intermediate.js).
  */
-import { HANDLER_NAMES } from "@/lib/constants";
+import { HANDLER_NAMES, NATIVE_HOST_NAME, CHAT_STREAM_PORT } from "@/lib/constants";
 import { syncContentScripts } from "./permissions";
+
+// ─── Streamed chat over native messaging ───────────────────────────────────
+// One long-lived native port to pd-host, shared across requests and routed by
+// message `id`. Each content-script chat Port maps to one in-flight request.
+type NativePort = ReturnType<typeof browser.runtime.connectNative>;
+type Relay = { postMessage: (m: unknown) => void };
+let nativePort: NativePort | null = null;
+const inflight = new Map<string, Relay>();
+
+function getNativePort(): NativePort {
+  if (nativePort) return nativePort;
+  const port = browser.runtime.connectNative(NATIVE_HOST_NAME);
+  port.onMessage.addListener((msg: { id?: string; type?: string }) => {
+    const relay = msg.id ? inflight.get(msg.id) : undefined;
+    relay?.postMessage(msg);
+    if (msg.id && (msg.type === "done" || msg.type === "error" || msg.type === "pong")) {
+      inflight.delete(msg.id);
+    }
+  });
+  port.onDisconnect.addListener(() => {
+    const err = browser.runtime.lastError?.message || "host disconnected";
+    for (const [, relay] of inflight) relay.postMessage({ type: "error", message: err });
+    inflight.clear();
+    nativePort = null;
+  });
+  nativePort = port;
+  return port;
+}
+
+function registerChatStreamPort() {
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== CHAT_STREAM_PORT) return;
+    let reqId: string | undefined;
+    port.onMessage.addListener((req: { id?: string }) => {
+      reqId = req.id;
+      try {
+        if (reqId) inflight.set(reqId, port);
+        getNativePort().postMessage(req);
+      } catch (err) {
+        port.postMessage({ type: "error", message: String((err as Error)?.message ?? err) });
+      }
+    });
+    port.onDisconnect.addListener(() => {
+      if (reqId) inflight.delete(reqId);
+    });
+  });
+}
 
 export default defineBackground({
   // Set manifest options
@@ -31,6 +78,8 @@ export default defineBackground({
     syncContentScripts(); // service worker 启动时按已授权 origin 重建动态脚本
     browser.permissions.onAdded.addListener(syncContentScripts);
     browser.permissions.onRemoved.addListener(syncContentScripts);
+
+    registerChatStreamPort(); // streamed chat ⇄ local pd-host (native messaging)
 
     // Handlers reached via the ISOLATED bridge ({ action, args } -> response).
     // ponytail: only getUrl is live; cookies/sessionId/fetchImage land as their

@@ -1,6 +1,7 @@
 // ISOLATED world. Importing the intermediate module registers, as a side
 // effect, the chrome.runtime bridge listeners for every makeFunction handler.
 import "@/lib/intermediate";
+import "@/lib/chat-stream"; // registers the streamed-chat relay (ISOLATED side)
 
 export default defineContentScript({
   matches: ["*://*.overleaf.com/*"],

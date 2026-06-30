@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { ChatProvider } from "@/lib/chat-stream";
 
 export type DisplayMode = "floating" | "right-fixed" | "bottom-fixed";
 export type TabOrientation = "vertical" | "horizontal";
@@ -7,6 +8,7 @@ export type TabOrientation = "vertical" | "horizontal";
 interface PaperDebuggerUiState {
   displayMode: DisplayMode;
   tabOrientation: TabOrientation;
+  provider: ChatProvider;
   isOpen: boolean;
 
   floatingX: number;
@@ -28,6 +30,7 @@ export const usePaperDebuggerUiStore = create<PaperDebuggerUiStore>()(
     (set) => ({
       displayMode: "right-fixed",
       tabOrientation: "vertical",
+      provider: "claude",
       isOpen: false,
 
       floatingX: 100,
