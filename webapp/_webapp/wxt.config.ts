@@ -1,11 +1,14 @@
 import { defineConfig } from "wxt";
 import tailwindcss from "@tailwindcss/vite";
+import Icons from "unplugin-icons/vite";
 // See https://wxt.dev/api/config.html
 
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   vite: () => ({
-    plugins: [tailwindcss()],
+    // unplugin-icons: `import X from "~icons/lucide/x"` is inlined at build time
+    // from the offline @iconify-json/lucide set — no runtime network fetch.
+    plugins: [tailwindcss(), Icons({ compiler: "jsx", jsx: "react" })],
     // react-draggable's log() reads process.env.DRAGGABLE_DEBUG; MAIN world has
     // no `process` global, so replace it at build time to avoid a ReferenceError.
     define: {

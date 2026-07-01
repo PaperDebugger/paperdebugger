@@ -1,8 +1,16 @@
 import { Rnd } from "react-rnd";
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useState, type ComponentType, type ReactNode, type SVGProps } from "react";
 import { usePaperDebuggerUiStore, type DisplayMode, type TabOrientation } from "@/stores/paper-debugger-ui-store";
 import { ChatPanel } from "@/components/chat-panel";
 import { chatStream, type ChatProvider } from "@/lib/chat-stream";
+import IconX from "~icons/lucide/x";
+import IconSquare from "~icons/lucide/square";
+import IconPanelRight from "~icons/lucide/panel-right";
+import IconPanelBottom from "~icons/lucide/panel-bottom";
+import IconMessageSquare from "~icons/lucide/message-square";
+import IconSettings from "~icons/lucide/settings";
+
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 // A crashing panel (e.g. assistant-ui mount error) shouldn't blank the whole
 // drawer — catch it and show the message instead.
@@ -23,36 +31,10 @@ class PanelErrorBoundary extends Component<{ children: ReactNode }, { error: Err
   }
 }
 
-// ponytail: @iconify dropped — inline lucide-style SVGs, no icon dep.
-const Icon = ({ children }: { children: ReactNode }) => (
-  <svg
-    width={16}
-    height={16}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {children}
-  </svg>
-);
-
-const MODE_ICON: Record<DisplayMode, ReactNode> = {
-  floating: <rect x="4" y="6" width="16" height="13" rx="2" />,
-  "right-fixed": (
-    <>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M15 4v16" />
-    </>
-  ),
-  "bottom-fixed": (
-    <>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 14h18" />
-    </>
-  ),
+const MODE_ICON: Record<DisplayMode, IconComponent> = {
+  floating: IconSquare,
+  "right-fixed": IconPanelRight,
+  "bottom-fixed": IconPanelBottom,
 };
 
 function TitleBar({ children }: { children?: ReactNode }) {
@@ -60,39 +42,28 @@ function TitleBar({ children }: { children?: ReactNode }) {
   return (
     <div className="pd-app-title-bar pd-drag-handle select-none">
       <button className="pd-ctl-btn" title="Close" onClick={() => update({ isOpen: false })}>
-        <Icon>
-          <path d="M18 6 6 18M6 6l12 12" />
-        </Icon>
+        <IconX width={16} height={16} />
       </button>
-      {(Object.keys(MODE_ICON) as DisplayMode[]).map((mode) => (
-        <button
-          key={mode}
-          className="pd-ctl-btn"
-          title={mode}
-          style={{ opacity: displayMode === mode ? 1 : 0.5 }}
-          onClick={() => update({ displayMode: mode })}
-        >
-          <Icon>{MODE_ICON[mode]}</Icon>
-        </button>
-      ))}
+      {(Object.keys(MODE_ICON) as DisplayMode[]).map((mode) => {
+        const ModeIcon = MODE_ICON[mode];
+        return (
+          <button
+            key={mode}
+            className="pd-ctl-btn"
+            title={mode}
+            style={{ opacity: displayMode === mode ? 1 : 0.5 }}
+            onClick={() => update({ displayMode: mode })}
+          >
+            <ModeIcon width={16} height={16} />
+          </button>
+        );
+      })}
       {children}
     </div>
   );
 }
 
-// ponytail: tab content is stubbed — the chat / settings panels are the rewrite
-// you're doing separately. This wires up switching + layout only.
-type Tab = { id: string; label: string; icon: ReactNode; content: ReactNode };
-
-const TAB_ICON = {
-  chat: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
-  settings: (
-    <>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </>
-  ),
-};
+type Tab = { id: string; label: string; icon: IconComponent; content: ReactNode };
 
 type ConnStatus = { state: "idle" | "checking" | "ok" | "fail"; message?: string };
 
@@ -152,8 +123,8 @@ function SettingsPanel() {
 }
 
 const TABS: Tab[] = [
-  { id: "chat", label: "Chat", icon: TAB_ICON.chat, content: <ChatPanel /> },
-  { id: "settings", label: "Settings", icon: TAB_ICON.settings, content: <SettingsPanel /> },
+  { id: "chat", label: "Chat", icon: IconMessageSquare, content: <ChatPanel /> },
+  { id: "settings", label: "Settings", icon: IconSettings, content: <SettingsPanel /> },
 ];
 
 function TabList({
@@ -169,19 +140,22 @@ function TabList({
     // pd-drag-handle: the rail's empty area drags the window; the .pd-tab
     // buttons stay clickable via Rnd's `cancel` selector.
     <div className="pd-tablist pd-drag-handle select-none" role="tablist" aria-orientation={orientation}>
-      {TABS.map((t) => (
-        <button
-          key={t.id}
-          role="tab"
-          aria-selected={t.id === active}
-          className="pd-tab"
-          title={t.label}
-          onClick={() => setActive(t.id)}
-        >
-          <Icon>{t.icon}</Icon>
-          {orientation === "horizontal" && <span>{t.label}</span>}
-        </button>
-      ))}
+      {TABS.map((t) => {
+        const TabIcon = t.icon;
+        return (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={t.id === active}
+            className="pd-tab"
+            title={t.label}
+            onClick={() => setActive(t.id)}
+          >
+            <TabIcon width={16} height={16} />
+            {orientation === "horizontal" && <span>{t.label}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }

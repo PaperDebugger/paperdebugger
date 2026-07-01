@@ -25,6 +25,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@iconify-json/lucide": "^1.2.115",
+    "@svgr/core": "^8.1.0",
+    "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -38,6 +41,7 @@
     "tailwindcss": "^4.3.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.62.1",
+    "unplugin-icons": "^23.0.1",
     "wxt": "^0.20.27"
   }
 }
