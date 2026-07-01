@@ -128,13 +128,21 @@
 .pd-app-title-bar .pd-tablist {
   margin-left: 0.25rem;
 }
-/* vertical — rail beside the panel */
+/* .pd-tabs is always rendered (same DOM shape for both orientations, so panels
+   never remount on an orientation switch). Only the flex axis + rail differ. */
 .pd-tabs {
   display: flex;
   flex: 1;
   min-height: 0; /* let the panel scroll instead of growing the flex item */
 }
-.pd-tabs > .pd-tablist {
+.pd-tabs-vertical {
+  flex-direction: row; /* rail | panel */
+}
+.pd-tabs-horizontal {
+  flex-direction: column; /* just the panel (tablist lives in the title bar) */
+}
+/* vertical — the side rail */
+.pd-tabs-vertical > .pd-tablist {
   flex-direction: column;
   flex: 0 0 auto;
   padding: 0.5rem 0.25rem;

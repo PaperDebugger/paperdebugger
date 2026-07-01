@@ -199,19 +199,14 @@ function DrawerShell({ orientation }: { orientation: TabOrientation }) {
     </div>
   ));
 
-  if (orientation === "horizontal") {
-    return (
-      <>
-        <TitleBar>{tablist}</TitleBar>
-        {panels}
-      </>
-    );
-  }
+  // Same tree shape for both orientations so panels (and their chat state) never
+  // remount on a switch — only the tablist moves (into the title bar for
+  // horizontal, into the rail for vertical) and the flex axis flips via CSS.
   return (
     <>
-      <TitleBar />
-      <div className="pd-tabs">
-        {tablist}
+      <TitleBar>{orientation === "horizontal" ? tablist : null}</TitleBar>
+      <div className={`pd-tabs pd-tabs-${orientation}`}>
+        {orientation === "vertical" ? tablist : null}
         {panels}
       </div>
     </>
