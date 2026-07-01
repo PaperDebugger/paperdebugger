@@ -198,8 +198,11 @@ export async function runCodex(msg: ChatRequest, onDelta: OnDelta): Promise<stri
   const server = await getServer(cwd);
   const threadId = await ensureThread(server, cwd, msg);
 
+  // unsub captured outside so `finally` always cleans it up — otherwise a
+  // turn/start that throws before any terminal event would leak the listener.
+  let unsub = () => {};
   const done = new Promise<void>((resolve, reject) => {
-    const unsub = server.subscribe((m) => {
+    unsub = server.subscribe((m) => {
       switch (m.method) {
         case "item/agentMessage/delta": {
           const text = deltaText(m.params);
@@ -207,36 +210,35 @@ export async function runCodex(msg: ChatRequest, onDelta: OnDelta): Promise<stri
           break;
         }
         case "turn/completed":
-          unsub();
           resolve();
           break;
         case "turn/error":
-        case "error": {
-          unsub();
-          const message = typeof m.params?.message === "string" ? m.params.message : "codex turn error";
-          reject(new Error(message));
+        case "error":
+          reject(new Error(typeof m.params?.message === "string" ? m.params.message : "codex turn error"));
           break;
-        }
       }
     });
   });
 
-  await server.request(
-    "turn/start",
-    {
-      threadId,
-      input: [{ type: "text", text: String(msg.prompt ?? "") }],
-      cwd,
-      approvalPolicy: "never",
-      sandboxPolicy: { type: "readOnly" },
-      model: msg.model ?? null,
-      summary: null,
-      outputSchema: null,
-      collaborationMode: null,
-    },
-    { timeoutMs: 30000 },
-  );
-
-  await done;
+  try {
+    await server.request(
+      "turn/start",
+      {
+        threadId,
+        input: [{ type: "text", text: String(msg.prompt ?? "") }],
+        cwd,
+        approvalPolicy: "never",
+        sandboxPolicy: { type: "readOnly" },
+        model: msg.model ?? null,
+        summary: null,
+        outputSchema: null,
+        collaborationMode: null,
+      },
+      { timeoutMs: 30000 },
+    );
+    await done;
+  } finally {
+    unsub();
+  }
   return threadId;
 }
