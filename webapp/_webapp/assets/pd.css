@@ -205,6 +205,13 @@
   height: 100%;
   min-height: 0;
 }
+.pd-chat-header {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--color-pd-border);
+}
 .pd-thread-viewport {
   flex: 1;
   min-height: 0;

@@ -1,6 +1,7 @@
 import {
   AssistantRuntimeProvider,
   useLocalRuntime,
+  useAssistantRuntime,
   ThreadPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
@@ -90,6 +91,35 @@ const hostAdapter: ChatModelAdapter = {
   },
 };
 
+// Icon-only "new conversation": clears the thread and the provider continuation.
+function NewChatButton() {
+  const runtime = useAssistantRuntime();
+  return (
+    <button
+      className="pd-ctl-btn"
+      title="New conversation"
+      onClick={() => {
+        continuation = null;
+        void runtime.threads.switchToNewThread();
+      }}
+    >
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+      </svg>
+    </button>
+  );
+}
+
 const UserMessage = () => (
   <MessagePrimitive.Root className="pd-msg pd-msg-user">
     <MessagePrimitive.Parts />
@@ -107,6 +137,9 @@ export function ChatPanel() {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="pd-thread">
+        <div className="pd-chat-header">
+          <NewChatButton />
+        </div>
         <ThreadPrimitive.Viewport className="pd-thread-viewport">
           <ThreadPrimitive.Empty>
             <div className="pd-thread-empty">Ask PaperDebugger anything about your paper.</div>
