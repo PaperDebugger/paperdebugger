@@ -58,7 +58,9 @@ function registerChatStreamPort() {
     let reqId: string | undefined;
     port.onMessage.addListener((req: { id?: string; type?: string; provider?: string }) => {
       reqId = req.id;
-      console.log(`[PD:bg] content → req id=${short(reqId)} type=${req.type} provider=${req.provider ?? "-"} → forwarding to host`);
+      console.log(
+        `[PD:bg] content → req id=${short(reqId)} type=${req.type} provider=${req.provider ?? "-"} → forwarding to host`,
+      );
       try {
         if (reqId) inflight.set(reqId, port);
         getNativePort().postMessage(req);

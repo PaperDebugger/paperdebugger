@@ -19,9 +19,11 @@ extension (background SW)  ⇄  chrome native messaging  ⇄  pd-host (native.mj
 The host is TypeScript. With **bun** it runs the `.ts` directly — no build step.
 
 1. **Register the host** (one line, from `webapp/_webapp`):
+
    ```sh
    bun host/src/install.ts
    ```
+
    This auto-installs the host's deps if needed, writes a launcher that runs the
    host via bun's absolute path, and installs the native-messaging manifest into
    every detected Chromium browser **plus the WXT dev profile** (`.wxt/chrome-data`).
@@ -29,6 +31,7 @@ The host is TypeScript. With **bun** it runs the `.ts` directly — no build ste
    No extension id needed — `wxt.config.ts` pins a manifest `key`, so the
    extension always loads as `dfkedikhakpapbfcnbpmfhpklndgiaog` and the installer
    defaults to it. (Pass an id, or `--browser=<name>`, to narrow it.)
+
 2. **Load / reload the extension** at `chrome://extensions` (Developer mode →
    Load unpacked → `.output/chrome-mv3`).
 3. Open the chat panel → **Settings → Local host → Test connection** → ✓.

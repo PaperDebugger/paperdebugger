@@ -18,7 +18,7 @@ export async function runClaude(msg: ChatRequest, onDelta: OnDelta): Promise<str
     prompt: String(msg.prompt ?? ""),
     options: {
       ...(msg.model ? { model: msg.model } : {}),
-      cwd: workspaceDir(),
+      cwd: workspaceDir(msg.projectId),
       permissionMode: "bypassPermissions",
       includePartialMessages: true,
       ...(msg.resume ? { resume: String(msg.resume) } : {}),

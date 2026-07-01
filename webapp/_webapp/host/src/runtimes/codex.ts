@@ -133,11 +133,16 @@ class CodexAppServer {
   }
 }
 
-let cached: CodexAppServer | null = null;
+// One app-server per workspace cwd (per project), reused across turns.
+const servers = new Map<string, CodexAppServer>();
 async function getServer(cwd: string): Promise<CodexAppServer> {
-  if (!cached) cached = new CodexAppServer(cwd);
-  await cached.ensureInitialized();
-  return cached;
+  let server = servers.get(cwd);
+  if (!server) {
+    server = new CodexAppServer(cwd);
+    servers.set(cwd, server);
+  }
+  await server.ensureInitialized();
+  return server;
 }
 
 function extractThreadId(res: JsonRpcMessage): string | null {
@@ -151,28 +156,47 @@ function deltaText(params: Record<string, unknown> | undefined): string {
   return typeof v === "string" ? v : "";
 }
 
-// Run one chat turn through Codex. onDelta(text) for each streamed chunk.
-export async function runCodex(msg: ChatRequest, onDelta: OnDelta): Promise<void> {
-  const cwd = workspaceDir();
-  const server = await getServer(cwd);
+// Resume the given thread if possible, else start a fresh one. Returns the
+// live threadId (may differ from the requested one if resume failed).
+async function ensureThread(server: CodexAppServer, cwd: string, msg: ChatRequest): Promise<string> {
+  const startParams = {
+    model: msg.model ?? null,
+    modelProvider: null,
+    cwd,
+    approvalPolicy: "never",
+    sandbox: "read-only",
+    config: null,
+    baseInstructions: null,
+    developerInstructions: null,
+    experimentalRawEvents: false,
+  };
 
-  const ts = await server.request(
-    "thread/start",
-    {
-      model: msg.model ?? null,
-      modelProvider: null,
-      cwd,
-      approvalPolicy: "never",
-      sandbox: "read-only",
-      config: null,
-      baseInstructions: null,
-      developerInstructions: null,
-      experimentalRawEvents: false,
-    },
-    { timeoutMs: 30000 },
-  );
-  const threadId = extractThreadId(ts);
-  if (!threadId) throw new Error("codex: failed to start thread");
+  const resume = msg.resume?.trim();
+  if (resume) {
+    try {
+      const r = await server.request(
+        "thread/resume",
+        { threadId: resume, history: null, path: null, ...startParams },
+        { timeoutMs: 30000 },
+      );
+      if (!r.error) return extractThreadId(r) ?? resume;
+    } catch {
+      // fall through to a fresh thread
+    }
+  }
+
+  const s = await server.request("thread/start", startParams, { timeoutMs: 30000 });
+  const id = extractThreadId(s);
+  if (!id) throw new Error("codex: failed to start thread");
+  return id;
+}
+
+// Run one chat turn through Codex. onDelta(text) per streamed chunk; returns the
+// threadId so the caller can resume this conversation next turn.
+export async function runCodex(msg: ChatRequest, onDelta: OnDelta): Promise<string> {
+  const cwd = workspaceDir(msg.projectId);
+  const server = await getServer(cwd);
+  const threadId = await ensureThread(server, cwd, msg);
 
   const done = new Promise<void>((resolve, reject) => {
     const unsub = server.subscribe((m) => {
@@ -214,4 +238,5 @@ export async function runCodex(msg: ChatRequest, onDelta: OnDelta): Promise<void
   );
 
   await done;
+  return threadId;
 }

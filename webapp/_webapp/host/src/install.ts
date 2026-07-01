@@ -34,10 +34,15 @@ if (!fs.existsSync(path.join(hostRoot, "node_modules"))) {
 
 const args = process.argv.slice(2);
 const extensionId = args.find((a) => !a.startsWith("--")) ?? DEFAULT_EXTENSION_ID;
-const onlyBrowser = args.find((a) => a.startsWith("--browser="))?.split("=")[1]?.toLowerCase();
+const onlyBrowser = args
+  .find((a) => a.startsWith("--browser="))
+  ?.split("=")[1]
+  ?.toLowerCase();
 
 if (!/^[a-p]{32}$/.test(extensionId)) {
-  console.error("Usage: node dist/install.js [extension-id] [--browser=chrome|chrome-for-testing|chrome-for-testing-alt|wxt|chromium|edge|brave|vivaldi|opera|arc]");
+  console.error(
+    "Usage: node dist/install.js [extension-id] [--browser=chrome|chrome-for-testing|chrome-for-testing-alt|wxt|chromium|edge|brave|vivaldi|opera|arc]",
+  );
   process.exit(1);
 }
 
@@ -80,7 +85,10 @@ if (!map) {
   console.error(`unsupported platform: ${process.platform} (manual install needed)`);
   process.exit(1);
 }
-const base = process.platform === "darwin" ? path.join(os.homedir(), "Library", "Application Support") : path.join(os.homedir(), ".config");
+const base =
+  process.platform === "darwin"
+    ? path.join(os.homedir(), "Library", "Application Support")
+    : path.join(os.homedir(), ".config");
 
 const manifest = {
   name: HOST_NAME,

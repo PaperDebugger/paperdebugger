@@ -22,6 +22,7 @@ export type ChatStreamRequest = {
   prompt?: string;
   model?: string;
   resume?: string;
+  projectId?: string;
 };
 
 export type ChatStreamMessage =
@@ -62,7 +63,9 @@ if (getBrowserAPI()?.runtime?.connect) {
     const relay = (msg: ChatStreamMessage) => window.dispatchEvent(new CustomEvent(msgEvt(seq), { detail: msg }));
     let finished = false;
     port.onMessage.addListener((msg) => {
-      console.log(`[PD:iso] bg → ${msg.type} id=${short(seq)}${msg.type === "delta" ? ` (+${msg.text.length})` : ""} → relaying to UI`);
+      console.log(
+        `[PD:iso] bg → ${msg.type} id=${short(seq)}${msg.type === "delta" ? ` (+${msg.text.length})` : ""} → relaying to UI`,
+      );
       relay(msg);
       if (isTerminal(msg.type)) {
         finished = true;
@@ -98,13 +101,17 @@ export function chatStream(req: ChatStreamRequest, onMessage: (msg: ChatStreamMe
         cleanup();
         resolve();
       } else {
-        console.log(`[PD:ui] ← ${msg.type} id=${short(seq)} @${ms()}${msg.type === "delta" ? ` (+${msg.text.length})` : ""}`);
+        console.log(
+          `[PD:ui] ← ${msg.type} id=${short(seq)} @${ms()}${msg.type === "delta" ? ` (+${msg.text.length})` : ""}`,
+        );
         onMessage(msg);
       }
     };
     const cleanup = () => window.removeEventListener(msgEvt(seq), listener);
     window.addEventListener(msgEvt(seq), listener);
-    console.log(`[PD:ui] → send id=${short(seq)} type=${req.type} provider=${req.provider ?? "-"} promptLen=${req.prompt?.length ?? 0}`);
+    console.log(
+      `[PD:ui] → send id=${short(seq)} type=${req.type} provider=${req.provider ?? "-"} promptLen=${req.prompt?.length ?? 0}`,
+    );
     window.dispatchEvent(new CustomEvent(REQ_EVT, { detail: { seq, req } }));
   });
 }

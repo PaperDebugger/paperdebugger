@@ -6,22 +6,39 @@ import {
   MessagePrimitive,
   type ChatModelAdapter,
 } from "@assistant-ui/react";
-import { chatStream } from "@/lib/chat-stream";
+import { chatStream, type ChatProvider } from "@/lib/chat-stream";
 import { usePaperDebuggerUiStore } from "@/stores/paper-debugger-ui-store";
 
-// Latest user message as plain text. MVP sends only the newest turn — multi-turn
-// context (Claude session resume / Codex thread) isn't wired through yet.
+// Latest user message as plain text. We only send the newest turn — history is
+// kept by the provider (Claude session / Codex thread) and resumed via `cont`.
 function latestUserText(messages: readonly { content: readonly { type: string; text?: string }[] }[]): string {
   const last = messages.at(-1);
   if (!last) return "";
   return last.content.map((p) => (p.type === "text" ? (p.text ?? "") : "")).join("");
 }
 
+// Overleaf project id from the URL (…/project/<id>) → per-project host workspace.
+function overleafProjectId(): string | undefined {
+  return window.location.pathname.match(/\/project\/([0-9a-fA-F]{24})/)?.[1];
+}
+
+// Continuation id for multi-turn: claude sessionId / codex threadId, tagged with
+// the provider it belongs to (they aren't interchangeable).
+type Cont = { provider: ChatProvider; contId: string };
+
+// Multi-turn continuation for the current conversation (claude sessionId / codex
+// threadId). Module-scoped: one chat panel per page, kept mounted across tab
+// switches; resets on page reload.
+let continuation: Cont | null = null;
+
 // Bridges the callback-streamed host into assistant-ui's async-generator adapter.
 const hostAdapter: ChatModelAdapter = {
   async *run({ messages }) {
     const provider = usePaperDebuggerUiStore.getState().provider;
     const prompt = latestUserText(messages);
+    const projectId = overleafProjectId();
+    // Resume only if the stored continuation belongs to the current provider.
+    const resume = continuation?.provider === provider ? continuation.contId : undefined;
 
     const chunks: string[] = [];
     let wake: (() => void) | null = null;
@@ -32,10 +49,12 @@ const hostAdapter: ChatModelAdapter = {
       wake = null;
     };
 
-    chatStream({ type: "chat", provider, prompt }, (msg) => {
+    chatStream({ type: "chat", provider, prompt, projectId, resume }, (msg) => {
       if (msg.type === "delta") {
         chunks.push(msg.text);
         bump();
+      } else if (msg.type === "session") {
+        continuation = { provider, contId: msg.sessionId };
       }
     }).then(
       () => {

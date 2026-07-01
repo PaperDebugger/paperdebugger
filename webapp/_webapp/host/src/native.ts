@@ -44,14 +44,15 @@ async function handle(msg: NativeMessage): Promise<void> {
       if (deltas === 1) log(`first token id=${short(id)} after ${Date.now() - t0}ms`);
       send({ id, type: "delta", text });
     };
-    log(`chat id=${short(id)} provider=${provider} promptLen=${req.prompt?.length ?? 0} — invoking CLI, waiting for response…`);
+    const resuming = req.resume ? ` resume=${short(req.resume)}` : "";
+    log(
+      `chat id=${short(id)} provider=${provider}${resuming} promptLen=${req.prompt?.length ?? 0} — invoking CLI, waiting for response…`,
+    );
     try {
-      if (provider === "codex") {
-        await runCodex(req, onDelta);
-      } else {
-        const sessionId = await runClaude(req, onDelta);
-        if (sessionId) send({ id, type: "session", sessionId });
-      }
+      // Both runtimes return a continuation id (claude sessionId / codex threadId)
+      // for the extension to store and pass back as `resume` next turn.
+      const contId = provider === "codex" ? await runCodex(req, onDelta) : await runClaude(req, onDelta);
+      if (contId) send({ id, type: "session", sessionId: contId });
       log(`✓ done id=${short(id)} (${deltas} deltas, ${chars} chars, ${Date.now() - t0}ms)`);
       send({ id, type: "done" });
     } catch (err) {

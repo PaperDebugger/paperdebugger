@@ -190,19 +190,20 @@ function TabList({
 // Vertical: a side rail of tabs sits next to the panel.
 function DrawerShell({ orientation }: { orientation: TabOrientation }) {
   const [active, setActive] = useState(TABS[0].id);
-  const current = TABS.find((t) => t.id === active) ?? TABS[0];
   const tablist = <TabList orientation={orientation} active={active} setActive={setActive} />;
-  const panel = (
-    <div className="pd-tabpanel" role="tabpanel">
-      <PanelErrorBoundary key={active}>{current.content}</PanelErrorBoundary>
+  // Render every panel and hide the inactive ones (rather than unmounting), so
+  // per-tab state — chat history, scroll — survives tab switches.
+  const panels = TABS.map((t) => (
+    <div key={t.id} className="pd-tabpanel" role="tabpanel" style={{ display: t.id === active ? undefined : "none" }}>
+      <PanelErrorBoundary>{t.content}</PanelErrorBoundary>
     </div>
-  );
+  ));
 
   if (orientation === "horizontal") {
     return (
       <>
         <TitleBar>{tablist}</TitleBar>
-        {panel}
+        {panels}
       </>
     );
   }
@@ -211,7 +212,7 @@ function DrawerShell({ orientation }: { orientation: TabOrientation }) {
       <TitleBar />
       <div className="pd-tabs">
         {tablist}
-        {panel}
+        {panels}
       </div>
     </>
   );
