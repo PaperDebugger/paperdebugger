@@ -252,6 +252,135 @@
 .pd-msg-assistant {
   align-self: flex-start;
   border: 1px solid var(--color-pd-border);
+  position: relative; /* anchor for the floating hover action bar */
+}
+
+/* Animated typing indicator, shown while a text part is still streaming. */
+.pd-typing {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+.pd-typing span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-pd-muted);
+  animation: pd-typing-blink 1.2s infinite ease-in-out both;
+}
+.pd-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.pd-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes pd-typing-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hover action bar + branch picker under assistant messages. */
+.pd-msg-actions,
+.pd-branch {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+  color: var(--color-pd-muted);
+  font-size: 12px;
+}
+/* Floating (autohideFloat): out of flow so appearing on hover never reflows the
+   thread. Anchored just below the bubble, on its own background so it stays
+   readable where it overlaps the gap/next message. */
+.pd-msg-actions[data-floating] {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  background-color: var(--color-pd-bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  z-index: 1;
+}
+.pd-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--color-pd-muted);
+  border-radius: var(--radius-pd-sm);
+  cursor: pointer;
+}
+.pd-icon-btn:hover {
+  background-color: var(--color-pd-control-hover);
+  color: var(--color-pd-text);
+}
+.pd-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pd-msg-time {
+  margin-left: 0.25rem;
+  font-size: 11px;
+}
+
+/* Timing chip + hover popover with the full phase breakdown. Popover is absolute
+   (no reflow) and opens upward so it never clips at the bottom of the thread. */
+.pd-stats {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.25rem;
+  cursor: default;
+}
+.pd-stats-chip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+}
+.pd-stats-pop {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 110px;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  background-color: var(--color-pd-bg);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-pd-text);
+  z-index: 2;
+}
+.pd-stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+.pd-stats-k {
+  color: var(--color-pd-muted);
+}
+.pd-stats:hover .pd-stats-pop {
+  display: flex;
 }
 
 .pd-composer {

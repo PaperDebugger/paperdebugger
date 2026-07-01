@@ -93,21 +93,15 @@ async function fetchEntity(projectId: string, e: Entry): Promise<ProjectFile | n
   return { path: e.path, content };
 }
 
-// Fetch the project's text files only — never the images/PDFs that dominate a
-// large project's bytes. Tree via socket, contents via per-file HTTP in
-// parallel. Host diffs against disk, so re-fetching unchanged text is cheap to
-// write; the win here is skipping binaries entirely.
-// ponytail: fetches all text every turn (no per-file version to diff on).
-// Text is small; add an mtime/rev gate if a huge project makes this drag.
-export async function fetchProjectFiles(projectId: string): Promise<ProjectFile[]> {
-  const t0 = performance.now();
-  const tree = await getProjectTree(projectId);
+// Fetch the tree's text files over per-file HTTP. Never the images/PDFs that
+// dominate a large project's bytes — those are filtered out here.
+async function fetchTextFiles(projectId: string, tree: Entry[], t0: number): Promise<ProjectFile[]> {
   const entries = tree.filter((e) =>
     TEXT_EXT.has(e.path.split(".").pop()?.toLowerCase() ?? ""),
   );
   console.log(
-    `[PD sync] tree: ${tree.length} entities, ${entries.length} text files to fetch, ` +
-      `skipping ${tree.length - entries.length} binaries (${Math.round(performance.now() - t0)}ms)`,
+    `[PD sync] ${tree.length} entities, fetching ${entries.length} text files, ` +
+      `skipping ${tree.length - entries.length} binaries`,
   );
   const fetched = await Promise.all(entries.map((e) => fetchEntity(projectId, e).catch(() => null)));
 
@@ -120,9 +114,116 @@ export async function fetchProjectFiles(projectId: string): Promise<ProjectFile[
     files.push(f);
   }
   console.log(
-    `[PD sync] fetched ${files.length}/${entries.length} files, ${Math.round(total / 1024)}KB total ` +
-      `in ${Math.round(performance.now() - t0)}ms`,
+    `[PD sync] fetched ${files.length}/${entries.length} files, ${Math.round(total / 1024)}KB in ` +
+      `${Math.round(performance.now() - t0)}ms`,
     files.map((f) => f.path),
   );
+  return files;
+}
+
+// Realtime events that mean the project changed. "recive" typos are Overleaf's
+// own, not ours. Structural ones invalidate the tree; otUpdateApplied is a
+// content-only edit.
+const STRUCTURE_EVENTS = [
+  "reciveNewDoc",
+  "reciveNewFile",
+  "reciveNewFolder",
+  "removeEntity",
+  "reciveEntityRename",
+  "reciveEntityMove",
+];
+
+// One persistent socket per project, kept joined only to receive change events.
+// While no change has arrived since the last sync, fetchProjectFiles returns the
+// cached file set and hits Overleaf zero times.
+type Watch = {
+  socket: any;
+  dirty: boolean; // content changed since last successful fetch
+  treeStale: boolean; // structure changed; cached tree invalid
+  tree: Entry[] | null;
+  files: ProjectFile[] | null;
+  ready: Promise<void>;
+};
+const watches = new Map<string, Watch>();
+
+function ensureWatch(projectId: string): Watch {
+  // Only the current project matters; drop sockets for any others (SPA nav).
+  for (const [pid, w] of watches) {
+    if (pid !== projectId) {
+      try {
+        w.socket.disconnect();
+      } catch {
+        // ignore
+      }
+      watches.delete(pid);
+    }
+  }
+  const existing = watches.get(projectId);
+  if (existing) return existing;
+
+  const io = (window as any).io;
+  if (typeof io?.connect !== "function") {
+    throw new Error("Overleaf socket.io (window.io) not available");
+  }
+  const socket = io.connect(window.origin, {
+    "force new connection": true,
+    reconnect: false,
+    query: `projectId=${projectId}`,
+  });
+  let resolveReady!: () => void;
+  const ready = new Promise<void>((r) => (resolveReady = r));
+  const w: Watch = { socket, dirty: true, treeStale: false, tree: null, files: null, ready };
+  watches.set(projectId, w);
+
+  socket.on("joinProjectResponse", (resp: any) => {
+    w.tree = flattenTree(resp?.project?.rootFolder ?? []);
+    resolveReady();
+  });
+  socket.on("otUpdateApplied", () => {
+    w.dirty = true;
+  });
+  for (const ev of STRUCTURE_EVENTS) {
+    socket.on(ev, () => {
+      w.dirty = true;
+      w.treeStale = true;
+    });
+  }
+  // On any disconnect we may have missed events — drop the watch so the next
+  // fetch reopens and does a full resync.
+  const drop = () => {
+    watches.delete(projectId);
+    resolveReady();
+    console.log(`[PD sync] watch socket closed for ${projectId}`);
+  };
+  socket.on("disconnect", drop);
+  socket.on("connectionRejected", drop);
+  console.log(`[PD sync] watching project ${projectId} for changes`);
+  return w;
+}
+
+// Sync the project's text files. Change-gated: an idle persistent socket tells
+// us whether anything changed; if not, we return the cached set without touching
+// Overleaf. On a real change we refresh the tree (only if structure changed) and
+// re-pull text.
+export async function fetchProjectFiles(projectId: string): Promise<ProjectFile[]> {
+  const t0 = performance.now();
+  const w = ensureWatch(projectId);
+  await Promise.race([w.ready, new Promise((r) => setTimeout(r, JOIN_TIMEOUT_MS))]);
+
+  if (!w.dirty && w.files) {
+    console.log(`[PD sync] unchanged — reusing ${w.files.length} cached files (0 requests)`);
+    return w.files;
+  }
+
+  if (!w.tree || w.treeStale) {
+    w.tree = await getProjectTree(projectId);
+    w.treeStale = false;
+  }
+  const files = await fetchTextFiles(projectId, w.tree, t0);
+  // Only commit dirty=false if the watch is still live (not dropped mid-fetch).
+  if (watches.get(projectId) === w) {
+    w.files = files;
+    w.dirty = false;
+  }
   return files;
 }

@@ -2,16 +2,26 @@ import {
   AssistantRuntimeProvider,
   useLocalRuntime,
   useAssistantRuntime,
+  useMessage,
   ThreadPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
+  MessagePartPrimitive,
+  ActionBarPrimitive,
+  BranchPickerPrimitive,
   type ChatModelAdapter,
 } from "@assistant-ui/react";
-import { chatStream, type ChatProvider } from "@/lib/chat-stream";
+import { chatStream, type ChatProvider, type TurnStat } from "@/lib/chat-stream";
 import { fetchProjectFiles } from "@/lib/overleaf-sync";
 import { usePaperDebuggerUiStore } from "@/stores/paper-debugger-ui-store";
 import { useChatStatsStore } from "@/stores/chat-stats-store";
 import IconSquarePen from "~icons/lucide/square-pen";
+import IconCopy from "~icons/lucide/copy";
+import IconCheck from "~icons/lucide/check";
+import IconRefresh from "~icons/lucide/refresh-cw";
+import IconChevronLeft from "~icons/lucide/chevron-left";
+import IconChevronRight from "~icons/lucide/chevron-right";
+import IconClock from "~icons/lucide/clock";
 
 // Latest user message as plain text. We only send the newest turn — history is
 // kept by the provider (Claude session / Codex thread) and resumed via `cont`.
@@ -60,7 +70,7 @@ const hostAdapter: ChatModelAdapter = {
     const rchunks: string[] = []; // reasoning/thinking deltas, streamed before the answer
     let wake: (() => void) | null = null;
     // Boxed so the .then callbacks' assignments survive TS control-flow analysis.
-    const ctrl = { finished: false, failure: null as Error | null };
+    const ctrl = { finished: false, failure: null as Error | null, stat: null as TurnStat | null };
     const bump = () => {
       wake?.();
       wake = null;
@@ -78,7 +88,10 @@ const hostAdapter: ChatModelAdapter = {
       }
     }).then(
       (res) => {
-        if (res.type === "done" && res.stat) useChatStatsStore.getState().add(res.stat);
+        if (res.type === "done" && res.stat) {
+          useChatStatsStore.getState().add(res.stat);
+          ctrl.stat = res.stat; // also pinned onto this message's metadata (see final yield)
+        }
         ctrl.finished = true;
         bump();
       },
@@ -112,7 +125,12 @@ const hostAdapter: ChatModelAdapter = {
         yield frame(acc ? `${acc}\n\n${note}` : note);
         return;
       }
-      if (ctrl.finished) return;
+      if (ctrl.finished) {
+        // Final frame carries the per-turn timing on message metadata, so a hover
+        // popover can read it back from the message itself (see MessageStats).
+        if (ctrl.stat) yield { ...frame(acc), metadata: { custom: { stat: ctrl.stat } } };
+        return;
+      }
       await new Promise<void>((resolve) => {
         wake = resolve;
       });
@@ -143,6 +161,24 @@ const UserMessage = () => (
   </MessagePrimitive.Root>
 );
 
+// Text part with an animated typing indicator instead of assistant-ui's default
+// trailing " ●". MessagePartPrimitive.InProgress (the built-in) renders its child
+// only while the part is still streaming — we just swap the dot for CSS dots.
+function TextPart() {
+  return (
+    <p style={{ whiteSpace: "pre-line", margin: 0 }}>
+      <MessagePartPrimitive.Text />
+      <MessagePartPrimitive.InProgress>
+        <span className="pd-typing" aria-label="Loading">
+          <span />
+          <span />
+          <span />
+        </span>
+      </MessagePartPrimitive.InProgress>
+    </p>
+  );
+}
+
 // Collapsible "Thinking" block for streamed reasoning/thinking parts.
 function ReasoningPart({ text }: { text: string }) {
   if (!text) return null;
@@ -154,9 +190,94 @@ function ReasoningPart({ text }: { text: string }) {
   );
 }
 
+const fmtMs = (ms?: number) => (ms == null ? "–" : `${(ms / 1000).toFixed(1)}s`);
+
+// Per-turn timing pinned on the message metadata by the adapter. Shows a compact
+// TTFT/total chip; hovering it reveals the core breakdown in a pure-CSS popover.
+function MessageStats() {
+  const stat = useMessage((m) => m.metadata.custom.stat as TurnStat | undefined);
+  if (!stat) return null;
+  const ph = (name: string) => stat.phases.find((p) => p.name === name)?.ms;
+  const rows: [string, number | undefined][] = [
+    ["TTFT", stat.ttftMs],
+    ["total", stat.totalMs],
+    ["hooks", ph("hooks")],
+    ["mcp", ph("mcp")],
+    ["pre-answer", ph("pre-answer")],
+  ];
+  return (
+    <span className="pd-stats">
+      <IconClock width={12} height={12} />
+      <span className="pd-stats-chip">
+        {fmtMs(stat.ttftMs)} / {fmtMs(stat.totalMs)}
+      </span>
+      <span className="pd-stats-pop" role="tooltip">
+        {rows.map(([k, v]) => (
+          <span key={k} className="pd-stats-row">
+            <span className="pd-stats-k">{k}</span>
+            <span>{fmtMs(v)}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+// Wall-clock time the message was created (local runtime stamps every message).
+function MessageTime() {
+  const createdAt = useMessage((m) => m.createdAt);
+  if (!createdAt) return null;
+  return <span className="pd-msg-time">{createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>;
+}
+
+// Hover-revealed actions. autohide="always" → the whole bar unmounts unless the
+// message is hovered (assistant-ui tracks hover on the message); hideWhenRunning
+// keeps it away mid-stream. Copy swaps its icon via MessagePrimitive.If copied.
+function AssistantActionBar() {
+  return (
+    <ActionBarPrimitive.Root className="pd-msg-actions" autohide="always" autohideFloat="always" hideWhenRunning>
+      <ActionBarPrimitive.Copy className="pd-icon-btn" title="Copy">
+        <MessagePrimitive.If copied={false}>
+          <IconCopy width={14} height={14} />
+        </MessagePrimitive.If>
+        <MessagePrimitive.If copied>
+          <IconCheck width={14} height={14} />
+        </MessagePrimitive.If>
+      </ActionBarPrimitive.Copy>
+      <ActionBarPrimitive.Reload className="pd-icon-btn" title="Regenerate">
+        <IconRefresh width={14} height={14} />
+      </ActionBarPrimitive.Reload>
+      <MessageStats />
+      <MessageTime />
+    </ActionBarPrimitive.Root>
+  );
+}
+
+// Branch switcher (‹ 1/2 ›), shown only once a message has alternates — i.e. after
+// a regenerate. Stays visible (not autohidden) so the count is always readable.
+function MessageBranchPicker() {
+  return (
+    <MessagePrimitive.If hasBranches>
+      <BranchPickerPrimitive.Root className="pd-branch">
+        <BranchPickerPrimitive.Previous className="pd-icon-btn" title="Previous">
+          <IconChevronLeft width={14} height={14} />
+        </BranchPickerPrimitive.Previous>
+        <span>
+          <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
+        </span>
+        <BranchPickerPrimitive.Next className="pd-icon-btn" title="Next">
+          <IconChevronRight width={14} height={14} />
+        </BranchPickerPrimitive.Next>
+      </BranchPickerPrimitive.Root>
+    </MessagePrimitive.If>
+  );
+}
+
 const AssistantMessage = () => (
   <MessagePrimitive.Root className="pd-msg pd-msg-assistant">
-    <MessagePrimitive.Parts components={{ Reasoning: ReasoningPart }} />
+    <MessagePrimitive.Parts components={{ Text: TextPart, Reasoning: ReasoningPart }} />
+    <MessageBranchPicker />
+    <AssistantActionBar />
   </MessagePrimitive.Root>
 );
 
