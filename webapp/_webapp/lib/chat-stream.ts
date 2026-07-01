@@ -51,14 +51,18 @@ function getBrowserAPI(): ExtApi | undefined {
   return undefined;
 }
 
+const short = (id: string) => id.slice(0, 8);
+
 // ISOLATED world only: bridge window events ⇄ a background Port per request.
 if (getBrowserAPI()?.runtime?.connect) {
   window.addEventListener(REQ_EVT, (evt) => {
     const { seq, req } = (evt as CustomEvent).detail as { seq: string; req: ChatStreamRequest };
+    console.log(`[PD:iso] req id=${short(seq)} type=${req.type} → opening port to background`);
     const port = getBrowserAPI()!.runtime!.connect!({ name: CHAT_STREAM_PORT });
     const relay = (msg: ChatStreamMessage) => window.dispatchEvent(new CustomEvent(msgEvt(seq), { detail: msg }));
     let finished = false;
     port.onMessage.addListener((msg) => {
+      console.log(`[PD:iso] bg → ${msg.type} id=${short(seq)}${msg.type === "delta" ? ` (+${msg.text.length})` : ""} → relaying to UI`);
       relay(msg);
       if (isTerminal(msg.type)) {
         finished = true;
@@ -66,8 +70,10 @@ if (getBrowserAPI()?.runtime?.connect) {
       }
     });
     port.onDisconnect.addListener(() => {
+      console.log(`[PD:iso] port disconnected id=${short(seq)} finished=${finished}`);
       if (!finished) relay({ type: "error", message: "Local host disconnected. Is pd-host installed?" });
     });
+    console.log(`[PD:iso] → posting req to background id=${short(seq)}`);
     port.postMessage({ ...req, id: seq });
   });
 }
@@ -78,21 +84,27 @@ if (getBrowserAPI()?.runtime?.connect) {
  */
 export function chatStream(req: ChatStreamRequest, onMessage: (msg: ChatStreamMessage) => void): Promise<void> {
   const seq = crypto.randomUUID();
+  const t0 = performance.now();
+  const ms = () => `${Math.round(performance.now() - t0)}ms`;
   return new Promise((resolve, reject) => {
     const listener = (evt: Event) => {
       const msg = (evt as CustomEvent).detail as ChatStreamMessage;
       if (msg.type === "error") {
+        console.log(`[PD:ui] ✗ error id=${short(seq)} @${ms()}: ${msg.message}`);
         cleanup();
         reject(new Error(msg.message));
       } else if (isTerminal(msg.type)) {
+        console.log(`[PD:ui] ✓ ${msg.type} id=${short(seq)} @${ms()}`);
         cleanup();
         resolve();
       } else {
+        console.log(`[PD:ui] ← ${msg.type} id=${short(seq)} @${ms()}${msg.type === "delta" ? ` (+${msg.text.length})` : ""}`);
         onMessage(msg);
       }
     };
     const cleanup = () => window.removeEventListener(msgEvt(seq), listener);
     window.addEventListener(msgEvt(seq), listener);
+    console.log(`[PD:ui] → send id=${short(seq)} type=${req.type} provider=${req.provider ?? "-"} promptLen=${req.prompt?.length ?? 0}`);
     window.dispatchEvent(new CustomEvent(REQ_EVT, { detail: { seq, req } }));
   });
 }

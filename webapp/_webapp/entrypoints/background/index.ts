@@ -24,11 +24,15 @@ type NativePort = ReturnType<typeof browser.runtime.connectNative>;
 type Relay = { postMessage: (m: unknown) => void };
 let nativePort: NativePort | null = null;
 const inflight = new Map<string, Relay>();
+const short = (id?: string) => (id ? id.slice(0, 8) : "-");
 
 function getNativePort(): NativePort {
   if (nativePort) return nativePort;
+  console.log(`[PD:bg] connecting native host ${NATIVE_HOST_NAME}…`);
   const port = browser.runtime.connectNative(NATIVE_HOST_NAME);
-  port.onMessage.addListener((msg: { id?: string; type?: string }) => {
+  port.onMessage.addListener((msg: { id?: string; type?: string; text?: string }) => {
+    const extra = msg.type === "delta" ? ` (+${msg.text?.length ?? 0})` : "";
+    console.log(`[PD:bg] host → ${msg.type} id=${short(msg.id)}${extra} → relay to content`);
     const relay = msg.id ? inflight.get(msg.id) : undefined;
     relay?.postMessage(msg);
     if (msg.id && (msg.type === "done" || msg.type === "error" || msg.type === "pong")) {
@@ -37,10 +41,12 @@ function getNativePort(): NativePort {
   });
   port.onDisconnect.addListener(() => {
     const err = browser.runtime.lastError?.message || "host disconnected";
+    console.log(`[PD:bg] native host disconnected: ${err} (inflight=${inflight.size})`);
     for (const [, relay] of inflight) relay.postMessage({ type: "error", message: err });
     inflight.clear();
     nativePort = null;
   });
+  console.log(`[PD:bg] native host connected`);
   nativePort = port;
   return port;
 }
@@ -48,13 +54,16 @@ function getNativePort(): NativePort {
 function registerChatStreamPort() {
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== CHAT_STREAM_PORT) return;
+    console.log(`[PD:bg] content port connected`);
     let reqId: string | undefined;
-    port.onMessage.addListener((req: { id?: string }) => {
+    port.onMessage.addListener((req: { id?: string; type?: string; provider?: string }) => {
       reqId = req.id;
+      console.log(`[PD:bg] content → req id=${short(reqId)} type=${req.type} provider=${req.provider ?? "-"} → forwarding to host`);
       try {
         if (reqId) inflight.set(reqId, port);
         getNativePort().postMessage(req);
       } catch (err) {
+        console.log(`[PD:bg] forward failed id=${short(reqId)}: ${String((err as Error)?.message ?? err)}`);
         port.postMessage({ type: "error", message: String((err as Error)?.message ?? err) });
       }
     });
