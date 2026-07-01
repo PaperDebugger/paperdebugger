@@ -50,7 +50,16 @@ if (!/^[a-p]{32}$/.test(extensionId)) {
 // node/bun, so a bare `env node` would fail. Launch via the absolute runtime
 // path (process.execPath = the bun or node that ran this installer).
 const launcher = path.join(here, "pd-host-launcher.sh");
-fs.writeFileSync(launcher, `#!/bin/bash\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(hostEntry)} "$@"\n`);
+// stderr → log file so `[pd-host]`/`[codex]` diagnostics survive GUI-launched
+// Chrome (which otherwise swallows the host's stderr). stdout is the native
+// wire — never redirect it. ponytail: append-only, delete the log if it grows.
+const logDir = path.join(os.homedir(), ".paperdebugger");
+fs.mkdirSync(logDir, { recursive: true });
+const logPath = path.join(logDir, "pd-host.log");
+fs.writeFileSync(
+  launcher,
+  `#!/bin/bash\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(hostEntry)} "$@" 2>>${JSON.stringify(logPath)}\n`,
+);
 fs.chmodSync(launcher, 0o755);
 if (!isBun) fs.chmodSync(hostEntry, 0o755);
 

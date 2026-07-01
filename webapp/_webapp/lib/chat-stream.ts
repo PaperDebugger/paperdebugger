@@ -17,20 +17,36 @@ import { CHAT_STREAM_PORT } from "./constants";
 export type ChatProvider = "claude" | "codex";
 
 export type ChatStreamRequest = {
-  type: "chat" | "ping";
+  type: "chat" | "ping" | "sync";
   provider?: ChatProvider;
   prompt?: string;
   model?: string;
   resume?: string;
   projectId?: string;
+  files?: { path: string; content: string }[];
+};
+
+// Mirror of host TurnStat (host/src/types.ts) — the per-turn timing breakdown.
+export type Phase = { name: string; ms: number };
+export type TurnStat = {
+  provider: ChatProvider;
+  model?: string;
+  promptLen: number;
+  ttftMs?: number;
+  totalMs: number;
+  deltas: number;
+  chars: number;
+  phases: Phase[];
+  ok: boolean;
 };
 
 export type ChatStreamMessage =
   | { type: "delta"; text: string }
+  | { type: "reasoning"; text: string }
   | { type: "session"; sessionId: string }
   | { type: "pong" }
-  | { type: "done" }
-  | { type: "error"; message: string };
+  | { type: "done"; stat?: TurnStat }
+  | { type: "error"; message: string; stat?: TurnStat };
 
 const REQ_EVT = "paperdebugger:chat:req";
 const msgEvt = (seq: string) => `paperdebugger:chat:msg/${seq}`;
@@ -63,9 +79,8 @@ if (getBrowserAPI()?.runtime?.connect) {
     const relay = (msg: ChatStreamMessage) => window.dispatchEvent(new CustomEvent(msgEvt(seq), { detail: msg }));
     let finished = false;
     port.onMessage.addListener((msg) => {
-      console.log(
-        `[PD:iso] bg → ${msg.type} id=${short(seq)}${msg.type === "delta" ? ` (+${msg.text.length})` : ""} → relaying to UI`,
-      );
+      if (msg.type !== "delta" && msg.type !== "reasoning")
+        console.log(`[PD:iso] bg → ${msg.type} id=${short(seq)} → relaying to UI`);
       relay(msg);
       if (isTerminal(msg.type)) {
         finished = true;
@@ -83,13 +98,18 @@ if (getBrowserAPI()?.runtime?.connect) {
 
 /**
  * Send a chat (or ping) request and receive streamed messages via `onMessage`.
- * Resolves on `done`/`pong`, rejects on `error`. Works from MAIN or ISOLATED.
+ * Resolves with the terminal `done`/`pong` message (which carries `stat` for a
+ * chat), rejects on `error`. Works from MAIN or ISOLATED.
  */
-export function chatStream(req: ChatStreamRequest, onMessage: (msg: ChatStreamMessage) => void): Promise<void> {
+export function chatStream(
+  req: ChatStreamRequest,
+  onMessage: (msg: ChatStreamMessage) => void,
+): Promise<ChatStreamMessage> {
   const seq = crypto.randomUUID();
   const t0 = performance.now();
   const ms = () => `${Math.round(performance.now() - t0)}ms`;
   return new Promise((resolve, reject) => {
+    let sawDelta = false;
     const listener = (evt: Event) => {
       const msg = (evt as CustomEvent).detail as ChatStreamMessage;
       if (msg.type === "error") {
@@ -99,11 +119,16 @@ export function chatStream(req: ChatStreamRequest, onMessage: (msg: ChatStreamMe
       } else if (isTerminal(msg.type)) {
         console.log(`[PD:ui] ✓ ${msg.type} id=${short(seq)} @${ms()}`);
         cleanup();
-        resolve();
+        resolve(msg);
       } else {
-        console.log(
-          `[PD:ui] ← ${msg.type} id=${short(seq)} @${ms()}${msg.type === "delta" ? ` (+${msg.text.length})` : ""}`,
-        );
+        if (msg.type === "delta") {
+          if (!sawDelta) {
+            sawDelta = true; // 用户发送 → 首个 delta = TTFT
+            console.log(`[PD:ui] ⏱ TTFT id=${short(seq)} provider=${req.provider ?? "-"} @${ms()}`);
+          }
+        } else if (msg.type !== "reasoning") {
+          console.log(`[PD:ui] ← ${msg.type} id=${short(seq)} @${ms()}`);
+        }
         onMessage(msg);
       }
     };

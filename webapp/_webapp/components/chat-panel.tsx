@@ -8,7 +8,9 @@ import {
   type ChatModelAdapter,
 } from "@assistant-ui/react";
 import { chatStream, type ChatProvider } from "@/lib/chat-stream";
+import { fetchProjectFiles } from "@/lib/overleaf-sync";
 import { usePaperDebuggerUiStore } from "@/stores/paper-debugger-ui-store";
+import { useChatStatsStore } from "@/stores/chat-stats-store";
 import IconSquarePen from "~icons/lucide/square-pen";
 
 // Latest user message as plain text. We only send the newest turn — history is
@@ -42,7 +44,20 @@ const hostAdapter: ChatModelAdapter = {
     // Resume only if the stored continuation belongs to the current provider.
     const resume = continuation?.provider === provider ? continuation.contId : undefined;
 
+    // Sync the Overleaf project into the host workspace first, so the CLI answers
+    // against the current source. Host diffs against disk — only changes are
+    // written. Non-fatal: on failure we still answer (just with stale/no files).
+    if (projectId) {
+      try {
+        const files = await fetchProjectFiles(projectId);
+        await chatStream({ type: "sync", projectId, files }, () => {});
+      } catch (err) {
+        console.warn("[PD] project sync failed (continuing)", err);
+      }
+    }
+
     const chunks: string[] = [];
+    const rchunks: string[] = []; // reasoning/thinking deltas, streamed before the answer
     let wake: (() => void) | null = null;
     // Boxed so the .then callbacks' assignments survive TS control-flow analysis.
     const ctrl = { finished: false, failure: null as Error | null };
@@ -55,11 +70,15 @@ const hostAdapter: ChatModelAdapter = {
       if (msg.type === "delta") {
         chunks.push(msg.text);
         bump();
+      } else if (msg.type === "reasoning") {
+        rchunks.push(msg.text);
+        bump();
       } else if (msg.type === "session") {
         continuation = { provider, contId: msg.sessionId };
       }
     }).then(
-      () => {
+      (res) => {
+        if (res.type === "done" && res.stat) useChatStatsStore.getState().add(res.stat);
         ctrl.finished = true;
         bump();
       },
@@ -71,17 +90,26 @@ const hostAdapter: ChatModelAdapter = {
     );
 
     let acc = "";
+    let racc = "";
+    // A reasoning part (if any) renders above the answer via the Reasoning slot.
+    const frame = (text: string) => {
+      const parts: { type: "reasoning" | "text"; text: string }[] = [];
+      if (racc) parts.push({ type: "reasoning", text: racc });
+      parts.push({ type: "text", text });
+      return { content: parts };
+    };
     while (true) {
-      if (chunks.length) {
+      if (chunks.length || rchunks.length) {
         acc += chunks.splice(0).join("");
-        yield { content: [{ type: "text", text: acc }] };
+        racc += rchunks.splice(0).join("");
+        yield frame(acc);
         continue;
       }
       if (ctrl.failure) {
         // Surface host errors (e.g. pd-host not installed) in the thread instead
         // of throwing — keeps the panel usable and avoids an uncaught rejection.
         const note = `⚠️ ${ctrl.failure.message}\n\n(Local host unreachable — see host/README.md to install pd-host.)`;
-        yield { content: [{ type: "text", text: acc ? `${acc}\n\n${note}` : note }] };
+        yield frame(acc ? `${acc}\n\n${note}` : note);
         return;
       }
       if (ctrl.finished) return;
@@ -115,9 +143,20 @@ const UserMessage = () => (
   </MessagePrimitive.Root>
 );
 
+// Collapsible "Thinking" block for streamed reasoning/thinking parts.
+function ReasoningPart({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <details className="pd-reasoning" style={{ margin: "0 0 8px", fontSize: 13, color: "#6b7280" }}>
+      <summary style={{ cursor: "pointer", userSelect: "none" }}>Thinking</summary>
+      <div style={{ whiteSpace: "pre-wrap", marginTop: 4 }}>{text}</div>
+    </details>
+  );
+}
+
 const AssistantMessage = () => (
   <MessagePrimitive.Root className="pd-msg pd-msg-assistant">
-    <MessagePrimitive.Parts />
+    <MessagePrimitive.Parts components={{ Reasoning: ReasoningPart }} />
   </MessagePrimitive.Root>
 );
 

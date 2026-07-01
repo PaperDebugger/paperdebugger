@@ -31,8 +31,8 @@ function getNativePort(): NativePort {
   console.log(`[PD:bg] connecting native host ${NATIVE_HOST_NAME}…`);
   const port = browser.runtime.connectNative(NATIVE_HOST_NAME);
   port.onMessage.addListener((msg: { id?: string; type?: string; text?: string }) => {
-    const extra = msg.type === "delta" ? ` (+${msg.text?.length ?? 0})` : "";
-    console.log(`[PD:bg] host → ${msg.type} id=${short(msg.id)}${extra} → relay to content`);
+    if (msg.type !== "delta" && msg.type !== "reasoning")
+      console.log(`[PD:bg] host → ${msg.type} id=${short(msg.id)} → relay to content`);
     const relay = msg.id ? inflight.get(msg.id) : undefined;
     relay?.postMessage(msg);
     if (msg.id && (msg.type === "done" || msg.type === "error" || msg.type === "pong")) {

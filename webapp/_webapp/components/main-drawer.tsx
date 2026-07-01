@@ -3,6 +3,7 @@ import { Component, useEffect, useState, type ComponentType, type ReactNode, typ
 import { usePaperDebuggerUiStore, type DisplayMode, type TabOrientation } from "@/stores/paper-debugger-ui-store";
 import { ChatPanel } from "@/components/chat-panel";
 import { chatStream, type ChatProvider } from "@/lib/chat-stream";
+import { useChatStatsStore } from "@/stores/chat-stats-store";
 import IconX from "~icons/lucide/x";
 import IconSquare from "~icons/lucide/square";
 import IconPanelRight from "~icons/lucide/panel-right";
@@ -118,7 +119,45 @@ function SettingsPanel() {
           ))}
         </div>
       </section>
+
+      <StatsSection />
     </div>
+  );
+}
+
+// Per-turn timing, newest first, so you can see what drove TTFT each turn.
+// Phases come from the host: codex = startup/thread/mcp/reasoning/streaming,
+// claude = streaming only (SDK exposes no internals; ttft covers the rest).
+function StatsSection() {
+  const { turns, clear } = useChatStatsStore();
+  const s = (ms?: number) => (ms == null ? "–" : `${(ms / 1000).toFixed(1)}s`);
+  return (
+    <section>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ fontWeight: 600 }}>Timing (last {turns.length})</span>
+        {turns.length > 0 && (
+          <button className="pd-action" style={{ padding: "2px 8px", fontSize: 12 }} onClick={clear}>
+            Clear
+          </button>
+        )}
+      </div>
+      {turns.length === 0 ? (
+        <div style={{ color: "#6b7280", fontSize: 13 }}>Ask something — per-turn breakdowns show up here.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12, fontFamily: "monospace" }}>
+          {turns.map((t, i) => (
+            <div key={i} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: "6px 8px" }}>
+              <div style={{ marginBottom: 4 }}>
+                <b>{t.provider}</b>
+                {t.model ? ` ${t.model}` : ""} · TTFT {s(t.ttftMs)} · total {s(t.totalMs)}
+                {t.ok ? "" : " · ✗"}
+              </div>
+              <div style={{ color: "#4b5563" }}>{t.phases.map((p) => `${p.name} ${s(p.ms)}`).join("  ·  ")}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -168,7 +207,12 @@ function DrawerShell({ orientation }: { orientation: TabOrientation }) {
   // Render every panel and hide the inactive ones (rather than unmounting), so
   // per-tab state — chat history, scroll — survives tab switches.
   const panels = TABS.map((t) => (
-    <div key={t.id} className="pd-tabpanel" role="tabpanel" style={{ display: t.id === active ? undefined : "none" }}>
+    <div
+      key={t.id}
+      className="pd-tabpanel pd-drag-handle"
+      role="tabpanel"
+      style={{ display: t.id === active ? undefined : "none" }}
+    >
       <PanelErrorBoundary>{t.content}</PanelErrorBoundary>
     </div>
   ));
@@ -254,7 +298,7 @@ export const MainDrawer = () => {
     <Rnd
       id="paper-debugger-rnd"
       dragHandleClassName="pd-drag-handle"
-      cancel=".pd-ctl-btn, .pd-tab"
+      cancel=".pd-ctl-btn, .pd-tab, .pd-seg, .pd-action, .pd-composer, .pd-msg"
       className={`pd-rnd${dragging ? " dragging" : ""}`}
       {...rndProps}
       style={{
