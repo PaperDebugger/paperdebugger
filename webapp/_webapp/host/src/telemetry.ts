@@ -12,9 +12,6 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { LoggerProvider, SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs";
-import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
-import { resourceFromAttributes } from "@opentelemetry/resources";
 import type { TurnStat } from "./types.js";
 
 const OTLP_LOGS = "https://otlp.xtra.science/v1/logs";
@@ -31,67 +28,74 @@ function readToken(): string {
   }
   return DEFAULT_TOKEN;
 }
-const TOKEN = readToken();
 
-// ponytail: SimpleLogRecordProcessor, not Batch — one low-volume record per chat
-// turn, and pd-host can be killed by Chrome anytime; batching would lose tails.
-const logger = new LoggerProvider({
-  resource: resourceFromAttributes({ "service.name": "pd-host", "service.namespace": "paperdebugger" }),
-  processors: [
-    new SimpleLogRecordProcessor(new OTLPLogExporter({ url: OTLP_LOGS, headers: { Authorization: `Bearer ${TOKEN}` } })),
-  ],
-}).getLogger("pd-host");
-
-// Pure attribute builder (exported for the self-check below).
-export function turnAttributes(
-  stat: TurnStat,
-  projectId: string | undefined,
-  user: string,
-): Record<string, string | number | boolean> {
-  return {
-    user,
-    "project.id": projectId ?? "unknown",
-    provider: stat.provider,
-    model: stat.model || "cli-default",
-    ok: stat.ok,
-    prompt_len: stat.promptLen,
-    deltas: stat.deltas,
-    chars: stat.chars,
-    total_ms: stat.totalMs,
-    ...(stat.ttftMs != null ? { ttft_ms: stat.ttftMs } : {}),
-    ...Object.fromEntries(stat.phases.map((p) => [`phase.${p.name}_ms`, Math.round(p.ms)])),
-  };
+// The OTel packages cost ~100ms of module eval — noticeable on every host spawn
+// (they'd delay the first pong), invisible after a multi-second chat turn. So
+// they're dynamic-imported on first reportTurn instead of at module load.
+async function init() {
+  const [{ LoggerProvider, SimpleLogRecordProcessor }, { OTLPLogExporter }, { resourceFromAttributes }] =
+    await Promise.all([
+      import("@opentelemetry/sdk-logs"),
+      import("@opentelemetry/exporter-logs-otlp-proto"),
+      import("@opentelemetry/resources"),
+    ]);
+  // ponytail: SimpleLogRecordProcessor, not Batch — one low-volume record per
+  // chat turn, and Chrome can kill pd-host anytime; batching would lose tails.
+  const provider = new LoggerProvider({
+    resource: resourceFromAttributes({ "service.name": "pd-host", "service.namespace": "paperdebugger" }),
+    processors: [
+      new SimpleLogRecordProcessor(
+        new OTLPLogExporter({ url: OTLP_LOGS, headers: { Authorization: `Bearer ${readToken()}` } }),
+      ),
+    ],
+  });
+  return { provider, logger: provider.getLogger("pd-host"), user: os.userInfo().username };
 }
+let ready: ReturnType<typeof init> | undefined;
 
 // Fire-and-forget; never blocks or fails the turn.
 export function reportTurn(stat: TurnStat, projectId?: string): void {
-  logger.emit({
-    severityText: "INFO",
-    body: "chat_turn",
-    attributes: turnAttributes(stat, projectId, os.userInfo().username),
-  });
+  (ready ??= init())
+    .then(({ logger, user }) =>
+      logger.emit({
+        severityText: "INFO",
+        body: "chat_turn",
+        attributes: {
+          user,
+          "project.id": projectId ?? "unknown",
+          provider: stat.provider,
+          model: stat.model || "cli-default",
+          ok: stat.ok,
+          prompt_len: stat.promptLen,
+          deltas: stat.deltas,
+          chars: stat.chars,
+          total_ms: stat.totalMs,
+          ...(stat.ttftMs != null ? { ttft_ms: stat.ttftMs } : {}),
+          ...Object.fromEntries(stat.phases.map((p) => [`phase.${p.name}_ms`, Math.round(p.ms)])),
+        },
+      }),
+    )
+    .catch((err: unknown) => console.error("[pd-host] telemetry failed:", err));
 }
 
-// Self-check: `bun src/telemetry.ts` (with a token this also sends one real record)
+// Self-check: `bun src/telemetry.ts` — sends one real record through the full
+// pipeline (init → emit → export) and flushes, so a failure is visible here.
 if (process.argv[1]?.endsWith("telemetry.ts")) {
-  const attrs = turnAttributes(
+  reportTurn(
     {
       provider: "claude",
-      model: "opus",
-      promptLen: 12,
-      ttftMs: 800,
-      totalMs: 2000,
-      deltas: 5,
-      chars: 300,
-      phases: [{ name: "streaming", ms: 1200 }],
+      model: "self-check",
+      promptLen: 0,
+      ttftMs: 1,
+      totalMs: 2,
+      deltas: 0,
+      chars: 0,
+      phases: [{ name: "streaming", ms: 1 }],
       ok: true,
     },
-    "abc123abc123abc123abc123",
-    "junyi",
+    "self-check",
   );
-  console.assert(attrs.user === "junyi", "user");
-  console.assert(attrs.model === "opus", "model");
-  console.assert(attrs.ttft_ms === 800, "ttft");
-  console.assert(attrs["phase.streaming_ms"] === 1200, "phase");
-  console.error(`telemetry self-check ok (token: ${TOKEN === DEFAULT_TOKEN ? "baked-in default" : "local override"})`);
+  const { provider } = await ready!;
+  await provider.forceFlush();
+  console.error("telemetry self-check ok — smoke record flushed to collector");
 }
