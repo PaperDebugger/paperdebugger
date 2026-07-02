@@ -9,9 +9,15 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css";
 @import "tailwindcss/utilities.css";
-/* Text shimmer for the streaming/loading answer (assistant-ui's own v4 plugin);
-   provides the `shimmer` utility used by TextPart. Unlayered like utilities. */
-@import "tw-shimmer";
+/* KaTeX stylesheet for Streamdown's math rendering; scoped to our root by the
+   postcss prefixer like everything else here, so it can't leak into Overleaf. */
+@import "katex/dist/katex.min.css";
+/* Streamdown ships its markdown/code/math/mermaid styling AND the streaming
+   caret as Tailwind utilities. Tailwind v4 doesn't scan node_modules, so point
+   @source at each installed package or those classes never get generated. */
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/@streamdown/math/dist/*.js";
+@source "../node_modules/@streamdown/cjk/dist/*.js";
 
 /* ── Theme tokens ─────────────────────────────────────────────────────────
    Tailwind v4 @theme: these become both `var(--color-pd-*)` and utilities
@@ -24,6 +30,17 @@
   --color-pd-muted: #6b7280;
   --color-pd-control-hover: #e5e7eb;
   --color-pd-control-hover-text: #374151;
+
+  /* shadcn design tokens Streamdown's utilities expect, aliased to our palette.
+     They reference the --color-pd-* vars, which flip under .dark automatically,
+     so one definition covers both themes (except --color-primary, a fixed accent). */
+  --color-background: var(--color-pd-bg);
+  --color-foreground: var(--color-pd-text);
+  --color-muted: var(--color-pd-surface);
+  --color-muted-foreground: var(--color-pd-muted);
+  --color-border: var(--color-pd-border);
+  --color-primary: #3b82f6;
+  --color-primary-foreground: #ffffff;
 
   --radius-pd: 0.75rem;
   --radius-pd-sm: 0.375rem;
@@ -234,6 +251,142 @@
   padding: 0.25rem 0.5rem;
   border-bottom: 1px solid var(--color-pd-border);
 }
+/* Current conversation id, pinned to the header's left; controls stay right. */
+.pd-conv-id {
+  margin-right: auto;
+  max-width: 45%;
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--color-pd-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+/* Pushes the model selector to the left and the icon buttons to the right. */
+.pd-header-spacer {
+  flex: 1;
+}
+
+/* Model selector — compact text button + dropdown. */
+.pd-model-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.pd-model-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 160px;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  border-radius: var(--radius-pd-sm);
+  background: transparent;
+  color: var(--color-pd-muted);
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pd-model-btn:hover {
+  background: var(--color-pd-control-hover);
+  color: var(--color-pd-control-hover-text);
+}
+.pd-model-caret {
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+.pd-model-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 240px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--color-pd-bg);
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  box-shadow: var(--shadow-pd);
+}
+.pd-model-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-pd-sm);
+  background: transparent;
+  color: var(--color-pd-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pd-model-item:hover,
+.pd-model-item.is-selected {
+  background: var(--color-pd-surface);
+}
+.pd-model-empty {
+  padding: 8px;
+  color: var(--color-pd-muted);
+}
+
+/* Installed-skills popover, anchored under the header skills button. */
+.pd-skills-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.pd-skills-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--color-pd-bg);
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  box-shadow: var(--shadow-pd);
+  text-align: left;
+}
+.pd-skills-head {
+  position: sticky;
+  top: 0;
+  padding: 4px 6px;
+  font-weight: 600;
+  color: var(--color-pd-text);
+  background: var(--color-pd-bg);
+}
+.pd-skills-empty {
+  padding: 8px 6px;
+  color: var(--color-pd-muted);
+}
+.pd-skill {
+  padding: 5px 6px;
+  border-radius: var(--radius-pd-sm);
+}
+.pd-skill:hover {
+  background: var(--color-pd-surface);
+}
+.pd-skill-name {
+  font-weight: 500;
+  color: var(--color-pd-text);
+}
+.pd-skill-desc {
+  font-size: 12px;
+  color: var(--color-pd-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* pd-host connectivity dot; sits just left of the header control buttons. */
 .pd-conn {
   width: 8px;
@@ -316,10 +469,40 @@
 .pd-msg-assistant {
   align-self: flex-start;
   border: 1px solid var(--color-pd-border);
-  position: relative; /* anchor for the floating hover action bar */
+  /* Answers are Streamdown markdown (real block elements), so drop the plain-text
+     pre-wrap that .pd-msg sets — otherwise source newlines add stray gaps.
+     Streamdown owns the rest of the typography via its Tailwind utilities. */
+  white-space: normal;
 }
 
-/* Hover action bar + branch picker under assistant messages. */
+/* Inline code (streamdown adds .aui-streamdown-inline-code) + fenced code blocks.
+   Shiki emits dual-theme output (light color inline + a --shiki-dark var); the
+   .dark rules swap to the dark palette so code follows the drawer theme. */
+.aui-streamdown-inline-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--color-pd-surface);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+.pd-shiki .shiki {
+  margin: 0.5em 0;
+  padding: 0.7em 0.9em;
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+.dark .pd-shiki .shiki {
+  background-color: var(--shiki-dark-bg) !important;
+}
+.dark .pd-shiki .shiki span {
+  color: var(--shiki-dark) !important;
+}
+
+/* Action bar + branch picker under assistant messages. */
 .pd-msg-actions,
 .pd-branch {
   display: flex;
@@ -329,20 +512,15 @@
   color: var(--color-pd-muted);
   font-size: 12px;
 }
-/* Floating (autohideFloat): out of flow so appearing on hover never reflows the
-   thread. Anchored just below the bubble, on its own background so it stays
-   readable where it overlaps the gap/next message. */
-.pd-msg-actions[data-floating] {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 0;
-  padding: 0.125rem 0.25rem;
-  border: 1px solid var(--color-pd-border);
-  border-radius: var(--radius-pd-sm);
-  background-color: var(--color-pd-bg);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
-  z-index: 1;
+/* In-flow: the row always reserves its space (no reflow), and is only visible
+   when the message is hovered or something inside it is focused (keyboard). */
+.pd-msg-actions {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.pd-msg-assistant:hover .pd-msg-actions,
+.pd-msg-actions:focus-within {
+  opacity: 1;
 }
 .pd-icon-btn {
   display: inline-flex;
@@ -415,6 +593,7 @@
 }
 
 .pd-composer {
+  position: relative; /* anchor for the slash-command trigger popover */
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
@@ -422,6 +601,85 @@
   padding: 0.75rem;
   border-top: 1px solid var(--color-pd-border);
   background-color: var(--color-pd-bg);
+}
+
+/* Slash-command trigger popover (assistant-ui primitives, our styling). Sits
+   above the composer input. */
+.pd-trigpop {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(100% + 4px);
+  z-index: 20;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--color-pd-bg);
+  border: 1px solid var(--color-pd-border);
+  border-radius: var(--radius-pd-sm);
+  box-shadow: var(--shadow-pd);
+}
+.pd-trigpop-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.pd-trigpop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 5px 8px;
+  border-radius: var(--radius-pd-sm);
+  cursor: pointer;
+  outline: none;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: var(--color-pd-text);
+}
+.pd-trigpop-item:hover,
+.pd-trigpop-item[data-highlighted] {
+  background: var(--color-pd-surface);
+}
+.pd-trigpop-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.pd-trigpop-desc {
+  font-size: 12px;
+  color: var(--color-pd-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pd-trigpop-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: var(--color-pd-muted);
+}
+.pd-trigpop-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: none;
+  border-bottom: 1px solid var(--color-pd-border);
+  background: transparent;
+  color: var(--color-pd-muted);
+  font: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.pd-trigpop-empty {
+  padding: 8px;
+  color: var(--color-pd-muted);
 }
 .pd-composer-input {
   flex: 1;

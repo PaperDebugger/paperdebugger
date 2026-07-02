@@ -15,6 +15,8 @@ import { decodeNativeMessages, encodeNativeMessage, type NativeMessage } from ".
 import { runClaude } from "./runtimes/claude.js";
 import { runCodex } from "./runtimes/codex.js";
 import { syncProjectFiles } from "./sync.js";
+import { listSkills } from "./skills.js";
+import { listModels } from "./models.js";
 import { errMessage, type ChatRequest, type Phase, type SyncRequest, type TurnStat } from "./types.js";
 
 // CRITICAL: stdout is the wire to Chrome — any stray write corrupts the framing.
@@ -41,6 +43,20 @@ async function handle(msg: NativeMessage): Promise<void> {
   if (type === "ping") {
     log(`→ pong id=${short(id)}`);
     send({ id, type: "pong" });
+    return;
+  }
+  if (type === "skills") {
+    const provider = (msg as { provider?: string }).provider;
+    const skills = listSkills(provider);
+    log(`skills id=${short(id)} provider=${provider ?? "claude"} → ${skills.length}`);
+    send({ id, type: "skills", skills });
+    return;
+  }
+  if (type === "models") {
+    const provider = (msg as { provider?: string }).provider;
+    const models = listModels(provider);
+    log(`models id=${short(id)} provider=${provider ?? "claude"} → ${models.length}`);
+    send({ id, type: "models", models });
     return;
   }
   if (type === "sync") {

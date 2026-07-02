@@ -16,8 +16,11 @@ import { CHAT_STREAM_PORT } from "./constants";
 
 export type ChatProvider = "claude" | "codex";
 
+export type SkillInfo = { name: string; description: string; source: string };
+export type ModelInfo = { id: string; name: string };
+
 export type ChatStreamRequest = {
-  type: "chat" | "ping" | "sync";
+  type: "chat" | "ping" | "sync" | "skills" | "models";
   provider?: ChatProvider;
   prompt?: string;
   model?: string;
@@ -48,12 +51,15 @@ export type ChatStreamMessage =
   | { type: "reasoning"; text: string }
   | { type: "session"; sessionId: string }
   | { type: "pong" }
+  | { type: "skills"; skills: SkillInfo[] }
+  | { type: "models"; models: ModelInfo[] }
   | { type: "done"; stat?: TurnStat }
   | { type: "error"; message: string; stat?: TurnStat };
 
 const REQ_EVT = "paperdebugger:chat:req";
 const msgEvt = (seq: string) => `paperdebugger:chat:msg/${seq}`;
-const isTerminal = (t: ChatStreamMessage["type"]) => t === "done" || t === "error" || t === "pong";
+const isTerminal = (t: ChatStreamMessage["type"]) =>
+  t === "done" || t === "error" || t === "pong" || t === "skills" || t === "models";
 
 // Extension API off the global (undefined in MAIN world / page context).
 type Port = {

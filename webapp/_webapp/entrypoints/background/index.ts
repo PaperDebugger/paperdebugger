@@ -35,7 +35,14 @@ function getNativePort(): NativePort {
       console.log(`[PD:bg] host → ${msg.type} id=${short(msg.id)} → relay to content`);
     const relay = msg.id ? inflight.get(msg.id) : undefined;
     relay?.postMessage(msg);
-    if (msg.id && (msg.type === "done" || msg.type === "error" || msg.type === "pong")) {
+    if (
+      msg.id &&
+      (msg.type === "done" ||
+        msg.type === "error" ||
+        msg.type === "pong" ||
+        msg.type === "skills" ||
+        msg.type === "models")
+    ) {
       inflight.delete(msg.id);
     }
   });

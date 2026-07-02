@@ -9,6 +9,8 @@ interface PaperDebuggerUiState {
   displayMode: DisplayMode;
   tabOrientation: TabOrientation;
   provider: ChatProvider;
+  // Selected model id per provider (empty/absent = the CLI's own default).
+  modelByProvider: Partial<Record<ChatProvider, string>>;
   isOpen: boolean;
 
   floatingX: number;
@@ -31,6 +33,7 @@ export const usePaperDebuggerUiStore = create<PaperDebuggerUiStore>()(
       displayMode: "right-fixed",
       tabOrientation: "vertical",
       provider: "claude",
+      modelByProvider: {},
       isOpen: false,
 
       floatingX: 100,
