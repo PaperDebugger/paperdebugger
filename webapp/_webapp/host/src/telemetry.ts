@@ -6,7 +6,9 @@
 // (Overleaf projectId) + which model (provider/model) + latency breakdown
 // (ttft_ms / total_ms / phase.*_ms from TurnStat).
 //
-// Disabled unless a token exists: env OTEL_AUTH_TOKEN or ~/.paperdebugger/otel-token.
+// Token: env OTEL_AUTH_TOKEN > ~/.paperdebugger/otel-token > baked-in default.
+// The default ships in a public repo on purpose — it's an ingest-only key (like
+// a Sentry DSN); secrecy isn't the security model, collector-side scoping is.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -17,28 +19,28 @@ import type { TurnStat } from "./types.js";
 
 const OTLP_LOGS = "https://otlp.xtra.science/v1/logs";
 
-function readToken(): string | undefined {
+const DEFAULT_TOKEN = "ff4b3c7c2a66c5c9252696cf6cb111f79ff983d68700ff1051455cfe4ecf55ef";
+
+function readToken(): string {
   if (process.env.OTEL_AUTH_TOKEN) return process.env.OTEL_AUTH_TOKEN;
   try {
-    return fs.readFileSync(path.join(os.homedir(), ".paperdebugger", "otel-token"), "utf8").trim() || undefined;
+    const t = fs.readFileSync(path.join(os.homedir(), ".paperdebugger", "otel-token"), "utf8").trim();
+    if (t) return t;
   } catch {
-    return undefined;
+    /* fall through */
   }
+  return DEFAULT_TOKEN;
 }
 const TOKEN = readToken();
 
 // ponytail: SimpleLogRecordProcessor, not Batch — one low-volume record per chat
 // turn, and pd-host can be killed by Chrome anytime; batching would lose tails.
-const logger = TOKEN
-  ? new LoggerProvider({
-      resource: resourceFromAttributes({ "service.name": "pd-host", "service.namespace": "paperdebugger" }),
-      processors: [
-        new SimpleLogRecordProcessor(
-          new OTLPLogExporter({ url: OTLP_LOGS, headers: { Authorization: `Bearer ${TOKEN}` } }),
-        ),
-      ],
-    }).getLogger("pd-host")
-  : null;
+const logger = new LoggerProvider({
+  resource: resourceFromAttributes({ "service.name": "pd-host", "service.namespace": "paperdebugger" }),
+  processors: [
+    new SimpleLogRecordProcessor(new OTLPLogExporter({ url: OTLP_LOGS, headers: { Authorization: `Bearer ${TOKEN}` } })),
+  ],
+}).getLogger("pd-host");
 
 // Pure attribute builder (exported for the self-check below).
 export function turnAttributes(
@@ -63,7 +65,7 @@ export function turnAttributes(
 
 // Fire-and-forget; never blocks or fails the turn.
 export function reportTurn(stat: TurnStat, projectId?: string): void {
-  logger?.emit({
+  logger.emit({
     severityText: "INFO",
     body: "chat_turn",
     attributes: turnAttributes(stat, projectId, os.userInfo().username),
@@ -91,5 +93,5 @@ if (process.argv[1]?.endsWith("telemetry.ts")) {
   console.assert(attrs.model === "opus", "model");
   console.assert(attrs.ttft_ms === 800, "ttft");
   console.assert(attrs["phase.streaming_ms"] === 1200, "phase");
-  console.error(`telemetry self-check ok (reporting ${TOKEN ? "enabled" : "disabled — no token"})`);
+  console.error(`telemetry self-check ok (token: ${TOKEN === DEFAULT_TOKEN ? "baked-in default" : "local override"})`);
 }
