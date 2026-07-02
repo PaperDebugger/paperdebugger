@@ -9,6 +9,9 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css";
 @import "tailwindcss/utilities.css";
+/* Text shimmer for the streaming/loading answer (assistant-ui's own v4 plugin);
+   provides the `shimmer` utility used by TextPart. Unlayered like utilities. */
+@import "tw-shimmer";
 
 /* ── Theme tokens ─────────────────────────────────────────────────────────
    Tailwind v4 @theme: these become both `var(--color-pd-*)` and utilities
@@ -106,6 +109,15 @@
 .pd-tab:hover {
   background-color: var(--color-pd-control-hover);
   color: var(--color-pd-control-hover-text);
+}
+.pd-ctl-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Neutralize the hover highlight while disabled so it doesn't look clickable. */
+.pd-ctl-btn:disabled:hover {
+  background-color: transparent;
+  color: var(--color-pd-muted);
 }
 
 .pd-ctl-btn {
@@ -215,10 +227,62 @@
 }
 .pd-chat-header {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.25rem;
   flex: 0 0 auto;
   padding: 0.25rem 0.5rem;
   border-bottom: 1px solid var(--color-pd-border);
+}
+/* pd-host connectivity dot; sits just left of the header control buttons. */
+.pd-conn {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--color-pd-muted);
+}
+.pd-conn-online {
+  background: #22c55e;
+}
+.pd-conn-offline {
+  background: #ef4444;
+}
+.pd-conn-checking {
+  animation: pd-pulse 1s ease-in-out infinite;
+}
+@keyframes pd-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+/* Determinate/indeterminate progress bar inside the sync button. */
+.pd-progress {
+  width: 44px;
+  height: 4px;
+  margin-right: 4px;
+  background: var(--color-pd-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pd-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--color-pd-control-hover-text);
+  transition: width 0.2s ease;
+}
+.pd-progress-indeterminate .pd-progress-fill {
+  width: 40%;
+  animation: pd-indeterminate 1s ease-in-out infinite;
+}
+@keyframes pd-indeterminate {
+  0% {
+    margin-left: -40%;
+  }
+  100% {
+    margin-left: 100%;
+  }
 }
 .pd-thread-viewport {
   flex: 1;
@@ -253,39 +317,6 @@
   align-self: flex-start;
   border: 1px solid var(--color-pd-border);
   position: relative; /* anchor for the floating hover action bar */
-}
-
-/* Animated typing indicator, shown while a text part is still streaming. */
-.pd-typing {
-  display: inline-flex;
-  gap: 3px;
-  margin-left: 3px;
-  vertical-align: middle;
-}
-.pd-typing span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--color-pd-muted);
-  animation: pd-typing-blink 1.2s infinite ease-in-out both;
-}
-.pd-typing span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.pd-typing span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-@keyframes pd-typing-blink {
-  0%,
-  80%,
-  100% {
-    opacity: 0.2;
-    transform: scale(0.8);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 /* Hover action bar + branch picker under assistant messages. */

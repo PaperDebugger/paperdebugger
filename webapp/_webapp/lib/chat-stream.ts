@@ -23,7 +23,10 @@ export type ChatStreamRequest = {
   model?: string;
   resume?: string;
   projectId?: string;
-  files?: { path: string; content: string }[];
+  files?: { path: string; content: string; encoding?: "utf8" | "base64" }[];
+  // Full-sync batches carry the complete path manifest on the FINAL batch only;
+  // the host prunes workspace files not in it. Absent on non-final batches.
+  prune?: string[];
 };
 
 // Mirror of host TurnStat (host/src/types.ts) — the per-turn timing breakdown.

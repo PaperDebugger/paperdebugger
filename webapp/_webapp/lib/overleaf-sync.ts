@@ -1,3 +1,5 @@
+import { unzipSync, strFromU8 } from "fflate";
+
 // Text file types worth sending as context. Binary assets (images, PDFs) are
 // skipped — the AI reads source, and it keeps the payload small.
 const TEXT_EXT = new Set([
@@ -20,7 +22,13 @@ const MAX_FILE_BYTES = 1_000_000;
 const MAX_TOTAL_BYTES = 5_000_000;
 const JOIN_TIMEOUT_MS = 15_000;
 
-export type ProjectFile = { path: string; content: string };
+// Caps for the manual full-project sync (zip). Generous — the point is to mirror
+// everything (incl. images) to the workspace so the CLI can compile — but still
+// bounded so a pathological project can't blow up memory / native messaging.
+const ZIP_MAX_FILE_BYTES = 25_000_000;
+const ZIP_MAX_TOTAL_BYTES = 150_000_000;
+
+export type ProjectFile = { path: string; content: string; encoding?: "utf8" | "base64" };
 
 // An entity in the project tree, with the id needed to fetch its content.
 type Entry = { path: string; id: string; kind: "doc" | "file" };
@@ -118,6 +126,110 @@ async function fetchTextFiles(projectId: string, tree: Entry[], t0: number): Pro
       `${Math.round(performance.now() - t0)}ms`,
     files.map((f) => f.path),
   );
+  return files;
+}
+
+// Chunked base64 — String.fromCharCode(...bytes) overflows the call stack on
+// large arrays, so encode in windows.
+function toBase64(bytes: Uint8Array): string {
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+// Downloaded byte count and total (total = null when the server doesn't send a
+// content-length, i.e. a chunked/streamed zip → indeterminate).
+export type DownloadProgress = { received: number; total: number | null };
+
+// Read the response body incrementally so the caller can show download progress.
+async function readWithProgress(res: Response, onProgress?: (p: DownloadProgress) => void): Promise<Uint8Array> {
+  const total = Number(res.headers.get("content-length")) || null;
+  const reader = res.body?.getReader();
+  if (!reader) return new Uint8Array(await res.arrayBuffer());
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    onProgress?.({ received, total });
+  }
+  const out = new Uint8Array(received);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out;
+}
+
+// Split files into batches capped by cumulative content bytes, so each native
+// message stays well under the pipe's frame limit. A single oversized file still
+// gets its own (over-cap) batch — better to try than to silently drop it.
+export function batchByBytes(files: ProjectFile[], capBytes: number): ProjectFile[][] {
+  const batches: ProjectFile[][] = [];
+  let cur: ProjectFile[] = [];
+  let curBytes = 0;
+  for (const f of files) {
+    if (cur.length && curBytes + f.content.length > capBytes) {
+      batches.push(cur);
+      cur = [];
+      curBytes = 0;
+    }
+    cur.push(f);
+    curBytes += f.content.length;
+  }
+  if (cur.length) batches.push(cur);
+  return batches;
+}
+
+// Manual full sync: download the whole project as a zip, unzip in-page, and
+// return EVERY file — text as utf8, binaries (images/PDF) base64-encoded — so the
+// host mirrors a complete, compilable project into the workspace. Independent of
+// the socket/change-gate path; the reliable "sync everything now" fallback.
+export async function fetchProjectZip(
+  projectId: string,
+  onProgress?: (p: DownloadProgress) => void,
+): Promise<ProjectFile[]> {
+  const t0 = performance.now();
+  const res = await fetch(`/project/${projectId}/download/zip`, { credentials: "include" });
+  if (!res.ok) throw new Error(`Overleaf download/zip failed: ${res.status}`);
+  const entries = unzipSync(await readWithProgress(res, onProgress));
+
+  const files: ProjectFile[] = [];
+  let total = 0;
+  let skipped = 0;
+  for (const [name, data] of Object.entries(entries)) {
+    if (name.endsWith("/")) continue; // directory entry
+    if (data.length > ZIP_MAX_FILE_BYTES) {
+      skipped += 1;
+      continue;
+    }
+    if (total + data.length > ZIP_MAX_TOTAL_BYTES) {
+      skipped += 1;
+      continue;
+    }
+    total += data.length;
+    const ext = name.split(".").pop()?.toLowerCase() ?? "";
+    if (TEXT_EXT.has(ext)) files.push({ path: name, content: strFromU8(data) });
+    else files.push({ path: name, content: toBase64(data), encoding: "base64" });
+  }
+  console.log(
+    `[PD sync] zip: ${files.length} files, ${Math.round(total / 1024)}KB` +
+      (skipped ? `, skipped ${skipped} over cap` : "") +
+      ` in ${Math.round(performance.now() - t0)}ms`,
+  );
+  // A manual full sync is authoritative: invalidate the change-gate cache so the
+  // next auto-sync doesn't serve a stale text-only set.
+  const w = watches.get(projectId);
+  if (w) {
+    w.files = null;
+    w.dirty = true;
+  }
   return files;
 }
 

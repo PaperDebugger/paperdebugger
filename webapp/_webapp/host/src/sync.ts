@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { workspaceDir } from "./workspace.js";
 
-export type SyncFile = { path: string; content: string };
+export type SyncFile = { path: string; content: string; encoding?: "utf8" | "base64" };
 
 // All files currently on disk under root, as forward-slash relative paths.
 function listFilesRel(root: string): string[] {
@@ -25,15 +25,18 @@ function listFilesRel(root: string): string[] {
   return out;
 }
 
-// Mirror the incoming file set into the per-project workspace: write new/changed
-// files, delete files that are gone. Incremental by content compare — first sync
-// (empty dir) writes everything. Returns counts for logging.
+// Write the incoming files into the per-project workspace (incremental by content
+// compare — first sync writes everything). If `prune` is given, it's the complete
+// set of paths that should exist; anything else in the workspace is deleted. When
+// `prune` is absent the call is write-only — used for mid-batch full-sync messages
+// and the text-only auto-sync (which must not delete binaries or sibling batches'
+// files). Returns counts for logging.
 export function syncProjectFiles(
   projectId: string | undefined,
   files: SyncFile[],
+  prune?: string[] | null,
 ): { written: number; deleted: number } {
   const root = workspaceDir(projectId);
-  const wanted = new Set<string>();
   let written = 0;
 
   for (const f of files) {
@@ -41,29 +44,32 @@ export function syncProjectFiles(
     const abs = path.resolve(root, f.path);
     // Reject anything that escapes the workspace root.
     if (abs !== root && !abs.startsWith(root + path.sep)) continue;
-    wanted.add(path.relative(root, abs).split(path.sep).join("/"));
 
-    let existing: string | null = null;
+    const data = Buffer.from(f.content, f.encoding === "base64" ? "base64" : "utf8");
+    let existing: Buffer | null = null;
     try {
-      existing = fs.readFileSync(abs, "utf8");
+      existing = fs.readFileSync(abs);
     } catch {
       // new file
     }
-    if (existing !== f.content) {
+    if (!existing || !existing.equals(data)) {
       fs.mkdirSync(path.dirname(abs), { recursive: true });
-      fs.writeFileSync(abs, f.content, "utf8");
+      fs.writeFileSync(abs, data);
       written += 1;
     }
   }
 
   let deleted = 0;
-  for (const rel of listFilesRel(root)) {
-    if (!wanted.has(rel)) {
-      try {
-        fs.rmSync(path.join(root, rel));
-        deleted += 1;
-      } catch {
-        // ignore
+  if (prune) {
+    const keep = new Set(prune);
+    for (const rel of listFilesRel(root)) {
+      if (!keep.has(rel)) {
+        try {
+          fs.rmSync(path.join(root, rel));
+          deleted += 1;
+        } catch {
+          // ignore
+        }
       }
     }
   }

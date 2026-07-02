@@ -15,7 +15,11 @@ export interface SyncRequest {
   id?: string;
   type: "sync";
   projectId?: string;
-  files: { path: string; content: string }[];
+  // content is utf8 text by default; binaries (images/PDF) are base64-encoded.
+  files: { path: string; content: string; encoding?: "utf8" | "base64" }[];
+  // Present on the final batch of a full sync: the complete set of wanted paths.
+  // The host deletes any workspace file not listed. Absent → write-only (no prune).
+  prune?: string[];
 }
 
 export type OnDelta = (text: string) => void;

@@ -18,9 +18,11 @@
   },
   "dependencies": {
     "@assistant-ui/react": "^0.14.24",
+    "fflate": "^0.8.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-rnd": "^10.5.3",
+    "tw-shimmer": "^0.4.11",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

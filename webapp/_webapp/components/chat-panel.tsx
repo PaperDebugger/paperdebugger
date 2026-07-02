@@ -7,15 +7,18 @@ import {
   ComposerPrimitive,
   MessagePrimitive,
   MessagePartPrimitive,
+  useMessagePartText,
   ActionBarPrimitive,
   BranchPickerPrimitive,
   type ChatModelAdapter,
 } from "@assistant-ui/react";
+import { useState, useEffect } from "react";
 import { chatStream, type ChatProvider, type TurnStat } from "@/lib/chat-stream";
-import { fetchProjectFiles } from "@/lib/overleaf-sync";
+import { fetchProjectFiles, fetchProjectZip, batchByBytes } from "@/lib/overleaf-sync";
 import { usePaperDebuggerUiStore } from "@/stores/paper-debugger-ui-store";
 import { useChatStatsStore } from "@/stores/chat-stats-store";
 import IconSquarePen from "~icons/lucide/square-pen";
+import IconHardDriveDownload from "~icons/lucide/hard-drive-download";
 import IconCopy from "~icons/lucide/copy";
 import IconCheck from "~icons/lucide/check";
 import IconRefresh from "~icons/lucide/refresh-cw";
@@ -138,6 +141,39 @@ const hostAdapter: ChatModelAdapter = {
   },
 };
 
+// Live pd-host connectivity dot. Pings the host on mount and every 30s (the
+// native port is shared/long-lived, so a ping reuses the existing process — it
+// only spawns pd-host the first time). Green = reachable, red = not, pulsing =
+// checking.
+const CONN_PING_MS = 30_000;
+function ConnectionIndicator() {
+  const [status, setStatus] = useState<"checking" | "online" | "offline">("checking");
+  useEffect(() => {
+    let alive = true;
+    const check = async () => {
+      try {
+        await chatStream({ type: "ping" }, () => {});
+        if (alive) setStatus("online");
+      } catch {
+        if (alive) setStatus("offline");
+      }
+    };
+    void check();
+    const t = setInterval(() => void check(), CONN_PING_MS);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+  const label =
+    status === "online"
+      ? "pd-host connected"
+      : status === "offline"
+        ? "pd-host not reachable — install it (see host/README.md)"
+        : "Checking pd-host…";
+  return <span className={`pd-conn pd-conn-${status}`} title={label} aria-label={label} role="status" />;
+}
+
 // Icon-only "new conversation": clears the thread and the provider continuation.
 function NewChatButton() {
   const runtime = useAssistantRuntime();
@@ -155,26 +191,82 @@ function NewChatButton() {
   );
 }
 
+// Per-native-message payload cap for the batched full sync. Keeps each frame well
+// under the pipe's limit so a big project can't hang the host with one giant msg.
+const SYNC_BATCH_BYTES = 512 * 1024;
+
+// Manual full sync: download the whole project (incl. images) via zip and mirror
+// it into the host workspace in size-capped batches. Complete + socket-independent
+// — the reliable fallback to the automatic incremental sync. Shows download then
+// per-batch upload progress.
+function SyncButton() {
+  const [state, setState] = useState<{ phase: "idle" | "download" | "upload"; ratio: number | null }>({
+    phase: "idle",
+    ratio: null,
+  });
+  const projectId = overleafProjectId();
+  const busy = state.phase !== "idle";
+
+  const run = async () => {
+    if (!projectId || busy) return;
+    setState({ phase: "download", ratio: null });
+    try {
+      const files = await fetchProjectZip(projectId, ({ received, total }) =>
+        setState({ phase: "download", ratio: total ? received / total : null }),
+      );
+      const batches = batchByBytes(files, SYNC_BATCH_BYTES);
+      const manifest = files.map((f) => f.path);
+      for (let i = 0; i < batches.length; i++) {
+        setState({ phase: "upload", ratio: batches.length ? i / batches.length : 1 });
+        // The final batch carries the full manifest so the host prunes orphans.
+        const prune = i === batches.length - 1 ? manifest : undefined;
+        await chatStream({ type: "sync", projectId, files: batches[i], prune }, () => {});
+      }
+    } catch (err) {
+      console.warn("[PD] manual project sync failed", err);
+    } finally {
+      setState({ phase: "idle", ratio: null });
+    }
+  };
+
+  const pct = state.ratio == null ? null : Math.round(state.ratio * 100);
+  const title = !projectId
+    ? "Open a project to sync"
+    : state.phase === "download"
+      ? `Downloading project… ${pct == null ? "" : pct + "%"}`
+      : state.phase === "upload"
+        ? `Syncing to local… ${pct ?? 0}%`
+        : "Sync full project to local";
+
+  return (
+    <button className="pd-ctl-btn" title={title} disabled={busy || !projectId} onClick={run}>
+      {busy && (
+        <span className={`pd-progress${pct == null ? " pd-progress-indeterminate" : ""}`}>
+          <span className="pd-progress-fill" style={pct == null ? undefined : { width: `${pct}%` }} />
+        </span>
+      )}
+      <IconHardDriveDownload width={16} height={16} />
+    </button>
+  );
+}
+
 const UserMessage = () => (
   <MessagePrimitive.Root className="pd-msg pd-msg-user">
     <MessagePrimitive.Parts />
   </MessagePrimitive.Root>
 );
 
-// Text part with an animated typing indicator instead of assistant-ui's default
-// trailing " ●". MessagePartPrimitive.InProgress (the built-in) renders its child
-// only while the part is still streaming — we just swap the dot for CSS dots.
+// Text part that replaces assistant-ui's default trailing " ●" with tw-shimmer's
+// text shimmer (assistant-ui's own Tailwind v4 plugin): while the part is still
+// generating, the text shimmers via `background-clip: text`; a "…" placeholder
+// carries the shimmer before the first token. Done → plain text.
 function TextPart() {
+  const { text, status } = useMessagePartText();
+  const running = status.type === "running";
   return (
-    <p style={{ whiteSpace: "pre-line", margin: 0 }}>
+    <p className={running ? "shimmer" : undefined} style={{ whiteSpace: "pre-line", margin: 0 }}>
       <MessagePartPrimitive.Text />
-      <MessagePartPrimitive.InProgress>
-        <span className="pd-typing" aria-label="Loading">
-          <span />
-          <span />
-          <span />
-        </span>
-      </MessagePartPrimitive.InProgress>
+      {running && !text && "…"}
     </p>
   );
 }
@@ -287,6 +379,8 @@ export function ChatPanel() {
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="pd-thread">
         <div className="pd-chat-header">
+          <ConnectionIndicator />
+          <SyncButton />
           <NewChatButton />
         </div>
         <ThreadPrimitive.Viewport className="pd-thread-viewport">

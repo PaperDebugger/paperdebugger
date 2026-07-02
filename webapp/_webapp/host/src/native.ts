@@ -46,9 +46,10 @@ async function handle(msg: NativeMessage): Promise<void> {
   if (type === "sync") {
     const req = msg as unknown as SyncRequest;
     const files = Array.isArray(req.files) ? req.files : [];
-    const { written, deleted } = syncProjectFiles(req.projectId, files);
+    const prune = Array.isArray(req.prune) ? req.prune : null;
+    const { written, deleted } = syncProjectFiles(req.projectId, files, prune);
     log(
-      `sync id=${short(id)} project=${req.projectId ?? "-"} in=${files.length} written=${written} deleted=${deleted}`,
+      `sync id=${short(id)} project=${req.projectId ?? "-"} in=${files.length} written=${written} deleted=${deleted}${prune ? " (pruned)" : ""}`,
     );
     send({ id, type: "done" });
     return;
