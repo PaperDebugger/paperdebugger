@@ -235,48 +235,6 @@ function useSkills(provider: ChatProvider, enabled: boolean): SkillInfo[] | null
   return skills;
 }
 
-// Header button listing the current provider's installed skills. Popover closes
-// on outside click; shares the skills cache with the composer slash menu.
-function SkillsButton() {
-  const provider = usePaperDebuggerUiStore((s) => s.provider);
-  const [open, setOpen] = useState(false);
-  const skills = useSkills(provider, open);
-  const loading = open && skills === null;
-  const label = provider === "codex" ? "Codex" : "Claude";
-
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement)?.closest?.(".pd-skills-wrap")) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [open]);
-
-  return (
-    <div className="pd-skills-wrap">
-      <button className="pd-ctl-btn" title={`${label} skills`} onClick={() => setOpen((o) => !o)}>
-        <IconPuzzle width={16} height={16} />
-      </button>
-      {open && (
-        <div className="pd-skills-pop">
-          <div className="pd-skills-head">
-            {label} Skills{skills ? ` (${skills.length})` : ""}
-          </div>
-          {loading && <div className="pd-skills-empty">Detecting…</div>}
-          {!loading && skills?.length === 0 && <div className="pd-skills-empty">No skills found.</div>}
-          {skills?.map((s) => (
-            <div key={s.name} className="pd-skill">
-              <div className="pd-skill-name">{s.name}</div>
-              {s.description && <div className="pd-skill-desc">{s.description}</div>}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Available models per provider, cached module-wide (mirrors the skills cache).
 const modelsCache = new Map<ChatProvider, ModelInfo[]>();
 const modelsInflight = new Map<ChatProvider, Promise<ModelInfo[]>>();
@@ -655,11 +613,10 @@ export function ChatPanel() {
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="pd-thread">
         <div className="pd-chat-header">
-          <ConversationId />
           <ConnectionIndicator />
           <ModelSelector />
+          <ConversationId />
           <span className="pd-header-spacer" />
-          <SkillsButton />
           <SyncButton />
           <NewChatButton />
         </div>
