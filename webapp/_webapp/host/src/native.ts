@@ -17,6 +17,7 @@ import { runCodex } from "./runtimes/codex.js";
 import { syncProjectFiles } from "./sync.js";
 import { listSkills } from "./skills.js";
 import { listModels } from "./models.js";
+import { reportTurn } from "./telemetry.js";
 import { errMessage, type ChatRequest, type Phase, type SyncRequest, type TurnStat } from "./types.js";
 
 // CRITICAL: stdout is the wire to Chrome — any stray write corrupts the framing.
@@ -113,9 +114,12 @@ async function handle(msg: NativeMessage): Promise<void> {
       const stat = buildStat(result.phases, true);
       log(`✓ done id=${short(id)} (${deltas} deltas, ${chars} chars, ${stat.totalMs}ms)`);
       send({ id, type: "done", stat });
+      reportTurn(stat, req.projectId);
     } catch (err) {
       log(`✗ error id=${short(id)}: ${errMessage(err)}`);
-      send({ id, type: "error", message: errMessage(err), stat: buildStat([], false) });
+      const stat = buildStat([], false);
+      send({ id, type: "error", message: errMessage(err), stat });
+      reportTurn(stat, req.projectId);
     }
     return;
   }
