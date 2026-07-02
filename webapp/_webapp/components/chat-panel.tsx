@@ -61,9 +61,13 @@ type Cont = { provider: ChatProvider; contId: string };
 // threadId). A tiny store so the header can reactively show the id; getState()
 // works outside React (in the adapter). One chat panel per page, kept mounted
 // across tab switches; resets on page reload.
-const useConversationStore = create<{ cont: Cont | null; set: (c: Cont | null) => void }>((set) => ({
+// convId is the stable telemetry key for one visible conversation — claude
+// re-mints its sessionId on every resume, so contId can't group turns. Re-mint
+// on "New chat" (set(null)); page reload re-mints naturally.
+const useConversationStore = create<{ cont: Cont | null; convId: string; set: (c: Cont | null) => void }>((set) => ({
   cont: null,
-  set: (cont) => set({ cont }),
+  convId: crypto.randomUUID(),
+  set: (cont) => set(cont ? { cont } : { cont: null, convId: crypto.randomUUID() }),
 }));
 
 // Bridges the callback-streamed host into assistant-ui's async-generator adapter.
@@ -74,7 +78,7 @@ const hostAdapter: ChatModelAdapter = {
     const prompt = latestUserText(messages);
     const projectId = overleafProjectId();
     // Resume only if the stored continuation belongs to the current provider.
-    const stored = useConversationStore.getState().cont;
+    const { cont: stored, convId } = useConversationStore.getState();
     const resume = stored?.provider === provider ? stored.contId : undefined;
 
     // Sync the Overleaf project into the host workspace first, so the CLI answers
@@ -102,7 +106,7 @@ const hostAdapter: ChatModelAdapter = {
       wake = null;
     };
 
-    chatStream({ type: "chat", provider, model, prompt, projectId, resume, t0, syncMs }, (msg) => {
+    chatStream({ type: "chat", provider, model, prompt, projectId, resume, t0, syncMs, convId }, (msg) => {
       if (msg.type === "delta") {
         chunks.push(msg.text);
         bump();

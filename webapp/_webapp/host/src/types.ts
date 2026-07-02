@@ -10,9 +10,12 @@ export interface ChatRequest {
   // Overleaf project id → per-project workspace + session isolation.
   projectId?: string;
   // Telemetry: when the user hit send in the browser (epoch ms, same machine
-  // clock as the host) and how long the preceding project sync took.
+  // clock as the host), how long the preceding project sync took, and a stable
+  // per-conversation id (claude re-mints sessionId on resume, so contId can't
+  // group a conversation's turns).
   t0?: number;
   syncMs?: number;
+  convId?: string;
 }
 
 export interface SyncRequest {

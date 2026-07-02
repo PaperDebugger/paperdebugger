@@ -74,7 +74,10 @@ export function reportTurn(stat: TurnStat, req: ChatRequest, contId?: string): v
             "project.id": req.projectId ?? "unknown",
             provider: stat.provider,
             model: stat.model || "cli-default",
-            "session.id": contId ?? "",
+            // convId is the extension-minted per-conversation key; contId
+            // (claude sessionId / codex threadId) is a fallback for requests
+            // from older extension builds.
+            "session.id": req.convId ?? contId ?? "",
             ok: stat.ok,
             prompt_len: stat.promptLen,
             deltas: stat.deltas,
@@ -121,7 +124,7 @@ if (process.argv[1]?.endsWith("telemetry.ts")) {
       phases: [{ name: "streaming", ms: 600 }],
       ok: true,
     },
-    { type: "chat", projectId: "self-check", t0: Date.now() - 1500, syncMs: 300 },
+    { type: "chat", projectId: "self-check", t0: Date.now() - 1500, syncMs: 300, convId: "self-check-conv" },
     "self-check-session",
   );
   const { provider } = await ready!;

@@ -26,10 +26,12 @@ export type ChatStreamRequest = {
   model?: string;
   resume?: string;
   projectId?: string;
-  // Telemetry: epoch ms when the user hit send, and how long the preceding
-  // project sync took — lets the host root the turn's trace at user-send.
+  // Telemetry: epoch ms when the user hit send, how long the preceding project
+  // sync took, and a stable per-conversation id — lets the host root the
+  // turn's trace at user-send and group turns of one conversation.
   t0?: number;
   syncMs?: number;
+  convId?: string;
   files?: { path: string; content: string; encoding?: "utf8" | "base64" }[];
   // Full-sync batches carry the complete path manifest on the FINAL batch only;
   // the host prunes workspace files not in it. Absent on non-final batches.
