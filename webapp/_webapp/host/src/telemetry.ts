@@ -1,9 +1,8 @@
 // Per-turn usage telemetry → OTLP logs (same collector as paperdebugger-main).
-// One fetch POST of OTLP/HTTP JSON per chat turn — no OpenTelemetry SDK.
-// ponytail: plain fetch + JSON covers one event type; add the SDK only if we
-// ever need traces/metrics with propagation.
+// The collector only accepts protobuf encoding, so this uses the OTel logs SDK
+// with the -proto exporter (a plain JSON fetch gets 400'd).
 //
-// Each record answers: when (timeUnixNano) + who (os user) + which project
+// Each record answers: when (observedTimestamp) + who (os user) + which project
 // (Overleaf projectId) + which model (provider/model) + latency breakdown
 // (ttft_ms / total_ms / phase.*_ms from TurnStat).
 //
@@ -11,6 +10,9 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { LoggerProvider, SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs";
+import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 import type { TurnStat } from "./types.js";
 
 const OTLP_LOGS = "https://otlp.xtra.science/v1/logs";
@@ -25,62 +27,52 @@ function readToken(): string | undefined {
 }
 const TOKEN = readToken();
 
-type Attr = { key: string; value: { stringValue: string } | { intValue: string } | { boolValue: boolean } };
-const str = (key: string, v: string): Attr => ({ key, value: { stringValue: v } });
-const int = (key: string, v: number): Attr => ({ key, value: { intValue: String(Math.round(v)) } });
+// ponytail: SimpleLogRecordProcessor, not Batch — one low-volume record per chat
+// turn, and pd-host can be killed by Chrome anytime; batching would lose tails.
+const logger = TOKEN
+  ? new LoggerProvider({
+      resource: resourceFromAttributes({ "service.name": "pd-host", "service.namespace": "paperdebugger" }),
+      processors: [
+        new SimpleLogRecordProcessor(
+          new OTLPLogExporter({ url: OTLP_LOGS, headers: { Authorization: `Bearer ${TOKEN}` } }),
+        ),
+      ],
+    }).getLogger("pd-host")
+  : null;
 
-// Pure payload builder (exported for the self-check below).
-export function turnPayload(stat: TurnStat, projectId: string | undefined, user: string, nowMs: number) {
-  const attributes: Attr[] = [
-    str("user", user),
-    str("project.id", projectId ?? "unknown"),
-    str("provider", stat.provider),
-    str("model", stat.model || "cli-default"),
-    { key: "ok", value: { boolValue: stat.ok } },
-    int("prompt_len", stat.promptLen),
-    int("deltas", stat.deltas),
-    int("chars", stat.chars),
-    int("total_ms", stat.totalMs),
-    ...(stat.ttftMs != null ? [int("ttft_ms", stat.ttftMs)] : []),
-    ...stat.phases.map((p) => int(`phase.${p.name}_ms`, p.ms)),
-  ];
+// Pure attribute builder (exported for the self-check below).
+export function turnAttributes(
+  stat: TurnStat,
+  projectId: string | undefined,
+  user: string,
+): Record<string, string | number | boolean> {
   return {
-    resourceLogs: [
-      {
-        resource: {
-          attributes: [str("service.name", "pd-host"), str("service.namespace", "paperdebugger")],
-        },
-        scopeLogs: [
-          {
-            scope: { name: "pd-host" },
-            logRecords: [
-              {
-                timeUnixNano: `${nowMs}000000`,
-                severityText: "INFO",
-                body: { stringValue: "chat_turn" },
-                attributes,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    user,
+    "project.id": projectId ?? "unknown",
+    provider: stat.provider,
+    model: stat.model || "cli-default",
+    ok: stat.ok,
+    prompt_len: stat.promptLen,
+    deltas: stat.deltas,
+    chars: stat.chars,
+    total_ms: stat.totalMs,
+    ...(stat.ttftMs != null ? { ttft_ms: stat.ttftMs } : {}),
+    ...Object.fromEntries(stat.phases.map((p) => [`phase.${p.name}_ms`, Math.round(p.ms)])),
   };
 }
 
 // Fire-and-forget; never blocks or fails the turn.
 export function reportTurn(stat: TurnStat, projectId?: string): void {
-  if (!TOKEN) return;
-  fetch(OTLP_LOGS, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${TOKEN}` },
-    body: JSON.stringify(turnPayload(stat, projectId, os.userInfo().username, Date.now())),
-  }).catch((err: unknown) => console.error("[pd-host] telemetry send failed:", err));
+  logger?.emit({
+    severityText: "INFO",
+    body: "chat_turn",
+    attributes: turnAttributes(stat, projectId, os.userInfo().username),
+  });
 }
 
-// Self-check: `bun src/telemetry.ts`
+// Self-check: `bun src/telemetry.ts` (with a token this also sends one real record)
 if (process.argv[1]?.endsWith("telemetry.ts")) {
-  const p = turnPayload(
+  const attrs = turnAttributes(
     {
       provider: "claude",
       model: "opus",
@@ -94,14 +86,10 @@ if (process.argv[1]?.endsWith("telemetry.ts")) {
     },
     "abc123abc123abc123abc123",
     "junyi",
-    1700000000000,
   );
-  const rec = p.resourceLogs[0].scopeLogs[0].logRecords[0];
-  const get = (k: string) => rec.attributes.find((a) => a.key === k)?.value;
-  console.assert(rec.timeUnixNano === "1700000000000000000", "time");
-  console.assert(JSON.stringify(get("user")) === '{"stringValue":"junyi"}', "user");
-  console.assert(JSON.stringify(get("model")) === '{"stringValue":"opus"}', "model");
-  console.assert(JSON.stringify(get("ttft_ms")) === '{"intValue":"800"}', "ttft");
-  console.assert(JSON.stringify(get("phase.streaming_ms")) === '{"intValue":"1200"}', "phase");
-  console.error("telemetry self-check ok");
+  console.assert(attrs.user === "junyi", "user");
+  console.assert(attrs.model === "opus", "model");
+  console.assert(attrs.ttft_ms === 800, "ttft");
+  console.assert(attrs["phase.streaming_ms"] === 1200, "phase");
+  console.error(`telemetry self-check ok (reporting ${TOKEN ? "enabled" : "disabled — no token"})`);
 }

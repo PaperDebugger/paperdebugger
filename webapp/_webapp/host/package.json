@@ -14,7 +14,11 @@
     "watch": "tsc -p tsconfig.json --watch"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.14"
+    "@anthropic-ai/claude-agent-sdk": "^0.2.14",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-logs-otlp-proto": "^0.219.0",
+    "@opentelemetry/resources": "^2.8.0",
+    "@opentelemetry/sdk-logs": "^0.219.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
