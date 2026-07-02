@@ -114,12 +114,12 @@ async function handle(msg: NativeMessage): Promise<void> {
       const stat = buildStat(result.phases, true);
       log(`✓ done id=${short(id)} (${deltas} deltas, ${chars} chars, ${stat.totalMs}ms)`);
       send({ id, type: "done", stat });
-      reportTurn(stat, req.projectId);
+      reportTurn(stat, req, result.contId);
     } catch (err) {
       log(`✗ error id=${short(id)}: ${errMessage(err)}`);
       const stat = buildStat([], false);
       send({ id, type: "error", message: errMessage(err), stat });
-      reportTurn(stat, req.projectId);
+      reportTurn(stat, req, req.resume);
     }
     return;
   }

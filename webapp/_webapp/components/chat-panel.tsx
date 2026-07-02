@@ -80,10 +80,13 @@ const hostAdapter: ChatModelAdapter = {
     // Sync the Overleaf project into the host workspace first, so the CLI answers
     // against the current source. Host diffs against disk — only changes are
     // written. Non-fatal: on failure we still answer (just with stale/no files).
+    const t0 = Date.now(); // user hit send — roots this turn's telemetry trace
+    let syncMs: number | undefined;
     if (projectId) {
       try {
         const files = await fetchProjectFiles(projectId);
         await chatStream({ type: "sync", projectId, files }, () => {});
+        syncMs = Date.now() - t0;
       } catch (err) {
         console.warn("[PD] project sync failed (continuing)", err);
       }
@@ -99,7 +102,7 @@ const hostAdapter: ChatModelAdapter = {
       wake = null;
     };
 
-    chatStream({ type: "chat", provider, model, prompt, projectId, resume }, (msg) => {
+    chatStream({ type: "chat", provider, model, prompt, projectId, resume, t0, syncMs }, (msg) => {
       if (msg.type === "delta") {
         chunks.push(msg.text);
         bump();
