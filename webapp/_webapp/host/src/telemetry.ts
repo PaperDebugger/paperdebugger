@@ -59,7 +59,10 @@ let ready: ReturnType<typeof init> | undefined;
 // terminal message is sent — timings are reconstructed from that instant.
 export function reportTurn(stat: TurnStat, req: ChatRequest, contId?: string): void {
   const tEnd = Date.now();
-  (ready ??= init())
+  (ready ??= init().catch((err) => {
+    ready = undefined; // failed init (e.g. offline) retries on the next turn
+    throw err;
+  }))
     .then(({ tracer, api, user }) => {
       const tHost = tEnd - stat.totalMs; // host received the chat request
       // User hit send in the browser; fall back to host receipt if absent/skewed.
@@ -107,6 +110,16 @@ export function reportTurn(stat: TurnStat, req: ChatRequest, contId?: string): v
       root.end(tEnd);
     })
     .catch((err: unknown) => console.error("[pd-host] telemetry failed:", err));
+}
+
+// Bounded flush for shutdown: drains any in-flight span export but never holds
+// the process hostage — resolves after `ms` even if the collector hangs.
+export async function flushTelemetry(ms = 2000): Promise<void> {
+  if (!ready) return;
+  await Promise.race([
+    ready.then(({ provider }) => provider.forceFlush()).catch(() => {}),
+    new Promise((resolve) => setTimeout(resolve, ms)),
+  ]);
 }
 
 // Self-check: `bun src/telemetry.ts` — sends one real trace through the full

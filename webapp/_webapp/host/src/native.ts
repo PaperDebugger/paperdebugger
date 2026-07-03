@@ -17,7 +17,7 @@ import { runCodex } from "./runtimes/codex.js";
 import { syncProjectFiles } from "./sync.js";
 import { listSkills } from "./skills.js";
 import { listModels } from "./models.js";
-import { reportTurn } from "./telemetry.js";
+import { reportTurn, flushTelemetry } from "./telemetry.js";
 import { errMessage, type ChatRequest, type Phase, type SyncRequest, type TurnStat } from "./types.js";
 
 // CRITICAL: stdout is the wire to Chrome — any stray write corrupts the framing.
@@ -135,4 +135,6 @@ process.stdin.on("data", (chunk: Buffer) => {
     handle(msg).catch((err) => send({ id: msg?.id, type: "error", message: errMessage(err) }));
   }
 });
-process.stdin.on("end", () => process.exit(0));
+// Drain any in-flight telemetry export (bounded) before exiting, so the last
+// turn's trace isn't dropped when Chrome closes the port right after a reply.
+process.stdin.on("end", () => void flushTelemetry().finally(() => process.exit(0)));

@@ -90,9 +90,12 @@ const hostAdapter: ChatModelAdapter = {
       try {
         const files = await fetchProjectFiles(projectId);
         await chatStream({ type: "sync", projectId, files }, () => {});
-        syncMs = Date.now() - t0;
       } catch (err) {
         console.warn("[PD] project sync failed (continuing)", err);
+      } finally {
+        // Measured even on failure, so a failed sync's delay isn't misattributed
+        // to the bridge span in the turn's trace.
+        syncMs = Date.now() - t0;
       }
     }
 
@@ -101,6 +104,9 @@ const hostAdapter: ChatModelAdapter = {
     let wake: (() => void) | null = null;
     // Boxed so the .then callbacks' assignments survive TS control-flow analysis.
     const ctrl = { finished: false, failure: null as Error | null, stat: null as TurnStat | null };
+    // Thinking duration: first reasoning delta → first answer delta (or turn end).
+    // Undefined while still thinking — ReasoningPart keys its label off this.
+    const think = { start: null as number | null, ms: undefined as number | undefined };
     const bump = () => {
       wake?.();
       wake = null;
@@ -108,13 +114,19 @@ const hostAdapter: ChatModelAdapter = {
 
     chatStream({ type: "chat", provider, model, prompt, projectId, resume, t0, syncMs, convId }, (msg) => {
       if (msg.type === "delta") {
+        if (think.start != null && think.ms == null) think.ms = Date.now() - think.start;
         chunks.push(msg.text);
         bump();
       } else if (msg.type === "reasoning") {
+        think.start ??= Date.now();
         rchunks.push(msg.text);
         bump();
       } else if (msg.type === "session") {
-        useConversationStore.getState().set({ provider, contId: msg.sessionId });
+        // Drop stale session ids: if "New chat" re-minted convId while this turn
+        // was in flight, pairing the new conversation with this turn's
+        // continuation would resume the old thread next turn.
+        const store = useConversationStore.getState();
+        if (store.convId === convId) store.set({ provider, contId: msg.sessionId });
       }
     }).then(
       (res) => {
@@ -122,11 +134,13 @@ const hostAdapter: ChatModelAdapter = {
           useChatStatsStore.getState().add(res.stat);
           ctrl.stat = res.stat; // also pinned onto this message's metadata (see final yield)
         }
+        if (think.start != null && think.ms == null) think.ms = Date.now() - think.start;
         ctrl.finished = true;
         bump();
       },
       (err) => {
         ctrl.failure = err instanceof Error ? err : new Error(String(err));
+        if (think.start != null && think.ms == null) think.ms = Date.now() - think.start;
         ctrl.finished = true;
         bump();
       },
@@ -135,11 +149,13 @@ const hostAdapter: ChatModelAdapter = {
     let acc = "";
     let racc = "";
     // A reasoning part (if any) renders above the answer via the Reasoning slot.
+    // Each frame re-pins metadata.custom (the runtime takes the last yield's), so
+    // thinkMs rides along on every frame once measured.
     const frame = (text: string) => {
       const parts: { type: "reasoning" | "text"; text: string }[] = [];
       if (racc) parts.push({ type: "reasoning", text: racc });
       parts.push({ type: "text", text });
-      return { content: parts };
+      return { content: parts, metadata: { custom: { thinkMs: think.ms } } };
     };
     while (true) {
       if (chunks.length || rchunks.length) {
@@ -158,7 +174,7 @@ const hostAdapter: ChatModelAdapter = {
       if (ctrl.finished) {
         // Final frame carries the per-turn timing on message metadata, so a hover
         // popover can read it back from the message itself (see MessageStats).
-        if (ctrl.stat) yield { ...frame(acc), metadata: { custom: { stat: ctrl.stat } } };
+        if (ctrl.stat) yield { ...frame(acc), metadata: { custom: { stat: ctrl.stat, thinkMs: think.ms } } };
         return;
       }
       await new Promise<void>((resolve) => {
@@ -512,13 +528,19 @@ function TextPart() {
   );
 }
 
-// Collapsible "Thinking" block for streamed reasoning/thinking parts.
+// Collapsible block for streamed reasoning/thinking parts. Pulses "Thinking…"
+// while deltas stream, settles to "Thought for Xs" once the answer starts
+// (thinkMs is measured by the adapter and pinned on message metadata).
 function ReasoningPart({ text }: { text: string }) {
+  const thinkMs = useMessage((m) => (m.metadata.custom as { thinkMs?: number }).thinkMs);
   if (!text) return null;
   return (
-    <details className="pd-reasoning" style={{ margin: "0 0 8px", fontSize: 13, color: "#6b7280" }}>
-      <summary style={{ cursor: "pointer", userSelect: "none" }}>Thinking</summary>
-      <div style={{ whiteSpace: "pre-wrap", marginTop: 4 }}>{text}</div>
+    <details className="pd-reasoning">
+      <summary className={thinkMs == null ? "pd-reasoning-live" : undefined}>
+        <IconChevronRight className="pd-reasoning-chevron" width={12} height={12} />
+        {thinkMs == null ? "Thinking…" : `Thought for ${fmtMs(thinkMs)}`}
+      </summary>
+      <div className="pd-reasoning-body">{text}</div>
     </details>
   );
 }
