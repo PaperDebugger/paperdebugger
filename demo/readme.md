@@ -42,7 +42,11 @@ https://github.com/4ndrelim/academic-paper-mcp-server
 
 </details>
 
+## Related-work research
 
+Use the [Parallel source-research guide](./parallel-research/readme.md) to find
+and check public sources in a separate MCP client, then bring verified notes
+into PaperDebugger for a related-work review.
 
 ## Kubernetes
 
